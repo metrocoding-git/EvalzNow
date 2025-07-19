@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import RibbonPanel from "./RibbonPanel";
 
 export default function TopRibbon() {
   const [activeTab, setActiveTab] = useState(0);
@@ -16,7 +17,6 @@ export default function TopRibbon() {
     { label: "Validate" },
     { label: "Analyze" },
     { label: "Optimize" },
-
   ];
 
   const handleTabClick = (index) => {
@@ -24,21 +24,26 @@ export default function TopRibbon() {
   };
 
   return (
-    <div className="w-full bg-white border-b shadow-sm px-1 py-1 flex items-center gap-2 text-sm font-medium">
-      {tabs.map((tab, i) => (
-        <div
-          key={i}
-          onClick={() => handleTabClick(i)}
-          className={`flex items-center gap-1 cursor-pointer px-1 py-2 rounded-md transition-all duration-200 ${
-            activeTab === i
-              ? 'bg-blue-100 text-blue-600 border border-blue-200 shadow-sm'
-              : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
-          }`}
-        >
-          <span className="text-sm"></span>
-          {tab.label}
-        </div>
-      ))}
+    <div className="w-full bg-white border-b shadow-sm text-sm font-medium">
+      {/* Tabs row */}
+      <div className="px-1 py-1 flex items-center gap-2">
+        {tabs.map((tab, i) => (
+          <div
+            key={i}
+            onClick={() => handleTabClick(i)}
+            className={`cursor-pointer px-2 py-2 rounded-md transition-all ${
+              activeTab === i
+                ? "bg-blue-100 text-blue-600 border border-blue-200 shadow-sm"
+                : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
+            }`}
+          >
+            {tab.label}
+          </div>
+        ))}
+      </div>
+
+      {/* Panel row for current tab */}
+      <RibbonPanel activeTabLabel={tabs[activeTab].label} />
     </div>
   );
 }

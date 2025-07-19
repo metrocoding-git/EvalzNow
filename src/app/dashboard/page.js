@@ -1,8 +1,8 @@
+// app/dashboard/page.js
 export default function DashboardPage() {
   return (
-    <div>
-        
+    <div className="text-gray-800">
+      
     </div>
-    
   );
 }
