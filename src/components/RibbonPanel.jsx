@@ -29,7 +29,7 @@ export default function RibbonPanel({ activeTabLabel }) {
   return (
     <div className="w-full bg-gray-50 border-b px-2 py-1 flex gap-1">
       {tools.length > 0 ? (
-        tools.map((tool, i) => <IconButton key={i} icon={tool.icon} label={tool.label} />)
+        tools.map((tool, i) => <IconButton key={i} icon={tool.icon} label={tool.label}  onClick={() => onToolClick?.(tool.label)} />)
       ) : (
         <p className="text-sm text-gray-500">No tools available for {activeTabLabel}</p>
       )}
