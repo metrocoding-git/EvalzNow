@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'EvalzNow Login',
+  title: 'EvalzNow - 2025',
 };
 
 export default function RootLayout({ children }) {
