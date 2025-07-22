@@ -1,9 +1,22 @@
-// components/IconButton.jsx
-export default function IconButton({ icon, label }) {
+export default function IconButton({ icon, label, onClick, active }) {
   return (
-    <div className="group flex flex-col items-center w-20 p-2 hover:bg-gray-100 rounded cursor-pointer transition-all">
-      <div className="text-xl text-blue-800">{icon}</div>
-      <div className="text-xs text-center text-gray-700 group-hover:text-blue-800">{label}</div>
+    <div
+      onClick={onClick}
+      className={
+        `group flex flex-col justify-center items-center h-28 w-32 p-3  mx-1 rounded-md cursor-pointer shadow-md hover:shadow-md hover:bg-blue-50 transition-all duration-200 ease-in-out ` +
+        (active ? "bg-blue-300" : "bg-blue-100")
+      }
+    >
+      <div className="mb-1">
+        <img
+          src={icon}
+          alt={label}
+          className="h-8 w-8 object-contain transition-transform group-hover:scale-110"
+        />
+      </div>
+      <div className="text-xs text-gray-700 group-hover:text-blue-800 text-center hover:font-bold">
+        {label}
+      </div>
     </div>
   );
 }
