@@ -26,7 +26,7 @@ export default function TopRibbon() {
   return (
     <div className="w-full bg-white border-b shadow-sm text-sm font-medium">
       {/* Tabs row */}
-      <div className="px-1 py-1 flex items-center gap-2">
+      {/* <div className="px-1 py-1 flex items-center gap-2">
         {tabs.map((tab, i) => (
           <div
             key={i}
@@ -40,10 +40,10 @@ export default function TopRibbon() {
             {tab.label}
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Panel row for current tab */}
-      <RibbonPanel activeTabLabel={tabs[activeTab].label} />
+      <RibbonPanel />
     </div>
   );
 }
