@@ -1,27 +1,7 @@
-'use client';
-import { useState } from 'react';
-import RibbonPanel from '@/components/RibbonPanel';
-import MaterialEditor from '@/components/MaterialEditor';
+import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('Edit');
-  const [showMaterialEditor, setShowMaterialEditor] = useState(false);
 
-  const handleToolClick = (label) => {
-    if (label === 'Edit') {
-      setShowMaterialEditor(true);
-    }
-  };
+  redirect('/dashboard/control-view');
 
-  return (
-    <>
-      {/* Ribbon bar below the TopRibbon from layout */}
-      <RibbonPanel activeTabLabel={activeTab} onToolClick={handleToolClick} />
-
-      {/* Material Editor popout */}
-      {showMaterialEditor && (
-        <MaterialEditor onClose={() => setShowMaterialEditor(false)} />
-      )}
-    </>
-  );
 }
