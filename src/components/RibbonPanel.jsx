@@ -6,7 +6,7 @@ import SubIconButton from './SubIconButton';
 
 const ribbonItems = [
   { path: '/icons/Control_View.png', label: 'Control View', link: '/dashboard/control-view' },
-  { path: '/icons/Insert_Scores.png', label: 'Insert Scores', link: '/dashboard/insert-scores' },
+  { path: '/icons/Setup_View.png', label: 'Setup View', link: '/dashboard/setup-view' },
   { path: '/icons/Analytics_View.png', label: 'Analytics View', link: '/dashboard/analytics-view' },
 ];
 

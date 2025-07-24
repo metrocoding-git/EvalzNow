@@ -40,6 +40,7 @@ export default function ControlViewLayout({ children }) {
             </Link>
           ))}
         </div>
+        
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
           <div className="flex flex-col h-full">
