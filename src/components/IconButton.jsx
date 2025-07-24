@@ -1,9 +1,12 @@
-export default function IconButton({ icon, label, onClick, active }) {
+import Link from "next/link";
+
+export default function IconButton({ icon, label, onClick, active, link }) {
   return (
-    <div
+
+    <Link href={link || '#'}
       onClick={onClick}
       className={
-        `group flex flex-col justify-center items-center h-28 w-32 p-3  mx-1 rounded-md cursor-pointer shadow-md hover:shadow-md hover:bg-blue-50 transition-all duration-200 ease-in-out ` +
+        `group flex flex-col justify-center items-center h-18 w-28 p-3  mx-1 rounded-md cursor-pointer shadow-md hover:shadow-md hover:bg-blue-50 transition-all duration-200 ease-in-out ` +
         (active ? "bg-blue-300" : "bg-blue-100")
       }
     >
@@ -17,6 +20,6 @@ export default function IconButton({ icon, label, onClick, active }) {
       <div className="text-xs text-gray-700 group-hover:text-blue-800 text-center hover:font-bold">
         {label}
       </div>
-    </div>
+    </Link>
   );
 }

@@ -8,7 +8,7 @@ import MainTabs from '@/components/MainTabs';
 import BottomRibbon from '@/components/BottomRibbon';
 
 export default function DashboardLayout({ children }) {
-  const [showDisplay, setShowDisplay] = useState(true);
+
 
 
   return (
@@ -18,20 +18,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel with Input and Editor stacked vertically */}
-        <div className="w-6/12 lg:w-3/12 border-r flex flex-col">
-
-          {/* Tabs right below top ribbon */}
-          <MainTabs />
-
-        </div>
-
-        {/* Display Area */}
-        {showDisplay && (
-          <div className="w-6/12 lg:w-9/12 bg-white overflow-auto relative">
-            <DisplayArea onClose={() => setShowDisplay(false)} />
-          </div>
-        )}
+        {children}
       </div>
 
       {/* Bottom Ribbon */}

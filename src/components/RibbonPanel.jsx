@@ -5,23 +5,23 @@ import { useState } from "react";
 import SubIconButton from './SubIconButton';
 
 const ribbonItems = [
-  { path: 'icons/Control_View.png', label: 'Control View' },
-  { path: 'icons/Insert_Scores.png', label: 'Insert Scores' },
-  { path: 'icons/Analytics_View.png', label: 'Analytics View' },
+  { path: '/icons/Control_View.png', label: 'Control View', link: '/dashboard/control-view' },
+  { path: '/icons/Insert_Scores.png', label: 'Insert Scores', link: '/dashboard/insert-scores' },
+  { path: '/icons/Analytics_View.png', label: 'Analytics View', link: '/dashboard/analytics-view' },
 ];
 
 const analyticItems = [
-  { path: 'icons/Scoring_Trends.png', label: 'Scoring Trends' },
-  { path: 'icons/Tabulation_Tables.png', label: 'Tabulation Tables' },
-  { path: 'icons/Proficiency_Metrics.png', label: 'Proficiency Metrics' },
-  { path: 'icons/Growth_Metrics.png', label: 'Growth Metrics' },
-  { path: 'icons/Hybrid_Metrics.png', label: 'Hybrid Metrics' },
-  { path: 'icons/Unit_Distributions.png', label: 'Unit Distributions' },
-  { path: 'icons/Auxiliary_Resultants.png', label: 'Auxiliary Resultants' },
-  { path: 'icons/Neuroscience_Tools.png', label: 'Neuroscience Tools' },
-  { path: 'icons/Global_Analytics.png', label: 'Global Analytics' },
-  { path: 'icons/Data_Extractions.png', label: 'Data Extractions' },
-  { path: 'icons/Data_Reports.png', label: 'Data Reports' },
+  { path: '/icons/Scoring_Trends.png', label: 'Scoring Trends' },
+  { path: '/icons/Tabulation_Tables.png', label: 'Tabulation Tables' },
+  { path: '/icons/Proficiency_Metrics.png', label: 'Proficiency Metrics' },
+  { path: '/icons/Growth_Metrics.png', label: 'Growth Metrics' },
+  { path: '/icons/Hybrid_Metrics.png', label: 'Hybrid Metrics' },
+  { path: '/icons/Unit_Distributions.png', label: 'Unit Distributions' },
+  { path: '/icons/Auxiliary_Resultants.png', label: 'Auxiliary Resultants' },
+  { path: '/icons/Neuroscience_Tools.png', label: 'Neuroscience Tools' },
+  { path: '/icons/Global_Analytics.png', label: 'Global Analytics' },
+  { path: '/icons/Data_Extractions.png', label: 'Data Extractions' },
+  { path: '/icons/Data_Reports.png', label: 'Data Reports' },
 ];
 
 export default function RibbonPanel() {
@@ -34,7 +34,7 @@ export default function RibbonPanel() {
     <div className="w-full bg-gray-50 border-b px-2 py-2 flex gap-1 my-1">
 
       {ribbonItems.map((tool, i) => (
-        <IconButton key={i} icon={tool.path} label={tool.label} onClick={() => { setActiveTab(tool.label), setActiveButton(tool.label) }} active={activeTab === tool.label} />
+        <IconButton key={i} icon={tool.path} label={tool.label} onClick={() => { setActiveTab(tool.label), setActiveButton(tool.label) }} active={activeTab === tool.label} link={tool.link}  />
 
       ))}
 
