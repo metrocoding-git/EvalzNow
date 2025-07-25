@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import clsx from "clsx";
 import { Plus } from "lucide-react";
 import CompetencyAccountingTable from "./components/CompetencyAccountingTable";
 import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
@@ -83,10 +82,10 @@ export default function PreviewPage() {
             onClick={() => setOpen(!open)}
           >
             <span
-              className={clsx(
-                "transition-transform duration-200 text-gray-600 mr-1",
+              className={`
+                transition-transform duration-200 text-gray-600 mr-1 ` +
                 { "rotate-90": open, "rotate-0": !open }
-              )}
+              }
             >
               ▶
             </span>
