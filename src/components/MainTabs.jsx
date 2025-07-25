@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import clsx from "clsx";
 import InputArea from "./InputArea";
 import EditorArea from "./EditorArea";
 
@@ -22,12 +21,12 @@ export default function MainTabs() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={clsx(
-              "relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer",
+            className={`
+              relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
               activeTab === tab
                 ? "text-blue-600 bg-white border border-b-transparent border-gray-300 rounded-t-lg shadow-sm"
                 : "text-gray-500 hover:text-blue-600  border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white" 
-            )}
+            }
           >
             {tab}
 

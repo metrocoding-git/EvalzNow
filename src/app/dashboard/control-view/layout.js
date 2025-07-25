@@ -1,6 +1,5 @@
 "use client";
 import { Children, useState } from "react";
-import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,19 +27,21 @@ export default function ControlViewLayout({ children }) {
             <Link href={tab.path} key={index}>
               <span
                 onClick={() => setActiveTab(tab.label)}
-                className={clsx(
-                  "relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer",
-                  activeTab === tab.label
+                className={
+                  `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
+                  (activeTab === tab.label
                     ? "text-blue-600 bg-white border border-b-transparent border-gray-300 rounded-t-lg shadow-sm"
-                    : "text-gray-500 hover:text-blue-600 border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white"
-                )}
+                    : "text-gray-500 hover:text-blue-600 border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white")
+                }
+
+
               >
                 {tab.label}
               </span>
             </Link>
           ))}
         </div>
-        
+
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
           <div className="flex flex-col h-full">
