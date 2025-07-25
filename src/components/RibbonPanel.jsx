@@ -3,6 +3,7 @@ import { Trash2, Edit3, Scissors, Copy, Move, FolderOpen, Gauge, SlidersHorizont
 import IconButton from './IconButton';
 import { useState } from "react";
 import SubIconButton from './SubIconButton';
+import { useRouter } from 'next/navigation';
 
 const ribbonItems = [
   { path: '/icons/Control_View.png', label: 'Control View', link: '/dashboard/control-view' },
@@ -11,23 +12,24 @@ const ribbonItems = [
 ];
 
 const analyticItems = [
-  { path: '/icons/Scoring_Trends.png', label: 'Scoring Trends' },
-  { path: '/icons/Tabulation_Tables.png', label: 'Tabulation Tables' },
-  { path: '/icons/Proficiency_Metrics.png', label: 'Proficiency Metrics' },
-  { path: '/icons/Growth_Metrics.png', label: 'Growth Metrics' },
-  { path: '/icons/Hybrid_Metrics.png', label: 'Hybrid Metrics' },
-  { path: '/icons/Unit_Distributions.png', label: 'Unit Distributions' },
-  { path: '/icons/Auxiliary_Resultants.png', label: 'Auxiliary Resultants' },
-  { path: '/icons/Neuroscience_Tools.png', label: 'Neuroscience Tools' },
-  { path: '/icons/Global_Analytics.png', label: 'Global Analytics' },
-  { path: '/icons/Data_Extractions.png', label: 'Data Extractions' },
-  { path: '/icons/Data_Reports.png', label: 'Data Reports' },
+   { path: '/icons/Scoring_Trends.png', label: 'Scoring Trends', link: '/dashboard/analytics-view/scoring-trends' },
+  { path: '/icons/Tabulation_Tables.png', label: 'Tabulation Tables', link: '/dashboard/analytics-view/tabulation-tables' },
+  { path: '/icons/Proficiency_Metrics.png', label: 'Proficiency Metrics', link: '/dashboard/analytics-view/proficiency-metrics' },
+  { path: '/icons/Growth_Metrics.png', label: 'Growth Metrics', link: '/dashboard/analytics-view/growth-metrics' },
+  { path: '/icons/Hybrid_Metrics.png', label: 'Hybrid Metrics', link: '/dashboard/analytics-view/hybrid-metrics' },
+  { path: '/icons/Unit_Distributions.png', label: 'Unit Distributions', link: '/dashboard/analytics-view/unit-distributions' },
+  { path: '/icons/Auxiliary_Resultants.png', label: 'Auxiliary Resultants', link: '/dashboard/analytics-view/auxiliary-resultants' },
+  { path: '/icons/Neuroscience_Tools.png', label: 'Neuroscience Tools', link: '/dashboard/analytics-view/neuroscience-tools' },
+  { path: '/icons/Global_Analytics.png', label: 'Global Analytics', link: '/dashboard/analytics-view/global-analytics'  },
+  { path: '/icons/Data_Extractions.png', label: 'Data Extractions', link: '/dashboard/analytics-view/data-extractions' },
+  { path: '/icons/Data_Reports.png', label: 'Data Reports', link: '/dashboard/analytics-view/data-reports' },
 ];
 
 export default function RibbonPanel() {
 
   const [activeTab, setActiveTab] = useState('Control View');
   const [activeButton, setActiveButton] = useState('Control View');
+  const router = useRouter();
 
 
   return (
@@ -45,7 +47,8 @@ export default function RibbonPanel() {
               key={i}
               icon={item.path}
               label={item.label}
-              onClick={() => setActiveButton(item.label)}
+              onClick={() => {setActiveButton(item.label);
+                if (item.link)router.push(item.link);}}
               active={activeButton === item.label}
             />
           ))}
