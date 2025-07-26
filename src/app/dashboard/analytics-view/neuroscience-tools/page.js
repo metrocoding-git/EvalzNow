@@ -9,6 +9,7 @@ export default function NeuroscienceTools() {
 
 
 
+
   return (
     <div className="w-full flex px-4 py-4 gap-4 ">
       {/* Left panel */}

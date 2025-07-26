@@ -68,12 +68,7 @@ export default function PreviewPage() {
           {/* Header */}
           <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
             <span className="text-blue-800 font-semibold text-sm">Preview</span>
-            <button
-              onClick={() => setOpen(!open)}
-              className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            
           </div>
 
           {/* Dropdown Toggle */}

@@ -8,8 +8,8 @@ import PlotSelections from "./components/PlotSelections";
 
 
 export default function AnalyticsView() {
-    const [showEdit, setShowEdit] = useState(false);
-    const [showSecondary, setShowSecondary] = useState(false);
+    const [showEdit, setShowEdit] = useState(true);
+    const [showSecondary, setShowSecondary] = useState(true);
 
     const [selectedEntity, setSelectedEntity] = useState(null);
     const [open, setOpen] = useState(false);

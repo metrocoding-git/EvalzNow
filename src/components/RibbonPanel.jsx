@@ -12,7 +12,7 @@ const ribbonItems = [
 ];
 
 const analyticItems = [
-   { path: '/icons/Scoring_Trends.png', label: 'Scoring Trends', link: '/dashboard/analytics-view/scoring-trends' },
+  { path: '/icons/Scoring_Trends.png', label: 'Scoring Trends', link: '/dashboard/analytics-view/scoring-trends' },
   { path: '/icons/Tabulation_Tables.png', label: 'Tabulation Tables', link: '/dashboard/analytics-view/tabulation-tables' },
   { path: '/icons/Proficiency_Metrics.png', label: 'Proficiency Metrics', link: '/dashboard/analytics-view/proficiency-metrics' },
   { path: '/icons/Growth_Metrics.png', label: 'Growth Metrics', link: '/dashboard/analytics-view/growth-metrics' },
