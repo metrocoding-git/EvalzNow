@@ -30,6 +30,10 @@ export default function PlotSelections() {
     { name: 'A', uv: 400, pv: 240 },
     { name: 'B', uv: 300, pv: 139 },
     { name: 'C', uv: 200, pv: 980 },
+    { name: 'D', uv: 278, pv: 390 },
+    { name: 'E', uv: 189, pv: 480 },
+    { name: 'F', uv: 239, pv: 380 },
+    { name: 'G', uv: 349, pv: 430 },
   ];
 
   const chart = [
@@ -152,21 +156,13 @@ export default function PlotSelections() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td className="border px-2 py-1">A</td>
-                          <td className="border px-2 py-1">400</td>
-                          <td className="border px-2 py-1">240</td>
-                        </tr>
-                        <tr>
-                          <td className="border px-2 py-1">B</td>
-                          <td className="border px-2 py-1">300</td>
-                          <td className="border px-2 py-1">139</td>
-                        </tr>
-                        <tr>
-                          <td className="border px-2 py-1">C</td>
-                          <td className="border px-2 py-1">200</td>
-                          <td className="border px-2 py-1">980</td>
-                        </tr>
+                        {data.map((item, index) => (
+                          <tr key={index}>
+                            <td className="border px-2 py-1">{item.name}</td>
+                            <td className="border px-2 py-1">{item.uv}</td>
+                            <td className="border px-2 py-1">{item.pv}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -179,16 +175,17 @@ export default function PlotSelections() {
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100 ">
           <div className="h-full overflow-auto  m-5">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
-                <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-                <CartesianGrid stroke="#ccc" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-              </LineChart>
-            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="95%">
+          <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" label={{ value: "X-AXIS (Name)", position: "insideBottom", offset: -5 }} />
+            <YAxis label={{ value: "Y-AXIS (Values)", angle: -90, position: "insideLeft" }} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="uv" name="UV" stroke="#3b82f6" strokeWidth={2} />
+            <Line type="monotone" dataKey="pv" name="PV" stroke="#f59e0b" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
           </div>
         </div>
       </div>
