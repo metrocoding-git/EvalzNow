@@ -112,11 +112,11 @@ export default function UnitControl() {
 
       <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
 
-        {/* {showAdd && (
+        {showAdd && (
           <div className="overflow-auto my-2">
             <CreateUnitForm onClose={() => setShowAdd(false)} />
           </div>
-        )} */}
+        )}
 
         {!showAdd && showUnitRoster && (
           <UnitRoster onClose={() => setUnitRoster(false)} />
