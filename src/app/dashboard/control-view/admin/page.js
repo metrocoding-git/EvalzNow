@@ -11,32 +11,32 @@ export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [dataList, setDataList] = useState([
-    { name: "Sadeesha", age: 25, city: "Colombo" },
-    { name: "Nadeesha", age: 30, city: "Kandy" },
-    { name: "Kasun", age: 28, city: "Galle" },
-    { name: "Dilani", age: 22, city: "Jaffna" },
-    { name: "Tharindu", age: 27, city: "Matara" },
-    { name: "Chathura", age: 29, city: "Negombo" },
-    { name: "Saman", age: 31, city: "Batticaloa" },
-    { name: "Kumara", age: 26, city: "Anuradhapura" },
-    { name: "Lakshmi", age: 24, city: "Trincomalee" },
-    { name: "Ravindu", age: 23, city: "Ratnapura" },
-    { name: "Nisansala", age: 32, city: "Kurunegala" },
-    { name: "Pradeep", age: 33, city: "Badulla" },
-    { name: "Sithara", age: 34, city: "Colombo" },
-    { name: "Thilini", age: 35, city: "Kandy" },
-    { name: "Dinesh", age: 36, city: "Galle" },
-    { name: "Anushka", age: 37, city: "Jaffna" },
-    { name: "Ruwan", age: 38, city: "Matara" },
-    { name: "Sajith", age: 39, city: "Negombo" },
-    { name: "Chamika", age: 40, city: "Batticaloa" },
-    { name: "Hiruni", age: 41, city: "Anuradhapura" },
-    { name: "Kavindu", age: 42, city: "Trincomalee" },
-    { name: "Dilshan", age: 43, city: "Ratnapura" },
-    { name: "Nimali", age: 44, city: "Kurunegala" },
-    { name: "Sahan", age: 45, city: "Badulla" },
-    { name: "Piumi", age: 46, city: "Colombo" },
-    { name: "Tharushi", age: 47, city: "Kandy" },
+    { name: "Sadeesha", age: 25, lname: "Colombo" },
+    { name: "Nadeesha", age: 30, lname: "Kandy" },
+    { name: "Kasun", age: 28, lname: "Galle" },
+    { name: "Dilani", age: 22, lname: "Jaffna" },
+    { name: "Tharindu", age: 27, lname: "Matara" },
+    { name: "Chathura", age: 29, lname: "Negombo" },
+    { name: "Saman", age: 31, lname: "Batticaloa" },
+    { name: "Kumara", age: 26, lname: "Anuradhapura" },
+    { name: "Lakshmi", age: 24, lname: "Trincomalee" },
+    { name: "Ravindu", age: 23, lname: "Ratnapura" },
+    { name: "Nisansala", age: 32, lname: "Kurunegala" },
+    { name: "Pradeep", age: 33, lname: "Badulla" },
+    { name: "Sithara", age: 34, lname: "Colombo" },
+    { name: "Thilini", age: 35, lname: "Kandy" },
+    { name: "Dinesh", age: 36, lname: "Galle" },
+    { name: "Anushka", age: 37, lname: "Jaffna" },
+    { name: "Ruwan", age: 38, lname: "Matara" },
+    { name: "Sajith", age: 39, lname: "Negombo" },
+    { name: "Chamika", age: 40, lname: "Batticaloa" },
+    { name: "Hiruni", age: 41, lname: "Anuradhapura" },
+    { name: "Kavindu", age: 42, lname: "Trincomalee" },
+    { name: "Dilshan", age: 43, lname: "Ratnapura" },
+    { name: "Nimali", age: 44, lname: "Kurunegala" },
+    { name: "Sahan", age: 45, lname: "Badulla" },
+    { name: "Piumi", age: 46, lname: "Colombo" },
+    { name: "Tharushi", age: 47, lname: "Kandy" },
   ]);
 
   const handleDelete = (name) => {
@@ -65,16 +65,15 @@ export default function AdminControl() {
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-auto px-3 py-2">
+            <p className="text-black ml-1 text-lg">Clients (29) </p>
             {dataList.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between cursor-pointer hover:bg-blue-50 p-1 rounded-md"
+                className="flex items-center justify-between cursor-pointer hover:bg-blue-50 p-1 rounded-md pl-2"
                 onClick={() => setShowEdit(true)}
               >
                 <div className="flex items-center space-x-1">
-                  <ChevronRight className="w-4 h-4" />
-                  <ShieldUser className="ml-2 w-5 h-5 text-blue-400" />
-                  <p className="text-black ml-1">{item.name}</p>
+                  <p className="text-black ml-1">({index+1}) {item.name} {item.lname}</p>
                 </div>
 
                 {/* Delete button stops event from bubbling */}

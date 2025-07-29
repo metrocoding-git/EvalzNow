@@ -16,77 +16,36 @@ export default function AnalyticsView() {
     const pathname = usePathname();
     const currentTab = tabs.find(tab => pathname?.startsWith(tab.path))?.label || "Session";
 
-    const [selectedSort, setSelectedSort] = useState("Activates in Analytics View");
+    const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
 
 
     const [activeTab, setActiveTab] = useState(currentTab);
 
 
-    const [showEdit, setShowEdit] = useState(true);
+    const [showEdit, setShowEdit] = useState(false);
     const [showSecondary, setShowSecondary] = useState(true);
 
     const [selectedEntity, setSelectedEntity] = useState(null);
-    const [open, setOpen] = useState(false);
     const [ScoresOpen, setScoresOpen] = useState(false);
 
-    const [entities, setEntities] = useState([
-        { id: 1, firstName: "Candidate", lastName: "One" },
-        { id: 2, firstName: "Candidate", lastName: "Two" },
-        { id: 3, firstName: "Candidate", lastName: "Three" },
-        { id: 4, firstName: "Candidate", lastName: "Four" },
-    ]);
 
     const data = [
-        {
-            unitName: "Group A",
-            unitID: "UA123",
-            unitType: "Type A",
-            signatureProfile: "Profile A",
-            items: [
-                { id: 1, firstName: "John", lastName: "Doe" },
-                { id: 2, firstName: "Jane", lastName: "Smith" },
-            ],
-        },
-        {
-            unitName: "Group B",
-            unitID: "UB456",
-            unitType: "Type B",
-            signatureProfile: "Profile B",
-            items: [
-                { id: 3, firstName: "Alice", lastName: "Brown" },
-                { id: 4, firstName: "Bob", lastName: "Johnson" },
-            ],
-        },
-        {
-            unitName: "Group C",
-            unitID: "UC789",
-            unitType: "Type C",
-            signatureProfile: "Profile C",
-            items: [
-                { id: 5, firstName: "Charlie", lastName: "Davis" },
-                { id: 6, firstName: "Eve", lastName: "Wilson" },
-            ],
-        },
-        {
-            unitName: "Group D",
-            unitID: "UD012",
-            unitType: "Type D",
-            signatureProfile: "Profile D",
-            items: [
-                { id: 7, firstName: "Frank", lastName: "Garcia" },
-                { id: 8, firstName: "Grace", lastName: "Martinez" },
-            ],
-        },
+        { id: 1, firstName: "John", lastName: "Doe" },
+        { id: 2, firstName: "Jane", lastName: "Smith" },
+        { id: 3, firstName: "Bob", lastName: "Johnson" },
+        { id: 4, firstName: "Alice", lastName: "Williams" },
+        { id: 5, firstName: "Charlie", lastName: "Brown" },
+        { id: 6, firstName: "David", lastName: "Jones" },
+        { id: 7, firstName: "Eva", lastName: "Miller" },
+        { id: 8, firstName: "Frank", lastName: "Davis" },
+        { id: 9, firstName: "Grace", lastName: "Wilson" },
+        { id: 10, firstName: "Henry", lastName: "Moore" },
     ];
-    const [openGroups, setOpenGroups] = useState({});
-    const [openEntities, setOpenEntities] = useState({});
-    const toggleGroup = (index) => {
-        setOpenGroups((prev) => ({ ...prev, [index]: !prev[index] }));
-    };
-    const toggleEntity = (id) => {
-        console.log(openEntities);
-        setOpenEntities((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
+
+
+    const [openMenu, setopenMenu] = useState(true);
+
+
 
 
 
@@ -124,8 +83,8 @@ export default function AnalyticsView() {
                                 onChange={(e) => setSelectedSort(e.target.value)}
                                 className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                             >
-                                <option value="Activates in Analytics View">Activates in Analytics View</option>
-                                <option value="shown for plots with multiple levels">shown for plots with multiple levels</option>
+                                <option value="activateCandidateLevel">Activate Candidate Level</option>
+                                <option value="activateUnitLevel">Activate Unit Level</option>
                             </select>
                         </div>
                     </div>
@@ -142,102 +101,88 @@ export default function AnalyticsView() {
                                     {/* Header */}
                                     <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
                                         <span className="text-blue-800 font-semibold text-sm">Entities</span>
-                                        <button
-                                            onClick={() => setShowAdd(true)}
-                                            className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                        </button>
+                                        
                                     </div>
 
                                     <div className="flex-1 overflow-auto">
-                                        {data.map((group, index) => (
-                                            <div key={index} className=" px-3 py-1">
-                                                {/* Dropdown Toggle */}
-                                                <div
-                                                    className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
-                                                    onClick={() => toggleGroup(index)}
+                                        <div className=" px-3 py-1">
+                                            <div
+                                                className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
+                                                onClick={() => setopenMenu(!openMenu)}
+                                            >
+
+                                                < span
+                                                    className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
+                                                        }`}
                                                 >
-                                                    <span
-                                                        className={`transition-transform duration-200 text-gray-600 mr-1 ${openGroups[index] ? "rotate-90" : "rotate-0"
-                                                            }`}
-                                                    >
-                                                        ▶
-                                                    </span>
+                                                    ▶
+                                                </span>
+                                                <span className={`text-md text-gray-600 ml-2 ${openMenu ? "font-bold" : ""}`}>Sessions</span>
+                                            </div>
 
-                                                    <span className="text-sm text-gray-700 font-medium">
-                                                        {group.unitName} ({group.unitID}) - {group.unitType} - {group.signatureProfile}
-                                                    </span>
-                                                </div>
-
-                                                {/* Dropdown Content */}
-                                                {openGroups[index] && (
-                                                    <>
-                                                        <div className=" items-center justify-center  px-4 ">
-                                                            <div className="border border-blue-200 p-1 rounded-lg">
-                                                                <span className="text-sm text-gray-400">
-                                                                    Unit Name: {group.unitName}
-                                                                </span>
-                                                                <br />
-                                                                <span className="text-sm text-gray-400">
-                                                                    Unit ID: {group.unitID}
-                                                                </span>
-                                                                <br />
-                                                                <span className="text-sm text-gray-400">
-                                                                    Unit Type: {group.unitType}
-                                                                </span>
-                                                                <br />
-                                                                <span className="text-sm text-gray-400">
-                                                                    Signature Profile: {group.signatureProfile}
-                                                                </span>
-                                                            </div>
+                                            {openMenu && (
+                                                <>
+                                                    <div className=" items-center justify-center  px-4 ">
+                                                        <div className="border border-blue-200 p-1 rounded-lg">
+                                                            <span className="text-sm text-gray-400">
+                                                                Unit Name: Unit 1
+                                                            </span>
+                                                            <br />
+                                                            <span className="text-sm text-gray-400">
+                                                                Unit ID: UA123
+                                                            </span>
+                                                            <br />
+                                                            <span className="text-sm text-gray-400">
+                                                                Unit Type: Group
+                                                            </span>
+                                                            <br />
+                                                            <span className="text-sm text-gray-400">
+                                                                Signature Profile: Signature 1
+                                                            </span>
                                                         </div>
-                                                        <div className="space-y-1 mt-2 px-4">
-                                                            {group.items.map((entity) => (
-                                                                <div key={entity.id}>
-                                                                    {/* Entity Header */}
-                                                                    <div
-                                                                        className="flex items-center justify-between hover:bg-blue-50 p-1 rounded-md cursor-pointer"
-                                                                        onClick={() => {
-                                                                            toggleEntity(entity.id);
-                                                                            setShowEdit(true);
-                                                                            setShowSecondary(true);
-                                                                        }}
-                                                                        onDoubleClick={() => {
-                                                                            setScoresOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <div className="flex items-center gap-2">
+                                                    </div>
+                                                    <div className="space-y-1 mt-2 px-4">
+                                                        {data.map((item, index) => (
+                                                            <div key={item.id}>
+                                                                {/* Entity Header */}
+                                                                <div
+                                                                    className="flex items-center justify-between hover:bg-blue-50 p-1 rounded-md cursor-pointer"
+                                                                    onClick={() => {
+                                                                        setShowEdit(true);
+                                                                        setShowSecondary(true);
+                                                                    }}
+                                                                    onDoubleClick={() => {
+                                                                        setScoresOpen(true);
+                                                                    }}
+                                                                >
+                                                                    <div className="flex items-center gap-2">
 
-                                                                            <ChevronRight className={`w-4 h-4 text-gray-500 ${openEntities[entity.id] ? "rotate-90" : "rotate-0"}`} />
+                                                                        <ChevronRight className={`w-4 h-4 text-gray-500 `} />
 
-                                                                            <ShieldUser className="w-5 h-5 text-blue-400" />
-                                                                            <span className="text-sm text-black">
-                                                                                {entity.firstName} {entity.lastName} ({entity.id})
-                                                                            </span>
-                                                                        </div>
-
+                                                                        <ShieldUser className="w-5 h-5 text-blue-400" />
+                                                                        <span className="text-sm text-black">
+                                                                            {item.firstName} {item.lastName} ({item.id})
+                                                                        </span>
                                                                     </div>
 
-                                                                    {/* Entity Details */}
-                                                                    {openEntities[entity.id] && (
-                                                                        <div className="items-center justify-center px-4 mt-1">
-                                                                            <div className="border border-blue-200 p-2 rounded-lg text-sm text-gray-400">
-                                                                                <div>First name: {entity.firstName}</div>
-                                                                                <div>Last name: {entity.lastName}</div>
-                                                                                <div>Candidate Id: {entity.id}</div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
-                                                            ))}
-                                                        </div>
 
-                                                    </>
-                                                )}
-                                            </div>
-                                        ))}
+                                                            </div>
+
+                                                        ))
+                                                        }
+                                                    </div>
+                                                </>
+                                            )}
+
+
+                                        </div>
+
+                                        {/* Dropdown Content */}
+
                                     </div>
+
+
                                 </div>
 
                                 {/* Secondary Input Area */}
@@ -274,7 +219,7 @@ export default function AnalyticsView() {
                         {/* ------- */}
                     </div>
                 </div>
-            </div>
+            </div >
         </div >
     );
 }
