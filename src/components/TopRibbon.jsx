@@ -2,8 +2,11 @@
 import { useState } from "react";
 import RibbonPanel from "./RibbonPanel";
 
-export default function TopRibbon() {
-  const [activeTab, setActiveTab] = useState(0);
+export default function TopRibbon({ activeTab,
+  setActiveTab,
+  activeButton,
+  setActiveButton,}) {
+  
 
   const tabs = [
     { label: "Files" },
@@ -43,7 +46,12 @@ export default function TopRibbon() {
       </div> */}
 
       {/* Panel row for current tab */}
-      <RibbonPanel />
+      <RibbonPanel
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      activeButton={activeButton}
+      setActiveButton={setActiveButton}
+    />
     </div>
   );
 }

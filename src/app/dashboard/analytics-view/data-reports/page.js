@@ -258,7 +258,6 @@ export default function DataExtractions() {
                 </div>
               )}
             </div>
-            {/* ------- */}
 
 
           </div>

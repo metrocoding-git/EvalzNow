@@ -87,18 +87,14 @@ export default function CreateStaffForm({ onClose }) {
 
         {/* Buttons */}
         <div className="pt-4 flex justify-end gap-2">
+           {/* From this close button both Save and close should be done */}
           <button
             onClick={() => onClose()}
             className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
           >
             Close
           </button>
-          <button
-            type="submit"
-            className="px-4 py-1 text-sm bg-blue-600 text-white border border-blue-700 rounded hover:bg-blue-700"
-          >
-            Create
-          </button>
+          
         </div>
       </div>
     </div>

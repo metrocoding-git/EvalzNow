@@ -1,28 +1,27 @@
-'use client';
-import { useState } from 'react';
-import TopRibbon from '@/components/TopRibbon';
-import InputArea from '@/components/InputArea';
-import DisplayArea from '@/components/DisplayArea';
-import EditorArea from '@/components/EditorArea';
-import MainTabs from '@/components/MainTabs';
+"use client";
 import BottomRibbon from '@/components/BottomRibbon';
+import RibbonPanel from '@/components/RibbonPanel';
+import { useState } from 'react';
+
 
 export default function DashboardLayout({ children }) {
-
-
+  const [activeTab, setActiveTab] = useState('');
+  const [activeButton, setActiveButton] = useState('');
 
   return (
-    <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
-      {/* Top Toolbar */}
-      <TopRibbon />
+     <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
+      <RibbonPanel
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        activeButton={activeButton}
+        setActiveButton={setActiveButton}
+      />
 
-      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {children}
       </div>
 
-      {/* Bottom Ribbon */}
-      <BottomRibbon />
+      <BottomRibbon activeTab={activeTab} activeButton={activeButton} />
     </div>
   );
 }

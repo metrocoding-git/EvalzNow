@@ -1,182 +1,118 @@
 "use client";
-import { useState } from "react";
-import { Edit, X } from "lucide-react";
+import React from "react";
+import { ListFilterPlus, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const ClientEditor = ({ onClose }) => {
-  const [material, setMaterial] = useState({
-    name: "material1",
-    id: 1,
-    color: "#A05252",
-    defined: true,
-    cardImage: "MAT1",
-    comments: "Hide In Menu/Export",
-    E: 210000.0,
-    G: 80769.2,
-    NU: "",
-    RHO: "7.85e-09",
-    A: "",
-    TREF: "",
-    GE: "",
-    ST: "",
-  });
+const generateExecutiveId = () => {
+  return Math.random().toString(36).substring(2, 12).toUpperCase();
+};
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setMaterial({
-      ...material,
-      [name]: type === "checkbox" ? checked : value,
-    });
+const companySizes = [
+  "Tier 1 - Micro-Size: 1-4 Candidates",
+  "Tier 2 - Small-Size : 5-19 Candidates",
+  "Tier 3 - Medium-Size : 20-99 Candidates",
+  "Tier 4 - Large-Size : 100-249 Candidates",
+  "Tier 5 - Low Enterprise : 250-999 Candidates",
+  "Tier 6 - High Enterprise : 1000-2499 Candidates",
+  "Tier 7 - Small Campus : 2500-4999 Candidates",
+  "Tier 8 - Medium Campus : 5000-14999 Candidates",
+  "Tier 9 - Large Campus : 15000-50000 Candidates",
+  "Tier 10 - Mass Network : > 50000 Candidates",
+];
+
+export default function CreateClientForm({ onClose }) {
+  const [form, setForm] = useState({});
+  const [executiveId, setExecutiveId] = useState("");
+
+  useEffect(() => {
+    setExecutiveId(generateExecutiveId());
+  }, []);
+
+  const handleChange = (label, value) => {
+    setForm((prev) => ({ ...prev, [label]: value }));
   };
 
   return (
-
     <div className="border-2 border-blue-500 rounded-md flex flex-col">
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
-          <Edit className="w-5 h-5" />
-          Entity Editor - Client
+          <ListFilterPlus className="w-5 h-5" />
+          CREATE CLIENT
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
-          <X className="w-4 h-4 " />
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 text-xs p-2">
-        <label className="col-span-1">Solver Keyword:</label>
+      <div className="grid grid-cols-2 gap-1 text-xs p-2 overflow-y-auto max-h-[80vh]">
+        {[
+          "Executive Last Name",
+          "Executive First Name",
+          "Executive Job Title",
+          "Executive E-mail Address",
+          "Company Name",
+          "Company Contact Number",
+          "Institutional Type",
+          "Business Registration No.",
+          "Country",
+        ].map((label, idx) => (
+          <React.Fragment key={idx}>
+            <label className="col-span-1 flex items-center">{label}:</label>
+            <input
+              type="text"
+              className="col-span-1 border px-2 py-1 rounded bg-white"
+              onChange={(e) => handleChange(label, e.target.value)}
+            />
+          </React.Fragment>
+        ))}
+
+        {/* Executive ID - generated, non-editable */}
+        <label className="col-span-1 flex items-center">Executive ID:</label>
         <input
+          type="text"
+          value={executiveId}
           disabled
-          value="MAT1"
-          className="col-span-1 border px-2 py-1 bg-gray-100"
+          className="col-span-1 border px-2 py-1 rounded bg-gray-100"
         />
 
-        <label>Name:</label>
-        <input
-          name="name"
-          value={material.name}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ID:</label>
-        <input
-          name="id"
-          value={material.id}
-          onChange={handleChange}
-          type="number"
-          className="border px-2 py-1"
-        />
-
-        <label>Color:</label>
-        <input
-          name="color"
-          value={material.color}
-          onChange={handleChange}
-          type="color"
-          className="h-8"
-        />
-
-        <label>Include:</label>
-        <input
-          value="[Main Model]"
-          disabled
-          className="border px-2 py-1 bg-gray-100"
-        />
-
-        <label>Defined:</label>
-        <input
-          id="defined"
-          type="checkbox"
-          name="defined"
-          checked={material.defined}
-          onChange={handleChange}
-          className="w-4 h-4 mt-0.5"
-        />
-
-        <label>Card Image:</label>
+        {/* Company Size Dropdown */}
+        <label className="col-span-1 flex items-center">Company Size:</label>
         <select
-          name="cardImage"
-          value={material.cardImage}
-          onChange={handleChange}
-          className="border px-2 py-1"
+          className="col-span-1 border px-2 py-1 rounded bg-white"
+          onChange={(e) => handleChange("Company Size", e.target.value)}
         >
-          <option value="MAT1">MAT1</option>
+          <option value="">Select Size</option>
+          {companySizes.map((size, i) => (
+            <option key={i} value={size}>
+              {size}
+            </option>
+          ))}
         </select>
 
-        <label>User Comments:</label>
-        <input
-          name="comments"
-          value={material.comments}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Status Toggle */}
+        <label className="col-span-1 flex items-center">Status:</label>
+        <select
+          className="col-span-1 border px-2 py-1 rounded bg-white"
+          onChange={(e) => handleChange("Status", e.target.value)}
+        >
+          <option value="Activate">Activate</option>
+          <option value="Deactivate">Deactivate</option>
+        </select>
 
-        <label>E:</label>
-        <input
-          name="E"
-          value={material.E}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>G:</label>
-        <input
-          name="G"
-          value={material.G}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>NU:</label>
-        <input
-          name="NU"
-          value={material.NU}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>RHO:</label>
-        <input
-          name="RHO"
-          value={material.RHO}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>A:</label>
-        <input
-          name="A"
-          value={material.A}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>TREF:</label>
-        <input
-          name="TREF"
-          value={material.TREF}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>GE:</label>
-        <input
-          name="GE"
-          value={material.GE}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ST:</label>
-        <input
-          name="ST"
-          value={material.ST}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Buttons span full width */}
+        <div className="col-span-2 pt-4 flex justify-end gap-2">
+          {/* From this close button both Save and close should be done */}
+          <button
+            onClick={() => onClose()}
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+          >
+            Close
+          </button>
+        </div>
       </div>
-
     </div>
   );
-};
-
-export default ClientEditor;
+}

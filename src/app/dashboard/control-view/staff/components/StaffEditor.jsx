@@ -2,179 +2,120 @@
 import { useState } from "react";
 import { Edit, X } from "lucide-react";
 
+const accessLevels = [
+  "Full Access [No restrictions on the client account]",
+  "Leaders Access [Cannot access the Staff Control // Cannot put negative marks for leaders]",
+];
+
+const accountStatuses = ["Enabled", "Disabled"];
+
 const StaffEditor = ({ onClose }) => {
-  const [material, setMaterial] = useState({
-    name: "material1",
-    id: 1,
-    color: "#A05252",
-    defined: true,
-    cardImage: "MAT1",
-    comments: "Hide In Menu/Export",
-    E: 210000.0,
-    G: 80769.2,
-    NU: "",
-    RHO: "7.85e-09",
-    A: "",
-    TREF: "",
-    GE: "",
-    ST: "",
+  const [form, setForm] = useState({
+    "Last Name": "Doe",
+    "First Name": "John",
+    "Job Title": "Analyst",
+    "Department": "Engineering",
+    "Date of Birth": "1990-01-01",
+    "Date of Employment": "2020-05-10",
+    "Employee No.": "EMP123",
+    "Contact Number": "+1234567890",
+    "Company E-mail Address": "john.doe@example.com",
+    "Access Level": accessLevels[0],
+    "Account Status": accountStatuses[0],
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setMaterial({
-      ...material,
-      [name]: type === "checkbox" ? checked : value,
-    });
+  const handleChange = (label, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [label]: value,
+    }));
   };
 
   return (
-
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
+    <div className="bg-gray-50 text-black border shadow-lg rounded overflow-y-auto z-50 m-4 max-h-screen">
+      {/* Header */}
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
-          Entity Editor - Staff
+          ENTITY EDITOR - STAFF
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
-          <X className="w-4 h-4 " />
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 text-xs p-2">
-        <label className="col-span-1">Solver Keyword:</label>
-        <input
-          disabled
-          value="MAT1"
-          className="col-span-1 border px-2 py-1 bg-gray-100"
-        />
+      {/* Form Fields */}
+      <div className="p-4 text-sm space-y-3 overflow-y-auto">
+        {[
+          "Last Name",
+          "First Name",
+          "Job Title",
+          "Department",
+          "Date of Birth",
+          "Date of Employment",
+          "Employee No.",
+          "Contact Number",
+          "Company E-mail Address",
+        ].map((label, idx) => (
+          <div key={idx} className="flex items-center">
+            <label className="w-48 pr-2 text-gray-700">{label}:</label>
+            <input
+              type={label.includes("Date") ? "date" : "text"}
+              className="flex-1 border px-2 py-1 rounded bg-white"
+              value={form[label] || ""}
+              onChange={(e) => handleChange(label, e.target.value)}
+            />
+          </div>
+        ))}
 
-        <label>Name:</label>
-        <input
-          name="name"
-          value={material.name}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Access Level Dropdown */}
+        <div className="flex items-center">
+          <label className="w-48 pr-2 text-gray-700">Access Level:</label>
+          <select
+            className="flex-1 border px-2 py-1 rounded bg-white"
+            value={form["Access Level"]}
+            onChange={(e) => handleChange("Access Level", e.target.value)}
+          >
+            {accessLevels.map((level, i) => (
+              <option key={i} value={level}>
+                {level}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <label>ID:</label>
-        <input
-          name="id"
-          value={material.id}
-          onChange={handleChange}
-          type="number"
-          className="border px-2 py-1"
-        />
+        {/* Account Status Dropdown */}
+        <div className="flex items-center">
+          <label className="w-48 pr-2 text-gray-700">Account Status:</label>
+          <select
+            className="flex-1 border px-2 py-1 rounded bg-white"
+            value={form["Account Status"]}
+            onChange={(e) => handleChange("Account Status", e.target.value)}
+          >
+            {accountStatuses.map((status, i) => (
+              <option key={i} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <label>Color:</label>
-        <input
-          name="color"
-          value={material.color}
-          onChange={handleChange}
-          type="color"
-          className="h-8"
-        />
-
-        <label>Include:</label>
-        <input
-          value="[Main Model]"
-          disabled
-          className="border px-2 py-1 bg-gray-100"
-        />
-
-        <label>Defined:</label>
-        <input
-          id="defined"
-          type="checkbox"
-          name="defined"
-          checked={material.defined}
-          onChange={handleChange}
-          className="w-4 h-4 mt-0.5"
-        />
-
-        <label>Card Image:</label>
-        <select
-          name="cardImage"
-          value={material.cardImage}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        >
-          <option value="MAT1">MAT1</option>
-        </select>
-
-        <label>User Comments:</label>
-        <input
-          name="comments"
-          value={material.comments}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>E:</label>
-        <input
-          name="E"
-          value={material.E}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>G:</label>
-        <input
-          name="G"
-          value={material.G}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>NU:</label>
-        <input
-          name="NU"
-          value={material.NU}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>RHO:</label>
-        <input
-          name="RHO"
-          value={material.RHO}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>A:</label>
-        <input
-          name="A"
-          value={material.A}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>TREF:</label>
-        <input
-          name="TREF"
-          value={material.TREF}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>GE:</label>
-        <input
-          name="GE"
-          value={material.GE}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ST:</label>
-        <input
-          name="ST"
-          value={material.ST}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Buttons */}
+        <div className="pt-4 flex justify-end gap-2">
+          
+          {/* From this close button both Save and close should be done */}
+          <button
+            onClick={() => onClose()}
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+          >
+            Close
+          </button>
+          
+        </div>
       </div>
-
     </div>
   );
 };
