@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import ScoringCriteria from './ScoringCriteria';
+import { FolderOutput, RefreshCw } from 'lucide-react';
 
 
 export default function ViewerSelections() {
@@ -33,6 +34,15 @@ export default function ViewerSelections() {
         <div className='w-full flex flex-col border-2 h-full border-blue-200 rounded-md p-1'>
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Candidate Display</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+              </button>
+              <button title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+              </button>
+
+            </div>
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
@@ -68,7 +78,7 @@ export default function ViewerSelections() {
                             </span>
                             <br />
                             <span className="text-sm text-gray-400">
-                              Last Name : {candidate.lastName} 
+                              Last Name : {candidate.lastName}
                             </span>
                             <br />
                             <span className="text-sm text-gray-400">
@@ -129,7 +139,7 @@ export default function ViewerSelections() {
                 {activeAdjustPropertieTab === 'Table' && (
 
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    
+
                   </div>
 
 

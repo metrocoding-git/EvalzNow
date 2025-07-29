@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
+import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
@@ -250,15 +250,13 @@ export default function PlotSelections() {
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <Plus className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+              <button onClick={() => { }} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <Trash2 className="w-4 h-4 hover:text-red-600" />
+                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
-              <button title="Search Curve" className='text-gray-600 hover:text-gray-800 cursor-pointer' >
-                <Search className="w-4 h-4 hover:text-gray-500" />
-              </button>
+
             </div>
           </div>
 
@@ -270,7 +268,7 @@ export default function PlotSelections() {
                   {chart.map((chart, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer"
+                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
                     >
                       <span className="text-xl">{chart.icon}</span>
                       <span className="text-sm text-gray-700">{chart.name}</span>

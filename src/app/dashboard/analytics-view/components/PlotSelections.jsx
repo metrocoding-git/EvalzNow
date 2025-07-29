@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
+import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
@@ -81,15 +81,13 @@ export default function PlotSelections() {
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <Plus className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+              <button onClick={() => { }} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <Trash2 className="w-4 h-4 hover:text-red-600" />
+                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
-              <button title="Search Curve" className='text-gray-600 hover:text-gray-800 cursor-pointer' >
-                <Search className="w-4 h-4 hover:text-gray-500" />
-              </button>
+
             </div>
           </div>
 
@@ -101,8 +99,7 @@ export default function PlotSelections() {
                   {chart.map((chart, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer"
-                    >
+                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}                    >
                       <span className="text-xl">{chart.icon}</span>
                       <span className="text-sm text-gray-700">{chart.name}</span>
                     </div>
@@ -176,16 +173,16 @@ export default function PlotSelections() {
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100 ">
           <div className="h-full overflow-auto  m-5">
             <ResponsiveContainer width="100%" height="95%">
-          <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" label={{ value: "X-AXIS (Name)", position: "insideBottom", offset: -5 }} />
-            <YAxis label={{ value: "Y-AXIS (Values)", angle: -90, position: "insideLeft" }} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="uv" name="UV" stroke="#3b82f6" strokeWidth={2} />
-            <Line type="monotone" dataKey="pv" name="PV" stroke="#f59e0b" strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
+              <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" label={{ value: "X-AXIS (Name)", position: "insideBottom", offset: -5 }} />
+                <YAxis label={{ value: "Y-AXIS (Values)", angle: -90, position: "insideLeft" }} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="uv" name="UV" stroke="#3b82f6" strokeWidth={2} />
+                <Line type="monotone" dataKey="pv" name="PV" stroke="#f59e0b" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
