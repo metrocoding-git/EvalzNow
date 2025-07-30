@@ -1,13 +1,19 @@
-'use client';
-import { ChevronRight, Edit, Plus, ShieldUser, Upload, UsersRound, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+"use client";
+import {
+  ChevronRight,
+  Edit,
+  Plus,
+  ShieldUser,
+  Trash,
+  Upload,
+  UsersRound,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import UnitEditor from './components/UnitEditor';
-import CreateUnitForm from './components/CreateUnitForm';
-import UnitRoster from './components/UnitRoster';
-
-
-
+import UnitEditor from "./components/UnitEditor";
+import CreateUnitForm from "./components/CreateUnitForm";
+import UnitRoster from "./components/UnitRoster";
 
 export default function UnitControl() {
   const contextRef = useRef(null);
@@ -23,13 +29,21 @@ export default function UnitControl() {
   ]);
 
   // This used to manage right-click context menu
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, item: null });
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    item: null,
+  });
   const [rightClickedIndex, setRightClickedIndex] = useState(null);
-
 
   const handleDelete = (name) => {
     console.log(`Delete item with id: ${name}`);
-    const updatedData = dataList.filter((item, index) => item.name !== name || index !== dataList.findIndex(i => i.name === name));
+    const updatedData = dataList.filter(
+      (item, index) =>
+        item.name !== name ||
+        index !== dataList.findIndex((i) => i.name === name)
+    );
     setDataList(updatedData);
   };
 
@@ -45,24 +59,34 @@ export default function UnitControl() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
   return (
-
     <div className="flex h-full overflow-hidden">
       <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
         {/* Top 2/3 Section */}
-        <div className="flex-grow h-2/3 border-2 border-blue-500 rounded-md flex flex-col ">
+        <div
+          className={`flex flex-col border-2 border-blue-500 rounded-md overflow-hidden ${
+            showEdit ? "h-1/2" : "flex-grow"
+          }`}
+        >
           {/* Header */}
           <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
             <div className="flex items-center gap-2 text-blue-800 font-semibold">
               Name
             </div>
-            <button
+            <div className="flex gap-2">
+              <button
               className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
               onClick={() => setShowAdd(true)}
             >
               <Plus className="w-4 h-4 inline" />
             </button>
+            <button
+              className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
+              onClick={() => setShowAdd(true)}
+            >
+              <Trash className="w-4 h-4 inline" />
+            </button>
+            </div>
           </div>
 
           {/* Scrollable content */}
@@ -70,35 +94,81 @@ export default function UnitControl() {
             {dataList.map((item, index) => (
               <div
                 key={index}
-                className={`flex items-center justify-between cursor-pointer p-1 rounded-md ${rightClickedIndex === index ? "bg-blue-50" : "hover:bg-blue-50"}`}
-                onClick={() => { setShowEdit(true); setUnitRoster(true); }}
+                className={`flex items-center justify-between cursor-pointer p-1 rounded-md ${
+                  rightClickedIndex === index
+                    ? "bg-blue-50"
+                    : "hover:bg-blue-50"
+                }`}
+                onClick={() => {
+                  setShowEdit(true);
+                  setUnitRoster(true);
+                }}
                 onContextMenu={(e) => {
                   e.preventDefault();
-                  setContextMenu({ visible: true, x: e.pageX, y: e.pageY, item });
+                  setContextMenu({
+                    visible: true,
+                    x: e.pageX,
+                    y: e.pageY,
+                    item,
+                  });
                   setRightClickedIndex(index);
                 }}
               >
                 <div className="flex items-center space-x-1">
-                  <ChevronRight className="w-4 h-4" />
                   <UsersRound className="ml-2 w-5 h-5 text-blue-400" />
                   <p className="text-black ml-1">{item.name}</p>
                 </div>
 
-                {/* Delete button stops event from bubbling */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // prevent triggering setEdit(true)
-                    handleDelete(item.name);
-                  }}
-                  className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                
               </div>
             ))}
           </div>
-
         </div>
+        {contextMenu.visible && (
+          <ul
+            className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md text-sm"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            onClick={() => setContextMenu({ ...contextMenu, visible: false })}
+          >
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                setShowEdit(true);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Edit
+            </li>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                handleDelete(contextMenu.selectedClient.name);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Delete
+            </li>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                alert("Reviewing: " + contextMenu.selectedClient.name);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Review
+            </li>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                const duplicate = { ...contextMenu.selectedClient };
+                setDataList((prev) => [...prev, duplicate]);
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              Duplicate
+            </li>
+          </ul>
+        )}
 
         {/* Bottom 1/3 Section */}
         {showEdit && (
@@ -109,9 +179,7 @@ export default function UnitControl() {
         )}
       </div>
 
-
       <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
-
         {showAdd && (
           <div className="overflow-auto my-2">
             <CreateUnitForm onClose={() => setShowAdd(false)} />
@@ -121,10 +189,7 @@ export default function UnitControl() {
         {!showAdd && showUnitRoster && (
           <UnitRoster onClose={() => setUnitRoster(false)} />
         )}
-
-
       </div>
-
 
       {/* Right-click context menu */}
       {contextMenu.visible && (
@@ -155,7 +220,6 @@ export default function UnitControl() {
             <span className="text-gray-400 text-xs ml-4">Ctrl + R</span>
           </button>
 
-
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
@@ -178,7 +242,6 @@ export default function UnitControl() {
             <span className="text-gray-400 text-xs ml-4">Del</span>
           </button>
 
-
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
@@ -190,12 +253,7 @@ export default function UnitControl() {
             <span className="text-gray-400 text-xs ml-4">Ctrl + 2</span>
           </button>
         </div>
-
       )}
-
-
     </div>
-
   );
-};
-
+}

@@ -2,179 +2,173 @@
 import { useState } from "react";
 import { Edit, X } from "lucide-react";
 
-const CandidateEditor = ({ onClose }) => {
-  const [material, setMaterial] = useState({
-    name: "material1",
-    id: 1,
-    color: "#A05252",
-    defined: true,
-    cardImage: "MAT1",
-    comments: "Hide In Menu/Export",
-    E: 210000.0,
-    G: 80769.2,
-    NU: "",
-    RHO: "7.85e-09",
-    A: "",
-    TREF: "",
-    GE: "",
-    ST: "",
-  });
+const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
+const religionOptions = [
+  "African Diaspora Religions",
+  "Agnosticism",
+  "Atheism",
+  "Buddhism",
+  "Christianity",
+  "Confucianism",
+  "Druze",
+  "Gnosticism",
+  "Hinduism",
+  "Indigenous American Religions",
+  "Islam",
+  "Jainism",
+  "Judaism",
+  "Non-disclosed",
+  "Other",
+  "Rastafarianism",
+  "Shinto",
+  "Sikhism",
+  "Strictly Spiritual",
+  "Traditional African Religions",
+  "Zoroastrianism",
+];
+const maritalStatusOptions = ["Married", "Non-disclosed", "Other", "Separated", "Single"];
+const jobTypeOptions = ["Contractor", "Employee", "Non-disclosed", "Other", "Student", "Trainee", "Trainer"];
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setMaterial({
-      ...material,
-      [name]: type === "checkbox" ? checked : value,
-    });
+const nationalityOptions = ["Non-disclosed", "United States", "Canada", "India", "Germany", "Other"];
+const ethnicityOptions = ["Non-Disclosed", "Asian", "Black", "Hispanic", "White", "Mixed", "Other"];
+const incomeOptions = ["Non-Disclosed", "< $20k", "$20k-$50k", "$50k-$100k", "> $100k"];
+
+const irregularityOptions = ["Disability", "Special Needs", "Other"];
+
+const initialFormState = {
+  "Last Name": "",
+  "First Name": "",
+  "Candidate ID": "",
+  "Special ID No.": "",
+  "Date of Birth": "",
+  "Start Date": "",
+  Nationality: "",
+  Gender: "",
+  Ethnicity: "",
+  Income: "",
+  Religion: "",
+  "Marital Status": "",
+  "Job Type": "",
+  Disability: false,
+  "Special Needs": false,
+  Other: false,
+  Comments: "",
+};
+
+const CandidateEditor = ({ onClose }) => {
+  const [form, setForm] = useState(initialFormState);
+
+  const handleChange = (label, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [label]: value,
+    }));
   };
 
   return (
-
     <div className="border-2 border-blue-500 rounded-md flex flex-col">
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
           Entity Editor - Candidate
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
+        >
           <X className="w-4 h-4 " />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 text-xs p-2">
-        <label className="col-span-1">Solver Keyword:</label>
-        <input
-          disabled
-          value="MAT1"
-          className="col-span-1 border px-2 py-1 bg-gray-100"
-        />
+      <div className="p-4 space-y-3 text-sm overflow-y-auto max-h-[70vh]">
+        {/* Text and Date Inputs */}
+        {[
+          "Last Name",
+          "First Name",
+          "Candidate ID",
+          "Special ID No.",
+          "Date of Birth",
+          "Start Date",
+        ].map((label, idx) => (
+          <div key={idx} className="flex items-center">
+            <label className="w-52 pr-2 text-gray-700">{label}:</label>
+            <input
+              type={label.includes("Date") ? "date" : "text"}
+              className="flex-1 border px-2 py-1 rounded bg-white"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            />
+          </div>
+        ))}
 
-        <label>Name:</label>
-        <input
-          name="name"
-          value={material.name}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Dropdown Selects */}
+        {[
+          { label: "Nationality", options: nationalityOptions },
+          { label: "Gender", options: genderOptions },
+          { label: "Ethnicity", options: ethnicityOptions },
+          { label: "Income", options: incomeOptions },
+          { label: "Religion", options: religionOptions },
+          { label: "Marital Status", options: maritalStatusOptions },
+          { label: "Job Type", options: jobTypeOptions },
+        ].map(({ label, options }, idx) => (
+          <div key={idx} className="flex items-center">
+            <label className="w-52 pr-2 text-gray-700">{label}:</label>
+            <select
+              className="flex-1 border px-2 py-1 rounded bg-white"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            >
+              <option value="">Select {label}</option>
+              {options.map((opt, i) => (
+                <option key={i} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
 
-        <label>ID:</label>
-        <input
-          name="id"
-          value={material.id}
-          onChange={handleChange}
-          type="number"
-          className="border px-2 py-1"
-        />
+        {/* Checkboxes for Irregularities */}
+        <h3 className="pt-2 font-semibold text-gray-800">Irregularities</h3>
+        {irregularityOptions.map((label, idx) => (
+          <div key={idx} className="flex items-center">
+            <label className="w-52 pr-2 text-gray-700">
+              {idx + 1}. {label}:
+            </label>
+            <input
+              type="checkbox"
+              className="w-5 h-5"
+              checked={form[label]}
+              onChange={(e) => handleChange(label, e.target.checked)}
+            />
+          </div>
+        ))}
 
-        <label>Color:</label>
-        <input
-          name="color"
-          value={material.color}
-          onChange={handleChange}
-          type="color"
-          className="h-8"
-        />
+        {/* Comments */}
+        <div className="flex items-center">
+          <label className="w-52 pr-2 text-gray-700">Comments:</label>
+          <input
+            type="text"
+            maxLength={40}
+            placeholder="Max 40 characters"
+            className="flex-1 border px-2 py-1 rounded bg-white"
+            value={form.Comments}
+            onChange={(e) => handleChange("Comments", e.target.value)}
+          />
+        </div>
 
-        <label>Include:</label>
-        <input
-          value="[Main Model]"
-          disabled
-          className="border px-2 py-1 bg-gray-100"
-        />
-
-        <label>Defined:</label>
-        <input
-          id="defined"
-          type="checkbox"
-          name="defined"
-          checked={material.defined}
-          onChange={handleChange}
-          className="w-4 h-4 mt-0.5"
-        />
-
-        <label>Card Image:</label>
-        <select
-          name="cardImage"
-          value={material.cardImage}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        >
-          <option value="MAT1">MAT1</option>
-        </select>
-
-        <label>User Comments:</label>
-        <input
-          name="comments"
-          value={material.comments}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>E:</label>
-        <input
-          name="E"
-          value={material.E}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>G:</label>
-        <input
-          name="G"
-          value={material.G}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>NU:</label>
-        <input
-          name="NU"
-          value={material.NU}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>RHO:</label>
-        <input
-          name="RHO"
-          value={material.RHO}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>A:</label>
-        <input
-          name="A"
-          value={material.A}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>TREF:</label>
-        <input
-          name="TREF"
-          value={material.TREF}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>GE:</label>
-        <input
-          name="GE"
-          value={material.GE}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ST:</label>
-        <input
-          name="ST"
-          value={material.ST}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Buttons */}
+        <div className="pt-4 flex justify-end gap-2">
+          {/* From this close button both Save and close should be done */}
+          <button
+            onClick={() => onClose()}
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+          >
+            Close
+          </button>
+          
+        </div>
       </div>
-
     </div>
   );
 };

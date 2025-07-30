@@ -1,31 +1,16 @@
 "use client";
-import { useState } from "react";
-import RibbonPanel from "./RibbonPanel";
-import { Copy, Edit3, FilePlus, Import, Save, Trash2, Upload } from "lucide-react";
-
-export default function BottomRibbon() {
-  const [activeTab, setActiveTab] = useState(0);
-
-  const tabItems = [
-    { icon: <FilePlus />, label: 'New' },
-    { icon: <Edit3 />, label: 'Edit' },
-    { icon: <Trash2 />, label: 'Delete' },
-    { icon: <Import />, label: 'Import' },
-    { icon: <Upload />, label: 'Upload' },
-    { icon: <Save />, label: 'Save' },
-    { icon: <Copy />, label: 'Copy' },
-  ]
-
-  const handleTabClick = (index) => {
-    setActiveTab(index);
-  };
-
+export default function BottomRibbon({ activeTab, activeButton }) {
   return (
-    <div className="w-full bg-gray-200  shadow-sm text-sm font-medium border-1 border-black mt-1">
-      {/* Tabs row */}
+    <div className="w-full bg-gray-200 shadow-sm text-sm font-medium border-1 border-black mt-1 p-2">
+      <p className="text-sm text-gray-700">Ready...</p>
 
-      <p className="text-sm text-gray-500">Ready</p>
-
+      {activeTab === "Analytics View" && (
+        <div className="w-full mt-1">
+          <p className="text-xs font-semibold text-blue-600 uppercase">
+            ACTIVE ANALYTICS TAB: {activeButton}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

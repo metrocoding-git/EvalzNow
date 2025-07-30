@@ -3,178 +3,116 @@ import { useState } from "react";
 import { Edit, X } from "lucide-react";
 
 const UnitEditor = ({ onClose }) => {
-  const [material, setMaterial] = useState({
-    name: "material1",
-    id: 1,
-    color: "#A05252",
-    defined: true,
-    cardImage: "MAT1",
-    comments: "Hide In Menu/Export",
-    E: 210000.0,
-    G: 80769.2,
-    NU: "",
-    RHO: "7.85e-09",
-    A: "",
-    TREF: "",
-    GE: "",
-    ST: "",
+  const [unit, setUnit] = useState({
+    unitName: "",
+    unitId: "",
+    startDate: "",
+    endDate: "",
+    leaders: [],
+    assessors: [],
+    director: "",
+    unitType: "",
+    signatureProfile: "",
+    environment: "",
+    scoringSystem: "",
+    benchmarks: [],
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setMaterial({
-      ...material,
-      [name]: type === "checkbox" ? checked : value,
-    });
+  const handleChange = (field, value) => {
+    setUnit((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
-
     <div className="border-2 border-blue-500 rounded-md flex flex-col">
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
           Entity Editor - Unit
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
-          <X className="w-4 h-4 " />
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 text-xs p-2">
-        <label className="col-span-1">Solver Keyword:</label>
-        <input
-          disabled
-          value="MAT1"
-          className="col-span-1 border px-2 py-1 bg-gray-100"
-        />
+      <div className="grid grid-cols-2 gap-2 text-xs p-4">
+        {[
+          { label: "Unit Name", key: "unitName" },
+          { label: "Unit ID", key: "unitId" },
+          { label: "Start Date", key: "startDate", type: "date" },
+          { label: "End Date", key: "endDate" },
+        ].map(({ label, key, type }) => (
+          <div key={key} className="flex flex-col">
+            <label>{label}:</label>
+            <input
+              name={key}
+              value={unit[key]}
+              onChange={(e) => handleChange(key, e.target.value)}
+              type={type || "text"}
+              className="border px-2 py-1"
+            />
+          </div>
+        ))}
 
-        <label>Name:</label>
-        <input
-          name="name"
-          value={material.name}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ID:</label>
-        <input
-          name="id"
-          value={material.id}
-          onChange={handleChange}
-          type="number"
-          className="border px-2 py-1"
-        />
-
-        <label>Color:</label>
-        <input
-          name="color"
-          value={material.color}
-          onChange={handleChange}
-          type="color"
-          className="h-8"
-        />
-
-        <label>Include:</label>
-        <input
-          value="[Main Model]"
-          disabled
-          className="border px-2 py-1 bg-gray-100"
-        />
-
-        <label>Defined:</label>
-        <input
-          id="defined"
-          type="checkbox"
-          name="defined"
-          checked={material.defined}
-          onChange={handleChange}
-          className="w-4 h-4 mt-0.5"
-        />
-
-        <label>Card Image:</label>
+        <label>Unit Type:</label>
         <select
-          name="cardImage"
-          value={material.cardImage}
-          onChange={handleChange}
+          name="unitType"
+          value={unit.unitType}
+          onChange={(e) => handleChange("unitType", e.target.value)}
           className="border px-2 py-1"
         >
-          <option value="MAT1">MAT1</option>
+          <option value="">Select Unit Type</option>
+          <option>Communicative I/O</option>
+          <option>Theory & Practice</option>
+          <option>Third Parameter</option>
         </select>
 
-        <label>User Comments:</label>
-        <input
-          name="comments"
-          value={material.comments}
-          onChange={handleChange}
+        <label>Signature Profile:</label>
+        <select
+          name="signatureProfile"
+          value={unit.signatureProfile}
+          onChange={(e) => handleChange("signatureProfile", e.target.value)}
           className="border px-2 py-1"
-        />
+        >
+          <option value="">Select Profile</option>
+          <option>Case 1: Solid Balanced</option>
+          <option>Case 2: Rigorous Balanced</option>
+          <option>Case 3a: Productive‑Weighted</option>
+          <option>Case 3b: Receptive‑Weighed</option>
+        </select>
 
-        <label>E:</label>
-        <input
-          name="E"
-          value={material.E}
-          onChange={handleChange}
+        <label>Environment:</label>
+        <select
+          name="environment"
+          value={unit.environment}
+          onChange={(e) => handleChange("environment", e.target.value)}
           className="border px-2 py-1"
-        />
+        >
+          <option value="">Select Environment</option>
+          <option>Workforce</option>
+          <option>Classroom</option>
+        </select>
 
-        <label>G:</label>
-        <input
-          name="G"
-          value={material.G}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>NU:</label>
-        <input
-          name="NU"
-          value={material.NU}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>RHO:</label>
-        <input
-          name="RHO"
-          value={material.RHO}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>A:</label>
-        <input
-          name="A"
-          value={material.A}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>TREF:</label>
-        <input
-          name="TREF"
-          value={material.TREF}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>GE:</label>
-        <input
-          name="GE"
-          value={material.GE}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ST:</label>
-        <input
-          name="ST"
-          value={material.ST}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {unit.environment === "Workforce" && (
+         
+            <div>
+              <label>Scoring System:</label>
+            <select
+              name="scoringSystem"
+              value={unit.scoringSystem}
+              onChange={(e) => handleChange("scoringSystem", e.target.value)}
+              className="border px-2 py-1"
+            >
+              <option value="">Select System</option>
+              <option>3‑Point</option>
+              <option>5‑Point</option>
+            </select>
+            </div>
+         
+        )}
       </div>
-
     </div>
   );
 };
