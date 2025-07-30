@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ChevronRight,
@@ -11,48 +11,57 @@ import {
   Trash2,
   CopyPlus,
   Trash,
-} from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import StaffEditor from './components/StaffEditor';
-import CreateStaffForm from './components/CreateStaffForm';
+  ChevronDown,
+} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import StaffEditor from "./components/StaffEditor";
+import CreateStaffForm from "./components/CreateStaffForm";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showList, setShowList] = useState(true);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
     y: 0,
-    staff: null,
+    selectedStaff: null,
   });
 
   const [dataList, setDataList] = useState([
-    { name: 'staff1', age: 25, city: 'Colombo' },
-    { name: 'staff2', age: 30, city: 'Kandy' },
-    { name: 'staff3', age: 28, city: 'Galle' },
-    { name: 'staff4', age: 22, city: 'Jaffna' },
-    { name: 'staff5', age: 27, city: 'Matara' },
-    { name: 'staff6', age: 29, city: 'Negombo' },
-    { name: 'staff7', age: 31, city: 'Batticaloa' },
-    { name: 'staff8', age: 26, city: 'Anuradhapura' },
-    { name: 'staff9', age: 24, city: 'Trincomalee' },
-    { name: 'staff10', age: 23, city: 'Ratnapura' },
-    { name: 'staff11', age: 32, city: 'Kurunegala' },
-    { name: 'staff12', age: 33, city: 'Badulla' },
-    { name: 'staff13', age: 34, city: 'Colombo' },
+    { name: "staff1", age: 25, city: "Colombo" },
+    { name: "staff2", age: 30, city: "Kandy" },
+    { name: "staff3", age: 28, city: "Galle" },
+    { name: "staff4", age: 22, city: "Jaffna" },
+    { name: "staff5", age: 27, city: "Matara" },
+    { name: "staff6", age: 29, city: "Negombo" },
+    { name: "staff7", age: 31, city: "Batticaloa" },
+    { name: "staff8", age: 26, city: "Anuradhapura" },
+    { name: "staff9", age: 24, city: "Trincomalee" },
+    { name: "staff10", age: 23, city: "Ratnapura" },
+    { name: "staff11", age: 32, city: "Kurunegala" },
+    { name: "staff12", age: 33, city: "Badulla" },
+    { name: "staff13", age: 34, city: "Colombo" },
   ]);
 
   const contextRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (contextRef.current && !contextRef.current.contains(e.target)) {
-        setContextMenu((prev) => ({ ...prev, visible: false }));
+      const isContextMenuClick =
+        contextRef.current && contextRef.current.contains(e.target);
+      const isStaffClick = e.target.closest(".staff-item");
+
+      // If clicked outside both context menu and client item will deselect
+      if (!isContextMenuClick && !isStaffClick) {
+        setContextMenu({ visible: false, x: 0, y: 0, selectedStaff: null });
+        setSelectedStaff(null);
+        setShowEdit(false);
       }
     };
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
   const handleDelete = (name) => {
@@ -66,11 +75,11 @@ export default function StaffControl() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden relative">
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1 relative">
+    <div className="flex h-full overflow-hidden">
+      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ">
         <div
           className={`flex flex-col border-2 border-blue-500 rounded-md overflow-hidden ${
-            showEdit ? 'h-2/3' : 'flex-grow'
+            showEdit ? "h-2/3" : "flex-grow"
           }`}
         >
           {/* Header */}
@@ -78,59 +87,89 @@ export default function StaffControl() {
             <div className="flex items-center gap-2 text-blue-800 font-semibold">
               Name
             </div>
-             <div className="flex gap-2">
+            <div className="flex gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
                 onClick={() => setShowAdd(true)}
               >
                 <Plus className="w-4 h-4 inline" />
               </button>
-              <button className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer">
-                <Trash className="w-4 h-4 inline" />
-              </button>
+              {selectedStaff && (
+                <>
+                  <button
+                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => setShowEdit(true)}
+                  >
+                    <Edit3 className="w-4 h-4 inline" />
+                  </button>
+                  <button
+                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => handleDelete(selectedStaff.name)}
+                  >
+                    <Trash className="w-4 h-4 inline" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
           {/* List */}
           <div className="flex-1 overflow-auto px-3 py-2">
-            <p className="text-black ml-1 text-lg">Staff ({dataList.length})</p>
-            {dataList.map((item, index) => {
-              const isSelected = selectedStaff && selectedStaff.name === item.name;
-              return (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
-                    isSelected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
-                  }`}
-                  onClick={() => {
-                    setSelectedStaff(item);
-                    setShowEdit(false); // Close editor on normal click
-                  }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    setContextMenu({
-                      visible: true,
-                      x: e.pageX,
-                      y: e.pageY,
-                      staff: item,
-                    });
-                  }}
-                >
-                  <div className="flex items-center space-x-1">
-                  
-                    <UsersRound
-                      className={`ml-2 w-5 h-5 ${
-                        isSelected ? 'text-white' : 'text-blue-400'
-                      }`}
-                    />
-                    <p className={`ml-1 ${isSelected ? 'text-white' : 'text-black'}`}>
-                      {item.name}
-                    </p>
+            <div
+              className="flex items-center cursor-pointer select-none"
+              onClick={() => setShowList((prev) => !prev)}
+            >
+              {showList ? (
+                <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
+              )}
+              <p className="text-black ml-1 text-lg">
+                Staff ({dataList.length})
+              </p>
+            </div>
+            {showList &&
+              dataList.map((item, index) => {
+                const isSelected =
+                  selectedStaff && selectedStaff.name === item.name;
+                return (
+                  <div
+                    key={item.name + index}
+                    className={`flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
+                    }`}
+                    onClick={() => {
+                      setSelectedStaff(item);
+                      setShowEdit(false); 
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setSelectedStaff(item);
+                      setContextMenu({
+                        visible: true,
+                        x: e.pageX,
+                        y: e.pageY,
+                        selectedStaff: item,
+                      });
+                    }}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <UsersRound
+                        className={`ml-2 w-5 h-5 ${
+                          isSelected ? "text-white" : "text-blue-400"
+                        }`}
+                      />
+                      <p
+                        className={`ml-1 ${
+                          isSelected ? "text-white" : "text-black"
+                        }`}
+                      >
+                        {item.name}
+                      </p>
+                    </div>
                   </div>
-
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -144,7 +183,7 @@ export default function StaffControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left"
               onClick={() => {
-                setSelectedStaff(contextMenu.staff);
+                setSelectedStaff(contextMenu.selectedStaff);
                 setShowEdit(true);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
@@ -159,7 +198,7 @@ export default function StaffControl() {
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
               onClick={() => {
                 // For now, just open editor as rename
-                setSelectedStaff(contextMenu.staff);
+                setSelectedStaff(contextMenu.selectedStaff);
                 setShowEdit(true);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
@@ -173,7 +212,7 @@ export default function StaffControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
               onClick={() => {
-                alert('Reviewing: ' + contextMenu.staff.name);
+                alert("Reviewing: " + contextMenu.selectedStaff.name);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >
@@ -186,7 +225,7 @@ export default function StaffControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
               onClick={() => {
-                handleDelete(contextMenu.staff.name);
+                handleDelete(contextMenu.selectedStaff.name);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >
@@ -199,7 +238,7 @@ export default function StaffControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
               onClick={() => {
-                alert('Duplicate not implemented yet');
+                alert("Duplicate not implemented yet");
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >

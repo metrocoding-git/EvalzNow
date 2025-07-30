@@ -1,11 +1,12 @@
 "use client";
 import {
+  ChevronDown,
   ChevronRight,
   Edit,
+  Edit3,
   Plus,
   ShieldUser,
   Trash,
-  Upload,
   UsersRound,
   X,
 } from "lucide-react";
@@ -19,6 +20,8 @@ export default function UnitControl() {
   const contextRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showList, setShowList] = useState(true);
+  const [selectedUnit, setSelectedUnit] = useState(null);
   const [showUnitRoster, setUnitRoster] = useState(false);
 
   const [dataList, setDataList] = useState([
@@ -33,25 +36,27 @@ export default function UnitControl() {
     visible: false,
     x: 0,
     y: 0,
-    item: null,
+    selectedUnit: null,
   });
   const [rightClickedIndex, setRightClickedIndex] = useState(null);
 
   const handleDelete = (name) => {
-    console.log(`Delete item with id: ${name}`);
-    const updatedData = dataList.filter(
-      (item, index) =>
-        item.name !== name ||
-        index !== dataList.findIndex((i) => i.name === name)
-    );
+    console.log(`Delete item with name: ${name}`);
+    const updatedData = dataList.filter((item) => item.name !== name);
     setDataList(updatedData);
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (contextRef.current && !contextRef.current.contains(e.target)) {
-        setContextMenu({ visible: false, x: 0, y: 0, item: null });
-        setRightClickedIndex(null);
+      const isContextMenuClick =
+        contextRef.current && contextRef.current.contains(e.target);
+      const isUnitClick = e.target.closest(".unit-item");
+
+      // If clicked outside both context menu and client item will deselect
+      if (!isContextMenuClick && !isUnitClick) {
+        setContextMenu({ visible: false, x: 0, y: 0, selectedUnit: null });
+        setSelectedUnit(null);
+        setShowEdit(false);
       }
     };
 
@@ -75,53 +80,87 @@ export default function UnitControl() {
             </div>
             <div className="flex gap-2">
               <button
-              className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-              onClick={() => setShowAdd(true)}
-            >
-              <Plus className="w-4 h-4 inline" />
-            </button>
-            <button
-              className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
-              onClick={() => setShowAdd(true)}
-            >
-              <Trash className="w-4 h-4 inline" />
-            </button>
+                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
+                onClick={() => setShowAdd(true)}
+              >
+                <Plus className="w-4 h-4 inline" />
+              </button>
+              {selectedUnit && (
+                <>
+                  <button
+                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => setShowEdit(true)}
+                  >
+                    <Edit3 className="w-4 h-4 inline" />
+                  </button>
+                  <button
+                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => handleDelete(selectedUnit.name)}
+                  >
+                    <Trash className="w-4 h-4 inline" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-auto px-3 py-2">
-            {dataList.map((item, index) => (
-              <div
-                key={index}
-                className={`flex items-center justify-between cursor-pointer p-1 rounded-md ${
-                  rightClickedIndex === index
-                    ? "bg-blue-50"
-                    : "hover:bg-blue-50"
-                }`}
-                onClick={() => {
-                  setShowEdit(true);
-                  setUnitRoster(true);
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setContextMenu({
-                    visible: true,
-                    x: e.pageX,
-                    y: e.pageY,
-                    item,
-                  });
-                  setRightClickedIndex(index);
-                }}
-              >
-                <div className="flex items-center space-x-1">
-                  <UsersRound className="ml-2 w-5 h-5 text-blue-400" />
-                  <p className="text-black ml-1">{item.name}</p>
-                </div>
-
-                
-              </div>
-            ))}
+            <div
+              className="flex items-center cursor-pointer select-none"
+              onClick={() => setShowList((prev) => !prev)}
+            >
+              {showList ? (
+                <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
+              )}
+              <p className="text-black ml-1 text-lg">
+                Units ({dataList.length})
+              </p>
+            </div>
+            {showList &&
+              dataList.map((item, index) => {
+                const isSelected =
+                  selectedUnit && selectedUnit.name === item.name;
+                return (
+                  <div
+                    key={item.name + index} // Consider using a unique id if possible
+                    className={`flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
+                    }`}
+                    onClick={() => {
+                      setSelectedUnit(item);
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setSelectedUnit(item);
+                      setContextMenu({
+                        visible: true,
+                        x: e.pageX,
+                        y: e.pageY,
+                        selectedUnit: item,
+                      });
+                      setRightClickedIndex(index);
+                    }}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <UsersRound
+                        className={`ml-2 w-5 h-5 ${
+                          isSelected ? "text-white" : "text-blue-400"
+                        }`}
+                      />
+                      <p
+                        className={`ml-1 ${
+                          isSelected ? "text-white" : "text-black"
+                        }`}
+                      >
+                        {item.name}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
         {contextMenu.visible && (
@@ -129,45 +168,7 @@ export default function UnitControl() {
             className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md text-sm"
             style={{ top: contextMenu.y, left: contextMenu.x }}
             onClick={() => setContextMenu({ ...contextMenu, visible: false })}
-          >
-            <li
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                setShowEdit(true);
-                setContextMenu({ ...contextMenu, visible: false });
-              }}
-            >
-              Edit
-            </li>
-            <li
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                handleDelete(contextMenu.selectedClient.name);
-                setContextMenu({ ...contextMenu, visible: false });
-              }}
-            >
-              Delete
-            </li>
-            <li
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                alert("Reviewing: " + contextMenu.selectedClient.name);
-                setContextMenu({ ...contextMenu, visible: false });
-              }}
-            >
-              Review
-            </li>
-            <li
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                const duplicate = { ...contextMenu.selectedClient };
-                setDataList((prev) => [...prev, duplicate]);
-                setContextMenu({ ...contextMenu, visible: false });
-              }}
-            >
-              Duplicate
-            </li>
-          </ul>
+          ></ul>
         )}
 
         {/* Bottom 1/3 Section */}
@@ -223,7 +224,6 @@ export default function UnitControl() {
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
-              setShowEdit(true);
               setContextMenu({ ...contextMenu, visible: false });
             }}
           >
@@ -234,7 +234,7 @@ export default function UnitControl() {
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
-              setShowEdit(true);
+              handleDelete(contextMenu.selectedUnit.name);
               setContextMenu({ ...contextMenu, visible: false });
             }}
           >
@@ -245,7 +245,6 @@ export default function UnitControl() {
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
-              setShowEdit(true);
               setContextMenu({ ...contextMenu, visible: false });
             }}
           >
