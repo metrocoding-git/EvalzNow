@@ -26,12 +26,47 @@ const religionOptions = [
   "Traditional African Religions",
   "Zoroastrianism",
 ];
-const maritalStatusOptions = ["Married", "Non-disclosed", "Other", "Separated", "Single"];
-const jobTypeOptions = ["Contractor", "Employee", "Non-disclosed", "Other", "Student", "Trainee", "Trainer"];
+const maritalStatusOptions = [
+  "Married",
+  "Non-disclosed",
+  "Other",
+  "Separated",
+  "Single",
+];
+const jobTypeOptions = [
+  "Contractor",
+  "Employee",
+  "Non-disclosed",
+  "Other",
+  "Student",
+  "Trainee",
+  "Trainer",
+];
 
-const nationalityOptions = ["Non-disclosed", "United States", "Canada", "India", "Germany", "Other"];
-const ethnicityOptions = ["Non-Disclosed", "Asian", "Black", "Hispanic", "White", "Mixed", "Other"];
-const incomeOptions = ["Non-Disclosed", "< $20k", "$20k-$50k", "$50k-$100k", "> $100k"];
+const nationalityOptions = [
+  "Non-disclosed",
+  "United States",
+  "Canada",
+  "India",
+  "Germany",
+  "Other",
+];
+const ethnicityOptions = [
+  "Non-Disclosed",
+  "Asian",
+  "Black",
+  "Hispanic",
+  "White",
+  "Mixed",
+  "Other",
+];
+const incomeOptions = [
+  "Non-Disclosed",
+  "< $20k",
+  "$20k-$50k",
+  "$50k-$100k",
+  "> $100k",
+];
 
 const irregularityOptions = ["Disability", "Special Needs", "Other"];
 
@@ -55,7 +90,7 @@ const initialFormState = {
   Comments: "",
 };
 
-const CandidateEditor = ({ onClose }) => {
+const CandidateEditor = ({ onClose, showForm }) => {
   const [form, setForm] = useState(initialFormState);
 
   const handleChange = (label, value) => {
@@ -66,21 +101,18 @@ const CandidateEditor = ({ onClose }) => {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
+    <div className="border-2 border-blue-500 rounded-md flex flex-col h-full">
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
-          Entity Editor - Candidate
+          CANDIDATE EDITOR
         </div>
-        <button
-          onClick={onClose}
-          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
-        >
-          <X className="w-4 h-4 " />
-        </button>
       </div>
 
-      <div className="p-4 space-y-3 text-sm overflow-y-auto max-h-[70vh]">
+      {!showForm ? (
+        <div className="p-4 text-gray-500 text-sm">No candidate selected.</div>
+      ) : (
+      <form className="p-4 space-y-3 text-sm overflow-y-auto max-h-[70vh]">
         {/* Text and Date Inputs */}
         {[
           "Last Name",
@@ -166,9 +198,9 @@ const CandidateEditor = ({ onClose }) => {
           >
             Close
           </button>
-          
         </div>
-      </div>
+      </form>
+      )}
     </div>
   );
 };

@@ -105,8 +105,6 @@ export default function EntitiesManager() {
                         >
                           <div className="flex items-center gap-2">
 
-                            <ChevronRight className={`w-4 h-4 text-gray-500 `} />
-
                             <ShieldUser className="w-5 h-5 text-blue-400" />
                             <span className="text-sm text-black">
                               {item.firstName} {item.lastName} ({item.id})
