@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Edit, X } from "lucide-react";
 
-const UnitEditor = ({ onClose }) => {
+const UnitEditor = ({ onClose, showForm }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
@@ -23,96 +23,103 @@ const UnitEditor = ({ onClose }) => {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
+    <div className="border-2 border-blue-500 rounded-md flex flex-col h-full">
       <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
-          Entity Editor - Unit
+          UNIT EDITOR
         </div>
-        <button
-          onClick={onClose}
-          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs p-4">
-        {[
-          { label: "Unit Name", key: "unitName" },
-          { label: "Unit ID", key: "unitId" },
-          { label: "Start Date", key: "startDate", type: "date" },
-          { label: "End Date", key: "endDate" },
-        ].map(({ label, key, type }) => (
-          <div key={key} className="flex flex-col">
-            <label>{label}:</label>
-            <input
-              name={key}
-              value={unit[key]}
-              onChange={(e) => handleChange(key, e.target.value)}
-              type={type || "text"}
-              className="border px-2 py-1"
-            />
-          </div>
-        ))}
+      {!showForm ? (
+        <div className="p-4 text-gray-500 text-sm">No unit selected.</div>
+      ) : (
+        <form className="grid grid-cols-2 gap-2 text-xs p-4">
+          {[
+            { label: "Unit Name", key: "unitName" },
+            { label: "Unit ID", key: "unitId" },
+            { label: "Start Date", key: "startDate", type: "date" },
+            { label: "End Date", key: "endDate" },
+          ].map(({ label, key, type }) => (
+            <div key={key} className="flex flex-col">
+              <label>{label}:</label>
+              <input
+                name={key}
+                value={unit[key]}
+                onChange={(e) => handleChange(key, e.target.value)}
+                type={type || "text"}
+                className="border px-2 py-1"
+              />
+            </div>
+          ))}
 
-        <label>Unit Type:</label>
-        <select
-          name="unitType"
-          value={unit.unitType}
-          onChange={(e) => handleChange("unitType", e.target.value)}
-          className="border px-2 py-1"
-        >
-          <option value="">Select Unit Type</option>
-          <option>Communicative I/O</option>
-          <option>Theory & Practice</option>
-          <option>Third Parameter</option>
-        </select>
+          <label>Unit Type:</label>
+          <select
+            name="unitType"
+            value={unit.unitType}
+            onChange={(e) => handleChange("unitType", e.target.value)}
+            className="border px-2 py-1"
+          >
+            <option value="">Select Unit Type</option>
+            <option>Communicative I/O</option>
+            <option>Theory & Practice</option>
+            <option>Third Parameter</option>
+          </select>
 
-        <label>Signature Profile:</label>
-        <select
-          name="signatureProfile"
-          value={unit.signatureProfile}
-          onChange={(e) => handleChange("signatureProfile", e.target.value)}
-          className="border px-2 py-1"
-        >
-          <option value="">Select Profile</option>
-          <option>Case 1: Solid Balanced</option>
-          <option>Case 2: Rigorous Balanced</option>
-          <option>Case 3a: Productive‑Weighted</option>
-          <option>Case 3b: Receptive‑Weighed</option>
-        </select>
+          <label>Signature Profile:</label>
+          <select
+            name="signatureProfile"
+            value={unit.signatureProfile}
+            onChange={(e) => handleChange("signatureProfile", e.target.value)}
+            className="border px-2 py-1"
+          >
+            <option value="">Select Profile</option>
+            <option>Case 1: Solid Balanced</option>
+            <option>Case 2: Rigorous Balanced</option>
+            <option>Case 3a: Productive‑Weighted</option>
+            <option>Case 3b: Receptive‑Weighed</option>
+          </select>
 
-        <label>Environment:</label>
-        <select
-          name="environment"
-          value={unit.environment}
-          onChange={(e) => handleChange("environment", e.target.value)}
-          className="border px-2 py-1"
-        >
-          <option value="">Select Environment</option>
-          <option>Workforce</option>
-          <option>Classroom</option>
-        </select>
+          <label>Environment:</label>
+          <select
+            name="environment"
+            value={unit.environment}
+            onChange={(e) => handleChange("environment", e.target.value)}
+            className="border px-2 py-1"
+          >
+            <option value="">Select Environment</option>
+            <option>Workforce</option>
+            <option>Classroom</option>
+          </select>
 
-        {unit.environment === "Workforce" && (
-         
+          {unit.environment === "Workforce" && (
             <div>
               <label>Scoring System:</label>
-            <select
-              name="scoringSystem"
-              value={unit.scoringSystem}
-              onChange={(e) => handleChange("scoringSystem", e.target.value)}
-              className="border px-2 py-1"
-            >
-              <option value="">Select System</option>
-              <option>3‑Point</option>
-              <option>5‑Point</option>
-            </select>
+              <select
+                name="scoringSystem"
+                value={unit.scoringSystem}
+                onChange={(e) => handleChange("scoringSystem", e.target.value)}
+                className="border px-2 py-1"
+              >
+                <option value="">Select System</option>
+                <option>3‑Point</option>
+                <option>5‑Point</option>
+              </select>
             </div>
-         
-        )}
-      </div>
+          )}
+          {/* Buttons */}
+          <div className="flex justify-start gap-2 mt-4">
+            {/* From this close button both Save and close should be done */}
+          <button
+            onClick={() => onClose()}
+            className=" px-1 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+          >
+            Close
+          </button>
+          </div>
+        </form>
+        
+      )}
     </div>
   );
 };

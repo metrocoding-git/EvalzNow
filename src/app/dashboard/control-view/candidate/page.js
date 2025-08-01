@@ -1,14 +1,12 @@
 "use client";
 
 import {
-  Edit,
   Edit3,
   Eye,
   Trash2,
   CopyPlus,
   Plus,
   Trash,
-  UsersRound,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -23,19 +21,16 @@ export default function CandidateControl() {
   const [showList, setShowList] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [dataList, setDataList] = useState([
-    { name: "Candidate1", age: 25, city: "Colombo" },
-    { name: "Candidate2", age: 30, city: "Kandy" },
-    { name: "Candidate3", age: 28, city: "Galle" },
-    { name: "Candidate4", age: 22, city: "Jaffna" },
-    { name: "Candidate5", age: 27, city: "Matara" },
-    { name: "Candidate6", age: 29, city: "Negombo" },
-    { name: "Candidate7", age: 31, city: "Batticaloa" },
-    { name: "Candidate8", age: 26, city: "Anuradhapura" },
-    { name: "Candidate9", age: 24, city: "Trincomalee" },
-    { name: "Candidate10", age: 23, city: "Ratnapura" },
-    { name: "Candidate11", age: 32, city: "Kurunegala" },
-    { name: "Candidate12", age: 33, city: "Badulla" },
-    { name: "Candidate13", age: 34, city: "Colombo" },
+    { id: "001", firstName: "John", lastName: "Doe" },
+    { id: "002", firstName: "Jane", lastName: "Smith" },
+    { id: "003", firstName: "Alex", lastName: "Johnson" },
+    { id: "004", firstName: "Emily", lastName: "Davis" },
+    { id: "005", firstName: "Chris", lastName: "Brown" },
+    { id: "006", firstName: "Pat", lastName: "Miller" },
+    { id: "007", firstName: "Taylor", lastName: "Wilson" },
+    { id: "008", firstName: "Jordan", lastName: "Moore" },
+    { id: "009", firstName: "Morgan", lastName: "Taylor" },
+    { id: "010", firstName: "Casey", lastName: "Anderson" },
   ]);
 
   const [contextMenu, setContextMenu] = useState({
@@ -46,7 +41,7 @@ export default function CandidateControl() {
   });
 
   useEffect(() => {
-     const handleClickOutside = (e) => {
+    const handleClickOutside = (e) => {
       const isContextMenuClick =
         contextRef.current && contextRef.current.contains(e.target);
       const isCandidateClick = e.target.closest(".candidate-item");
@@ -63,10 +58,10 @@ export default function CandidateControl() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = (name) => {
-    const updated = dataList.filter((c) => c.name !== name);
+  const handleDelete = (id) => {
+    const updated = dataList.filter((c) => c.id !== id);
     setDataList(updated);
-    if (selectedCandidate?.name === name) {
+    if (selectedCandidate?.id === id) {
       setSelectedCandidate(null);
       setShowEdit(false);
     }
@@ -92,7 +87,7 @@ export default function CandidateControl() {
                 <Plus className="w-4 h-4 inline" />
               </button>
               {selectedCandidate && (
-                <>
+                <div className="flex gap-1 candidate-item">
                   <button
                     className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
                     onClick={() => setShowEdit(true)}
@@ -105,7 +100,7 @@ export default function CandidateControl() {
                   >
                     <Trash className="w-4 h-4 inline" />
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -120,46 +115,51 @@ export default function CandidateControl() {
               ) : (
                 <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
               )}
-              <p className="text-black text-lg">Candidates ({dataList.length})</p>
+              <p className="text-black text-lg">
+                Candidates ({dataList.length})
+              </p>
             </div>
-            {showList && dataList.map((item, index) => {
-              const isSelected = selectedCandidate?.name === item.name;
-              return (
-                <div
-                  key={item.name + index}
-                  className={`flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
-                    isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
-                  }`}
-                  onClick={() => {
-                    setSelectedCandidate(item);
-                    setShowEdit(false);
-                  }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    setSelectedCandidate(item);
-                    setContextMenu({
-                      visible: true,
-                      x: e.pageX,
-                      y: e.pageY,
-                      selectedCandidate: item,
-                    });
-                  }}
-                >
-                  <div className="flex items-center space-x-1">
-                    <UsersRound className="ml-2 w-5 h-5 text-blue-400" />
-                    <p className={`${isSelected ? "text-white" : "text-black"}`}>{item.name}</p>
+            {showList &&
+              dataList.map((item, index) => {
+                const isSelected = selectedCandidate?.id === item.id;
+                return (
+                  <div
+                    key={item.id}
+                   className={`staff-item flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-black" 
+                    }`}
+                    onClick={() => {
+                      setSelectedCandidate(item);
+                      setShowEdit(false);
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setSelectedCandidate(item);
+                      setContextMenu({
+                        visible: true,
+                        x: e.pageX,
+                        y: e.pageY,
+                        selectedCandidate: item,
+                      });
+                    }}
+                  >
+                    <div className="text-sm">
+                      {item.lastName} {item.firstName} {item.id}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
-        {showEdit && (
+  
           <div className="h-2/3 overflow-auto my-2">
-            <CandidateEditor onClose={() => setShowEdit(false)} />
+            <CandidateEditor
+              onClose={() => setShowEdit(false)}
+              showForm={showEdit && selectedCandidate}
+            />
           </div>
-        )}
+
       </div>
 
       <div className="w-6/12 lg:w-9/12 bg-white overflow-auto relative">
@@ -195,19 +195,6 @@ export default function CandidateControl() {
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
             onClick={() => {
-              alert("Reviewing: " + contextMenu.selectedCandidate.name);
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Eye className="w-4 h-4" /> Review
-            </span>
-            <span className="text-gray-400 text-xs ml-4">R</span>
-          </button>
-
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
-            onClick={() => {
               handleDelete(contextMenu.selectedCandidate.name);
               setContextMenu((prev) => ({ ...prev, visible: false }));
             }}
@@ -218,18 +205,6 @@ export default function CandidateControl() {
             <span className="text-gray-400 text-xs ml-4">Del</span>
           </button>
 
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
-            onClick={() => {
-              alert("Duplicate not implemented yet");
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <CopyPlus className="w-4 h-4" /> Duplicate
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Ctrl + D</span>
-          </button>
         </div>
       )}
     </div>
