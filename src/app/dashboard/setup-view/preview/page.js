@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Plus,
+} from "lucide-react";
 import CompetencyAccountingTable from "./components/CompetencyAccountingTable";
 import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
 
-
-// Dummy data for preview (replace with actual fetched/prop data)
 const masterPPIDData = [
   {
     ppId: -2,
@@ -57,6 +59,19 @@ const competencyData = [
   },
 ];
 
+const activatedCandidates = [
+  {
+    name: "John Doe",
+    ppId: 1,
+    status: "Activated",
+  },
+  {
+    name: "Jane Smith",
+    ppId: 2,
+    status: "Activated",
+  },
+];
+
 export default function PreviewPage() {
   const [open, setOpen] = useState(false);
 
@@ -67,8 +82,11 @@ export default function PreviewPage() {
         <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col">
           {/* Header */}
           <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <span className="text-blue-800 font-semibold text-sm">Preview</span>
-            
+            <span className="flex flex-row gap-5 text-blue-800 font-semibold text-sm">
+              <div>First Name</div>
+              <div>Last Name</div>
+              <div>ID</div>
+            </span>
           </div>
 
           {/* Dropdown Toggle */}
@@ -76,23 +94,31 @@ export default function PreviewPage() {
             className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
             onClick={() => setOpen(!open)}
           >
-            <span
-              className={`
-                transition-transform duration-200 text-gray-600 mr-1 ` +
-                { "rotate-90": open, "rotate-0": !open }
-              }
-            >
-              ▶
-            </span>
+            {open ? (
+              <ChevronDown className="w-4 h-4 text-gray-600 mr-1" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-gray-600 mr-1" />
+            )}
             <span className="text-sm text-gray-600">Details</span>
           </div>
 
           {/* Dropdown Content */}
           {open && (
-            <div className="p-2">
-              <p className="text-sm text-gray-700">
-                This is the preview content.
-              </p>
+            <div className="p-2 space-y-2">
+              {activatedCandidates.length === 0 ? (
+                <p className="text-xs text-gray-500">No activated candidates.</p>
+              ) : (
+                activatedCandidates.map((candidate, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-row text-sm text-gray-700 gap-6 bg-blue-50 rounded px-2 py-1"
+                  >
+                    <div className="font-medium">{candidate.name}</div> 
+                    <div> PP ID:{" "}</div> 
+                    <div className="text-blue-700">{candidate.ppId}</div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>
