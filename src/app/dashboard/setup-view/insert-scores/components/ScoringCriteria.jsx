@@ -131,9 +131,9 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
-const mockPpIds = ["PP-001", "PP-002", "PP-003"]; // Replace with real data from props or API
+const mockPpIds = ["001", "002", "003"];
 
-export default function ScoringCriteria({ onClose }) {
+export default function ScoringCriteria({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     ppId: "",
     duration: "",
@@ -148,7 +148,7 @@ export default function ScoringCriteria({ onClose }) {
 
   const handleSubmit = () => {
     console.log("Submitting:", formData);
-    onClose();
+    onSubmit(formData);
   };
 
   return (
@@ -158,7 +158,7 @@ export default function ScoringCriteria({ onClose }) {
         <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
           <div className="flex items-center gap-2 text-blue-800 font-semibold">
             <ListFilterPlus className="w-5 h-5" />
-            Insert Scores for Competency Accounting
+            Insert Scores
           </div>
           <button
             onClick={onClose}
@@ -183,7 +183,9 @@ export default function ScoringCriteria({ onClose }) {
               onChange={(e) => handleChange("ppId", e.target.value)}
               className="flex-1 border px-2 py-1 rounded"
             >
-              <option value="">Select PP ID</option>
+              <option value="" disabled>
+                Select PP ID
+              </option>
               {mockPpIds.map((pp, i) => (
                 <option key={i} value={pp}>
                   {pp}
@@ -290,13 +292,12 @@ export default function ScoringCriteria({ onClose }) {
               ))}
             </select>
           </div>
-
         </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-2 p-2 pr-3 border-t bg-gray-100">
           <button
-            onClick={handleSubmit}
+            onSubmit={handleSubmit}
             className="px-3 py-1 text-sm bg-blue-600 text-white border border-blue-700 rounded hover:bg-blue-700"
           >
             Create
