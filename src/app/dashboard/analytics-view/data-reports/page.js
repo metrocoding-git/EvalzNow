@@ -1,27 +1,19 @@
-
-
-
-
 "use client";
 import { useState } from "react";
 import { Plus, X, ShieldUser, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-
-
-
 export default function DataExtractions() {
-
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/unit-distributions" },
   ];
 
   const pathname = usePathname();
-  const currentTab = tabs.find(tab => pathname?.startsWith(tab.path))?.label || "Session";
+  const currentTab =
+    tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
 
   const [activeTab, setActiveTab] = useState(currentTab);
-
 
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
@@ -36,8 +28,6 @@ export default function DataExtractions() {
     { id: 3, firstName: "Candidate", lastName: "Three" },
     { id: 4, firstName: "Candidate", lastName: "Four" },
   ]);
-
-
 
   const options = [
     {
@@ -68,13 +58,9 @@ export default function DataExtractions() {
   ];
   const [openMenu, setopenMenu] = useState(true);
 
-
-
   return (
-
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
-
         {/* Tab buttons */}
         <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
@@ -94,21 +80,20 @@ export default function DataExtractions() {
               </Link>
             ))}
           </div>
-
         </div>
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
           <div className="flex flex-col h-full">
-
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
                 <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-2/4">
-
                   {/* Header */}
                   <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-                    <span className="text-blue-800 font-semibold text-sm">Entities</span>
+                    <span className="text-blue-800 font-semibold text-sm">
+                      Entities
+                    </span>
                   </div>
 
                   <div className="flex-1 overflow-auto">
@@ -117,14 +102,20 @@ export default function DataExtractions() {
                         className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
                         onClick={() => setopenMenu(!openMenu)}
                       >
-
-                        < span
-                          className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
-                            }`}
+                        <span
+                          className={`transition-transform duration-200 text-gray-600 mr-1 ${
+                            openMenu ? "rotate-90" : "rotate-0"
+                          }`}
                         >
                           ▶
                         </span>
-                        <span className={`text-md text-gray-600 ml-2 ${openMenu ? "font-bold" : ""}`}>Sessions</span>
+                        <span
+                          className={`text-md text-gray-600 ml-2 ${
+                            openMenu ? "font-bold" : ""
+                          }`}
+                        >
+                          Sessions
+                        </span>
                       </div>
 
                       {openMenu && (
@@ -163,47 +154,39 @@ export default function DataExtractions() {
                                   }}
                                 >
                                   <div className="flex items-center gap-2">
-
-                                    <ChevronRight className={`w-4 h-4 text-gray-500 `} />
+                                    <ChevronRight
+                                      className={`w-4 h-4 text-gray-500 `}
+                                    />
 
                                     <ShieldUser className="w-5 h-5 text-blue-400" />
                                     <span className="text-sm text-black">
-                                      {item.firstName} {item.lastName} ({item.id})
+                                      {item.firstName} {item.lastName} (
+                                      {item.id})
                                     </span>
                                   </div>
-
                                 </div>
-
                               </div>
-
-                            ))
-                            }
+                            ))}
                           </div>
                         </>
                       )}
-
-
                     </div>
 
                     {/* Dropdown Content */}
-
                   </div>
                 </div>
-
-
-
-
               </div>
 
               {/* Right Panel */}
               {RightPanelOpen && (
-                <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
-
+                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
                   <div className="flex-1 h-full bg-white shadow-md rounded-2xl p-6 overflow-y-auto">
                     {/* Report Extraction Options */}
                     <div className="space-y-4">
                       <p className="text-base font-semibold text-gray-800 leading-relaxed">
-                        EvalzNow – Human Capital & Education Quantitative and Qualitative Assessment Hybrid Proficiency & Growth Monitoring <br />
+                        EvalzNow – Human Capital & Education Quantitative and
+                        Qualitative Assessment Hybrid Proficiency & Growth
+                        Monitoring <br />
                         <span className="text-sm font-medium">
                           Candidate & Unit Report Generation
                         </span>
@@ -213,11 +196,13 @@ export default function DataExtractions() {
                         {[
                           {
                             id: "candidate-report",
-                            label: "Extract Candidate Report for the Active Candidate",
+                            label:
+                              "Extract Candidate Report for the Active Candidate",
                           },
                           {
                             id: "all-candidates-unit",
-                            label: "Extract All Candidate Reports for the Active Unit",
+                            label:
+                              "Extract All Candidate Reports for the Active Unit",
                           },
                           {
                             id: "unit-report",
@@ -232,12 +217,15 @@ export default function DataExtractions() {
                             label: "Extract Global Data Report",
                           },
                         ].map((item) => (
-                          <div key={item.id} className="flex items-center gap-2">
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-2"
+                          >
                             <input
                               id={item.id}
-                              type="checkbox"
-                              name={item.id}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              type="radio"
+                              name="reportOption"
+                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                             />
                             <label htmlFor={item.id} className="text-gray-800">
                               {item.label}
@@ -254,15 +242,12 @@ export default function DataExtractions() {
                       </button>
                     </div>
                   </div>
-
                 </div>
               )}
             </div>
-
-
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }

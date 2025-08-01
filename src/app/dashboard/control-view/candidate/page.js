@@ -19,6 +19,8 @@ export default function CandidateControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
+  const [sortBy, setSortBy] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [dataList, setDataList] = useState([
     { id: "001", firstName: "John", lastName: "Doe" },
@@ -32,6 +34,17 @@ export default function CandidateControl() {
     { id: "009", firstName: "Morgan", lastName: "Taylor" },
     { id: "010", firstName: "Casey", lastName: "Anderson" },
   ]);
+
+  const getSortedData = () => {
+    return [...dataList].sort((a, b) => {
+      const valA = a[sortBy].toLowerCase();
+      const valB = b[sortBy].toLowerCase();
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
 
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -76,9 +89,36 @@ export default function CandidateControl() {
           }`}
         >
           <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-              Name
+            <div className="grid grid-cols-3 text-blue-800 pl-2 gap-2.5 font-semibold text-sm select-none">
+              {[
+                { key: "lastName", label: "Last Name" },
+                { key: "firstName", label: "First Name" },
+                { key: "id", label: "ID" },
+              ].map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center  cursor-pointer"
+                  onClick={() => {
+                    if (sortBy === col.key) {
+                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                    } else {
+                      setSortBy(col.key);
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  {col.label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      sortBy === col.key && sortOrder === "desc"
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
+
             <div className="flex gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
@@ -120,13 +160,15 @@ export default function CandidateControl() {
               </p>
             </div>
             {showList &&
-              dataList.map((item, index) => {
+              getSortedData().map((item) => {
                 const isSelected = selectedCandidate?.id === item.id;
                 return (
                   <div
                     key={item.id}
-                   className={`staff-item flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
-                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-black" 
+                    className={`candidate-item grid grid-cols-3 items-center cursor-pointer p-1 rounded-md px-3 ${
+                      isSelected
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-blue-50 text-black"
                     }`}
                     onClick={() => {
                       setSelectedCandidate(item);
@@ -143,23 +185,21 @@ export default function CandidateControl() {
                       });
                     }}
                   >
-                    <div className="text-sm">
-                      {item.lastName} {item.firstName} {item.id}
-                    </div>
+                    <p className="text-sm">{item.lastName}</p>
+                    <p className="text-sm">{item.firstName}</p>
+                    <p className="text-sm">{item.id}</p>
                   </div>
                 );
               })}
           </div>
         </div>
 
-  
-          <div className="h-2/3 overflow-auto my-2">
-            <CandidateEditor
-              onClose={() => setShowEdit(false)}
-              showForm={showEdit && selectedCandidate}
-            />
-          </div>
-
+        <div className="h-2/3 overflow-auto my-2">
+          <CandidateEditor
+            onClose={() => setShowEdit(false)}
+            showForm={showEdit && selectedCandidate}
+          />
+        </div>
       </div>
 
       <div className="w-6/12 lg:w-9/12 bg-white overflow-auto relative">
@@ -204,7 +244,6 @@ export default function CandidateControl() {
             </span>
             <span className="text-gray-400 text-xs ml-4">Del</span>
           </button>
-
         </div>
       )}
     </div>

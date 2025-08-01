@@ -7,6 +7,7 @@ import {
   Trash,
   ChevronRight,
   ChevronDown,
+  ShieldUser,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import CreateClientForm from "./components/CreateClientForm";
@@ -19,6 +20,7 @@ export default function AdminControl() {
   const [showList, setShowList] = useState(true);
   const formRef = useRef(null);
   const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("lastName");
   const [dataList, setDataList] = useState([
     {
       executiveId: "EX12345678",
@@ -50,10 +52,10 @@ export default function AdminControl() {
   //Sort order state
   const getSortedDataList = () => {
     const sorted = [...dataList].sort((a, b) => {
-      const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-      const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-      if (nameA < nameB) return sortOrder === "asc" ? -1 : 1;
-      if (nameA > nameB) return sortOrder === "asc" ? 1 : -1;
+      const valA = (a[sortBy] || "").toLowerCase();
+      const valB = (b[sortBy] || "").toLowerCase();
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
     return sorted;
@@ -107,16 +109,37 @@ export default function AdminControl() {
             showEdit ? "h-2/3" : "flex-grow"
           }`}
         >
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-              Last Name
+          <div className="flex justify-between items-center bg-blue-100 px-2 py-2 border-b border-blue-300">
+            <div className="grid grid-cols-3 items-center bg-blue-100 gap-3 px-3  text-blue-800 font-semibold text-sm">
+              {[
+                { key: "lastName", label: "Last Name" },
+                { key: "firstName", label: "First Name" },
+                { key: "executiveId", label: "ID" },
+              ].map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center cursor-pointer select-none"
+                  onClick={() => {
+                    if (sortBy === col.key) {
+                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                    } else {
+                      setSortBy(col.key);
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  {col.label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      sortBy === col.key && sortOrder === "desc"
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-             First Name
-            </div>
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-              ID
-            </div>
+
             <div className="flex gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
@@ -161,14 +184,6 @@ export default function AdminControl() {
                   Clients ({dataList.length})
                 </p>
               </div>
-              <button
-                onClick={() =>
-                  setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-                }
-                className="text-blue-600 text-sm hover:underline"
-              >
-                Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}
-              </button>
             </div>
 
             {showList &&
@@ -179,7 +194,7 @@ export default function AdminControl() {
                 return (
                   <div
                     key={item.executiveId}
-                    className={`client-item flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                    className={`client-item grid grid-cols-3 items-center cursor-pointer p-1 rounded-md px-3 ${
                       isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
                     }`}
                     onClick={(e) => {
@@ -193,16 +208,30 @@ export default function AdminControl() {
                         visible: true,
                         x: e.pageX,
                         y: e.pageY,
-                        selectedClient:item,
+                        selectedClient: item,
                       });
                     }}
                   >
                     <p
-                      className={`ml-1 text-sm ${
+                      className={`text-sm ${
                         isSelected ? "text-white" : "text-black"
                       }`}
                     >
-                      {item.lastName} {item.firstName} {item.executiveId}
+                      {item.lastName}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        isSelected ? "text-white" : "text-black"
+                      }`}
+                    >
+                      {item.firstName}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        isSelected ? "text-white" : "text-black"
+                      }`}
+                    >
+                      {item.executiveId}
                     </p>
                   </div>
                 );

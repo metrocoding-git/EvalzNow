@@ -4,7 +4,9 @@ import {
   ChevronRight,
   Edit,
   Edit3,
+  Play,
   Plus,
+  Settings,
   ShieldUser,
   Trash,
   Trash2,
@@ -22,6 +24,9 @@ export default function UnitControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
+  const [sortField, setSortField] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const formRef = useRef(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [showUnitRoster, setUnitRoster] = useState(false);
 
@@ -31,6 +36,15 @@ export default function UnitControl() {
     { id: "u003", name: "Unit3" },
     { id: "u004", name: "Unit4" },
   ]);
+
+  const sortedDataList = [...dataList].sort((a, b) => {
+    const fieldA = a[sortField].toLowerCase?.() ?? a[sortField];
+    const fieldB = b[sortField].toLowerCase?.() ?? b[sortField];
+
+    if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
+    if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
 
   // This used to manage right-click context menu
   const [contextMenu, setContextMenu] = useState({
@@ -52,6 +66,7 @@ export default function UnitControl() {
       const isContextMenuClick =
         contextRef.current && contextRef.current.contains(e.target);
       const isUnitClick = e.target.closest(".unit-item");
+      const isFormClick = formRef.current && formRef.current.contains(e.target);
 
       // If clicked outside both context menu and client item will deselect
       if (!isContextMenuClick && !isUnitClick) {
@@ -75,10 +90,50 @@ export default function UnitControl() {
           }`}
         >
           {/* Header */}
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-              Name
+          <div className="flex justify-between items-center border-b-1 border-blue-300 bg-blue-100 px-4 py-2  ">
+            <div className="grid grid-cols-2 bg-blue-100 px-4  text-sm font-semibold text-blue-800">
+              <div
+                className="flex items-center cursor-pointer select-none"
+                onClick={() => {
+                  if (sortField === "name") {
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("name");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                Name
+                <ChevronDown
+                  className={`ml-1 w-4 h-4 transform transition-transform ${
+                    sortField === "name" && sortOrder === "desc"
+                      ? "rotate-180"
+                      : ""
+                  }`}
+                />
+              </div>
+              <div
+                className="flex items-center justify-end cursor-pointer select-none"
+                onClick={() => {
+                  if (sortField === "id") {
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("id");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                ID
+                <ChevronDown
+                  className={`ml-1 w-4 h-4 transform transition-transform ${
+                    sortField === "id" && sortOrder === "desc"
+                      ? "rotate-180"
+                      : ""
+                  }`}
+                />
+              </div>
             </div>
+
             <div className="flex gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
@@ -121,17 +176,15 @@ export default function UnitControl() {
               </p>
             </div>
             {showList &&
-              dataList.map((item, index) => {
+              sortedDataList.map((item, index) => {
                 const isSelected = selectedUnit && selectedUnit.id === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`unit-item flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                    className={`unit-item flex justify-between items-center cursor-pointer p-1 rounded-md pl-2 ${
                       isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
                     }`}
-                    onClick={() => {
-                      setSelectedUnit(item);
-                    }}
+                    onClick={() => setSelectedUnit(item)}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       setSelectedUnit(item);
@@ -144,19 +197,19 @@ export default function UnitControl() {
                       setRightClickedIndex(index);
                     }}
                   >
-                    <div className="ml-2 text-sm">
-                      {item.name} {item.id}
+                    <div className="grid grid-cols-2 gap-10 pl-4 pt-1 text-sm px-2">
+                      <div>{item.name}</div>
+                      <div className="text-right">{item.id}</div>
                     </div>
                   </div>
                 );
               })}
           </div>
         </div>
-       
 
         {/* Bottom 1/3 Section */}
 
-        <div className="h-2/3 overflow-auto my-2">
+        <div className="h-2/3 overflow-auto my-2" ref={formRef}>
           <UnitEditor
             onClose={() => setShowEdit(false)}
             showForm={selectedUnit && showEdit}
@@ -206,7 +259,7 @@ export default function UnitControl() {
             }}
           >
             <span className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4" /> Unit Config
+              <Settings className="w-4 h-4" /> Unit Config
             </span>
             <span className="text-gray-400 text-xs ml-4">Del</span>
           </button>
@@ -232,7 +285,8 @@ export default function UnitControl() {
             }}
           >
             <span className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4" />Activate Setup View
+              <Play className="w-4 h-4" />
+              Activate Setup View
             </span>
             <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
           </button>

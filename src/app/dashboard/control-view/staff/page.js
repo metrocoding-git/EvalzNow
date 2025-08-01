@@ -21,6 +21,8 @@ export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("lastName");
   const [selectedStaff, setSelectedStaff] = useState(null);
   const formRef = useRef(null);
   const [contextMenu, setContextMenu] = useState({
@@ -42,6 +44,17 @@ export default function StaffControl() {
     { id: "S009", firstName: "Chris", lastName: "Davis" },
     { id: "S010", firstName: "Anna", lastName: "White" },
   ]);
+
+  const getSortedDataList = () => {
+    const sorted = [...dataList].sort((a, b) => {
+      const valA = a[sortBy].toLowerCase();
+      const valB = b[sortBy].toLowerCase();
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
 
   const contextRef = useRef(null);
 
@@ -81,10 +94,37 @@ export default function StaffControl() {
           }`}
         >
           {/* Header */}
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="flex items-center gap-2 text-blue-800 font-semibold">
-              Last Name | First Name | ID
+          <div className="flex justify-between items-center bg-blue-100  px-4 py-2 border-b border-blue-300">
+            <div className="grid grid-cols-3 text-blue-800 font-semibold gap-2 pl-2 text-sm select-none">
+              {[
+                { key: "lastName", label: "Last Name" },
+                { key: "firstName", label: "First Name" },
+                { key: "id", label: "ID" },
+              ].map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center cursor-pointer"
+                  onClick={() => {
+                    if (sortBy === col.key) {
+                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                    } else {
+                      setSortBy(col.key);
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  {col.label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      sortBy === col.key && sortOrder === "desc"
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
+
             <div className="flex gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
@@ -133,12 +173,12 @@ export default function StaffControl() {
             </div>
 
             {showList &&
-              dataList.map((item, index) => {
+              getSortedDataList().map((item, index) => {
                 const isSelected = selectedStaff?.id === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`staff-item flex items-center justify-between cursor-pointer p-1 rounded-md pl-2 ${
+                    className={`staff-item grid grid-cols-3 items-center cursor-pointer p-1 rounded-md px-3 ${
                       isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
                     }`}
                     onClick={() => {
@@ -157,9 +197,9 @@ export default function StaffControl() {
                       });
                     }}
                   >
-                    <div className="ml-2 text-sm">
-                      {item.lastName} {item.firstName} {item.id}
-                    </div>
+                    <p className="text-sm">{item.lastName}</p>
+                    <p className="text-sm">{item.firstName}</p>
+                    <p className="text-sm">{item.id}</p>
                   </div>
                 );
               })}
