@@ -19,10 +19,10 @@ export default function ControlViewLayout({ children }) {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden m-0.5 border-1 border-blue-200 rounded-md">
 
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
+        <div className="flex space-x-0 px-0 pt-1 border-b border-gray-200 bg-gray-50 ">
           {tabs.map((tab, index) => (
             <Link href={tab.path} key={index}>
               <span
