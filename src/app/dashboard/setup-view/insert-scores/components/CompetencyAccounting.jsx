@@ -4,8 +4,64 @@ import React, { useState } from "react";
 import { Plus, Trash2, Copy, Search, X } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 
-export default function CompetencyAccounting() {
+const PERIOD_TYPES = [
+  "Audit/Survey",
+  "Blended - Instructor",
+  "Blended - Platform",
+  "Camp",
+  "Case Study",
+  "Certification",
+  "Coaching",
+  "Conditioning",
+  "Exam/Test",
+  "Experimental",
+  "External Eval",
+  "Flex",
+  "Flipped",
+  "Homework",
+  "Immersion",
+  "Intern/Co-Op",
+  "Internal Eval",
+  "Lab",
+  "LMS - Distance",
+  "Online - Distance",
+  "Other",
+  "Placement",
+  "Probationary",
+  "Promotion",
+  "Pull-Out",
+  "Push-In",
+  "Reassigned Work",
+  "Research/R&D",
+  "Reskilling/CPD/CMP",
+  "Rework",
+  "Rotation",
+  "Scaffolding",
+  "Seminar",
+  "Study Abroad",
+  "Summer Program",
+  "Training for Trainees",
+  "Training for Trainers",
+  "Work",
+  "Workshop",
+  "Work-Study",
+];
 
+const INDIRECT_DELIVERY = [
+  "After Unit Operations (MISC)",
+  "Before Unit Operations (MISC)",
+  "Sensitivity or Exploratory Checking",
+  "Pre-Employment",
+];
+
+const DIRECT_DELIVERY = [
+  "During Unit Operations (on-site)",
+  "During Unit Operations (practice)",
+  "During Unit Operations (remote)",
+  "During Unit Operations (training)",
+];
+
+export default function CompetencyAccounting() {
   const [scoreAdd, setScoreAdd] = useState(false);
   const [scores, setScores] = useState([]);
 
@@ -18,7 +74,7 @@ export default function CompetencyAccounting() {
     Array.from({ length: 2 }, () => ({ x: "", y: "" }))
   );
   const [visible, setVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState("IndirectPerformancePoint");
+  const [activeTab, setActiveTab] = useState("Indirect");
 
   const handlePointChange = (index, field, value) => {
     const updated = [...points];
@@ -54,9 +110,7 @@ export default function CompetencyAccounting() {
               title="Create Material"
               className="text-blue-600 hover:text-blue-800 cursor-pointer"
             >
-              <Plus
-                className="w-4 h-4 hover:text-green-600"
-              />
+              <Plus className="w-4 h-4 hover:text-green-600" />
             </button>
             <button
               onClick={handleDeleteCurve}
@@ -123,90 +177,71 @@ export default function CompetencyAccounting() {
         </div>
       </div>
 
-      <div className="h-2/3 overflow-auto my-2">
-        <div className="border-2 border-blue-500 rounded-md flex flex-col h-full">
+      <div className="h-3/5 overflow-auto my-2">
+        <div className="border-2 border-blue-500 rounded-md flex flex-col">
           {/* Tab Buttons */}
           <div className="flex space-x-2 border-b p-2">
             <button
-              className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
-                activeTab === "IndirectPerformancePoint"
+              className={`px-3 py-1 text-sm rounded-t ${
+                activeTab === "Indirect"
                   ? "bg-blue-100 text-blue-600 font-semibold"
                   : "hover:bg-gray-100"
               }`}
-              onClick={() => setActiveTab("IndirectPerformancePoint")}
+              onClick={() => setActiveTab("Indirect")}
             >
-              Indirect Performance Point (Sub)
+              Indirect Performance Point
             </button>
             <button
-              className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
-                activeTab === "DirectPerformancePoint"
+              className={`px-3 py-1 text-sm rounded-t ${
+                activeTab === "Direct"
                   ? "bg-blue-100 text-blue-600 font-semibold"
                   : "hover:bg-gray-100"
               }`}
-              onClick={() => setActiveTab("DirectPerformancePoint")}
+              onClick={() => setActiveTab("Direct")}
             >
-              Direct Performance Point (Sub)
+              Direct Performance Point
             </button>
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-auto p-2">
-            {activeTab === "IndirectPerformancePoint" && (
+            {activeTab === "Direct" && (
               <table className="w-full border text-left text-xs">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="border p-1 w-10 text-center">#</th>
-                    <th className="border p-1">Last Name</th>
-                    <th className="border p-1">First Name</th>
-                    <th className="border p-1">Candidate ID</th>
-                    <th className="border p-1">Date of Birth</th>
+                    <th className="border p-1 w-10 text-center">PP ID</th>
+                    <th className="border p-1">Period Type</th>
+                    <th className="border p-1">Short Description</th>
+                    <th className="border p-1">Delivery</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {points.map((point, index) => (
-                    <tr key={index}>
-                      <td className="border p-1 text-center">{index + 1}</td>
+                  {points.map((_, index) => (
+                    <tr key={`direct-${index}`}>
+                      <td className="border p-1 text-center">
+                        PP ID {index + 1}
+                      </td>
                       <td className="border p-1">
-                        <input
-                          type="text"
-                          value={point.x}
-                          onChange={(e) =>
-                            handlePointChange(index, "x", e.target.value)
-                          }
-                          className="w-full border px-2 py-0.5 rounded"
-                        />
+                        <select className="w-full border px-2 py-0.5 rounded">
+                          {PERIOD_TYPES.map((type, i) => (
+                            <option key={`direct-period-${i}`}>{type}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="border p-1">
                         <input
                           type="text"
-                          value={point.y}
-                          onChange={(e) =>
-                            handlePointChange(index, "y", e.target.value)
-                          }
+                          maxLength={50}
+                          placeholder="Short Description"
                           className="w-full border px-2 py-0.5 rounded"
                         />
                       </td>
-
                       <td className="border p-1">
-                        <input
-                          type="text"
-                          value={point.y}
-                          onChange={(e) =>
-                            handlePointChange(index, "y", e.target.value)
-                          }
-                          className="w-full border px-2 py-0.5 rounded"
-                        />
-                      </td>
-
-                      <td className="border p-1">
-                        <input
-                          type="text"
-                          value={point.y}
-                          onChange={(e) =>
-                            handlePointChange(index, "y", e.target.value)
-                          }
-                          className="w-full border px-2 py-0.5 rounded"
-                        />
+                        <select className="w-full border px-2 py-0.5 rounded">
+                          {DIRECT_DELIVERY.map((d, i) => (
+                            <option key={`direct-delivery-${i}`}>{d}</option>
+                          ))}
+                        </select>
                       </td>
                     </tr>
                   ))}
@@ -214,15 +249,48 @@ export default function CompetencyAccounting() {
               </table>
             )}
 
-            {activeTab === "DirectPerformancePoint" && (
-              <div className="text-sm text-gray-600 mt-2 w-full">
-                <p className="mb-1">Name: {scores.ppId}</p>
-                <p className="mb-1">ID: {scores.ppId}</p>
-                <p className="mb-1">Type: Linear</p>
-                <p className="italic text-gray-400 mt-3">
-                  Add More properties here…
-                </p>
-              </div>
+            {activeTab === "Indirect" && (
+              <table className="w-full border text-left text-xs">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="border p-1 w-10 text-center">PP ID</th>
+                    <th className="border p-1">Period Type</th>
+                    <th className="border p-1">Short Description</th>
+                    <th className="border p-1">Delivery</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {points.map((_, index) => (
+                    <tr key={`indirect-${index}`}>
+                      <td className="border p-1 text-center">
+                        PP ID -{index + 1}
+                      </td>
+                      <td className="border p-1">
+                        <select className="w-full border px-2 py-0.5 rounded">
+                          {PERIOD_TYPES.map((type, i) => (
+                            <option key={`indirect-period-${i}`}>{type}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="border p-1">
+                        <input
+                          type="text"
+                          maxLength={50}
+                          placeholder="Short Description"
+                          className="w-full border px-2 py-0.5 rounded"
+                        />
+                      </td>
+                      <td className="border p-1">
+                        <select className="w-full border px-2 py-0.5 rounded">
+                          {INDIRECT_DELIVERY.map((d, i) => (
+                            <option key={`indirect-delivery-${i}`}>{d}</option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>

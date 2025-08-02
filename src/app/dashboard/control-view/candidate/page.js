@@ -88,8 +88,43 @@ export default function CandidateControl() {
             showEdit ? "h-2/3" : "flex-grow"
           }`}
         >
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="grid grid-cols-3 text-blue-800 pl-2 gap-2.5 font-semibold text-sm select-none">
+          <div className="bg-blue-100 px-2 py-2 border-b border-blue-300">
+            {/* Control buttons */}
+            <div className="flex justify-end px-1 gap-2">
+              <button
+                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
+                onClick={() => {
+                  setSelectedCandidate(null);
+                  setShowAdd(true);
+                }}
+              >
+                <Plus className="w-4 h-4 inline" />
+              </button>
+
+              {selectedCandidate && (
+                <div className="flex gap-1 candidate-item">
+                  <button
+                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => {
+                      setShowEdit(true);
+                      setContextMenu((prev) => ({ ...prev, visible: false }));
+                    }}
+                  >
+                    <Edit3 className="w-4 h-4 inline" />
+                  </button>
+                  <button
+                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
+                    onClick={() => handleDelete(selectedCandidate.id)}
+                  >
+                    <Trash className="w-4 h-4 inline" />
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* Column Headers */}
+            <div
+              className="grid grid-cols-3 gap-0.5 pl-2 text-blue-800 font-semibold text-sm"
+            >
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
@@ -97,7 +132,7 @@ export default function CandidateControl() {
               ].map((col) => (
                 <div
                   key={col.key}
-                  className="flex items-center  cursor-pointer"
+                  className="flex items-center cursor-pointer select-none"
                   onClick={() => {
                     if (sortBy === col.key) {
                       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -109,7 +144,7 @@ export default function CandidateControl() {
                 >
                   {col.label}
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${
+                    className={`w-4 h-4 transition-transform duration-200 ml-1 ${
                       sortBy === col.key && sortOrder === "desc"
                         ? "rotate-180"
                         : ""
@@ -117,31 +152,6 @@ export default function CandidateControl() {
                   />
                 </div>
               ))}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-                onClick={() => setShowAdd(true)}
-              >
-                <Plus className="w-4 h-4 inline" />
-              </button>
-              {selectedCandidate && (
-                <div className="flex gap-1 candidate-item">
-                  <button
-                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => setShowEdit(true)}
-                  >
-                    <Edit3 className="w-4 h-4 inline" />
-                  </button>
-                  <button
-                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => handleDelete(selectedCandidate.name)}
-                  >
-                    <Trash className="w-4 h-4 inline" />
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -165,7 +175,7 @@ export default function CandidateControl() {
                 return (
                   <div
                     key={item.id}
-                    className={`candidate-item grid grid-cols-3 items-center cursor-pointer p-1 rounded-md px-3 ${
+                    className={`candidate-item grid grid-cols-3 gap-5 items-center cursor-pointer p-1 rounded-md px-3 ${
                       isSelected
                         ? "bg-blue-600 text-white"
                         : "hover:bg-blue-50 text-black"

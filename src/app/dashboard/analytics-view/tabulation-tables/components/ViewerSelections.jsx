@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ScoringCriteria from './ScoringCriteria';
 import { FolderOutput, RefreshCw } from 'lucide-react';
+import PropertyEditor from '../../components/PropertyEditor';
 
 
 export default function ViewerSelections() {
@@ -9,6 +10,36 @@ export default function ViewerSelections() {
   const toggleGroup = (index) => {
     setOpenCandidate((prev) => ({ ...prev, [index]: !prev[index] }));
   };
+
+  const [chartProperties, setChartProperties] = useState({
+  // Standard
+  visibility: true,
+  layer: 1,
+  reference: false,
+
+  // Curve Label
+  showLabel: false,
+  labelType: "X Type",
+  showLabelPrefix: false,
+  labelPrefix: "X File name",
+  showLabelSuffix: false,
+  labelSuffix: "Y subcase",
+
+  // Line Attribute
+  lineStyle: "solid",
+  lineColor: "#3b82f6",
+  lineThickness: 2,
+
+  // Symbol Attribute
+  symbolStyle: "circle",
+  symbolColor: "#3b82f6",
+  symbolFrequency: 1,
+  symbolScaleSize: 1,
+
+  // Shade area
+  shadeArea: "#ffffff",
+});
+
 
   const [ScoreAdd, setScoreAdd] = useState(false);
 
@@ -131,9 +162,10 @@ export default function ViewerSelections() {
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
                 {activeAdjustPropertieTab === 'Property editor' && (
-                  <div className="text-sm text-gray-600 mt-2 w-full">
-
-                  </div>
+                  <PropertyEditor
+                    properties={chartProperties}
+                    onChange={setChartProperties}
+                  />
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && (

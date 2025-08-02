@@ -14,12 +14,13 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import UnitEditor from "./components/UnitEditor";
 import CreateUnitForm from "./components/CreateUnitForm";
 import UnitRoster from "./components/UnitRoster";
 
 export default function UnitControl() {
+   const router = useRouter()
   const contextRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -280,8 +281,8 @@ export default function UnitControl() {
           <button
             className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
             onClick={() => {
-              handleDelete(contextMenu.selectedUnit.id);
               setContextMenu((prev) => ({ ...prev, visible: false }));
+              router.push("/dashboard/setup-view");
             }}
           >
             <span className="flex items-center gap-2">

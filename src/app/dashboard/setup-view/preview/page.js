@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronRight,
-  ChevronDown,
-  Plus,
-} from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, ChevronUp } from "lucide-react";
 import CompetencyAccountingTable from "./components/CompetencyAccountingTable";
 import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
 
@@ -61,19 +57,40 @@ const competencyData = [
 
 const activatedCandidates = [
   {
-    name: "John Doe",
+    lastName: "John",
+    firstName: "Doe",
     ppId: 1,
     status: "Activated",
   },
   {
-    name: "Jane Smith",
+    lastName: "Jane",
+    firstName: "Smith",
     ppId: 2,
     status: "Activated",
   },
 ];
 
 export default function PreviewPage() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+  const [sortKey, setSortKey] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const sortedCandidates = [...activatedCandidates].sort((a, b) => {
+    const valA = a[sortKey];
+    const valB = b[sortKey];
+    if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+    if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      // Toggle sort order
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -82,10 +99,54 @@ export default function PreviewPage() {
         <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col">
           {/* Header */}
           <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <span className="flex flex-row gap-5 text-blue-800 font-semibold text-sm">
-              <div>First Name</div>
-              <div>Last Name</div>
-              <div>ID</div>
+            <span className="grid grid-cols-3 gap-4 pl-2 text-blue-800 font-semibold text-sm">
+              <div
+                className="flex flex-row items-center cursor-pointer"
+                onClick={() => handleSort("firstName")}
+              >
+                First Name
+                {sortKey === "firstName" ? (
+                  sortOrder === "asc" ? (
+                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
+                  ) : (
+                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
+                  )
+                ) : (
+                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
+                )}
+              </div>
+
+              <div
+                className="flex items-center cursor-pointer"
+                onClick={() => handleSort("lastName")}
+              >
+                Last Name
+                {sortKey === "lastName" ? (
+                  sortOrder === "asc" ? (
+                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
+                  ) : (
+                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
+                  )
+                ) : (
+                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
+                )}
+              </div>
+
+              <div
+                className="flex items-center cursor-pointer"
+                onClick={() => handleSort("ppId")}
+              >
+                ID
+                {sortKey === "ppId" ? (
+                  sortOrder === "asc" ? (
+                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
+                  ) : (
+                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
+                  )
+                ) : (
+                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
+                )}
+              </div>
             </span>
           </div>
 
@@ -106,16 +167,18 @@ export default function PreviewPage() {
           {open && (
             <div className="p-2 space-y-2">
               {activatedCandidates.length === 0 ? (
-                <p className="text-xs text-gray-500">No activated candidates.</p>
+                <p className="text-xs text-gray-500">
+                  No activated candidates.
+                </p>
               ) : (
-                activatedCandidates.map((candidate, index) => (
+                sortedCandidates.map((candidate, index) => (
                   <div
                     key={index}
-                    className="flex flex-row text-sm text-gray-700 gap-6 bg-blue-50 rounded px-2 py-1"
+                    className="grid grid-cols-3 text-sm text-gray-700 gap-4 bg-blue-50 rounded px-2 py-1"
                   >
-                    <div className="font-medium">{candidate.name}</div> 
-                    <div> PP ID:{" "}</div> 
-                    <div className="text-blue-700">{candidate.ppId}</div>
+                    <div>{candidate.lastName}</div>
+                    <div> {candidate.firstName}</div>
+                    <div>{candidate.ppId}</div>
                   </div>
                 ))
               )}
@@ -127,7 +190,9 @@ export default function PreviewPage() {
       {/* Right Panel */}
       <div className="w-6/12 lg:w-9/12 bg-white overflow-y-auto h-full">
         <div className="h-full border-2 border-blue-200 rounded-md flex flex-col mx-1">
-          <h1 className="text-xl ml-2 p-3 font-bold">Preliminary Checkpoints</h1>
+          <h1 className="text-xl ml-2 p-3 font-bold">
+            Preliminary Checkpoints
+          </h1>
 
           {/* Master PP ID Bin Totals Table */}
           <div className="px-4">
