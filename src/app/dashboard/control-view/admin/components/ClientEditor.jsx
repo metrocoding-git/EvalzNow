@@ -32,8 +32,8 @@ export default function CreateClientForm({ client, showForm, onClose }) {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col h-full">
-      <div className="flex items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
+    <div className="border-1 border-gray-50  rounded-md flex flex-col h-full">
+      <div className="flex items-center bg-blue-50 px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <ListFilterPlus className="w-5 h-5" />
           CLIENT EDITOR
@@ -43,7 +43,7 @@ export default function CreateClientForm({ client, showForm, onClose }) {
       {!client ? (
         <div className="h-full p-4 text-gray-500 text-sm">No client selected.</div>
       ) : showForm ? (
-        <form className="grid grid-cols-2 gap-1 text-xs p-2 overflow-y-auto max-h-[80vh]">
+        <form className="grid grid-cols-2 gap-1 text-xs p-2 overflow-y-auto h-full">
           {[
             "Executive Last Name",
             "Executive First Name",

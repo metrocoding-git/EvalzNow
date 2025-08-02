@@ -113,7 +113,7 @@ export default function RibbonPanel() {
   }, [pathname]);
 
   return (
-    <div className="w-full bg-gray-50 border-b px-2 py-2 flex gap-1 my-1">
+    <div className="w-full bg-gray-50 border-b border-blue-200 px-2 py-2 flex gap-1 my-1">
       {ribbonItems.map((tool, i) => (
         <IconButton
           key={i}
