@@ -6,6 +6,7 @@ import {
   ResponsiveContainer,
   Label
 } from 'recharts';
+import PropertyEditor from '../../components/PropertyEditor';
 
 export default function PlotSelections({ selectedSort }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -22,6 +23,36 @@ export default function PlotSelections({ selectedSort }) {
     { name: "May", xValue: 2.0, yValue: 1.8, zValue: 3.1 },
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
+
+  const [chartProperties, setChartProperties] = useState({
+  // Standard
+  visibility: true,
+  layer: 1,
+  reference: false,
+
+  // Curve Label
+  showLabel: false,
+  labelType: "X Type",
+  showLabelPrefix: false,
+  labelPrefix: "X File name",
+  showLabelSuffix: false,
+  labelSuffix: "Y subcase",
+
+  // Line Attribute
+  lineStyle: "solid",
+  lineColor: "#3b82f6",
+  lineThickness: 2,
+
+  // Symbol Attribute
+  symbolStyle: "circle",
+  symbolColor: "#3b82f6",
+  symbolFrequency: 1,
+  symbolScaleSize: 1,
+
+  // Shade area
+  shadeArea: "#ffffff",
+});
+
 
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
@@ -210,9 +241,10 @@ export default function PlotSelections({ selectedSort }) {
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
                 {activeAdjustPropertieTab === 'Property editor' && (
-                  <div className="text-sm text-gray-600 mt-2 w-full">
-
-                  </div>
+                  <PropertyEditor
+                    properties={chartProperties}
+                    onChange={setChartProperties}
+                  />
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && (

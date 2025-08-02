@@ -109,44 +109,19 @@ export default function AdminControl() {
             showEdit ? "h-2/3" : "flex-grow"
           }`}
         >
-          <div className="flex justify-between items-center bg-blue-100 px-2 py-2 border-b border-blue-300">
-            <div className="grid grid-cols-3 items-center bg-blue-100 gap-3 px-3  text-blue-800 font-semibold text-sm">
-              {[
-                { key: "lastName", label: "Last Name" },
-                { key: "firstName", label: "First Name" },
-                { key: "executiveId", label: "ID" },
-              ].map((col) => (
-                <div
-                  key={col.key}
-                  className="flex items-center cursor-pointer select-none"
-                  onClick={() => {
-                    if (sortBy === col.key) {
-                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-                    } else {
-                      setSortBy(col.key);
-                      setSortOrder("asc");
-                    }
-                  }}
-                >
-                  {col.label}
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      sortBy === col.key && sortOrder === "desc"
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
+          <div className="bg-blue-100 px-2 py-2 border-b border-blue-300">
+            {/* Control buttons */}
+            <div className="flex justify-end px-1 gap-2">
               <button
                 className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-                onClick={() => setShowAdd(true)}
+                onClick={() => {
+                  setSelectedClient(null);
+                  setShowAdd(true);
+                }}
               >
                 <Plus className="w-4 h-4 inline" />
               </button>
+
               {selectedClient && (
                 <div className="flex gap-1 client-item">
                   <button
@@ -166,6 +141,38 @@ export default function AdminControl() {
                   </button>
                 </div>
               )}
+            </div>
+            {/* Column Headers */}
+            <div
+              className="grid grid-cols-3 gap-3 pl-2 text-blue-800 font-semibold text-sm"
+            >
+              {[
+                { key: "lastName", label: "Last Name" },
+                { key: "firstName", label: "First Name" },
+                { key: "executiveId", label: "ID" },
+              ].map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center cursor-pointer select-none"
+                  onClick={() => {
+                    if (sortBy === col.key) {
+                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                    } else {
+                      setSortBy(col.key);
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  {col.label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ml-1 ${
+                      sortBy === col.key && sortOrder === "desc"
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -194,7 +201,7 @@ export default function AdminControl() {
                 return (
                   <div
                     key={item.executiveId}
-                    className={`client-item grid grid-cols-3 items-center cursor-pointer p-1 rounded-md px-3 ${
+                    className={`client-item grid grid-cols-3 gap-3 items-center cursor-pointer p-1 rounded-md px-3 ${
                       isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
                     }`}
                     onClick={(e) => {

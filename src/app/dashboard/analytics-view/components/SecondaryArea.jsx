@@ -24,9 +24,7 @@ const SecondaryInputForm = ({ onClose }) => {
           <Edit className="w-5 h-5" />
           Secondary Input Area
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
-          <X className="w-4 h-4 " />
-        </button>
+       
       </div>
 
       {/* PP ID Range */}

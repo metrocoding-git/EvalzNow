@@ -182,14 +182,13 @@ export default function AnalyticsView() {
                 )}
 
                 {/* Editor */}
-                {showEdit && (
                   <div className="h-1/4 overflow-auto my-2">
                     <ClientEditor
                       onClose={() => setShowEdit(false)}
                       entity={selectedEntity}
                     />
                   </div>
-                )}
+            
               </div>
 
               {/* Right Panel */}

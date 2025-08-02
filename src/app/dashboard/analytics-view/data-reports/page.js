@@ -1,6 +1,13 @@
 "use client";
 import { useState } from "react";
-import { Plus, X, ShieldUser, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  X,
+  ShieldUser,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,31 +25,9 @@ export default function DataExtractions() {
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
 
-  const [selectedEntity, setSelectedEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [RightPanelOpen, setRightPanelOpen] = useState(false);
-
-  const [entities, setEntities] = useState([
-    { id: 1, firstName: "Candidate", lastName: "One" },
-    { id: 2, firstName: "Candidate", lastName: "Two" },
-    { id: 3, firstName: "Candidate", lastName: "Three" },
-    { id: 4, firstName: "Candidate", lastName: "Four" },
-  ]);
-
-  const options = [
-    {
-      id: "active-unit-candidates",
-      label: "Extract Candidate Data for the Active Unit",
-    },
-    {
-      id: "all-units-candidates",
-      label: "Extract Candidate Data for All Units in Database",
-    },
-    {
-      id: "all-candidates-database",
-      label: "Extract All Candidate Data from Database",
-    },
-  ];
+  const [activeCandidateId, setActiveCandidateId] = useState(null);
 
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -57,6 +42,35 @@ export default function DataExtractions() {
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
   const [openMenu, setopenMenu] = useState(true);
+  const [sortKey, setSortKey] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const sortedData = [...data].sort((a, b) => {
+  let valA = a[sortKey];
+  let valB = b[sortKey];
+
+  if (sortKey === "id") {
+    // Numeric comparison
+    return sortOrder === "asc" ? valA - valB : valB - valA;
+  } else {
+    // String comparison (case insensitive)
+    valA = valA.toString().toLowerCase();
+    valB = valB.toString().toLowerCase();
+    if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+    if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  }
+});
+
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
 
   return (
     <div className="w-full flex flex-col">
@@ -90,14 +104,64 @@ export default function DataExtractions() {
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
                 <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-2/4">
                   {/* Header */}
-                  <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-                    <span className="text-blue-800 font-semibold text-sm">
-                      Entities
-                    </span>
+                  <div className=" bg-blue-100 px-4 py-2 border-b border-blue-300">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-3 gap-2 text-blue-800 font-semibold text-sm w-full">
+                      <div
+                        className="flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleSort("lastName")}
+                      >
+                        Last Name
+                        {sortKey === "lastName" ? (
+                          sortOrder === "asc" ? (
+                            <ChevronUp className="w-4 h-4 text-blue-600" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-blue-600" />
+                          )
+                        ) : (
+                          // Show default (e.g., down) when not sorted
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+
+                      <div
+                        className="flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleSort("firstName")}
+                      >
+                        First Name
+                        {sortKey === "firstName" ? (
+                          sortOrder === "asc" ? (
+                            <ChevronUp className="w-4 h-4 text-blue-600" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-blue-600" />
+                          )
+                        ) : (
+                          // Show default (e.g., down) when not sorted
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+
+                      <div
+                        className="flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleSort("id")}
+                      >
+                        ID
+                        {sortKey === "id" ? (
+                          sortOrder === "asc" ? (
+                            <ChevronUp className="w-4 h-4 text-blue-600" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-blue-600" />
+                          )
+                        ) : (
+                          // Show default (e.g., down) when not sorted
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex-1 overflow-auto">
-                    <div className=" px-3 py-1">
+                    <div className="px-3 py-1">
                       <div
                         className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
                         onClick={() => setopenMenu(!openMenu)}
@@ -120,59 +184,50 @@ export default function DataExtractions() {
 
                       {openMenu && (
                         <>
-                          <div className=" items-center justify-center  px-4 ">
-                            <div className="border border-blue-200 p-1 rounded-lg">
-                              <span className="text-sm text-gray-400">
-                                Unit Name: Unit 1
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit ID: UA123
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit Type: Group
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Signature Profile: Signature 1
-                              </span>
-                            </div>
+                          <div className="px-4 py-2 border border-blue-200 rounded-lg mb-2">
+                            <p className="text-sm text-gray-400">
+                              Unit Name: Unit 1
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Unit ID: UA123
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Unit Type: Group
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Signature Profile: Signature 1
+                            </p>
                           </div>
-                          <div className="space-y-1 mt-2 px-4">
-                            {data.map((item, index) => (
-                              <div key={item.id}>
-                                {/* Entity Header */}
-                                <div
-                                  className="flex items-center justify-between hover:bg-blue-50 p-1 rounded-md cursor-pointer"
-                                  onClick={() => {
-                                    setShowEdit(true);
-                                    setShowSecondary(true);
-                                  }}
-                                  onDoubleClick={() => {
-                                    setRightPanelOpen(true);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <ChevronRight
-                                      className={`w-4 h-4 text-gray-500 `}
-                                    />
 
-                                    <ShieldUser className="w-5 h-5 text-blue-400" />
-                                    <span className="text-sm text-black">
-                                      {item.firstName} {item.lastName} (
-                                      {item.id})
-                                    </span>
-                                  </div>
-                                </div>
+                          {/* Candidate List */}
+                          <div className="space-y-1 px-4">
+                            {sortedData.map((item) => (
+                              <div
+                                key={item.id}
+                                className={`grid grid-cols-3 gap-2 items-center text-sm rounded-md px-2 py-1 cursor-pointer
+      ${activeCandidateId === item.id ? "bg-blue-200" : "hover:bg-blue-50"}`}
+                                onClick={() => {
+                                  setShowEdit(true);
+                                  setShowSecondary(true);
+                                }}
+                                onDoubleClick={() => {
+                                  setRightPanelOpen(true);
+                                  setActiveCandidateId(item.id);
+                                }}
+                              >
+                                <span className="text-gray-800">
+                                  {item.lastName}
+                                </span>
+                                <span className="text-gray-800">
+                                  {item.firstName}
+                                </span>
+                                <span>{item.id}</span>
                               </div>
                             ))}
                           </div>
                         </>
                       )}
                     </div>
-
-                    {/* Dropdown Content */}
                   </div>
                 </div>
               </div>
