@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Edit } from "lucide-react";
 
 const accessLevels = [
-  "Full Access [No restrictions on the client account]",
-  "Leaders Access [Cannot access the Staff Control // Cannot put negative marks for leaders]",
+  "Full Access",
+  "Leaders Access",
 ];
 
 const accountStatuses = ["Enabled", "Disabled"];
@@ -37,11 +37,11 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col h-full">
-      <div className="flex items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-        <div className="flex items-center gap-2 text-blue-800 font-semibold">
+    <div className="border-1 border-gray-300 flex flex-col h-full">
+      <div className="flex items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
+        <div className="flex items-center gap-2 text-gray-800 font-semibold">
           <Edit className="w-5 h-5" />
-          STAFF EDITOR
+          Entity Editor
         </div>
       </div>
 
@@ -61,10 +61,10 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
             "Company E-mail Address",
           ].map((label, idx) => (
             <div key={idx} className="flex items-center">
-              <label className="w-48 pr-2 text-gray-700">{label}:</label>
+              <label className="w-36 pr-2 text-sm text-gray-700">{label}:</label>
               <input
                 type={label.includes("Date") ? "date" : "text"}
-                className="flex-1 border px-2 py-1 rounded bg-white"
+                className="flex-1 border px-2 py-1 bg-white"
                 value={form[label] || ""}
                 onChange={(e) => handleChange(label, e.target.value)}
               />
@@ -73,9 +73,9 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
 
           {/* Dropdowns */}
           <div className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">Access Level:</label>
+            <label className="w-36 pr-2 text-gray-700">Access Level:</label>
             <select
-              className="flex-1 border px-2 py-1 rounded bg-white"
+              className="flex-1 w-32 border px-2 py-1 bg-white"
               value={form["Access Level"]}
               onChange={(e) => handleChange("Access Level", e.target.value)}
             >
@@ -88,9 +88,9 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
           </div>
 
           <div className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">Account Status:</label>
+            <label className="w-36 pr-2 text-gray-700">Account Status:</label>
             <select
-              className="flex-1 border px-2 py-1 rounded bg-white"
+              className="flex-1 w-32 border px-2 py-1 bg-white"
               value={form["Account Status"]}
               onChange={(e) => handleChange("Account Status", e.target.value)}
             >
@@ -106,7 +106,7 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm"
             >
               Close
             </button>

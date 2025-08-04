@@ -8,6 +8,7 @@ import {
   Trash2,
   Trash,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import StaffEditor from "./components/StaffEditor";
@@ -42,27 +43,27 @@ export default function StaffControl() {
   ]);
 
   const getSortedDataList = () => {
-  const sorted = [...dataList].sort((a, b) => {
-    let valA = a[sortBy];
-    let valB = b[sortBy];
+    const sorted = [...dataList].sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
 
-    if (sortBy === "id") {
-      // Convert to numbers for numeric sorting
-      valA = Number(valA);
-      valB = Number(valB);
-    } else {
-      // For names: lowercase strings
-      valA = (valA || "").toLowerCase();
-      valB = (valB || "").toLowerCase();
-    }
+      if (sortBy === "id") {
+        // Convert to numbers for numeric sorting
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        // For names: lowercase strings
+        valA = (valA || "").toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
 
-    if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-    if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
 
-  return sorted;
-};
+    return sorted;
+  };
 
   const contextRef = useRef(null);
 
@@ -95,50 +96,45 @@ export default function StaffControl() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ">
-        <div
-          className={`flex flex-col border-2 border-blue-500 rounded-md overflow-hidden ${
-            showEdit ? "h-2/3" : "flex-grow"
-          }`}
-        >
+      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+        <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
           {/* Header */}
-          <div className="bg-blue-100 px-2 py-2 border-b border-blue-300">
+          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
-            <div className="flex justify-end px-1 gap-2">
-              <button
-                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-                onClick={() => {
-                  setSelectedStaff(null);
-                  setShowAdd(true);
-                }}
-              >
-                <Plus className="w-4 h-4 inline" />
-              </button>
+            <div className="flex flex-col mb-3">
+              <div className="flex justify-end gap-1">
+                <button
+                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                  onClick={() => {
+                    setSelectedStaff(null);
+                    setShowAdd(true);
+                  }}
+                >
+                   <Plus className="w-3.5 h-3.5 text-black" />
+                </button>
 
-              {selectedStaff && (
-                <div className="flex gap-1 staff-item">
-                  <button
-                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => {
-                      setShowEdit(true);
-                      setContextMenu((prev) => ({ ...prev, visible: false }));
-                    }}
-                  >
-                    <Edit3 className="w-4 h-4 inline" />
-                  </button>
-                  <button
-                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => handleDelete(selectedStaff.id)}
-                  >
-                    <Trash className="w-4 h-4 inline" />
-                  </button>
-                </div>
-              )}
+                {selectedStaff && (
+                  <div className="flex gap-1 staff-item">
+                    <button
+                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                      onClick={() => handleDelete(selectedStaff.id)}
+                    >
+                      <Trash className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative w-full mt-1">
+                <input
+                  type="text"
+                  className="border w-full pl-2 pr-8 py-1 text-sm"
+                  placeholder="Search"
+                />
+                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+              </div>
             </div>
             {/* Column Headers */}
-            <div
-              className="grid grid-cols-3 gap-2 pl-2 text-blue-800 font-semibold text-sm"
-            >
+            <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
@@ -157,22 +153,16 @@ export default function StaffControl() {
                   }}
                 >
                   {col.label}
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ml-1 ${
-                      sortBy === col.key && sortOrder === "desc"
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
+                  
                 </div>
               ))}
             </div>
           </div>
 
           {/* List Toggle */}
-          <div className="flex-1 overflow-auto px-3 py-2">
+          <div className="flex-[1.1] min-h-0 overflow-auto">
             <div
-              className="flex items-center cursor-pointer select-none"
+              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
               onClick={() => setShowList((prev) => !prev)}
             >
               {showList ? (
@@ -180,7 +170,7 @@ export default function StaffControl() {
               ) : (
                 <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
               )}
-              <p className="text-black ml-1 text-lg">
+              <p className="text-sm font-medium text-gray-900">
                 Staff ({dataList.length})
               </p>
             </div>
@@ -191,12 +181,14 @@ export default function StaffControl() {
                 return (
                   <div
                     key={item.id}
-                    className={`staff-item grid grid-cols-3 gap-6 items-center cursor-pointer p-1 rounded-md px-3 ${
-                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
+                    className={`staff-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
+                      isSelected
+                        ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
+                        : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
                       setSelectedStaff(item);
-                      setShowEdit(false);
+                      setShowEdit(true);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -210,38 +202,30 @@ export default function StaffControl() {
                       });
                     }}
                   >
-                    <p className="text-sm">{item.lastName}</p>
-                    <p className="text-sm">{item.firstName}</p>
-                    <p className="text-sm">{item.id}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.lastName}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.firstName}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.id}</p>
                   </div>
                 );
               })}
+
+              <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
+                <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-900">
+                  Objects
+                </span>
+              </div>
           </div>
         </div>
 
         {/* Context Menu */}
         {contextMenu.visible && (
           <div
-            className="absolute bg-blue-50 border border-gray-300 rounded-md shadow-md z-50 w-60"
+            className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button
-              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left"
-              onClick={(e) => {
-                setSelectedStaff(contextMenu.selectedStaff);
-                setShowEdit(true);
-                e.stopPropagation();
-                setContextMenu((prev) => ({ ...prev, visible: false }));
-              }}
-            >
-              <span className="flex items-center gap-2">
-                <Edit3 className="w-4 h-4" /> Edit
-              </span>
-              <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
-            </button>
-
-            <button
-              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
               onClick={() => {
                 handleDelete(contextMenu.selectedStaff.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
@@ -257,14 +241,14 @@ export default function StaffControl() {
 
         {/* Staff editor Section */}
 
-        <div className="h-2/3 overflow-auto my-2" ref={formRef}>
+        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
           <StaffEditor staff={selectedStaff} showForm={showEdit} />
         </div>
       </div>
 
       {/* Right Panel - Create Staff */}
-      <div className="w-6/12 lg:w-9/12 bg-white overflow-auto relative">
-        <div className="h-full border-2 border-blue-200 rounded-md flex flex-col mx-1">
+      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
+        <div className="h-full flex flex-col">
           {showAdd && (
             <div className="overflow-auto my-2">
               <CreateStaffForm onClose={() => setShowAdd(false)} />

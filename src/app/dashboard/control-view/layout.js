@@ -19,10 +19,10 @@ export default function ControlViewLayout({ children }) {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-0.5 border-1 border-blue-200 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden m-0.5 border-1 border-gray-200">
 
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-1 border-b border-gray-200 bg-gray-50 ">
+        <div className="flex space-x-0 border-b border-gray-200 bg-gray-50 ">
           {tabs.map((tab, index) => (
             <Link href={tab.path} key={index}>
               <span
@@ -30,10 +30,9 @@ export default function ControlViewLayout({ children }) {
                 className={
                   `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                   (activeTab === tab.label
-                    ? "text-blue-600 bg-white border border-b-transparent border-gray-300 rounded-t-lg shadow-sm"
-                    : "text-gray-500 hover:text-blue-600 border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white")
+                    ? "text-black bg-white border border-b-transparent border-gray-300 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white")
                 }
-
 
               >
                 {tab.label}

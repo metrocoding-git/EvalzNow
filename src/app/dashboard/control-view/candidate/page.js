@@ -9,6 +9,8 @@ import {
   Trash,
   ChevronDown,
   ChevronRight,
+  Search,
+  List,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import CandidateEditor from "./components/CandidateEditor";
@@ -16,6 +18,7 @@ import CreateCandidateForm from "./components/CreateCandidateForm";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
+  const formRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
@@ -36,14 +39,26 @@ export default function CandidateControl() {
   ]);
 
   const getSortedData = () => {
-    return [...dataList].sort((a, b) => {
-      const valA = a[sortBy].toLowerCase();
-      const valB = b[sortBy].toLowerCase();
+    const sorted = [...dataList].sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+
+      if (sortBy === "id") {
+        // Convert to numbers for numeric sorting
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        // For names: lowercase strings
+        valA = (valA || "").toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
 
       if (valA < valB) return sortOrder === "asc" ? -1 : 1;
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
+
+    return sorted;
   };
 
   const [contextMenu, setContextMenu] = useState({
@@ -58,17 +73,18 @@ export default function CandidateControl() {
       const isContextMenuClick =
         contextRef.current && contextRef.current.contains(e.target);
       const isCandidateClick = e.target.closest(".candidate-item");
+      const isFormClick = formRef.current && formRef.current.contains(e.target);
 
-      // If clicked outside both context menu and client item will deselect
-      if (!isContextMenuClick && !isCandidateClick) {
+      // Only deselect if click is outside candidate item, context menu, and form
+      if (!isContextMenuClick && !isCandidateClick && !isFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedCandidate: null });
         setSelectedCandidate(null);
         setShowEdit(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
   const handleDelete = (id) => {
@@ -82,49 +98,45 @@ export default function CandidateControl() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-        <div
-          className={`flex flex-col border-2 border-blue-500 rounded-md overflow-hidden ${
-            showEdit ? "h-2/3" : "flex-grow"
-          }`}
-        >
-          <div className="bg-blue-100 px-2 py-2 border-b border-blue-300">
+      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+        <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
+          {/* Header */}
+          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
-            <div className="flex justify-end px-1 gap-2">
-              <button
-                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-                onClick={() => {
-                  setSelectedCandidate(null);
-                  setShowAdd(true);
-                }}
-              >
-                <Plus className="w-4 h-4 inline" />
-              </button>
+            <div className="flex flex-col mb-3">
+              <div className="flex justify-end gap-1">
+                <button
+                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                  onClick={() => {
+                    setSelectedCandidate(null);
+                    setShowAdd(true);
+                  }}
+                >
+                   <Plus className="w-3.5 h-3.5 text-black" />
+                </button>
 
-              {selectedCandidate && (
-                <div className="flex gap-1 candidate-item">
-                  <button
-                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => {
-                      setShowEdit(true);
-                      setContextMenu((prev) => ({ ...prev, visible: false }));
-                    }}
-                  >
-                    <Edit3 className="w-4 h-4 inline" />
-                  </button>
-                  <button
-                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => handleDelete(selectedCandidate.id)}
-                  >
-                    <Trash className="w-4 h-4 inline" />
-                  </button>
-                </div>
-              )}
+                {selectedCandidate && (
+                  <div className="flex gap-1 candidate-item">
+                    <button
+                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                      onClick={() => handleDelete(selectedCandidate.id)}
+                    >
+                      <Trash className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative w-full mt-1">
+                <input
+                  type="text"
+                  className="border w-full pl-2 pr-8 py-1 text-sm"
+                  placeholder="Search"
+                />
+                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+              </div>
             </div>
             {/* Column Headers */}
-            <div
-              className="grid grid-cols-3 gap-0.5 pl-2 text-blue-800 font-semibold text-sm"
-            >
+            <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
@@ -143,21 +155,16 @@ export default function CandidateControl() {
                   }}
                 >
                   {col.label}
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ml-1 ${
-                      sortBy === col.key && sortOrder === "desc"
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
+                  
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex-1 overflow-auto px-3 py-2">
+          {/* List Toggle */}
+          <div className="flex-[1.1] min-h-0 overflow-auto">
             <div
-              className="flex items-center cursor-pointer select-none"
+              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
               onClick={() => setShowList((prev) => !prev)}
             >
               {showList ? (
@@ -165,27 +172,29 @@ export default function CandidateControl() {
               ) : (
                 <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
               )}
-              <p className="text-black text-lg">
+              <p className="text-sm font-medium text-gray-900">
                 Candidates ({dataList.length})
               </p>
             </div>
+
             {showList &&
-              getSortedData().map((item) => {
+              getSortedData().map((item, index) => {
                 const isSelected = selectedCandidate?.id === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`candidate-item grid grid-cols-3 gap-5 items-center cursor-pointer p-1 rounded-md px-3 ${
+                    className={`candidate-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-blue-50 text-black"
+                        ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
+                        : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
                       setSelectedCandidate(item);
-                      setShowEdit(false);
+                      setShowEdit(true);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       setSelectedCandidate(item);
                       setContextMenu({
                         visible: true,
@@ -195,67 +204,63 @@ export default function CandidateControl() {
                       });
                     }}
                   >
-                    <p className="text-sm">{item.lastName}</p>
-                    <p className="text-sm">{item.firstName}</p>
-                    <p className="text-sm">{item.id}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.lastName}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.firstName}</p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.id}</p>
                   </div>
                 );
               })}
+
+              <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
+                <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-900">
+                  Objects
+                </span>
+              </div>
           </div>
         </div>
 
-        <div className="h-2/3 overflow-auto my-2">
+        {/* Context Menu */}
+        {contextMenu.visible && (
+          <div
+            ref={contextRef}
+            className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                handleDelete(contextMenu.selectedCandidate.id);
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4" /> Delete
+              </span>
+              <span className="text-gray-400 text-xs ml-4">Del</span>
+            </button>
+          </div>
+        )}
+
+        {/* Candidate editor Section */}
+        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
           <CandidateEditor
-            onClose={() => setShowEdit(false)}
-            showForm={showEdit && selectedCandidate}
+            candidate={selectedCandidate}
+            showForm={showEdit}
           />
         </div>
       </div>
 
-      <div className="w-6/12 lg:w-9/12 bg-white overflow-auto relative">
-        <div className="h-full border-2 border-blue-200 rounded-md flex flex-col mx-1">
+      {/* Right Panel - Create Candidate */}
+      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
+        <div className="h-full flex flex-col">
           {showAdd && (
-            <div className="overflow-auto my-2">
+            <div className="h-full overflow-auto">
               <CreateCandidateForm onClose={() => setShowAdd(false)} />
             </div>
           )}
         </div>
       </div>
-
-      {contextMenu.visible && (
-        <div
-          ref={contextRef}
-          className="absolute bg-blue-50 border border-gray-300 rounded-md shadow-md z-50 w-60"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left"
-            onClick={() => {
-              setSelectedCandidate(contextMenu.selectedCandidate);
-              setShowEdit(true);
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Edit3 className="w-4 h-4" /> Edit
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
-          </button>
-
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-b border-gray-200"
-            onClick={() => {
-              handleDelete(contextMenu.selectedCandidate.name);
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4" /> Delete
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Del</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
