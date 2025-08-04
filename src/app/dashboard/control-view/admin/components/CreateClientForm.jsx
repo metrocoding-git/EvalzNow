@@ -34,17 +34,11 @@ export default function CreateClientForm({ onClose }) {
 
   return (
     <div className="bg-gray-50 text-black border shadow-lg rounded overflow-y-auto z-50 m-4 max-h-screen">
-      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-        <div className="flex items-center gap-2 text-blue-800 font-semibold">
+      <div className="bg-gray-100 px-4 py-2 border-b border-gray-300">
+        <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-5 h-5" />
-          CREATE CLIENT
+          Create Client
         </div>
-        <button
-          onClick={onClose}
-          className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
       <div className="p-4 text-sm space-y-3 overflow-y-auto">
@@ -63,7 +57,7 @@ export default function CreateClientForm({ onClose }) {
             <label className="w-48 pr-2 text-gray-700">{label}:</label>
             <input
               type="text"
-              className="flex-1 border px-2 py-1 rounded bg-white"
+              className="flex-1 border px-2 py-1 bg-white"
               onChange={(e) => handleChange(label, e.target.value)}
             />
           </div>
@@ -76,7 +70,7 @@ export default function CreateClientForm({ onClose }) {
             type="text"
             value={executiveId}
             disabled
-            className="flex-1 border px-2 py-1 rounded bg-gray-100"
+            className="flex-1 border px-2 py-1 bg-gray-100"
           />
         </div>
 
@@ -84,7 +78,7 @@ export default function CreateClientForm({ onClose }) {
         <div className="flex items-center">
           <label className="w-48 pr-2 text-gray-700">Company Size:</label>
           <select
-            className="flex-1 border px-2 py-1 rounded bg-white"
+            className="flex-1 border px-2 py-1 bg-white"
             onChange={(e) => handleChange("Company Size", e.target.value)}
           >
             <option value="">Select Size</option>
@@ -100,7 +94,7 @@ export default function CreateClientForm({ onClose }) {
         <div className="flex items-center">
           <label className="w-48 pr-2 text-gray-700">Status:</label>
           <select
-            className="flex-1 border px-2 py-1 rounded bg-white"
+            className="flex-1 border px-2 py-1 bg-white"
             onChange={(e) => handleChange("Status", e.target.value)}
           >
             <option value="Activate">Activate</option>
@@ -113,7 +107,7 @@ export default function CreateClientForm({ onClose }) {
           {/* From this close button both Save and close should be done */}
           <button
             onClick={() => onClose()}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm"
           >
             Close
           </button>

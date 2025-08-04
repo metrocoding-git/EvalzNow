@@ -12,6 +12,8 @@ import {
   Trash2,
   UsersRound,
   X,
+  Search,
+  Copy,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +22,7 @@ import CreateUnitForm from "./components/CreateUnitForm";
 import UnitRoster from "./components/UnitRoster";
 
 export default function UnitControl() {
-   const router = useRouter()
+  const router = useRouter();
   const contextRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -54,12 +56,15 @@ export default function UnitControl() {
     y: 0,
     selectedUnit: null,
   });
-  const [rightClickedIndex, setRightClickedIndex] = useState(null);
 
   const handleDelete = (id) => {
     console.log(`Delete item with name: ${id}`);
     const updatedData = dataList.filter((item) => item.id !== id);
     setDataList(updatedData);
+    if (selectedUnit?.id === id) {
+      setSelectedUnit(null);
+      setShowEdit(false);
+    }
   };
 
   useEffect(() => {
@@ -69,30 +74,60 @@ export default function UnitControl() {
       const isUnitClick = e.target.closest(".unit-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
 
-      // If clicked outside both context menu and client item will deselect
-      if (!isContextMenuClick && !isUnitClick) {
+      // If clicked outside both context menu and unit item will deselect
+      if (!isContextMenuClick && !isUnitClick && !isFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedUnit: null });
         setSelectedUnit(null);
         setShowEdit(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-        {/* Top 2/3 Section */}
-        <div
-          className={`flex flex-col border-2 border-blue-500 rounded-md overflow-hidden ${
-            showEdit ? "h-1/3" : "flex-grow"
-          }`}
-        >
+      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden">
           {/* Header */}
-          <div className="flex justify-between items-center border-b-1 border-blue-300 bg-blue-100 px-4 py-2  ">
-            <div className="grid grid-cols-2 bg-blue-100 px-4  text-sm font-semibold text-blue-800">
+          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
+            {/* Control buttons */}
+            <div className="flex flex-col mb-3">
+              <div className="flex justify-end gap-1">
+                <button
+                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                  onClick={() => {
+                    setSelectedUnit(null);
+                    setShowAdd(true);
+                  }}
+                >
+                  <Plus className="w-3.5 h-3.5 text-black" />
+                </button>
+
+                {selectedUnit && (
+                  <div className="flex gap-1 unit-item">
+                    
+                    <button
+                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                      onClick={() => handleDelete(selectedUnit.id)}
+                    >
+                      <Trash className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="relative w-full mt-1">
+                <input
+                  type="text"
+                  className="border w-full pl-2 pr-8 py-1 text-sm"
+                  placeholder="Search"
+                />
+                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+              </div>
+            </div>
+            {/* Column Headers */}
+            <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black tracking-wide">
               <div
                 className="flex items-center cursor-pointer select-none"
                 onClick={() => {
@@ -105,16 +140,9 @@ export default function UnitControl() {
                 }}
               >
                 Name
-                <ChevronDown
-                  className={`ml-1 w-4 h-4 transform transition-transform ${
-                    sortField === "name" && sortOrder === "desc"
-                      ? "rotate-180"
-                      : ""
-                  }`}
-                />
               </div>
               <div
-                className="flex items-center justify-end cursor-pointer select-none"
+                className="flex items-center cursor-pointer select-none"
                 onClick={() => {
                   if (sortField === "id") {
                     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -125,46 +153,14 @@ export default function UnitControl() {
                 }}
               >
                 ID
-                <ChevronDown
-                  className={`ml-1 w-4 h-4 transform transition-transform ${
-                    sortField === "id" && sortOrder === "desc"
-                      ? "rotate-180"
-                      : ""
-                  }`}
-                />
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 cursor-pointer"
-                onClick={() => setShowAdd(true)}
-              >
-                <Plus className="w-4 h-4 inline" />
-              </button>
-              {selectedUnit && (
-                <div className="flex gap-2 unit-item">
-                  <button
-                    className="hover:bg-blue-300 text-blue-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => setShowEdit(true)}
-                  >
-                    <Edit3 className="w-4 h-4 inline" />
-                  </button>
-                  <button
-                    className="hover:bg-red-300 text-red-700 rounded-md text-sm p-1 cursor-pointer"
-                    onClick={() => handleDelete(selectedUnit.id)}
-                  >
-                    <Trash className="w-4 h-4 inline" />
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-auto px-3 py-2">
+          {/* List Toggle */}
+          <div className="flex-[1.1] min-h-0 overflow-auto">
             <div
-              className="flex items-center cursor-pointer select-none"
+              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
               onClick={() => setShowList((prev) => !prev)}
             >
               {showList ? (
@@ -172,22 +168,29 @@ export default function UnitControl() {
               ) : (
                 <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
               )}
-              <p className="text-black ml-1 text-lg">
+              <p className="text-sm font-medium text-gray-900">
                 Units ({dataList.length})
               </p>
             </div>
+
             {showList &&
               sortedDataList.map((item, index) => {
                 const isSelected = selectedUnit && selectedUnit.id === item.id;
                 return (
                   <div
                     key={item.id}
-                    className={`unit-item flex justify-between items-center cursor-pointer p-1 rounded-md pl-2 ${
-                      isSelected ? "bg-blue-600 text-white" : "hover:bg-blue-50"
+                    className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
+                      isSelected
+                        ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
+                        : "hover:bg-gray-50"
                     }`}
-                    onClick={() => setSelectedUnit(item)}
+                    onClick={() => {
+                      setSelectedUnit(item);
+                      setShowEdit(true);
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       setSelectedUnit(item);
                       setContextMenu({
                         visible: true,
@@ -195,22 +198,93 @@ export default function UnitControl() {
                         y: e.pageY,
                         selectedUnit: item,
                       });
-                      setRightClickedIndex(index);
                     }}
                   >
-                    <div className="grid grid-cols-2 gap-10 pl-4 pt-1 text-sm px-2">
-                      <div>{item.name}</div>
-                      <div className="text-right">{item.id}</div>
-                    </div>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
+                      {item.name}
+                    </p>
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
+                      {item.id}
+                    </p>
                   </div>
                 );
               })}
+
+            <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
+              <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
+              <span className="text-sm font-medium text-gray-900">
+                Objects
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Bottom 1/3 Section */}
+        {/* Context Menu */}
+        {contextMenu.visible && (
+          <div
+            ref={contextRef}
+            className="unit-item absolute bg-gray-200 border font-semibold border-gray-300 shadow-md z-50 w-60"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button
+              className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left"
+              onClick={(e) => {
+                setSelectedUnit(contextMenu.selectedUnit);
+                e.stopPropagation();
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Copy className="w-4 h-4" /> Duplicate
+              </span>
+              <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
+            </button>
 
-        <div className="h-2/3 overflow-auto my-2" ref={formRef}>
+            <button
+              className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                setSelectedUnit(contextMenu.selectedUnit);
+                setUnitRoster(true);
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4" /> Unit Config
+              </span>
+              <span className="text-gray-400 text-xs ml-4">Ctrl + C</span>
+            </button>
+
+            <button
+              className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                handleDelete(contextMenu.selectedUnit.id);
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4" /> Delete
+              </span>
+              <span className="text-gray-400 text-xs ml-4">Del</span>
+            </button>
+
+            <button
+              className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+                router.push("/dashboard/setup-view");
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                Activate Setup View
+              </span>
+              <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
+            </button>
+          </div>
+        )}
+
+        {/* Unit editor Section */}
+        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
           <UnitEditor
             onClose={() => setShowEdit(false)}
             showForm={selectedUnit && showEdit}
@@ -218,81 +292,20 @@ export default function UnitControl() {
         </div>
       </div>
 
-      <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
-        {showAdd && (
-          <div className="overflow-auto my-2">
-            <CreateUnitForm onClose={() => setShowAdd(false)} />
-          </div>
-        )}
+      {/* Right Panel */}
+      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
+        <div className="h-full flex flex-col">
+          {showAdd && (
+            <div className="overflow-auto my-2">
+              <CreateUnitForm onClose={() => setShowAdd(false)} />
+            </div>
+          )}
 
-        {!showAdd && showUnitRoster && (
-          <UnitRoster onClose={() => setUnitRoster(false)} />
-        )}
-      </div>
-
-      {/* Right-click context menu */}
-      {contextMenu.visible && (
-        <div
-          className="unit-item absolute bg-blue-50 border border-gray-300 rounded-md shadow-md z-50 w-64"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left"
-            onClick={(e) => {
-              setSelectedUnit(contextMenu.selectedUnit);
-              setShowEdit(true);
-              e.stopPropagation();
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Edit3 className="w-4 h-4" /> Edit
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
-          </button>
-
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
-            onClick={() => {
-              setSelectedUnit(contextMenu.selectedUnit);
-              setUnitRoster(true);
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Settings className="w-4 h-4" /> Unit Config
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Del</span>
-          </button>
-
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
-            onClick={() => {
-              handleDelete(contextMenu.selectedUnit.id);
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4" /> Delete
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Del</span>
-          </button>
-
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
-            onClick={() => {
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-              router.push("/dashboard/setup-view");
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Play className="w-4 h-4" />
-              Activate Setup View
-            </span>
-            <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
-          </button>
+          {!showAdd && showUnitRoster && (
+            <UnitRoster onClose={() => setUnitRoster(false)} />
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

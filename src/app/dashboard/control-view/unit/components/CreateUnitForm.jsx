@@ -1,5 +1,5 @@
 "use client";
-import { ListFilterPlus, X } from "lucide-react";
+import { ListFilterPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const UNIT_TYPES = ["Communicative I/O", "Theory & Practice", "Third Parameter"];
@@ -63,17 +63,16 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
   }, [form.unitType]);
 
   return (
-    <div className="bg-gray-50 text-black border shadow-lg rounded overflow-y-auto max-h-screen z-50 m-4">
-      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-        <div className="flex items-center gap-2 text-blue-800 font-semibold">
-          <ListFilterPlus className="w-5 h-5" /> CREATE UNIT
+    <div className="h-full flex flex-col bg-white">
+      {/* Header */}
+      <div className="bg-gray-100 border-b border-gray-200 px-4 py-2">
+        <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm">
+          <ListFilterPlus className="w-4 h-4" /> Create Unit
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1">
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
-      <div className="p-4 text-sm space-y-4">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-4 text-sm space-y-4">
         {/* Basic Unit Details */}
         {[
           { label: "Unit Name", key: "unitName", type: "text" },
@@ -81,30 +80,31 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           { label: "Unit Start Date", key: "startDate", type: "date" },
           { label: "Unit End Date", key: "endDate", type: "text", placeholder: "N/A if unknown" }
         ].map(({ label, key, type, placeholder }) => (
-          <div key={key} className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">{label}:</label>
+          <div key={key} className="space-y-1">
+            <label className="block text-gray-700 font-medium">{label}:</label>
             <input
               type={type}
               placeholder={placeholder}
               onChange={e => handleChange(key, e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
             />
           </div>
         ))}
 
         {/* Assignment of Staff */}
-        <div className="pt-4 border-t space-y-2">
+        <div className="pt-4 border-t border-gray-200 space-y-3">
           <h3 className="text-base font-semibold text-gray-800">Staff Assignment</h3>
-          <div className="flex space-x-4">
+          <div className="space-y-3">
             {["Assigned Leaders", "Assigned Assessors", "Unit Director"].map((label, idx) => (
-              <div key={idx} className="flex-1">
-                <label className="block text-gray-700 mb-1">{label}:</label>
+              <div key={idx} className="space-y-1">
+                <label className="block text-gray-700 font-medium">{label}:</label>
                 <select
                   multiple={label !== "Unit Director"}
                   onChange={e =>
                     handleChange(label, Array.from(e.target.selectedOptions).map(o => o.value))
                   }
-                  className="w-full border px-2 py-1 rounded"
+                  className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  size={label !== "Unit Director" ? 3 : 1}
                 >
                   {staffPool.map(s => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -116,35 +116,36 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
         </div>
 
         {/* Fixed Fields */}
-        <div className="space-y-2">
+        <div className="pt-4 border-t border-gray-200 space-y-3">
+          <h3 className="text-base font-semibold text-gray-800">Unit Configuration</h3>
           {[
             { label: "Unit Type", key: "unitType", options: UNIT_TYPES },
             { label: "Signature Profile", key: "signatureProfile", options: SIGNATURE_PROFILES },
             { label: "Environment", key: "environment", options: ENVIRONMENTS }
           ].map(({ label, key, options }) => (
-            <div key={key} className="flex items-center">
-              <label className="w-48 pr-2 text-gray-700">{label}:</label>
+            <div key={key} className="space-y-1">
+              <label className="block text-gray-700 font-medium">{label}:</label>
               <select
                 value={form[key] || ""}
                 onChange={e => handleChange(key, e.target.value)}
-                className="flex-1 border px-2 py-1 rounded"
+                className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
                 <option value="">Select {label}</option>
-                {options.map(opt => <option key={opt}>{opt}</option>)}
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
           ))}
 
           {form.environment === "Workforce" && (
-            <div className="flex items-center">
-              <label className="w-48 pr-2 text-gray-700">Scoring System:</label>
+            <div className="space-y-1">
+              <label className="block text-gray-700 font-medium">Scoring System:</label>
               <select
                 value={form.scoringSystem || ""}
                 onChange={e => handleChange("scoringSystem", e.target.value)}
-                className="flex-1 border px-2 py-1 rounded"
+                className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
                 <option value="">Select System</option>
-                {SCORING_SYSTEMS.map(s => <option key={s}>{s}</option>)}
+                {SCORING_SYSTEMS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           )}
@@ -152,78 +153,90 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
 
         {/* Pass/Fail Thresholds Section */}
         {showThresholds && (
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t border-gray-200 space-y-3">
             <h3 className="text-base font-semibold text-gray-800">Pass/Fail Thresholds</h3>
-            {Object.entries(form.passThresholds).map(([k, v]) => (
-              <div key={k} className="flex items-center mb-1">
-                <label className="w-48 pr-2 text-gray-700">{k}:</label>
-                <input
-                  type="number"
-                  step="0.001"
-                  value={v}
-                  disabled={k === "IC"}
-                  onChange={e =>
-                    handleChange("passThresholds", { ...form.passThresholds, [k]: parseFloat(e.target.value) })
-                  }
-                  className="flex-1 border px-2 py-1 rounded bg-white"
-                />
-              </div>
-            ))}
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(form.passThresholds).map(([k, v]) => (
+                <div key={k} className="space-y-1">
+                  <label className="block text-gray-700 font-medium text-xs">{k}:</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={v}
+                    disabled={k === "IC"}
+                    onChange={e =>
+                      handleChange("passThresholds", { ...form.passThresholds, [k]: parseFloat(e.target.value) })
+                    }
+                    className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${k === "IC" ? "bg-gray-100" : "bg-white"}`}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Benchmarks Section */}
-        <div className="pt-4 border-t space-y-2">
+        <div className="pt-4 border-t border-gray-200 space-y-3">
           <h3 className="text-base font-semibold text-gray-800">Unit Benchmarks</h3>
-          {/* Example: dynamic repeating entries */}
-          {form.benchmarks.map((bm, idx) => (
-            <div key={idx} className="flex items-center space-x-2">
-              <input
-                type="text"
-                placeholder="Benchmark Ref (≤40 chars)"
-                maxLength={40}
-                className="flex-1 border px-2 py-1 rounded"
-                value={bm.ref}
-                onChange={e => {
-                  const b = [...form.benchmarks];
-                  b[idx].ref = e.target.value;
-                  setForm(f => ({ ...f, benchmarks: b }));
-                }}
-              />
-              <select
-                className="w-48 border px-2 py-1 rounded"
-                value={bm.type}
-                onChange={e => {
-                  const b = [...form.benchmarks];
-                  b[idx].type = e.target.value;
-                  setForm(f => ({ ...f, benchmarks: b }));
-                }}
-              >
-                {BENCHMARK_TYPES.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() =>
-              setForm(f => ({
-                ...f,
-                benchmarks: [...(f.benchmarks || []), { ref: "", type: "" }]
-              }))
-            }
-            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-          >
-            + Add Benchmark
-          </button>
+          <div className="space-y-2">
+            {form.benchmarks.map((bm, idx) => (
+              <div key={idx} className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="block text-gray-700 font-medium text-xs">Benchmark Ref:</label>
+                  <input
+                    type="text"
+                    placeholder="≤40 chars"
+                    maxLength={40}
+                    className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    value={bm.ref}
+                    onChange={e => {
+                      const b = [...form.benchmarks];
+                      b[idx].ref = e.target.value;
+                      setForm(f => ({ ...f, benchmarks: b }));
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-gray-700 font-medium text-xs">Type:</label>
+                  <select
+                    className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    value={bm.type}
+                    onChange={e => {
+                      const b = [...form.benchmarks];
+                      b[idx].type = e.target.value;
+                      setForm(f => ({ ...f, benchmarks: b }));
+                    }}
+                  >
+                    <option value="">Select Type</option>
+                    {BENCHMARK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                setForm(f => ({
+                  ...f,
+                  benchmarks: [...(f.benchmarks || []), { ref: "", type: "" }]
+                }))
+              }
+              className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm transition-colors"
+            >
+              + Add Benchmark
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Form Actions */}
-        <div className="flex flex-row-reverse gap-2 pt-4">
-          <button onClick={onClose} className="px-4 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm">
+      {/* Fixed Bottom Actions */}
+      <div className="border-t border-gray-200 p-2 pr-6 bg-gray-50">
+        <div className="flex justify-end">
+          <button 
+            onClick={onClose} 
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800  text-sm transition-colors"
+          >
             Close
-          </button>
-          <button type="submit" className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-            Create Unit
           </button>
         </div>
       </div>

@@ -36,7 +36,7 @@ export default function CreateClientForm({ client, showForm, onClose }) {
       <div className="flex items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <ListFilterPlus className="w-5 h-5" />
-          CLIENT EDITOR
+          ENTITY EDITOR
         </div>
       </div>
 
