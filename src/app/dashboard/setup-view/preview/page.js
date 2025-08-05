@@ -82,9 +82,9 @@ export default function PreviewPage() {
     if (valA > valB) return sortOrder === "asc" ? 1 : -1;
     return 0;
   });
+
   const handleSort = (key) => {
     if (sortKey === key) {
-      // Toggle sort order
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
@@ -93,91 +93,67 @@ export default function PreviewPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-full overflow-hidden">
       {/* Sidebar */}
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-        <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col">
+      <div className="w-6/12 lg:w-80 flex flex-col border-2 h-full border-gray-200">
+        <div className="flex-grow flex flex-col">
           {/* Header */}
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <span className="grid grid-cols-3 gap-4 pl-2 text-blue-800 font-semibold text-sm">
-              <div
-                className="flex flex-row items-center cursor-pointer"
-                onClick={() => handleSort("firstName")}
-              >
-                First Name
-                {sortKey === "firstName" ? (
-                  sortOrder === "asc" ? (
-                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
-                  ) : (
-                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
-                  )
-                ) : (
-                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
-                )}
-              </div>
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+            <div className="grid grid-cols-3 gap-1 text-gray-800 font-semibold text-sm w-full">
+              {["firstName", "lastName", "ppId"].map((col) => (
+                <button
+                  key={col}
+                  onClick={() => handleSort(col)}
+                  className="flex items-center space-x-1 hover:underline"
+                >
+                  <span className="capitalize">
+                    {col === "ppId" ? "ID" : col.replace(/([A-Z])/g, " $1")}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => console.log("Add")}
+              className="hover:bg-gray-300 text-gray-950 text-sm p-1 ml-2"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
 
-              <div
-                className="flex items-center cursor-pointer"
-                onClick={() => handleSort("lastName")}
-              >
-                Last Name
-                {sortKey === "lastName" ? (
-                  sortOrder === "asc" ? (
-                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
-                  ) : (
-                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
-                  )
-                ) : (
-                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
-                )}
-              </div>
-
-              <div
-                className="flex items-center cursor-pointer"
-                onClick={() => handleSort("ppId")}
-              >
-                ID
-                {sortKey === "ppId" ? (
-                  sortOrder === "asc" ? (
-                    <ChevronUp className="ml-1 w-4 h-4 text-blue-600" />
-                  ) : (
-                    <ChevronDown className="ml-1 w-4 h-4 text-blue-600" />
-                  )
-                ) : (
-                  <ChevronDown className="ml-1 w-4 h-4 text-gray-400" />
-                )}
-              </div>
+          {/* Dropdown toggle */}
+          <div
+            className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-4 py-2"
+            onClick={() => setOpen(!open)}
+          >
+            <span
+              className={`transition-transform duration-200 text-gray-600 mr-1 ${
+                open ? "rotate-90" : "rotate-0"
+              }`}
+            >
+              <ChevronRight />
+            </span>
+            <span
+              className={`text-md text-gray-800 ml-2 ${
+                open ? "font-bold text-black" : ""
+              }`}
+            >
+              Activated Candidates
             </span>
           </div>
 
-          {/* Dropdown Toggle */}
-          <div
-            className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? (
-              <ChevronDown className="w-4 h-4 text-gray-600 mr-1" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-600 mr-1" />
-            )}
-            <span className="text-sm text-gray-600">Details</span>
-          </div>
-
-          {/* Dropdown Content */}
+          {/* Candidate List */}
           {open && (
-            <div className="p-2 space-y-2">
-              {activatedCandidates.length === 0 ? (
-                <p className="text-xs text-gray-500">
-                  No activated candidates.
-                </p>
+            <div className="p-2 space-y-1">
+              {sortedCandidates.length === 0 ? (
+                <p className="text-xs text-gray-500">No activated candidates.</p>
               ) : (
                 sortedCandidates.map((candidate, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-3 text-sm text-gray-700 gap-4 bg-blue-50 rounded px-2 py-1"
+                    className="grid grid-cols-3 text-sm text-gray-700 gap-2 hover:bg-gray-50 px-3 py-1 cursor-pointer"
                   >
                     <div>{candidate.lastName}</div>
-                    <div> {candidate.firstName}</div>
+                    <div>{candidate.firstName}</div>
                     <div>{candidate.ppId}</div>
                   </div>
                 ))
@@ -188,15 +164,15 @@ export default function PreviewPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-6/12 lg:w-9/12 bg-white overflow-y-auto h-full">
-        <div className="h-full border-2 border-blue-200 rounded-md flex flex-col mx-1">
-          <h1 className="text-xl ml-2 p-3 font-bold">
+      <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200 ml-1 overflow-y-auto">
+        <div className="h-full flex flex-col mx-2 my-3">
+          <h1 className="text-xl font-bold px-3 pb-2 border-b border-gray-200">
             Preliminary Checkpoints
           </h1>
 
-          {/* Master PP ID Bin Totals Table */}
-          <div className="px-4">
-            <h2 className="text-lg font-semibold text-blue-700 mb-2">
+          {/* Master PP ID Bin Totals */}
+          <div className="px-4 mt-4">
+            <h2 className="text-md font-semibold text-gray-700 mb-2">
               Master PP ID Bin Totals
             </h2>
             <MasterPpIdBinTable data={masterPPIDData} />
@@ -204,7 +180,7 @@ export default function PreviewPage() {
 
           {/* Competency Accounting Table */}
           <div className="px-4 mt-6 mb-6">
-            <h2 className="text-lg font-semibold text-blue-700 mb-2">
+            <h2 className="text-md font-semibold text-gray-700 mb-2">
               Competency Accounting
             </h2>
             <CompetencyAccountingTable data={competencyData} />

@@ -79,11 +79,11 @@ export default function EntitiesManager() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Sidebar */}
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-        <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-3/5">
+      <div className="w-6/12 lg:w-80 flex flex-col border-2 h-full border-gray-200 ">
+        <div className="flex-grow  flex flex-col h-3/5">
           {/* Header */}
-          <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-            <div className="grid grid-cols-3 gap-1 text-blue-800 font-semibold text-sm w-full">
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+            <div className="grid grid-cols-3 gap-1 text-gray-800 font-semibold text-sm w-full">
               {["lastName", "firstName", "id"].map((col) => (
                 <button
                   key={col}
@@ -93,21 +93,13 @@ export default function EntitiesManager() {
                   <span className="capitalize">
                     {col === "id" ? "ID" : col.replace(/([A-Z])/g, " $1")}
                   </span>
-                  {sortColumn === col ? (
-                    sortDirection === "asc" ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  )}
+                   
                 </button>
               ))}
             </div>
             <button
               onClick={() => console.log("Add new entity")}
-              className="hover:bg-blue-300 text-blue-950 rounded-md text-sm p-1 ml-2"
+              className="hover:bg-gray-300 text-gray-950  text-sm p-1 ml-2"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -116,7 +108,7 @@ export default function EntitiesManager() {
           <div className="flex-1 overflow-auto">
             {/* Toggle Sessions */}
             <div
-              className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-4 py-2"
+              className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-4 py-2"
               onClick={() => setOpenMenu(!openMenu)}
             >
               <span
@@ -127,8 +119,8 @@ export default function EntitiesManager() {
                 <ChevronRight />
               </span>
               <span
-                className={`text-md text-gray-600 ml-2 ${
-                  openMenu ? "font-bold" : ""
+                className={`text-md text-gray-800 ml-2 ${
+                  openMenu ? "font-bold text-black" : ""
                 }`}
               >
                 Sessions
@@ -138,12 +130,12 @@ export default function EntitiesManager() {
             {openMenu && (
               <>
                 {/* Session Info */}
-                <div className="px-4 mt-2">
-                  <div className="border border-blue-200 p-2 rounded-lg">
-                    <p className="text-sm text-gray-400">Unit Name: Unit 1</p>
-                    <p className="text-sm text-gray-400">Unit ID: UA123</p>
-                    <p className="text-sm text-gray-400">Unit Type: Group</p>
-                    <p className="text-sm text-gray-400">
+                <div className="px-4 ">
+                  <div className="border border-gray-200 p-2 ">
+                    <p className="text-sm text-gray-600">Unit Name: Unit 1</p>
+                    <p className="text-sm text-gray-600">Unit ID: UA123</p>
+                    <p className="text-sm text-gray-600">Unit Type: Group</p>
+                    <p className="text-sm text-gray-600">
                       Signature Profile: Signature 1
                     </p>
                   </div>
@@ -154,20 +146,21 @@ export default function EntitiesManager() {
                   {sortedData.map((item) => (
                     <div
                       key={item.id}
-                      className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm rounded-md cursor-pointer ${
+                      className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${
                         activeCandidateId === item.id
-                          ? "bg-blue-100 font-semibold text-blue-800"
-                          : "hover:bg-blue-50"
+                          ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
+                          : "hover:bg-gray-50"
                       }`}
-                      onClick={() => {
+                      onClick={(e) => {
                         setSelectedEntity(item);
                         setShowEdit(true);
+                        e.stopPropagation();
                       }}
-                      onDoubleClick={() => {
+                      onDoubleClick={(e) => {
                         setScoresOpen(true);
                         setActiveCandidateId(item.id);
                         setShowEdit(true);
-                      }}
+                        e.stopPropagation();}}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         setRightClickedEntity(item);
@@ -200,17 +193,17 @@ export default function EntitiesManager() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
+      <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200  ml-1">
         {ScoresOpen && <CompetencyAccounting />}
       </div>
 
       {contextMenu.visible && (
           <div
-            className="absolute bg-blue-50 border border-gray-300 rounded-md shadow-md z-50 w-60"
+            className="absolute bg-gray-50 border border-gray-300 shadow-md z-50 w-60"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button
-              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left"
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-200 w-full text-left"
               onClick={(e) => {
                 setShowEdit(true);
                 e.stopPropagation();
@@ -224,7 +217,7 @@ export default function EntitiesManager() {
             </button>
 
             <button
-              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-blue-200 w-full text-left border-t border-gray-200"
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-200 w-full text-left border-t border-gray-200"
               onClick={() => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}

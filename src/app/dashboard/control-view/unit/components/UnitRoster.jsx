@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus, Trash2, Copy, Search, X } from "lucide-react";
+import SearchLookup from "./LookUpTable";
 
 const PERIOD_TYPES = [
   "Audit/Survey",
@@ -63,6 +64,7 @@ const DIRECT_DELIVERY = [
 export default function UnitRoster() {
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
+  const [showSearchLookup, setShowSearchLookup] = useState(false);
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
@@ -77,13 +79,17 @@ export default function UnitRoster() {
   };
 
   const handleDeleteCurve = () => {
-    const updated = curves.filter((c) => c.id !== selectedCurveId);
-    setCurves(updated);
-    if (updated.length > 0) {
-      setSelectedCurveId(updated[0].id);
-    } else {
-      setSelectedCurveId(null);
-    }
+    // Handle delete logic here
+    console.log("Delete curve");
+  };
+
+  const handleCandidateSelect = (candidate) => {
+    console.log("Selected candidate:", candidate);
+    // Here, handle the selected candidate:
+    // - Add them to the roster
+    // - Fill in the form fields
+    // - Store the selection for further processing
+    setShowSearchLookup(false);
   };
 
   if (!visible) return null;
@@ -115,7 +121,8 @@ export default function UnitRoster() {
               <Trash2 className="w-4 h-4 hover:text-red-600" />
             </button>
             <button
-              title="Search Curve"
+              onClick={() => setShowSearchLookup(true)}
+              title="Search Candidates"
               className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
               <Search className="w-4 h-4 hover:text-gray-500" />
@@ -391,6 +398,14 @@ export default function UnitRoster() {
           </div>
         </div>
       </div>
+
+      {/* Search Lookup Modal */}
+      {showSearchLookup && (
+        <SearchLookup
+          onClose={() => setShowSearchLookup(false)}
+          onSelect={handleCandidateSelect}
+        />
+      )}
     </>
   );
 }

@@ -3,8 +3,8 @@ import { ListFilterPlus, X } from "lucide-react";
 import { useState } from "react";
 
 const accessLevels = [
-  "Full Access [No restrictions on the client account]",
-  "Leaders Access [Cannot access the Staff Control // Cannot put negative marks for leaders]",
+  "Full Access",
+  "Leaders Access",
 ];
 
 const accountStatuses = ["Enabled", "Disabled"];

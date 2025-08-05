@@ -181,12 +181,13 @@ export default function UnitControl() {
                     key={item.id}
                     className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
+                        ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
                       setSelectedUnit(item);
                       setShowEdit(true);
+                      setShowAdd(false);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -209,13 +210,6 @@ export default function UnitControl() {
                   </div>
                 );
               })}
-
-            <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
-              <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm font-medium text-gray-900">
-                Objects
-              </span>
-            </div>
           </div>
         </div>
 
