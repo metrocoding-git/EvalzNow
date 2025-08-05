@@ -100,14 +100,13 @@ export default function AdminControl() {
     }
   };
 
-  return (
+   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Left Panel - Optimized for space efficiency */}
+      {/* Left Panel - Fixed width */}
       <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col overflow-hidden">
-          {/* Header with controls - Minimal padding */}
-          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
-            {/* Control buttons - Compact layout */}
+        <div className="flex flex-col h-full">
+          {/* Header with controls */}
+          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5 flex-shrink-0">
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
                 <button
@@ -115,6 +114,7 @@ export default function AdminControl() {
                   onClick={() => {
                     setShowAdd(true);
                     setSelectedClient(null);
+                    setShowEdit(false);
                   }}
                 >
                   <Plus className="w-3.5 h-3.5 text-black" />
@@ -141,7 +141,7 @@ export default function AdminControl() {
               </div>
             </div>
 
-            {/* Column Headers - Streamlined */}
+            {/* Column Headers */}
             <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
               {[
                 { key: "lastName", label: "Last Name" },
@@ -150,7 +150,7 @@ export default function AdminControl() {
               ].map((col) => (
                 <div
                   key={col.key}
-                  className={`${col.cols} flex items-center cursor-pointer hover:text-black transition-colors`}
+                  className="flex items-center cursor-pointer hover:text-black transition-colors"
                   onClick={() => {
                     if (sortBy === col.key) {
                       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -166,11 +166,11 @@ export default function AdminControl() {
             </div>
           </div>
 
-          <div className="flex flex-col flex-1 min-h-0">
-            {/* Client List - Optimized scrolling area */}
-            <div className="flex-[1.1] min-h-0 overflow-auto">
-              {/* List toggle - Compact */}
-              <div className="px-4 py-2 border-b border-gray-100">
+          {/* Client List Section - Fixed height */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="h-64 flex flex[1.2] flex-col overflow-auto">
+              {/* List toggle */}
+              <div className="px-4 py-1.5 border-b border-gray-100 flex-shrink-0">
                 <div
                   className="flex items-center cursor-pointer select-none hover:text-gray-700 transition-colors"
                   onClick={() => setShowList((prev) => !prev)}
@@ -186,74 +186,80 @@ export default function AdminControl() {
                 </div>
               </div>
 
-              {/* Client items - Reduced padding */}
-              {showList &&
-                getSortedDataList().map((item) => {
-                  const isSelected =
-                    selectedClient && selectedClient.id === item.id;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`client-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                        isSelected
-                          ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
-                          : "hover:bg-gray-50"
-                      }`}
-                      onClick={(e) => {
-                        setSelectedClient(item);
-                        e.stopPropagation();
-                        setShowEdit(true);
-                      }}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        setSelectedClient(item);
-                        setContextMenu({
-                          visible: true,
-                          x: e.pageX,
-                          y: e.pageY,
-                          selectedClient: item,
-                        });
-                      }}
-                    >
-                      <p
-                        className={` text-sm font-medium truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
+              {/* Client items */}
+              {showList && (
+                <div className="flex-1 overflow-auto">
+                  {getSortedDataList().map((item) => {
+                    const isSelected =
+                      selectedClient && selectedClient.id === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`client-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
+                          isSelected
+                            ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
+                            : "hover:bg-gray-50"
                         }`}
+                        onClick={(e) => {
+                          setSelectedClient(item);
+                          e.stopPropagation();
+                          setShowEdit(true);
+                          setShowAdd(false);
+                        }}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setSelectedClient(item);
+                          setContextMenu({
+                            visible: true,
+                            x: e.pageX,
+                            y: e.pageY,
+                            selectedClient: item,
+                          });
+                        }}
                       >
-                        {item.lastName}
-                      </p>
-                      <p
-                        className={` text-sm truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                      >
-                        {item.firstName}
-                      </p>
-                      <p
-                        className={` text-sm font-mono truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                      >
-                        {item.id}
-                      </p>
-                    </div>
-                  );
-                })}
+                        <p
+                          className={`text-sm font-medium truncate ${
+                            isSelected ? "text-black" : "text-gray-800"
+                          }`}
+                        >
+                          {item.lastName}
+                        </p>
+                        <p
+                          className={`text-sm truncate ${
+                            isSelected ? "text-black" : "text-gray-800"
+                          }`}
+                        >
+                          {item.firstName}
+                        </p>
+                        <p
+                          className={`text-sm font-mono truncate ${
+                            isSelected ? "text-black" : "text-gray-800"
+                          }`}
+                        >
+                          {item.id}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
+              <div className="flex items-center px-4 py-1.5 cursor-pointer select-none hover:text-gray-700 transition-colors flex-shrink-0">
                 <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
                 <span className="text-sm font-medium text-gray-900">
                   SaaS Service Usage Report
                 </span>
               </div>
             </div>
-            <div className="flex-[0.9] min-h-0 overflow-auto border-t border-gray-200 my-0.5" ref={formRef}>
+
+            {/* Client Editor Section - Fixed height */}
+            <div className="flex[0.8] border-t overflow-auto border-gray-200" ref={formRef}>
               <ClientEditor client={selectedClient} />
             </div>
           </div>
         </div>
 
-        {/* Context Menu - Modern styling */}
+        {/* Context Menu */}
         {contextMenu.visible && (
           <div
             ref={contextRef}
@@ -274,17 +280,13 @@ export default function AdminControl() {
             </button>
           </div>
         )}
-
-        {/* Client Editor - Optimized for space */}
       </div>
 
-      {/* Right Panel - Clean layout */}
-      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
+      {/* Right Panel */}
+      <div className="flex-1 bg-white">
         <div className="h-full flex flex-col">
           {showAdd && (
-            <div className="flex-1 overflow-auto">
-              <CreateClientForm onClose={() => setShowAdd(false)} />
-            </div>
+            <CreateClientForm onClose={() => setShowAdd(false)} />
           )}
 
           {/* Empty state when nothing is selected */}

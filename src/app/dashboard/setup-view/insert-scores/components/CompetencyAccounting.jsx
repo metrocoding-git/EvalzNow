@@ -94,7 +94,7 @@ export default function CompetencyAccounting() {
 
   return (
     <>
-      <div className="flex-grow h-1/3 border-2 border-blue-500 rounded-md flex flex-col ">
+      <div className="flex-grow h-1/3 border-1 border-gray-300  flex flex-col ">
         <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
           <span className="pl-2 text-md">
             Insert Scores for Competency Accounting
@@ -108,7 +108,7 @@ export default function CompetencyAccounting() {
             <button
               onClick={() => setScoreAdd(true)}
               title="Create Material"
-              className="text-blue-600 hover:text-blue-800 cursor-pointer"
+              className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
               <Plus className="w-4 h-4 hover:text-green-600" />
             </button>
@@ -128,7 +128,7 @@ export default function CompetencyAccounting() {
           </div>
         </div>
         <div className="flex-1 overflow-auto px-3 ">
-          <div className="flex-1 border-2 border-blue-200 rounded-md overflow-auto">
+          <div className="flex-1 border-2 border-gray-200  overflow-auto">
             {/* Scoring Criteria Table */}
             {scoreAdd && (
               <div className="my-2">
@@ -178,13 +178,13 @@ export default function CompetencyAccounting() {
       </div>
 
       <div className="h-3/5 overflow-auto my-2">
-        <div className="border-2 border-blue-500 rounded-md flex flex-col">
+        <div className="border-1 border-gray-300 flex flex-col">
           {/* Tab Buttons */}
           <div className="flex space-x-2 border-b p-2">
             <button
-              className={`px-3 py-1 text-sm rounded-t ${
+              className={`px-3 py-1 text-sm ${
                 activeTab === "Indirect"
-                  ? "bg-blue-100 text-blue-600 font-semibold"
+                  ? "bg-gray-200 text-gray-800 font-semibold"
                   : "hover:bg-gray-100"
               }`}
               onClick={() => setActiveTab("Indirect")}
@@ -192,9 +192,9 @@ export default function CompetencyAccounting() {
               Indirect Performance Point
             </button>
             <button
-              className={`px-3 py-1 text-sm rounded-t ${
+              className={`px-3 py-1 text-sm ${
                 activeTab === "Direct"
-                  ? "bg-blue-100 text-blue-600 font-semibold"
+                  ? "bg-gray-200 text-gray-800 font-semibold"
                   : "hover:bg-gray-100"
               }`}
               onClick={() => setActiveTab("Direct")}
@@ -222,7 +222,7 @@ export default function CompetencyAccounting() {
                         PP ID {index + 1}
                       </td>
                       <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5 rounded">
+                        <select className="w-full border px-2 py-0.5">
                           {PERIOD_TYPES.map((type, i) => (
                             <option key={`direct-period-${i}`}>{type}</option>
                           ))}
@@ -233,11 +233,11 @@ export default function CompetencyAccounting() {
                           type="text"
                           maxLength={50}
                           placeholder="Short Description"
-                          className="w-full border px-2 py-0.5 rounded"
+                          className="w-full border px-2 py-0.5"
                         />
                       </td>
                       <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5 rounded">
+                        <select className="w-full border px-2 py-0.5">
                           {DIRECT_DELIVERY.map((d, i) => (
                             <option key={`direct-delivery-${i}`}>{d}</option>
                           ))}
@@ -266,7 +266,7 @@ export default function CompetencyAccounting() {
                         PP ID -{index + 1}
                       </td>
                       <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5 rounded">
+                        <select className="w-full border px-2 py-0.5">
                           {PERIOD_TYPES.map((type, i) => (
                             <option key={`indirect-period-${i}`}>{type}</option>
                           ))}
@@ -277,11 +277,11 @@ export default function CompetencyAccounting() {
                           type="text"
                           maxLength={50}
                           placeholder="Short Description"
-                          className="w-full border px-2 py-0.5 rounded"
+                          className="w-full border px-2 py-0.5"
                         />
                       </td>
                       <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5 rounded">
+                        <select className="w-full border px-2 py-0.5">
                           {INDIRECT_DELIVERY.map((d, i) => (
                             <option key={`indirect-delivery-${i}`}>{d}</option>
                           ))}

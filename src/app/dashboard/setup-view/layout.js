@@ -16,19 +16,19 @@ export default function SetupViewLayout({ children }) {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden m-0.5 border-1 border-gray-800 ">
 
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
+        <div className="flex space-x-0 px-0 pt-0.5 border-b border-gray-200 bg-gray-100 ">
           {tabs.map((tab, index) => (
             <Link href={tab.path} key={index}>
               <span
                 onClick={() => setActiveTab(tab.label)}
                 className={
-                  `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
+                  `relative px-5 py-1 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                   (activeTab === tab.label
-                    ? "text-blue-600 bg-white border border-b-transparent border-gray-300 rounded-t-lg shadow-sm"
-                    : "text-gray-500 hover:text-blue-600 border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white")
+                    ? "text-gray-800 bg-white border border-b-transparent border-gray-300  shadow-sm"
+                    : "text-gray-600 hover:text-gray-600 border-t border-r border-b-transparent border-gray-300 hover:bg-gray-50")
                 }
 
               >

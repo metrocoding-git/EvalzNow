@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Search,
   List,
+  View,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import CandidateEditor from "./components/CandidateEditor";
@@ -25,6 +26,9 @@ export default function CandidateControl() {
   const [sortBy, setSortBy] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+   const [ethnicities, setEthnicities] = useState([]);
+  const [incomes, setIncomes] = useState([]);
+  const [showObjects, setShowObjects] = useState(false);
   const [dataList, setDataList] = useState([
     { id: "001", firstName: "John", lastName: "Doe" },
     { id: "002", firstName: "Jane", lastName: "Smith" },
@@ -185,12 +189,13 @@ export default function CandidateControl() {
                     key={item.id}
                     className={`candidate-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-gray-100 border-l-4 border-l-gray-500 text-black"
+                        ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
                       setSelectedCandidate(item);
                       setShowEdit(true);
+                      setShowAdd(false);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -211,12 +216,112 @@ export default function CandidateControl() {
                 );
               })}
 
-              <div className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors">
-                <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
-                <span className="text-sm font-medium text-gray-900">
-                  Objects
-                </span>
+              {/* Objects Section */}
+            <div className="border-t border-gray-200">
+              <div
+                className="flex items-center cursor-pointer select-none text-sm font-medium text-gray-900 px-4 py-2 hover:text-gray-700 transition-colors"
+                onClick={() => setShowObjects((prev) => !prev)}
+              >
+                {showObjects ? (
+                  <ChevronDown className="w-4 h-4 text-gray-500 mr-2" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
+                )}
+                Objects
               </div>
+
+              {showObjects && (
+                <div className="px-4 py-2 space-y-4">
+                  {/* Ethnicity Inputs */}
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Ethnicities (max 10):
+                    </label>
+                    <div className="space-y-1">
+                      {ethnicities.map((eth, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            maxLength={25}
+                            value={eth}
+                            onChange={(e) => {
+                              const updated = [...ethnicities];
+                              updated[idx] = e.target.value;
+                              setEthnicities(updated);
+                            }}
+                            className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                            placeholder={`Ethnicity ${idx + 1}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEthnicities(
+                                ethnicities.filter((_, i) => i !== idx)
+                              )
+                            }
+                            className="text-red-500 text-xs"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {ethnicities.length < 10 && (
+                        <button
+                          type="button"
+                          onClick={() => setEthnicities([...ethnicities, ""])}
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-sm text-gray-800"
+                        >
+                          + Add Ethnicity
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Income Inputs */}
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Incomes (max 10):
+                    </label>
+                    <div className="space-y-1">
+                      {incomes.map((income, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            maxLength={25}
+                            value={income}
+                            onChange={(e) => {
+                              const updated = [...incomes];
+                              updated[idx] = e.target.value;
+                              setIncomes(updated);
+                            }}
+                            className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                            placeholder={`Income ${idx + 1}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setIncomes(incomes.filter((_, i) => i !== idx))
+                            }
+                            className="text-red-500 text-xs"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {incomes.length < 10 && (
+                        <button
+                          type="button"
+                          onClick={() => setIncomes([...incomes, ""])}
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-sm text-gray-800"
+                        >
+                          + Add Income
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -227,6 +332,18 @@ export default function CandidateControl() {
             className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
+            <button
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <View className="w-4 h-4" /> Review
+              </span>
+              <span className="text-gray-400 text-xs ml-4">Ctrl + R</span>
+            </button>
+
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
               onClick={() => {
