@@ -111,17 +111,12 @@ export default function SearchLookup({ onClose, onSelect }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl w-11/12 max-w-4xl max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-center z-50">
+      <div className="bg-white shadow-xl w-11/12 max-w-4xl max-h-[80vh] border-1 border-gray-400 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center justify-between ">
+        <div className="bg-gray-100 px-4 py-3 border-b border-gray-200  ">
           <h2 className="text-lg font-semibold text-gray-900">Candidate Lookup</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-200  transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          
         </div>
 
         {/* Search Bar */}

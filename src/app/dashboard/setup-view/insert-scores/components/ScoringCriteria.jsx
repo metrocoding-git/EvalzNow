@@ -153,26 +153,20 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-gray-50 text-black border shadow-lg rounded overflow-y-auto z-50  w-full m-auto max-w-5xl  fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ">
+      <div className="bg-gray-50 text-black border shadow-lg overflow-y-auto z-50  w-full m-auto max-w-5xl  fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ">
         {/* Header */}
-        <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-          <div className="flex items-center gap-2 text-blue-800 font-semibold">
+        <div className=" bg-gray-100 px-4 py-2 border-b border-gray-300">
+          <div className="flex items-center gap-2 text-gray-800 font-semibold">
             <ListFilterPlus className="w-5 h-5" />
             Insert Scores
           </div>
-          <button
-            onClick={onClose}
-            className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
         <div className="px-3 py-1 text-sm text-gray-600 border-b border-gray-200">
           Scoring Criteria
         </div>
 
         {/* Form Fields */}
-        <div className="p-4 text-xs space-y-3">
+        <div className="p-4 text-xs space-y-3 bg-white">
           {/* PP ID */}
           <div className="flex items-center">
             <label className="w-40 pr-2 text-left text-gray-700">
@@ -181,7 +175,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
             <select
               value={formData.ppId}
               onChange={(e) => handleChange("ppId", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             >
               <option value="" disabled>
                 Select PP ID
@@ -205,7 +199,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
               step="0.01"
               value={formData.duration}
               onChange={(e) => handleChange("duration", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             />
           </div>
 
@@ -218,7 +212,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
               type="date"
               value={formData.referenceDate}
               onChange={(e) => handleChange("referenceDate", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             />
           </div>
 
@@ -232,7 +226,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
               maxLength={50}
               value={formData.task}
               onChange={(e) => handleChange("task", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             />
           </div>
 
@@ -244,7 +238,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
             <select
               value={formData.workflowStage}
               onChange={(e) => handleChange("workflowStage", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             >
               <option value="">Select Stage</option>
               {workflowStages.map((stage, i) => (
@@ -263,7 +257,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
             <select
               value={formData.assessmentType}
               onChange={(e) => handleChange("assessmentType", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             >
               <option value="">Select Assessment Type</option>
               {assessmentTypes.map((type, i) => (
@@ -282,7 +276,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
             <select
               value={formData.scheduleImpact}
               onChange={(e) => handleChange("scheduleImpact", e.target.value)}
-              className="flex-1 border px-2 py-1 rounded"
+              className="flex-1 border px-2 py-1"
             >
               <option value="">Select Schedule Impact</option>
               {scheduleImpacts.map((impact, i) => (
@@ -298,9 +292,10 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
         <div className="flex justify-end gap-2 p-2 pr-3 border-t bg-gray-100">
           <button
             onSubmit={handleSubmit}
-            className="px-3 py-1 text-sm bg-blue-600 text-white border border-blue-700 rounded hover:bg-blue-700"
+            onClick={onClose}
+            className="px-3 py-1 text-sm bg-gray-600 text-white border border-gray-700 hover:bg-gray-700"
           >
-            Create
+            Close
           </button>
         </div>
       </div>

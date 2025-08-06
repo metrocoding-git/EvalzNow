@@ -62,27 +62,7 @@ export default function AnalyticsView() {
               </Link>
             ))}
           </div>
-          <div className="w-6/12 lg:w-9/12 flex flex-col border-l-1 h-full border-gray-200  p-1">
-            <div
-              className="flex justify-start items-center space-x-2 px-4"
-            >
-              {showSorter && (
-                <select
-                  id="sorter"
-                  name="sorter"
-                  value={selectedSort}
-                  onChange={(e) => setSelectedSort(e.target.value)}
-                  onBlur={() => setShowSorter(false)} // Hide on blur
-                  className="border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  <option value="activateCandidateLevel">
-                    Activate Candidate Level
-                  </option>
-                  <option value="activateUnitLevel">Activate Unit Level</option>
-                </select>
-              )}
-            </div>
-          </div>
+          
         </div>
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 ">
