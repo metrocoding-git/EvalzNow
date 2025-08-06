@@ -123,7 +123,7 @@ export default function EntitiesManager() {
                   openMenu ? "font-bold text-black" : ""
                 }`}
               >
-                Sessions
+                Details
               </span>
             </div>
 
@@ -193,7 +193,7 @@ export default function EntitiesManager() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200  ml-1">
+      <div className="flex-1 bg-white flex flex-col border-l border-gray-200 ml-1 px-3 py-2 overflow-y-auto">
         {ScoresOpen && <CompetencyAccounting />}
       </div>
 

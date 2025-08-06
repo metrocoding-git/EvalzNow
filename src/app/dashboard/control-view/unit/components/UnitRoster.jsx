@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Copy, Search, X } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 
 const PERIOD_TYPES = [
@@ -62,8 +62,7 @@ const DIRECT_DELIVERY = [
 ];
 
 export default function UnitRoster() {
-  const [selectedCurveId, setSelectedCurveId] = useState(1);
-  const [showCreateMaterial, setShowCreateMaterial] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
 
   const [points, setPoints] = useState(
@@ -78,9 +77,38 @@ export default function UnitRoster() {
     setPoints(updated);
   };
 
+  const toggleRowSelection = (index) => {
+    setSelectedRows((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
   const handleDeleteCurve = () => {
-    // Handle delete logic here
-    console.log("Delete curve");
+    const updated = points.filter((_, index) => !selectedRows.includes(index));
+    setPoints(updated);
+    setSelectedRows([]); // reset selection
+  };
+
+  const moveRowUp = () => {
+    if (selectedRows.length !== 1) return;
+    const index = selectedRows[0];
+    if (index === 0) return;
+
+    const updated = [...points];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    setPoints(updated);
+    setSelectedRows([index - 1]);
+  };
+
+  const moveRowDown = () => {
+    if (selectedRows.length !== 1) return;
+    const index = selectedRows[0];
+    if (index === points.length - 1) return;
+
+    const updated = [...points];
+    [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
+    setPoints(updated);
+    setSelectedRows([index + 1]);
   };
 
   const handleCandidateSelect = (candidate) => {
@@ -96,55 +124,68 @@ export default function UnitRoster() {
 
   return (
     <>
-      <div className="flex-grow h-2/5 border border-gray-300 flex flex-col ">
-        <h2 className="text-md font-bold bg-gray-100 p-1  flex items-center border-b border-gray-200">
+      <div className="flex-grow h-1/2 border border-gray-300 flex flex-col ">
+        <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
           <span className="pl-2 text-md text-gray-800">Unit Config</span>
           <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
         </h2>
 
-        <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
-          <h2 className="text-sm font-semibold">Unit Roster</h2>
+        <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
+          <h2 className="text-sm font-semibold mx-1">Unit Roster</h2>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowCreateMaterial(true)}
-              title="Create Material"
-              className="text-gray-600 hover:text-green-600 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 hover:text-green-600" />
-            </button>
-            <button
-              onClick={handleDeleteCurve}
-              title="Delete Curve"
-              className="text-gray-600 hover:text-red-600 cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4 hover:text-red-600" />
-            </button>
-            <button
               onClick={() => setShowSearchLookup(true)}
               title="Search Candidates"
-              className="text-gray-600 hover:text-gray-800 cursor-pointer"
+              className="text-gray-600 hover:text-black cursor-pointer"
             >
-              <Search className="w-4 h-4 hover:text-gray-500" />
+              <Plus className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleDeleteCurve}
+              title="Delete Selected Row(s)"
+              className="text-gray-600 hover:text-red-600 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={moveRowUp}
+              title="Move Up"
+              className="text-gray-600 hover:text-black cursor-pointer"
+            >
+              <ArrowUp className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={moveRowDown}
+              title="Move Down"
+              className="text-gray-600 hover:text-black cursor-pointer"
+            >
+              <ArrowDown className="w-4 h-4" />
             </button>
           </div>
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold my-1 mx-3">Entities</h4>
         </div>
         <div className="flex-1 overflow-auto px-3 ">
           <div className="flex-1 border border-gray-300 overflow-auto">
             <table className="w-full border text-left text-xs">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border p-1 w-10 text-center">#</th>
-                  <th className="border p-1">Last Name</th>
-                  <th className="border p-1">First Name</th>
-                  <th className="border p-1">Candidate ID</th>
-                  <th className="border p-1">Unit Outcome</th>
-                  <th className="border p-1">Present Count</th>
-                  <th className="border p-1">Excused Absences</th>
-                  <th className="border p-1">Unexcused Absences</th>
-                  <th className="border p-1">Excused Tardies</th>
-                  <th className="border p-1">Unexcused Tardies</th>
-                  <th className="border p-1">Total Tally</th>
+                  <th className="border p-1 w-8 text-center">#</th>
+                  <th className="border p-1 w-[90px]">Last Name</th>
+                  <th className="border p-1 w-[90px]">First Name</th>
+                  <th className="border p-1 w-[90px]">Candidate ID</th>
+                  <th className="border p-1 w-[90px]">Unit Outcome</th>
+                  <th className="border p-1 w-[90px]">Present Count</th>
+                  <th className="border p-1 w-24">Excused Absences</th>
+                  <th className="border p-1 w-24">Unexcused Absences</th>
+                  <th className="border p-1 w-24">Excused Tardies</th>
+                  <th className="border p-1 w-24">Unexcused Tardies</th>
+                  <th className="border p-1 w-16">Total Tally</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,24 +205,21 @@ export default function UnitRoster() {
 
                   return (
                     <tr key={index}>
-                      <td className="border p-1 text-center">{index + 1}</td>
-                      <td className="border p-1">
-                        <input
-                          type="text"
-                          className="w-full border px-2 py-0.5"
-                        />
+                      <td className="border  text-center">{index + 1}</td>
+                      <td className="border ">
+                        <span className="block px-2 py-0.5 text-sm text-gray-800">
+                          {point.lastName || "last name"}
+                        </span>
                       </td>
                       <td className="border p-1">
-                        <input
-                          type="text"
-                          className="w-full border px-2 py-0.5"
-                        />
+                        <span className="block px-2 py-0.5 text-sm text-gray-800">
+                          {point.firstName || "first name"}
+                        </span>
                       </td>
                       <td className="border p-1">
-                        <input
-                          type="text"
-                          className="w-full border px-2 py-0.5"
-                        />
+                        <span className="block px-2 py-0.5 text-sm text-gray-800">
+                          {point.candidateID || "candidate ID"}
+                        </span>
                       </td>
                       <td className="border p-1">
                         <select className="w-full border px-2 py-0.5">
@@ -271,129 +309,150 @@ export default function UnitRoster() {
         </div>
       </div>
 
-      <div className="h-3/5 overflow-auto my-2">
+      <div className="h-1/2 my-2">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
             <div>
-              <h2 className="text-md font-bold bg-gray-100 p-1 pl-2 flex items-center border-b border-gray-200">
+              <h2 className="text-md font-semibold bg-gray-100 p-0.5 pl-2 flex items-center border-b border-gray-200">
                 Assessment Block Manager
                 <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
               </h2>
-              
             </div>
             {/* Tab Buttons */}
-          <div className="flex space-x-2 border-b p-2 bg-gray-50">
-            <button
-              className={`px-3 py-1 text-sm ${
-                activeTab === "Indirect"
-                  ? "bg-gray-200 text-gray-800 font-semibold"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("Indirect")}
-            >
-              Indirect Performance Point
-            </button>
-            <button
-              className={`px-3 py-1 text-sm ${
-                activeTab === "Direct"
-                  ? "bg-gray-200 text-gray-800 font-semibold"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("Direct")}
-            >
-              Direct Performance Point
-            </button>
-          </div>
+            <div className="flex space-x-2 border-b p-1 bg-gray-50">
+              <button
+                className={`px-3 py-1 text-sm ${
+                  activeTab === "Indirect"
+                    ? "bg-gray-200 text-gray-800 font-semibold"
+                    : "hover:bg-gray-100"
+                }`}
+                onClick={() => setActiveTab("Indirect")}
+              >
+                Indirect Performance Points (Master)
+              </button>
+              <button
+                className={`px-3 py-1 text-sm ${
+                  activeTab === "Direct"
+                    ? "bg-gray-200 text-gray-800 font-semibold"
+                    : "hover:bg-gray-100"
+                }`}
+                onClick={() => setActiveTab("Direct")}
+              >
+                <p>Direct Performance Points (Master)</p>
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 overflow-auto p-2">
+          <div className="flex-1 p-2">
             {activeTab === "Direct" && (
-              <table className="w-full border text-left text-xs">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="border p-1 w-10 text-center">PP ID</th>
-                    <th className="border p-1">Period Type</th>
-                    <th className="border p-1">Short Description</th>
-                    <th className="border p-1">Delivery</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {points.map((_, index) => (
-                    <tr key={`direct-${index}`}>
-                      <td className="border p-1 text-center">
-                        +{index + 1}
-                      </td>
-                      <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5">
-                          {PERIOD_TYPES.map((type, i) => (
-                            <option key={`direct-period-${i}`}>{type}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="border p-1">
-                        <input
-                          type="text"
-                          maxLength={50}
-                          placeholder="Short Description"
-                          className="w-full border px-2 py-0.5"
-                        />
-                      </td>
-                      <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5">
-                          {DIRECT_DELIVERY.map((d, i) => (
-                            <option key={`direct-delivery-${i}`}>{d}</option>
-                          ))}
-                        </select>
-                      </td>
+              <div className="max-h-60 overflow-auto border border-gray-200">
+                <table className="w-full text-left text-xs mb-7">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border p-1 w-10 text-center">PP ID</th>
+                      <th className="border p-1">Period Type</th>
+                      <th className="border p-1">Short Description</th>
+                      <th className="border p-1">Delivery</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {points.map((_, index) => (
+                      <tr key={`direct-${index}`}>
+                        <td className="border flex justify-between p-1 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(index)}
+                            onChange={() => toggleRowSelection(index)}
+                            className="mr-1"
+                          />
+                          +{index + 1}
+                        </td>
+
+                        <td className="border p-1">
+                          <select className="w-full border px-2 py-0.5">
+                            {PERIOD_TYPES.map((type, i) => (
+                              <option key={`direct-period-${i}`}>{type}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="border p-1">
+                          <input
+                            type="text"
+                            maxLength={50}
+                            placeholder="Short Description"
+                            className="w-full border px-2 py-0.5"
+                          />
+                        </td>
+                        <td className="border p-1">
+                          <select className="w-full border px-2 py-0.5">
+                            {DIRECT_DELIVERY.map((d, i) => (
+                              <option key={`direct-delivery-${i}`}>{d}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             {activeTab === "Indirect" && (
-              <table className="w-full border text-left text-xs">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="border p-1 w-10 text-center">PP ID</th>
-                    <th className="border p-1">Period Type</th>
-                    <th className="border p-1">Short Description</th>
-                    <th className="border p-1">Delivery</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {points.map((_, index) => (
-                    <tr key={`indirect-${index}`}>
-                      <td className="border p-1 text-center">
-                       -{index + 1}
-                      </td>
-                      <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5">
-                          {PERIOD_TYPES.map((type, i) => (
-                            <option key={`indirect-period-${i}`}>{type}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="border p-1">
-                        <input
-                          type="text"
-                          maxLength={50}
-                          placeholder="Short Description"
-                          className="w-full border px-2 py-0.5"
-                        />
-                      </td>
-                      <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5">
-                          {INDIRECT_DELIVERY.map((d, i) => (
-                            <option key={`indirect-delivery-${i}`}>{d}</option>
-                          ))}
-                        </select>
-                      </td>
+              <div className="max-h-60 overflow-auto border border-gray-200">
+                <table className="w-full text-left text-xs mb-7">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="border p-1 w-10 text-center">PP ID</th>
+                      <th className="border p-1">Period Type</th>
+                      <th className="border p-1">Short Description</th>
+                      <th className="border p-1">Delivery</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {points.map((_, index) => (
+                      <tr key={`indirect-${index}`}>
+                        <td className="border flex justify-between p-1 ">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(index)}
+                            onChange={() => toggleRowSelection(index)}
+                            className="mr-1"
+                          />
+                          -{index + 1}
+                        </td>
+
+                        <td className="border p-1">
+                          <select className="w-full border px-2 py-0.5">
+                            {PERIOD_TYPES.map((type, i) => (
+                              <option key={`indirect-period-${i}`}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="border p-1">
+                          <input
+                            type="text"
+                            maxLength={50}
+                            placeholder="Short Description"
+                            className="w-full border px-2 py-0.5"
+                          />
+                        </td>
+                        <td className="border p-1">
+                          <select className="w-full border px-2 py-0.5">
+                            {INDIRECT_DELIVERY.map((d, i) => (
+                              <option key={`indirect-delivery-${i}`}>
+                                {d}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

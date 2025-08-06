@@ -137,15 +137,29 @@ export default function PreviewPage() {
                 open ? "font-bold text-black" : ""
               }`}
             >
-              Activated Candidates
+              Details
             </span>
           </div>
 
           {/* Candidate List */}
           {open && (
             <div className="p-2 space-y-1">
+              {/* Session Info */}
+              <div className="px-4 ">
+                <div className="border border-gray-200 p-2 ">
+                  <p className="text-sm text-gray-600">Unit Name: Unit 1</p>
+                  <p className="text-sm text-gray-600">Unit ID: UA123</p>
+                  <p className="text-sm text-gray-600">Unit Type: Group</p>
+                  <p className="text-sm text-gray-600">
+                    Signature Profile: Signature 1
+                  </p>
+                </div>
+              </div>
+
               {sortedCandidates.length === 0 ? (
-                <p className="text-xs text-gray-500">No activated candidates.</p>
+                <p className="text-xs text-gray-500">
+                  No activated candidates.
+                </p>
               ) : (
                 sortedCandidates.map((candidate, index) => (
                   <div
@@ -164,14 +178,14 @@ export default function PreviewPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200 ml-1 overflow-y-auto">
+      <div className="flex-1 bg-white flex flex-col border-l border-gray-200 ml-1 overflow-y-auto">
         <div className="h-full flex flex-col mx-2 my-3">
           <h1 className="text-xl font-bold px-3 pb-2 border-b border-gray-200">
             Preliminary Checkpoints
           </h1>
 
           {/* Master PP ID Bin Totals */}
-          <div className="px-4 mt-4">
+          <div className="px-2 mt-4">
             <h2 className="text-md font-semibold text-gray-700 mb-2">
               Master PP ID Bin Totals
             </h2>
@@ -179,7 +193,7 @@ export default function PreviewPage() {
           </div>
 
           {/* Competency Accounting Table */}
-          <div className="px-4 mt-6 mb-6">
+          <div className="px-2 mt-4 mb-4">
             <h2 className="text-md font-semibold text-gray-700 mb-2">
               Competency Accounting
             </h2>

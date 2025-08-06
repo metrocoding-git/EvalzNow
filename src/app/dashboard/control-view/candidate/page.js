@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import CandidateEditor from "./components/CandidateEditor";
 import CreateCandidateForm from "./components/CreateCandidateForm";
+import ReviewCandidate from "./components/ReviewCandidate";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -26,9 +27,10 @@ export default function CandidateControl() {
   const [sortBy, setSortBy] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-   const [ethnicities, setEthnicities] = useState([]);
+  const [ethnicities, setEthnicities] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [showObjects, setShowObjects] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const [dataList, setDataList] = useState([
     { id: "001", firstName: "John", lastName: "Doe" },
     { id: "002", firstName: "Jane", lastName: "Smith" },
@@ -116,7 +118,7 @@ export default function CandidateControl() {
                     setShowAdd(true);
                   }}
                 >
-                   <Plus className="w-3.5 h-3.5 text-black" />
+                  <Plus className="w-3.5 h-3.5 text-black" />
                 </button>
 
                 {selectedCandidate && (
@@ -159,7 +161,6 @@ export default function CandidateControl() {
                   }}
                 >
                   {col.label}
-                  
                 </div>
               ))}
             </div>
@@ -196,6 +197,7 @@ export default function CandidateControl() {
                       setSelectedCandidate(item);
                       setShowEdit(true);
                       setShowAdd(false);
+                      setShowReview(false);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -209,14 +211,32 @@ export default function CandidateControl() {
                       });
                     }}
                   >
-                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.lastName}</p>
-                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.firstName}</p>
-                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>{item.id}</p>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.lastName}
+                    </p>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.firstName}
+                    </p>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.id}
+                    </p>
                   </div>
                 );
               })}
 
-              {/* Objects Section */}
+            {/* Objects Section */}
             <div className="border-t border-gray-200">
               <div
                 className="flex items-center cursor-pointer select-none text-sm font-medium text-gray-900 px-4 py-2 hover:text-gray-700 transition-colors"
@@ -334,8 +354,12 @@ export default function CandidateControl() {
           >
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
-              onClick={() => {
+              onClick={(item) => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
+                 setSelectedCandidate(item);
+                setShowReview(true);
+                setShowEdit(false);
+                setShowAdd(false);
               }}
             >
               <span className="flex items-center gap-2">
@@ -361,10 +385,7 @@ export default function CandidateControl() {
 
         {/* Candidate editor Section */}
         <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
-          <CandidateEditor
-            candidate={selectedCandidate}
-            showForm={showEdit}
-          />
+          <CandidateEditor candidate={selectedCandidate} showForm={showEdit} />
         </div>
       </div>
 
@@ -374,6 +395,12 @@ export default function CandidateControl() {
           {showAdd && (
             <div className="h-full overflow-auto">
               <CreateCandidateForm onClose={() => setShowAdd(false)} />
+            </div>
+          )}
+
+          {showReview && selectedCandidate && (
+            <div className="h-full overflow-auto">
+              <ReviewCandidate candidate={selectedCandidate} />
             </div>
           )}
         </div>

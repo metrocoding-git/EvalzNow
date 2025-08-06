@@ -2,16 +2,16 @@ import React from "react";
 
 const CompetencyAccountingTable = ({ data }) => {
   return (
-    <div className="overflow-x-auto border-2 border-blue-200 rounded-md shadow-sm">
+    <div className="overflow-x-auto border-1 border-gray-200 shadow-sm">
       <table className="min-w-full table-auto text-sm text-left border-collapse">
-        <thead className="bg-blue-100 text-blue-900">
+        <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
-            <th className="px-4 py-3">Master PP ID Callout</th>
-            <th className="px-4 py-3">Short Description</th>
-            <th className="px-4 py-3">Duration</th>
-            <th className="px-4 py-3">Critical Reference Date</th>
-            <th className="px-4 py-3">Missing Competencies</th>
-            <th className="px-4 py-3">Error</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Master PP ID Callout</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Short Description</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Duration</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Critical Reference Date</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Missing Competencies</th>
+            <th className="px-4 py-3 border-1 border-gray-300">Error</th>
           </tr>
         </thead>
         <tbody className="text-gray-700">
