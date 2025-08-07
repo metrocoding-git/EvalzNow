@@ -122,20 +122,20 @@ export default function PlotSelections() {
   if (!visible) return null;
 
   return (
-    <>
-      <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
+    <div>
+      <h2 className="text-md font-bold bg-gray-100 flex items-center">
         <span className="pl-2 text-md">Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-          <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
+        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 p-1">
+          <div className="flex items-center justify-between mb-1 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {}}
                 title="Create Material"
-                className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                className="text-gray-600 hover:text-gray-800 cursor-pointer"
               >
                 <RefreshCw
                   className="w-4 h-4 hover:text-green-600"
@@ -147,20 +147,20 @@ export default function PlotSelections() {
                 title="Delete Curve"
                 className="text-red-600 hover:text-red-800 cursor-pointer"
               >
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                <FolderOutput className="w-4 h-4 hover:text-gray-600" />
               </button>
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-2">
+          <div className=" h-full overflow-hidden w-full ">
             <div className=" h-1/2 flex flex-col border border-gray-200  ">
-              <div className="flex-1 overflow-auto  p-1 ">
+              <div className="flex-1 overflow-auto   ">
                 <div className="space-y-1">
                   {chart.map((chart, index) => (
                     <div
                       key={index}
-                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${
-                        index == 0 ? "bg-blue-300" : ""
+                      className={`flex items-center gap-2 border px-2 p-0.5 hover:bg-gray-100 cursor-pointer ${
+                        index == 0 ? "bg-gray-300" : ""
                       }`}
                     >
                       <span className="text-xl">{chart.icon}</span>
@@ -175,11 +175,11 @@ export default function PlotSelections() {
 
             <div className="h-1/2 flex flex-col border border-gray-200">
               {/* Tab Buttons */}
-              <div className="flex space-x-2 border-b p-2">
+              <div className="flex space-x-2 border-b p-0.5">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
+                  className={`px-3 py-1 text-sm cursor-pointer ${
                     activeAdjustPropertieTab === "Property editor"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
+                      ? "bg-gray-100 text-gray-600 font-semibold"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
@@ -187,9 +187,9 @@ export default function PlotSelections() {
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
+                  className={`px-3 py-1 text-sm cursor-pointer ${
                     activeAdjustPropertieTab === "Table"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
+                      ? "bg-gray-100 text-gray-600 font-semibold"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
@@ -199,7 +199,7 @@ export default function PlotSelections() {
               </div>
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="overflow-auto h-full">
                 {activeAdjustPropertieTab === "Property editor" && (
                   <PropertyEditor
                     properties={chartProperties}
@@ -234,7 +234,7 @@ export default function PlotSelections() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100 ">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ">
           <div className="h-full overflow-auto  m-5">
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
@@ -284,6 +284,6 @@ export default function PlotSelections() {
           <ScoringCriteria onClose={() => setScoreAdd(false)} />
         </div>
       )}
-    </>
+    </div>
   );
 }
