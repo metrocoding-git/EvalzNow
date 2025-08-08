@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -68,9 +69,9 @@ export default function DataExtractions() {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden border-1 border-gray-300">
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
+        {/* <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
             {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
@@ -79,8 +80,8 @@ export default function DataExtractions() {
                   className={
                     `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                     (activeTab === tab.label
-                      ? "text-blue-600 bg-white border border-b-transparent border-gray-300 rounded-t-lg shadow-sm"
-                      : "text-gray-500 hover:text-blue-600 border-t border-r border-b-transparent border-gray-300 rounded-t-lg hover:bg-white")
+                      ? "text-gray-600 bg-white border border-b-transparent border-gray-300 shadow-sm"
+                      : "text-gray-500 hover:text-gray-600 border-t border-r border-b-transparent border-gray-300 hover:bg-white")
                   }
                 >
                   {tab.label}
@@ -88,33 +89,32 @@ export default function DataExtractions() {
               </Link>
             ))}
           </div>
-        </div>
+        </div> */}
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
           <div className="flex flex-col h-full">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-2/4">
+              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/4">
                   {/* Header */}
-                  <div className="bg-blue-100 px-4 py-2 border-b border-blue-300">
+                 <div className="flex flex-col bg-gray-100 px-4 py-1.5 gap-2 border-b border-gray-300">
+                    <div className="relative w-full">
+                      <input
+                        type="text"
+                        className="border w-full pl-2 pr-8 py-1 text-sm"
+                        placeholder="Search"
+                      />
+                      <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+                    </div>
                     {/* Table Header with sorting */}
-                    <div className="grid grid-cols-3 text-blue-800 font-semibold text-sm w-full">
+                    <div className="grid grid-cols-3 text-gray-800 font-semibold text-sm w-full">
                       <div
                         className="flex items-center gap-1 cursor-pointer select-none"
                         onClick={() => handleSort("lastName")}
                       >
                         Last Name
-                        {sortKey === "lastName" ? (
-                          sortOrder === "asc" ? (
-                            <ChevronUp className="w-4 h-4 text-blue-600" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-blue-600" />
-                          )
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-gray-400" />
-                        )}
                       </div>
 
                       <div
@@ -122,15 +122,6 @@ export default function DataExtractions() {
                         onClick={() => handleSort("firstName")}
                       >
                         First Name
-                        {sortKey === "firstName" ? (
-                          sortOrder === "asc" ? (
-                            <ChevronUp className="w-4 h-4 text-blue-600" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-blue-600" />
-                          )
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-gray-400" />
-                        )}
                       </div>
 
                       <div
@@ -138,15 +129,6 @@ export default function DataExtractions() {
                         onClick={() => handleSort("id")}
                       >
                         ID
-                        {sortKey === "id" ? (
-                          sortOrder === "asc" ? (
-                            <ChevronUp className="w-4 h-4 text-blue-600" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-blue-600" />
-                          )
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-gray-400" />
-                        )}
                       </div>
                     </div>
                   </div>
@@ -154,7 +136,7 @@ export default function DataExtractions() {
                   <div className="flex-1 overflow-auto">
                     <div className="px-4 py-2">
                       <div
-                        className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
+                        className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-2 py-1"
                         onClick={() => setopenMenu(!openMenu)}
                       >
                         <span
@@ -176,7 +158,7 @@ export default function DataExtractions() {
                       {openMenu && (
                         <>
                           <div className="items-center justify-center px-4 mb-2">
-                            <div className="border border-blue-200 p-1 rounded-lg">
+                            <div className="border border-gray-200 p-1">
                               <span className="text-sm text-gray-400">
                                 Unit Name: Unit 1
                               </span>
@@ -200,8 +182,8 @@ export default function DataExtractions() {
                             {sortedData.map((item) => (
                               <div
                                 key={item.id}
-                                className={`grid grid-cols-3 gap-2 items-center text-sm rounded-md px-2 py-1 cursor-pointer
-      ${activeCandidateId === item.id ? "bg-blue-200" : "hover:bg-blue-50"}`}
+                                className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
+      ${activeCandidateId === item.id ? "bg-gray-200" : "hover:bg-gray-50"}`}
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
@@ -230,8 +212,8 @@ export default function DataExtractions() {
 
               {/* Right Panel */}
               {RightPanelOpen && (
-                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
-                  <div className="flex-1 h-full bg-white shadow-md rounded-2xl p-6 overflow-y-auto">
+                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-gray-200 p-1 ml-1">
+                  <div className="flex-1 h-full bg-white shadow-md p-6 overflow-y-auto">
                     <div className="space-y-4">
                       <p className="text-base font-semibold text-gray-800 leading-relaxed">
                         EvalzNow – Human Capital & Education Quantitative and
@@ -267,7 +249,7 @@ export default function DataExtractions() {
                               id={item.id}
                               type="radio"
                               name="candidateOption" // same name for grouping
-                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
                             />
                             <label htmlFor={item.id} className="text-gray-800">
                               {item.label}
@@ -278,7 +260,7 @@ export default function DataExtractions() {
 
                       <button
                         type="submit"
-                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition"
+                        className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2 transition"
                       >
                         Extract
                       </button>

@@ -1,5 +1,3 @@
-
-
 "use client";
 import { Edit, X } from "lucide-react";
 import { useState } from "react";
@@ -17,99 +15,88 @@ const SecondaryInputForm = ({ onClose }) => {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
+    <div className="flex flex-col h-full bg-white">
       {/* Section Header */}
-      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-        <div className="flex items-center gap-2 text-blue-800 font-semibold">
+      <div className="flex justify-between items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
+        <div className="flex items-center text-sm gap-2 text-gray-800 font-semibold">
           <Edit className="w-5 h-5" />
           Secondary Input Area
         </div>
-       
       </div>
 
-      {/* PP ID Range */}
-      <div className=" gap-1 text-xs p-2">
-        <label className="block font-medium text-gray-700 mb-1">
-          PP ID Range
-        </label>
-        <label className="block text-red-600 font-sm mb-1">
-          View the plot by continuous PP ID range, this includes negative and
-          positive PP IDs.
-        </label>
+      <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
+        {/* PP ID Range */}
+        <div className="gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">
+            PP ID Range
+          </label>
+        
+          <input
+            type="number"
+            value={ppIdFrom}
+            onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+            className=" border px-2 py-1 w-1/2"
+            placeholder="From (e.g., -3)"
+          />
+          <input
+            type="number"
+            value={ppIdTo}
+            onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+            className="border px-2 py-1 w-1/2"
+            placeholder="To (e.g., 3)"
+          />
+        </div>
 
+        {/* Critical Reference Date */}
+        <div className=" gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">
+            Critical Reference Date
+          </label>
+        
+          <input
+            type="date"
+            value={criticalDate}
+            onChange={(e) => setCriticalDate(e.target.value)}
+            className="border px-2 py-1 w-full"
+          />
+        </div>
 
-        <input
-          type="number"
-          value={ppIdFrom}
-          onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-          className=" border rounded px-2 py-1 w-1/2"
-          placeholder="From (e.g., -3)"
-        />
-        <input
-          type="number"
-          value={ppIdTo}
-          onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-          className="border rounded px-2 py-1 w-1/2"
-          placeholder="To (e.g., 3)"
-        />
+        {/* Threshold Toggle */}
+        <div className="flex items-center justify-between p-2">
+          <label className="font-medium text-gray-800">Enable Thresholds</label>
 
-      </div>
-
-      {/* Critical Reference Date */}
-      <div className=" gap-1 text-xs p-2">
-        <label className="block font-medium text-gray-700 mb-1">
-          Critical Reference Date
-        </label>
-        <label className="block text-red-600 font-sm mb-1">
-          View the plot by continuous master PP ID date range, this includes
-          negative and positive PP IDs.
-        </label>
-
-
-        <input
-          type="date"
-          value={criticalDate}
-          onChange={(e) => setCriticalDate(e.target.value)}
-          className="border rounded px-2 py-1 w-full"
-        />
-
-      </div>
-
-      {/* Threshold Toggle */}
-      <div className="flex items-center justify-between  p-2 rounded">
-        <label className="font-medium text-gray-800">Enable Thresholds</label>
-        <div className="relative w-12 h-6">
-          {/* Background track */}
-          <div
-            className={`absolute inset-0 rounded-full transition-colors duration-300 ${thresholdEnabled ? "bg-green-500" : "bg-gray-300"
-              }`}
-          ></div>
-
-          {/* Toggle knob */}
+          {/* Toggle Wrapper */}
           <div
             onClick={() => setThresholdEnabled(!thresholdEnabled)}
-            className={`absolute top-0 w-6 h-6 bg-white border border-gray-300 rounded-full shadow transform transition-transform duration-300 cursor-pointer ${thresholdEnabled ? "translate-x-0" : "translate-x-6"
+            className="relative w-12 h-6 cursor-pointer"
+          >
+            {/* Background track */}
+            <div
+              className={`absolute inset-0 rounded-full transition-colors duration-300 ${
+                thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
               }`}
-          ></div>
+            />
+
+            {/* Toggle knob */}
+            <div
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                thresholdEnabled ? "translate-x-6" : "translate-x-0"
+              }`}
+            />
+          </div>
         </div>
       </div>
-
-
       {/* Submit Button */}
-      <div className="flex justify-end gap-2 p-2 pr-3 border-t bg-gray-100">
+      <div className="flex justify-end gap-2 pr-3 border-t border-gray-600  bg-gray-100">
         <button
           onClick={handleSubmit}
-          className="px-3 py-1 text-sm bg-blue-600 text-white border border-blue-700 rounded hover:bg-blue-700 w-full"
+          className="px-3 py-0.5 text-sm bg-gray-400 text-white border border-gray-400 hover:bg-gray-500"
         >
           Submit
         </button>
       </div>
-
-
     </div>
   );
-}
-
-
+};
 
 export default SecondaryInputForm;

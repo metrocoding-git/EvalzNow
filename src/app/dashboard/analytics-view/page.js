@@ -41,10 +41,10 @@ export default function AnalyticsView() {
   const [openMenu, setopenMenu] = useState(true);
 
   return (
-    <div className="w-full flex flex-col">
+    <div className="w-full flex flex-col p-0.5">
       <div className="h-full flex flex-col overflow-hidden  border-1 border-gray-600 ">
         {/* Tab buttons */}
-        <div className="flex space-x-0  border-b border-gray-200 bg-gray-50 ">
+        {/* <div className="flex space-x-0  border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-80 flex flex-col border-r-2 h-full border-gray-200 ">
             {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
@@ -63,7 +63,7 @@ export default function AnalyticsView() {
             ))}
           </div>
           
-        </div>
+        </div> */}
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 ">
           <div className="flex flex-col h-full">
@@ -71,7 +71,7 @@ export default function AnalyticsView() {
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-80 flex flex-col border-1 h-full border-gray-200 ">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/4">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/3">
                   {/* Header */}
                   <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
                     <span className="grid grid-cols-3 gap-6 pl-2 text-gray-800 font-semibold text-sm">
@@ -84,7 +84,7 @@ export default function AnalyticsView() {
                   <div className="flex-1 overflow-auto">
                     <div className=" px-3 py-1">
                       <div
-                        className="flex items-center cursor-pointer select-none hover:bg-gray-50 rounded-md px-2 py-1"
+                        className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-2 py-1"
                         onClick={() => setopenMenu(!openMenu)}
                       >
                         <span
@@ -106,7 +106,7 @@ export default function AnalyticsView() {
                       {openMenu && (
                         <>
                           <div className=" items-center justify-center  px-4 ">
-                            <div className="border border-gray-200 p-1 rounded-lg">
+                            <div className="border border-gray-200 p-1">
                               <span className="text-sm text-gray-400">
                                 Unit Name: Unit 1
                               </span>
@@ -129,7 +129,7 @@ export default function AnalyticsView() {
                               <div key={item.id}>
                                 {/* Entity Header */}
                                 <div
-                                  className="grid grid-cols-3 items-center justify-between hover:bg-gray-50 p-1 rounded-md cursor-pointer"
+                                  className="grid grid-cols-3 items-center justify-between hover:bg-gray-50 p-1 cursor-pointer"
                                   onClick={() => {
                                     setShowEdit(true);
                                     setShowSecondary(true);
@@ -156,13 +156,13 @@ export default function AnalyticsView() {
 
                 {/* Secondary Input Area */}
                 {showSecondary && (
-                  <div className="h-1/4 overflow-auto my-2">
+                  <div className="h-1/3 border-2 border-gray-300 flex flex-col overflow-hidden">
                     <SecondaryArea onClose={() => setShowSecondary(false)} />
                   </div>
                 )}
 
                 {/* Editor */}
-                  <div className="h-1/4 overflow-auto my-2">
+                  <div className="h-1/3 overflow-auto">
                     <ClientEditor
                       onClose={() => setShowEdit(false)}
                       entity={selectedEntity}
@@ -172,7 +172,7 @@ export default function AnalyticsView() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-gray-200 rounded-md p-1 ml-1">
+              <div className="flex-1 w-6/12 mx-auto bg-white  flex flex-col border-1 h-full border-gray-200">
                 {ScoresOpen && <PlotSelections />}
               </div>
             </div>
