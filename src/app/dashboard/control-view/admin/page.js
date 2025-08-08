@@ -21,7 +21,7 @@ export default function AdminControl() {
   const [showList, setShowList] = useState(true);
   const formRef = useRef(null);
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortBy, setSortBy] = useState("lastName");
+  const [sortBy, setSortBy] = useState("id");
   const [dataList, setDataList] = useState([
     {
       id: "5678",
@@ -85,10 +85,17 @@ export default function AdminControl() {
         setShowEdit(false);
       }
     };
-
+    if (dataList.length > 0) {
+    setSelectedClient(dataList[0]);
+    setShowEdit(true);
+    setShowAdd(false);
+  } else {
+    setSelectedClient(null);
+    setShowEdit(false);
+  }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [dataList]);
 
   const handleDelete = (id) => {
     const updatedData = dataList.filter((item) => item.id !== id);
@@ -146,7 +153,7 @@ export default function AdminControl() {
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
-                { key: "id", label: "Id" },
+                { key: "id", label: "Executive Id" },
               ].map((col) => (
                 <div
                   key={col.key}
@@ -289,20 +296,7 @@ export default function AdminControl() {
             <CreateClientForm onClose={() => setShowAdd(false)} />
           )}
 
-          {/* Empty state when nothing is selected */}
-          {!showAdd && !showEdit && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Client Management
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Select a client to view details or create a new one
-                </p>
-              </div>
-            </div>
-          )}
+        
         </div>
       </div>
     </div>

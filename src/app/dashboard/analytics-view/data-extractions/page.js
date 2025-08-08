@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DataExtractions() {
   const tabs = [
@@ -41,7 +42,7 @@ export default function DataExtractions() {
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
   const [openMenu, setopenMenu] = useState(true);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
 
   const sortedData = [...data].sort((a, b) => {
@@ -57,6 +58,15 @@ export default function DataExtractions() {
       return 0;
     }
   });
+
+  useEffect(() => {
+    if (data.length > 0 && activeCandidateId === null) {
+      setActiveCandidateId(data[0].id);
+      setRightPanelOpen(true);
+      setShowEdit(true);
+      setShowSecondary(true);
+    }
+  }, []);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -99,7 +109,7 @@ export default function DataExtractions() {
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
                 <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/4">
                   {/* Header */}
-                 <div className="flex flex-col bg-gray-100 px-4 py-1.5 gap-2 border-b border-gray-300">
+                  <div className="flex flex-col bg-gray-100 px-4 py-1.5 gap-2 border-b border-gray-300">
                     <div className="relative w-full">
                       <input
                         type="text"
@@ -213,19 +223,17 @@ export default function DataExtractions() {
               {/* Right Panel */}
               {RightPanelOpen && (
                 <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-gray-200 p-1 ml-1">
-                  <div className="flex-1 h-full bg-white shadow-md p-6 overflow-y-auto">
-                    <div className="space-y-4">
-                      <p className="text-base font-semibold text-gray-800 leading-relaxed">
-                        EvalzNow – Human Capital & Education Quantitative and
-                        Qualitative Assessment Hybrid Proficiency & Growth
-                        Monitoring
-                        <br />
-                        <span className="text-sm font-medium">
-                          Candidate-Level Database Pull
-                        </span>
-                      </p>
+                  <div className="flex-1 flex flex-col items-center  h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
+                    
 
-                      <div className="space-y-3 text-sm">
+                      <div className="flex flex-col justify-center items-center text-base font-semibold text-gray-800 my-8 leading-relaxed">
+                        <p>EvalzNow – Human Capital & Education </p>
+                        <p> Quantitative and Qualitative Assessment </p>
+                        <p> Hybrid Proficiency & Growth Monitoring </p>
+                        <p>  Candidate-Level Database Pull</p>
+                      </div>
+
+                      <div className="flex flex-col justify-center space-y-3 text-sm">
                         {[
                           {
                             id: "active-unit-candidates",
@@ -257,7 +265,7 @@ export default function DataExtractions() {
                           </div>
                         ))}
                       </div>
-
+                        <div className="">
                       <button
                         type="submit"
                         className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2 transition"

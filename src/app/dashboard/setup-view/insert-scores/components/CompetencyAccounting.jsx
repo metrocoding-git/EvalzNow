@@ -119,7 +119,7 @@ export default function CompetencyAccounting() {
         <div className="flex-1 overflow-auto px-3 ">
           <div className="flex-1  overflow-auto">
             {/* Scoring Criteria Table */}
-            <table className="w-auto min-w-xl mx-auto my-1 text-left text-sm">
+            <table className="w-full mx-auto my-1 text-left text-sm">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="border-1 border-gray-400 px-2 py-1 font-semibold">ID</th>
