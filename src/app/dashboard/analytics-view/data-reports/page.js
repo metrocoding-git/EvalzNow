@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DataReports() {
   const tabs = [
@@ -20,13 +21,8 @@ export default function DataReports() {
   const pathname = usePathname();
   const currentTab =
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
-
-  const [activeTab, setActiveTab] = useState(currentTab);
-
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
-
-  const [open, setOpen] = useState(false);
   const [RightPanelOpen, setRightPanelOpen] = useState(false);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
 
@@ -43,7 +39,7 @@ export default function DataReports() {
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
   const [openMenu, setopenMenu] = useState(true);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
 
   const sortedData = [...data].sort((a, b) => {
@@ -63,14 +59,23 @@ export default function DataReports() {
     }
   });
 
-  const handleSort = (key) => {
+  useEffect(() => {
+    if (data.length > 0 && activeCandidateId === null) {
+      setActiveCandidateId(data[0].id);
+      setRightPanelOpen(true);
+      setShowEdit(true);
+      setShowSecondary(true);
+    }
+  }, []);
+
+  function handleSort(key) {
     if (sortKey === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
       setSortOrder("asc");
     }
-  };
+  }
 
   return (
     <div className="w-full flex flex-col">
@@ -216,64 +221,59 @@ export default function DataReports() {
 
               {/* Right Panel */}
               {RightPanelOpen && (
-                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-gray-200 p-1 ml-1">
-                  <div className="flex-1 h-full bg-white shadow-md  p-6 overflow-y-auto">
+                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col  border-2 h-full border-gray-200 ">
+                  <div className="flex-1 h-full w-full bg-white shadow-md flex flex-col p-6 overflow-y-auto space-y-4">
                     {/* Report Extraction Options */}
-                    <div className="space-y-4">
-                      <p className="text-base font-semibold text-gray-800 leading-relaxed">
-                        EvalzNow – Human Capital & Education Quantitative and
-                        Qualitative Assessment Hybrid Proficiency & Growth
-                        Monitoring <br />
-                        <span className="text-sm font-medium">
-                          Candidate & Unit Report Generation
-                        </span>
-                      </p>
 
-                      <div className="space-y-3 text-sm">
-                        {[
-                          {
-                            id: "candidate-report",
-                            label:
-                              "Extract Candidate Report for the Active Candidate",
-                          },
-                          {
-                            id: "all-candidates-unit",
-                            label:
-                              "Extract All Candidate Reports for the Active Unit",
-                          },
-                          {
-                            id: "unit-report",
-                            label: "Extract Unit Report for the Active Unit",
-                          },
-                          {
-                            id: "all-units",
-                            label: "Extract All Unit Reports",
-                          },
-                          {
-                            id: "global-data",
-                            label: "Extract Global Data Report",
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              id={item.id}
-                              type="radio"
-                              name="reportOption"
-                              className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
-                            />
-                            <label htmlFor={item.id} className="text-gray-800">
-                              {item.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="flex flex-col justify-center items-center text-base font-semibold text-gray-800 my-8 leading-relaxed">
+                      <p>EvalzNow – Human Capital & Education </p>
+                      <p> Quantitative and Qualitative Assessment </p>
+                      <p> Hybrid Proficiency & Growth Monitoring </p>
+                      <p> Candidate & Unit Report Generation</p>
+                    </div>
 
+                    <div className="flex flex-col items-start space-y-3 text-sm ml-20">
+                      {[
+                        {
+                          id: "candidate-report",
+                          label:
+                            "Extract Candidate Report for the Active Candidate",
+                        },
+                        {
+                          id: "all-candidates-unit",
+                          label:
+                            "Extract All Candidate Reports for the Active Unit",
+                        },
+                        {
+                          id: "unit-report",
+                          label: "Extract Unit Report for the Active Unit",
+                        },
+                        {
+                          id: "all-units",
+                          label: "Extract All Unit Reports",
+                        },
+                        {
+                          id: "global-data",
+                          label: "Extract Global Data Report",
+                        },
+                      ].map((item) => (
+                        <div key={item.id} className="flex items-center gap-2">
+                          <input
+                            id={item.id}
+                            type="radio"
+                            name="reportOption"
+                            className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
+                          />
+                          <label htmlFor={item.id} className="text-gray-800">
+                            {item.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-center ">
                       <button
                         type="submit"
-                        className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2 transition"
+                        className="w-32 mt-4 bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2 transition"
                       >
                         Extract
                       </button>
