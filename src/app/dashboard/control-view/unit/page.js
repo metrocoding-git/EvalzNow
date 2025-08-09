@@ -27,7 +27,7 @@ export default function UnitControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
-  const [sortField, setSortField] = useState("name");
+  const [sortField, setSortField] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   const formRef = useRef(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -82,13 +82,24 @@ export default function UnitControl() {
       }
     };
 
+     if (showUnitRoster) return;
+
+
+    if (dataList.length > 0) {
+      setSelectedUnit(dataList[0]);
+      setShowEdit(true);
+      setShowAdd(false);
+    } else {
+      setSelectedUnit(null);
+      setShowEdit(false);
+    }
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, []);
+  }, [dataList,showUnitRoster]);
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="flex flex-col border-1 border-gray-200 overflow-hidden">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
@@ -107,7 +118,6 @@ export default function UnitControl() {
 
                 {selectedUnit && (
                   <div className="flex gap-1 unit-item">
-                    
                     <button
                       className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
                       onClick={() => handleDelete(selectedUnit.id)}
@@ -127,7 +137,7 @@ export default function UnitControl() {
               </div>
             </div>
             {/* Column Headers */}
-            <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black tracking-wide">
+            <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
               <div
                 className="flex items-center cursor-pointer select-none"
                 onClick={() => {
@@ -181,7 +191,7 @@ export default function UnitControl() {
                     key={item.id}
                     className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
@@ -201,10 +211,18 @@ export default function UnitControl() {
                       });
                     }}
                   >
-                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
                       {item.name}
                     </p>
-                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
                       {item.id}
                     </p>
                   </div>
@@ -278,7 +296,7 @@ export default function UnitControl() {
         )}
 
         {/* Unit editor Section */}
-        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
+        <div className="h-1/2 my-0.5" ref={formRef}>
           <UnitEditor
             onClose={() => setShowEdit(false)}
             showForm={selectedUnit && showEdit}
@@ -290,13 +308,15 @@ export default function UnitControl() {
       <div className="flex-1 bg-white w-6/12 lg:w-9/12">
         <div className="h-full flex flex-col">
           {showAdd && (
-            <div className="overflow-auto my-2">
+            <div className="overflow-auto my-2 w-96">
               <CreateUnitForm onClose={() => setShowAdd(false)} />
             </div>
           )}
 
           {!showAdd && showUnitRoster && (
-            <UnitRoster onClose={() => setUnitRoster(false)} />
+            <div>
+              <UnitRoster onClose={() => setUnitRoster(false)} />
+            </div>
           )}
         </div>
       </div>
