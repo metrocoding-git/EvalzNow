@@ -32,7 +32,7 @@ export default function CreateCandidateForm({ onClose }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white z-20">
+    <div className="flex flex-col h-full bg-white z-20 border shadow-2xl border-gray-300">
       {/* Header */}
       <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
