@@ -82,8 +82,7 @@ export default function UnitControl() {
       }
     };
 
-     if (showUnitRoster) return;
-
+    if (showUnitRoster) return;
 
     if (dataList.length > 0) {
       setSelectedUnit(dataList[0]);
@@ -95,7 +94,7 @@ export default function UnitControl() {
     }
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [dataList,showUnitRoster]);
+  }, [dataList, showUnitRoster]);
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -225,6 +224,20 @@ export default function UnitControl() {
                     >
                       {item.id}
                     </p>
+                    {isSelected && (
+                      <div className="border border-gray-200 p-2 px-4">
+                        <p className="text-sm text-gray-600">
+                          Unit Name: Unit 1
+                        </p>
+                        <p className="text-sm text-gray-600">Unit ID: UA123</p>
+                        <p className="text-sm text-gray-600">
+                          Unit Type: Group
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Signature Profile: Signature 1
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })}

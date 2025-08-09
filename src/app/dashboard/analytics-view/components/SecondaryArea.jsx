@@ -62,29 +62,29 @@ const SecondaryInputForm = ({ onClose }) => {
         </div>
 
         {/* Threshold Toggle */}
-        <div className="flex items-center justify-between p-2">
+        {/* <div className="flex items-center justify-between p-2">
           <label className="font-medium text-gray-800">Enable Thresholds</label>
 
-          {/* Toggle Wrapper */}
+          Toggle Wrapper
           <div
             onClick={() => setThresholdEnabled(!thresholdEnabled)}
             className="relative w-12 h-6 cursor-pointer"
           >
-            {/* Background track */}
+            Background track
             <div
               className={`absolute inset-0 rounded-full transition-colors duration-300 ${
                 thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
               }`}
             />
 
-            {/* Toggle knob */}
+            Toggle knob
             <div
               className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
                 thresholdEnabled ? "translate-x-6" : "translate-x-0"
               }`}
             />
           </div>
-        </div>
+        </div> */}
       </div>
       {/* Submit Button */}
       <div className="flex justify-end gap-2 pr-3 border-t border-gray-600  bg-gray-100">

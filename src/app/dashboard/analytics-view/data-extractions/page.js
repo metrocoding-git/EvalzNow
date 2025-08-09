@@ -193,7 +193,7 @@ export default function DataExtractions() {
                               <div
                                 key={item.id}
                                 className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
-      ${activeCandidateId === item.id ? "bg-gray-200" : "hover:bg-gray-50"}`}
+      ${activeCandidateId === item.id ? "bg-blue-100 border-l-4 border-blue-400" : "hover:bg-gray-100"}`}
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
@@ -268,7 +268,7 @@ export default function DataExtractions() {
                         <div className="">
                       <button
                         type="submit"
-                        className="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2 transition"
+                        className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition"
                       >
                         Extract
                       </button>
