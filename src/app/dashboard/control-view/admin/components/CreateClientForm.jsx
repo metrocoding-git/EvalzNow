@@ -1,6 +1,6 @@
 "use client";
 import { ListFilterPlus, Plus, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // Generate 10-char random alphanumeric ID
 const generateExecutiveId = () => {
@@ -33,16 +33,18 @@ export default function CreateClientForm({ onClose }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200">
+    <div className="flex flex-col h-full bg-white z-20">
+      {/* Header */}
+      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
           <Plus className="w-5 h-5" />
           Create Client
         </div>
       </div>
 
+      {/* Scrollable form content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="space-y-3 text-sm">
+        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
           {[
             "Executive Last Name",
             "Executive First Name",
@@ -54,68 +56,72 @@ export default function CreateClientForm({ onClose }) {
             "Business Registration No.",
             "Country",
           ].map((label, idx) => (
-            <div key={idx} className="flex items-center">
-              <label className="w-48 pr-2 text-gray-700">{label}:</label>
+            <React.Fragment key={idx}>
+              <label className="col-span-1 flex items-center text-gray-700">
+                {label}:
+              </label>
               <input
                 type="text"
-                className="flex-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />
-            </div>
+            </React.Fragment>
           ))}
 
-          {/* Executive ID - generated, non-editable */}
-          <div className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">Executive ID:</label>
-            <input
-              type="text"
-              value={executiveId}
-              disabled
-              className="flex-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
-            />
-          </div>
+          {/* Executive ID */}
+          <label className="col-span-1 flex items-center text-gray-700">
+            Executive ID:
+          </label>
+          <input
+            type="text"
+            value={executiveId}
+            disabled
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
+          />
 
-          {/* Company Size Dropdown */}
-          <div className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">Company Size:</label>
-            <select
-              className="flex-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-              onChange={(e) => handleChange("Company Size", e.target.value)}
-            >
-              <option value="">Select Size</option>
-              {companySizes.map((size, i) => (
-                <option key={i} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Company Size */}
+          <label className="col-span-1 flex items-center text-gray-700">
+            Company Size:
+          </label>
+          <select
+            defaultValue=""
+            onChange={(e) => handleChange("Company Size", e.target.value)}
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+          >
+            <option value="" disabled>
+              Select Size
+            </option>
+            {companySizes.map((size, i) => (
+              <option key={i} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
 
-          {/* Status Toggle */}
-          <div className="flex items-center">
-            <label className="w-48 pr-2 text-gray-700">Status:</label>
-            <select
-              className="flex-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-              onChange={(e) => handleChange("Status", e.target.value)}
-            >
-              <option value="Activate">Activate</option>
-              <option value="Deactivate">Deactivate</option>
-            </select>
-          </div>
+          {/* Status */}
+          <label className="col-span-1 flex items-center text-gray-700">
+            Status:
+          </label>
+          <select
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            onChange={(e) => handleChange("Status", e.target.value)}
+          >
+            <option value="Activate">Activate</option>
+            <option value="Deactivate">Deactivate</option>
+          </select>
+        </div>
+      </div>
 
-          {/* Buttons */}
-          <div className="pt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                // Save form data here if needed
-                if (onClose) onClose();
-              }}
-              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
-            >
-               Close
-            </button>
-          </div>
+      {/* Fixed footer */}
+      <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

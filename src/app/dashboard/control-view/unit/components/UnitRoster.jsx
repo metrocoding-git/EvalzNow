@@ -69,7 +69,7 @@ export default function UnitRoster() {
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
   );
   const [visible, setVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState("Direct");
+  const [activeTab, setActiveTab] = useState("Indirect");
 
   const handlePointChange = (index, field, value) => {
     const updated = [...points];
@@ -123,8 +123,9 @@ export default function UnitRoster() {
   if (!visible) return null;
 
   return (
-    <>
-      <div className="flex-grow h-1/2 border border-gray-300 flex flex-col ">
+    <div className="flex flex-col h-[80vh]">
+      {/* Unit Config */}
+        <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col">
         <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
           <span className="pl-2 text-md text-gray-800">Unit Config</span>
           <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
@@ -309,7 +310,8 @@ export default function UnitRoster() {
         </div>
       </div>
 
-      <div className="h-1/2 my-2">
+       {/* Assessment Block Manager */}
+       <div className=" h-1/2 overflow-hidden  border-t border-gray-800 flex flex-col mt-1">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
             <div>
@@ -319,11 +321,11 @@ export default function UnitRoster() {
               </h2>
             </div>
             {/* Tab Buttons */}
-            <div className="flex space-x-2 border-b p-1 bg-gray-50">
+            <div className="flex space-x-2 border-b p-1 bg-gray-100">
               <button
                 className={`px-3 py-1 text-sm ${
                   activeTab === "Indirect"
-                    ? "bg-gray-200 text-gray-800 font-semibold"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
                     : "hover:bg-gray-100"
                 }`}
                 onClick={() => setActiveTab("Indirect")}
@@ -333,7 +335,7 @@ export default function UnitRoster() {
               <button
                 className={`px-3 py-1 text-sm ${
                   activeTab === "Direct"
-                    ? "bg-gray-200 text-gray-800 font-semibold"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
                     : "hover:bg-gray-100"
                 }`}
                 onClick={() => setActiveTab("Direct")}
@@ -465,6 +467,6 @@ export default function UnitRoster() {
           onSelect={handleCandidateSelect}
         />
       )}
-    </>
+    </div>
   );
 }

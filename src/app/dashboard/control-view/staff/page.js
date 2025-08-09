@@ -19,7 +19,7 @@ export default function StaffControl() {
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortBy, setSortBy] = useState("lastName");
+  const [sortBy, setSortBy] = useState("id");
   const [selectedStaff, setSelectedStaff] = useState(null);
   const formRef = useRef(null);
 
@@ -83,9 +83,18 @@ export default function StaffControl() {
         setShowEdit(false);
       }
     };
+
+    if(dataList.length>0){
+      setSelectedStaff(dataList[0]);
+      setShowEdit(true);
+      setShowAdd(false);
+    }else {
+      setSelectedStaff(null);
+      setShowEdit(false);
+    }
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, []);
+  }, [dataList]);
 
   const handleDelete = (id) => {
     const updatedData = dataList.filter((item) => item.id !== id);
@@ -98,7 +107,7 @@ export default function StaffControl() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
@@ -184,7 +193,7 @@ export default function StaffControl() {
                     key={item.id}
                     className={`staff-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
@@ -265,7 +274,7 @@ export default function StaffControl() {
       <div className="flex-1 bg-white w-6/12 lg:w-9/12">
         <div className="h-full flex flex-col">
           {showAdd && (
-            <div className="overflow-auto my-2">
+            <div className="overflow-auto my-2 w-96">
               <CreateStaffForm onClose={() => setShowAdd(false)} />
             </div>
           )}

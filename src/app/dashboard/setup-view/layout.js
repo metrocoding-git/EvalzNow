@@ -27,7 +27,7 @@ export default function SetupViewLayout({ children }) {
                 className={
                   `relative px-5 py-1 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                   (activeTab === tab.label
-                    ? "text-gray-800 bg-white border border-b-transparent border-gray-300  shadow-sm"
+                    ? "text-gray-800 bg-white border-t-2 border-blue-400  shadow-sm"
                     : "text-gray-600 hover:text-gray-600 border-t border-r border-b-transparent border-gray-300 hover:bg-gray-50")
                 }
 

@@ -24,7 +24,7 @@ export default function CandidateControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
-  const [sortBy, setSortBy] = useState("lastName");
+  const [sortBy, setSortBy] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [ethnicities, setEthnicities] = useState([]);
@@ -89,9 +89,18 @@ export default function CandidateControl() {
       }
     };
 
+    if(dataList.length>0){
+      setSelectedCandidate(dataList[0]);
+      setShowEdit(true);
+      setShowAdd(false);
+    }else {
+      setSelectedClient(null);
+      setShowEdit(false);
+    }
+
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, []);
+  }, [dataList]);
 
   const handleDelete = (id) => {
     const updated = dataList.filter((c) => c.id !== id);
@@ -104,7 +113,7 @@ export default function CandidateControl() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="w-80 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
@@ -190,7 +199,7 @@ export default function CandidateControl() {
                     key={item.id}
                     className={`candidate-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                       isSelected
-                        ? "bg-gray-200 border-l-4 border-l-gray-500 text-black"
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => {
@@ -356,7 +365,7 @@ export default function CandidateControl() {
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={(item) => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-                 setSelectedCandidate(item);
+                setSelectedCandidate(item);
                 setShowReview(true);
                 setShowEdit(false);
                 setShowAdd(false);
@@ -390,10 +399,10 @@ export default function CandidateControl() {
       </div>
 
       {/* Right Panel - Create Candidate */}
-      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
-        <div className="h-full flex flex-col">
+      <div className="flex-1 bg-white w-1/2 lg:w-9/12">
+        
           {showAdd && (
-            <div className="h-full overflow-auto">
+            <div className="h-full overflow-auto w-96">
               <CreateCandidateForm onClose={() => setShowAdd(false)} />
             </div>
           )}
@@ -403,7 +412,7 @@ export default function CandidateControl() {
               <ReviewCandidate candidate={selectedCandidate} />
             </div>
           )}
-        </div>
+       
       </div>
     </div>
   );

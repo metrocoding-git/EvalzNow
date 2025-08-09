@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronRight, ChevronDown, Plus, ChevronUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronRight, Plus, Search } from "lucide-react";
 import CompetencyAccountingTable from "./components/CompetencyAccountingTable";
 import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
+import ClientEditor from "../../analytics-view/components/ClientEditor";
 
 const masterPPIDData = [
   {
@@ -72,8 +73,10 @@ const activatedCandidates = [
 
 export default function PreviewPage() {
   const [open, setOpen] = useState(true);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [showEdit, setShowEdit] = useState(false);
 
   const sortedCandidates = [...activatedCandidates].sort((a, b) => {
     const valA = a[sortKey];
@@ -92,13 +95,28 @@ export default function PreviewPage() {
     }
   };
 
+  // Select first candidate on page load
+  useEffect(() => {
+    if (sortedCandidates.length > 0 && !selectedCandidate) {
+      setSelectedCandidate(sortedCandidates[0]);
+    }
+  }, [sortedCandidates, selectedCandidate]);
+
   return (
     <div className="flex h-full overflow-hidden">
       {/* Sidebar */}
-      <div className="w-6/12 lg:w-80 flex flex-col border-2 h-full border-gray-200">
+      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
         <div className="flex-grow flex flex-col">
           {/* Header */}
-          <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+          <div className="flex flex-col justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+            <div className="relative w-full mb-2">
+              <input
+                type="text"
+                className="border w-full pl-2 pr-8 py-1 text-sm"
+                placeholder="Search"
+              />
+              <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+            </div>
             <div className="grid grid-cols-3 gap-1 text-gray-800 font-semibold text-sm w-full">
               {["firstName", "lastName", "ppId"].map((col) => (
                 <button
@@ -112,12 +130,13 @@ export default function PreviewPage() {
                 </button>
               ))}
             </div>
-            <button
+
+            {/* <button
               onClick={() => console.log("Add")}
               className="hover:bg-gray-300 text-gray-950 text-sm p-1 ml-2"
             >
               <Plus className="w-4 h-4" />
-            </button>
+            </button> */}
           </div>
 
           {/* Dropdown toggle */}
@@ -164,7 +183,12 @@ export default function PreviewPage() {
                 sortedCandidates.map((candidate, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-3 text-sm text-gray-700 gap-2 hover:bg-gray-50 px-3 py-1 cursor-pointer"
+                    onClick={() => setSelectedCandidate(candidate)}
+                    className={`grid grid-cols-3 text-sm gap-2 px-3 py-1 cursor-pointer ${
+                      selectedCandidate?.ppId === candidate.ppId
+                        ? "bg-blue-100 border-l-4 border-blue-400 font-semibold"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
                   >
                     <div>{candidate.lastName}</div>
                     <div>{candidate.firstName}</div>
@@ -174,7 +198,19 @@ export default function PreviewPage() {
               )}
             </div>
           )}
+
+           {/* Editor Panel */}
+          <div className="h-2/5 overflow-auto my-2">
+            <ClientEditor
+              onClose={() => setShowEdit(false)}
+              entity={selectedCandidate}
+              showForm={showEdit}
+            />
+          </div>
         </div>
+        
+         
+        
       </div>
 
       {/* Right Panel */}
@@ -184,21 +220,25 @@ export default function PreviewPage() {
             Preliminary Checkpoints
           </h1>
 
-          {/* Master PP ID Bin Totals */}
-          <div className="px-2 mt-4">
-            <h2 className="text-md font-semibold text-gray-700 mb-2">
-              Master PP ID Bin Totals
-            </h2>
-            <MasterPpIdBinTable data={masterPPIDData} />
-          </div>
+          {selectedCandidate && (
+            <>
+              {/* Master PP ID Bin Totals */}
+              <div className="px-2 mt-4">
+                <h2 className="text-md font-semibold text-gray-700 mb-2">
+                  Master PP ID Bin Totals
+                </h2>
+                <MasterPpIdBinTable data={masterPPIDData} />
+              </div>
 
-          {/* Competency Accounting Table */}
-          <div className="px-2 mt-4 mb-4">
-            <h2 className="text-md font-semibold text-gray-700 mb-2">
-              Competency Accounting
-            </h2>
-            <CompetencyAccountingTable data={competencyData} />
-          </div>
+              {/* Competency Accounting Table */}
+              <div className="px-2 mt-4 mb-4">
+                <h2 className="text-md font-semibold text-gray-700 mb-2">
+                  Competency Accounting
+                </h2>
+                <CompetencyAccountingTable data={competencyData} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

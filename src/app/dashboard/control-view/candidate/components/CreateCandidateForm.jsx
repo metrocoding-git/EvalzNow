@@ -1,30 +1,13 @@
 "use client";
-import { ListFilterPlus, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { ListFilterPlus, Plus } from "lucide-react";
+import React, { useState } from "react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
-  "African Diaspora Religions",
-  "Agnosticism",
-  "Atheism",
-  "Buddhism",
-  "Christianity",
-  "Confucianism",
-  "Druze",
-  "Gnosticism",
-  "Hinduism",
-  "Indigenous American Religions",
-  "Islam",
-  "Jainism",
-  "Judaism",
-  "Non-disclosed",
-  "Other",
-  "Rastafarianism",
-  "Shinto",
-  "Sikhism",
-  "Strictly Spiritual",
-  "Traditional African Religions",
-  "Zoroastrianism",
+  "African Diaspora Religions", "Agnosticism", "Atheism", "Buddhism", "Christianity", "Confucianism",
+  "Druze", "Gnosticism", "Hinduism", "Indigenous American Religions", "Islam", "Jainism", "Judaism",
+  "Non-disclosed", "Other", "Rastafarianism", "Shinto", "Sikhism", "Strictly Spiritual",
+  "Traditional African Religions", "Zoroastrianism"
 ];
 const maritalStatusOptions = ["Married", "Non-disclosed", "Other", "Separated", "Single"];
 const jobTypeOptions = ["Contractor", "Employee", "Non-disclosed", "Other", "Student", "Trainee", "Trainer"];
@@ -32,9 +15,7 @@ const irregularityOptions = ["Disability", "Special Needs", "Other"];
 
 export default function CreateCandidateForm({ onClose }) {
   const [form, setForm] = useState({});
-  const [rows, setRows] = useState([
-    { id: "", type: "", comment: "" }
-  ]);
+  const [rows, setRows] = useState([{ id: "", type: "", comment: "" }]);
 
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
@@ -51,14 +32,19 @@ export default function CreateCandidateForm({ onClose }) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300 gap-2 text-gray-800 font-semibold flex-shrink-0">
-        <ListFilterPlus className="w-5 h-5" />
-        Create Candidate
+    <div className="flex flex-col h-full bg-white z-20">
+      {/* Header */}
+      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
+        <div className="flex items-center gap-2 text-black font-semibold">
+          <ListFilterPlus className="w-5 h-5" />
+          Create Candidate
+        </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
-        <div className="text-sm space-y-3">
+      {/* Scrollable Content */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm">
+          {/* Basic Info */}
           {[
             "Last Name",
             "First Name",
@@ -67,18 +53,23 @@ export default function CreateCandidateForm({ onClose }) {
             "Date of Birth",
             "Start Date",
           ].map((label, idx) => (
-            <div key={idx} className="flex items-center">
-              <label className="w-52 pr-2 text-gray-700 flex-shrink-0">{label}:</label>
+            <React.Fragment key={idx}>
+              <label className="col-span-1 flex items-center text-gray-700">
+                {label}:
+              </label>
               <input
                 type={label.includes("Date") ? "date" : "text"}
-                className="flex-1 border px-2 py-1 bg-white"
+                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />
-            </div>
+            </React.Fragment>
           ))}
 
-          {/* Socioeconomic Fields */}
-          <h3 className="pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">Socioeconomic Factors</h3>
+          {/* Section Header - Socioeconomic Factors */}
+          <h3 className="col-span-2 pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">
+            Socioeconomic Factors
+          </h3>
+
           {[
             { label: "Nationality", options: ["Non-disclosed", "United States", "Canada", "India", "Germany", "Other"] },
             { label: "Gender", options: genderOptions },
@@ -88,10 +79,10 @@ export default function CreateCandidateForm({ onClose }) {
             { label: "Marital Status", options: maritalStatusOptions },
             { label: "Job Type", options: jobTypeOptions },
           ].map(({ label, options }, idx) => (
-            <div key={idx} className="flex items-center">
-              <label className="w-52 pr-2 text-gray-700 flex-shrink-0">{label}:</label>
+            <React.Fragment key={idx}>
+              <label className="col-span-1 flex items-center text-gray-700">{label}:</label>
               <select
-                className="flex-1 border px-2 py-1 bg-white"
+                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               >
                 <option value="">Select {label}</option>
@@ -99,13 +90,15 @@ export default function CreateCandidateForm({ onClose }) {
                   <option key={i} value={opt}>{opt}</option>
                 ))}
               </select>
-            </div>
+            </React.Fragment>
           ))}
 
-          {/* Irregularities */}
-          <h3 className="pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">Irregularities</h3>
+          {/* Section Header - Irregularities */}
+          <h3 className="col-span-2 pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">
+            Irregularities
+          </h3>
 
-          <div className="overflow-x-auto">
+          <div className="col-span-2 overflow-x-auto">
             <table className="w-full text-sm border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
@@ -153,18 +146,20 @@ export default function CreateCandidateForm({ onClose }) {
               </tbody>
             </table>
           </div>
-          
-          <button
-            onClick={addRow}
-            className="flex items-center gap-2 mt-3 px-3 py-1 bg-gray-500 text-white hover:bg-gray-700"
-          >
-            <Plus size={18} />
-            Add Row
-          </button>
+
+          <div className="col-span-2">
+            <button
+              onClick={addRow}
+              className="flex items-center gap-2 mt-3 px-3 py-1 bg-gray-500 text-white hover:bg-gray-700"
+            >
+              <Plus size={18} />
+              Add Row
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Fixed Footer */}
+      {/* Footer */}
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button

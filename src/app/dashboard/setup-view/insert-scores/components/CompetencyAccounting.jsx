@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Copy, Search, X, FolderSync, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Copy,
+  Search,
+  X,
+  FolderSync,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 
 const MAIN_CRITERIA = [
@@ -35,6 +44,41 @@ export default function CompetencyAccounting() {
     setScores((prev) => [...prev, newScore]);
     setScoreAdd(false);
   };
+
+  const [tableData, setTableData] = useState([
+    {
+      firstName: "John",
+      lastName: "Doe",
+      cid: "CID001",
+      ppId: "PP12345",
+      duration: "3 months",
+      criticalDate: "2025-09-15",
+      taskDeclaration: "Task A",
+      workflowStage: "In Progress",
+      assessmentType: "Type 1",
+      scheduleImpact: "Low",
+      engageLevel: "High",
+      competency: "Advanced",
+      mc: Array.from({ length: 20 }, (_, i) => (i + 1) * 2), // Example MC1-MC20 scores
+      cc: Array.from({ length: 20 }, (_, i) => (i + 1) * 3), // Example CC21-CC40 scores
+    },
+    {
+      firstName: "Jane",
+      lastName: "Smith",
+      cid: "CID002",
+      ppId: "PP67890",
+      duration: "6 months",
+      criticalDate: "2025-10-20",
+      taskDeclaration: "Task B",
+      workflowStage: "Completed",
+      assessmentType: "Type 2",
+      scheduleImpact: "Medium",
+      engageLevel: "Moderate",
+      competency: "Intermediate",
+      mc: Array.from({ length: 20 }, () => "-"),
+      cc: Array.from({ length: 20 }, () => "-"),
+    },
+  ]);
 
   const [points, setPoints] = useState(
     Array.from({ length: 2 }, () => ({ x: "", y: "" }))
@@ -91,21 +135,21 @@ export default function CompetencyAccounting() {
               title="Update"
               className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
-              <FolderSync className="w-3.5 h-3.5 "/>
+              <FolderSync className="w-3.5 h-3.5 " />
             </button>
 
             <button
               title="Move Up"
               className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
-              <ArrowUp className="w-3.5 h-3.5 "/>
+              <ArrowUp className="w-3.5 h-3.5 " />
             </button>
 
             <button
               title="Move Down"
               className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
-              <ArrowDown className="w-3.5 h-3.5 "/>
+              <ArrowDown className="w-3.5 h-3.5 " />
             </button>
 
             <button
@@ -122,11 +166,15 @@ export default function CompetencyAccounting() {
             <table className="w-full mx-auto my-1 text-left text-sm">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border-1 border-gray-400 px-2 py-1 font-semibold">ID</th>
+                  <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
+                    ID
+                  </th>
                   <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
                     Main Criteria
                   </th>
-                  <th className="border-1 border-gray-400 px-2 py-1 font-semibold">ID</th>
+                  <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
+                    ID
+                  </th>
                   <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
                     Custom Criteria
                   </th>
@@ -135,14 +183,18 @@ export default function CompetencyAccounting() {
               <tbody>
                 {MAIN_CRITERIA.map((criterion, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border-1 border-gray-400 px-2 py-1">{index + 1}</td>
-                    <td className="border-1 border-gray-400 px-2 py-1">{criterion}</td>
-                    <td className="border-1 border-gray-400 px-2 py-1">{index + 1}</td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {index + 1}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {criterion}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {index + 1}
+                    </td>
                     <td className="border-1 border-gray-400 px-2 py-1"></td>
                   </tr>
                 ))}
-
-               
               </tbody>
             </table>
           </div>
@@ -150,47 +202,135 @@ export default function CompetencyAccounting() {
       </div>
 
       <div className="h-1/2 overflow-auto border-1 border-gray-200 mt-0.5">
-      <h2> </h2> 
+        <h2> </h2>
         <div className=" flex flex-col h-full">
           {/* bottom table */}
           <table className="w-full h-full text-left text-sm ">
             <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th>
-                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  First Name
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Last Name
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  CID
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  PP ID
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Duration
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Critical Reference Date
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Task Declaration
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Workflow Stage
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Assessment Type
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Schedule Impact
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Engage Level
+                </th>
+                <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">
+                  Competency
+                </th>
 
                 {/* MC1 - MC20 */}
                 {Array.from({ length: 20 }, (_, i) => (
-                  <th key={`mc-${i}`} className="border-1 border-gray-400 px-2 py-1">{`MC${
-                    i + 1
-                  }`}</th>
+                  <th
+                    key={`mc-${i}`}
+                    className="border-1 border-gray-400 px-2 py-1"
+                  >{`MC${i + 1}`}</th>
                 ))}
 
                 {/* CC21 - CC40 */}
                 {Array.from({ length: 20 }, (_, i) => (
-                  <th key={`cc-${i + 21}`} className="border-1 border-gray-400 px-2 py-1">{`CC${
-                    i + 21
-                  }`}</th>
+                  <th
+                    key={`cc-${i + 21}`}
+                    className="border-1 border-gray-400 px-2 py-1"
+                  >{`CC${i + 21}`}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {/* Data rows can go here later */}
-              <tr>
-                <td className="border-1 border-gray-400 px-2 py-1 text-center" colSpan={61}>
-                  No data available.
-                </td>
-              </tr>
+              {tableData.length > 0 ? (
+                tableData.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.firstName}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.lastName}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.cid}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.ppId}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.duration}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.criticalDate}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.taskDeclaration}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.workflowStage}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.assessmentType}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.scheduleImpact}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.engageLevel}
+                    </td>
+                    <td className="border-1 border-gray-400 px-2 py-1">
+                      {row.competency}
+                    </td>
+
+                    {row.mc.map((val, i) => (
+                      <td
+                        key={`mc-${i}`}
+                        className="border-1 border-gray-400 px-2 py-1"
+                      >
+                        {val}
+                      </td>
+                    ))}
+                    {row.cc.map((val, i) => (
+                      <td
+                        key={`cc-${i}`}
+                        className="border-1 border-gray-400 px-2 py-1"
+                      >
+                        {val}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    className="border-1 border-gray-400 px-2 py-1 text-center"
+                    colSpan={61}
+                  >
+                    No data available.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

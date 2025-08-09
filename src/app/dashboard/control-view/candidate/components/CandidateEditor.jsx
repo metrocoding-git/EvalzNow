@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Edit3, X, Plus, Edit } from "lucide-react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
@@ -116,7 +116,7 @@ const CandidateEditor = ({ candidate, showForm }) => {
   if (!showForm || !candidate) {
     return (
       <div className="h-full flex flex-col bg-white">
-        <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300 gap-2 text-gray-800 font-semibold flex-shrink-0">
+        <div className="flex items-center bg-gray-100 px-4 py-2 text-sm border-b border-gray-300 gap-2 text-gray-800 font-semibold flex-shrink-0">
           <Edit className="w-5 h-5" />
           Entity Editor
         </div>
@@ -128,72 +128,84 @@ const CandidateEditor = ({ candidate, showForm }) => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300 gap-2 text-gray-800 font-semibold flex-shrink-0">
+  <div className="h-full flex flex-col bg-white">
+    {/* Header */}
+    <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+      <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm">
         <Edit className="w-5 h-5" />
         Entity Editor
       </div>
+    </div>
 
-      <div className="flex-1 overflow-auto p-2">
-        <div className="text-sm space-y-3">
-          {/* Basic Information */}
-          {[
-            "Last Name",
-            "First Name",
-            "Candidate ID",
-            "Special ID No.",
-            "Date of Birth",
-            "Start Date",
-          ].map((label, idx) => (
-            <div key={idx} className="flex items-center">
-              <label className="w-32 pr-2 text-gray-700 flex-shrink-0">{label}:</label>
-              <input
-                type={label.includes("Date") ? "date" : "text"}
-                className="flex-1 border px-2 py-1 bg-white"
-                value={form[label]}
-                onChange={(e) => handleChange(label, e.target.value)}
-              />
-            </div>
-          ))}
+    <div className="flex-1 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-1 text-xs p-2 h-full">
+        {/* Basic Information */}
+        {[
+          "Last Name",
+          "First Name",
+          "Candidate ID",
+          "Special ID No.",
+          "Date of Birth",
+          "Start Date",
+        ].map((label, idx) => (
+          <React.Fragment key={idx}>
+            <label className="col-span-1 flex items-center text-gray-700">
+              {label}:
+            </label>
+            <input
+              type={label.includes("Date") ? "date" : "text"}
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            />
+          </React.Fragment>
+        ))}
 
-          {/* Socioeconomic Factors */}
-          <h3 className="pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">Socioeconomic Factors</h3>
-          {[
-            { label: "Nationality", options: nationalityOptions },
-            { label: "Gender", options: genderOptions },
-            { label: "Ethnicity", options: ethnicityOptions },
-            { label: "Income", options: incomeOptions },
-            { label: "Religion", options: religionOptions },
-            { label: "Marital Status", options: maritalStatusOptions },
-            { label: "Job Type", options: jobTypeOptions },
-          ].map(({ label, options }, idx) => (
-            <div key={idx} className="flex items-center">
-              <label className="w-32 pr-2 text-gray-700 flex-shrink-0">{label}:</label>
-              <select
-                className="flex-1 border px-2 py-1 bg-white"
-                value={form[label]}
-                onChange={(e) => handleChange(label, e.target.value)}
-              >
-                <option value="">Select {label}</option>
-                {options.map((opt, i) => (
-                  <option key={i} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+        {/* Socioeconomic Factors */}
+        {[
+          { label: "Nationality", options: nationalityOptions },
+          { label: "Gender", options: genderOptions },
+          { label: "Ethnicity", options: ethnicityOptions },
+          { label: "Income", options: incomeOptions },
+          { label: "Religion", options: religionOptions },
+          { label: "Marital Status", options: maritalStatusOptions },
+          { label: "Job Type", options: jobTypeOptions },
+        ].map(({ label, options }, idx) => (
+          <React.Fragment key={idx}>
+            <label className="col-span-1 flex items-center text-gray-700">
+              {label}:
+            </label>
+            <select
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            >
+              <option value="">Select {label}</option>
+              {options.map((opt, i) => (
+                <option key={i} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </React.Fragment>
+        ))}
 
-          {/* Irregularities */}
-          <h3 className="pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">Irregularities</h3>
-
+        {/* Irregularities Table */}
+        <div className="col-span-2 pt-4 border-t border-gray-200">
+          <h3 className="pb-2 font-semibold text-gray-800">Irregularities</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-gray-300">
+            <table className="w-full text-xs border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Irregularities</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">ID</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Comments</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left">
+                    Irregularities
+                  </th>
+                  <th className="border border-gray-300 px-3 py-2 text-left">
+                    ID
+                  </th>
+                  <th className="border border-gray-300 px-3 py-2 text-left">
+                    Comments
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -202,12 +214,16 @@ const CandidateEditor = ({ candidate, showForm }) => {
                     <td className="border border-gray-300 px-2 py-1">
                       <select
                         value={row.type}
-                        onChange={(e) => handleRowChange(index, "type", e.target.value)}
+                        onChange={(e) =>
+                          handleRowChange(index, "type", e.target.value)
+                        }
                         className="w-full px-2 py-1 border"
                       >
                         <option value="">Select</option>
                         {irregularityOptions.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
                         ))}
                       </select>
                     </td>
@@ -216,7 +232,9 @@ const CandidateEditor = ({ candidate, showForm }) => {
                         type="number"
                         min={1}
                         value={row.id}
-                        onChange={(e) => handleRowChange(index, "id", e.target.value)}
+                        onChange={(e) =>
+                          handleRowChange(index, "id", e.target.value)
+                        }
                         className="w-full px-2 py-1 border"
                       />
                     </td>
@@ -225,8 +243,10 @@ const CandidateEditor = ({ candidate, showForm }) => {
                         type="text"
                         value={row.comment}
                         maxLength={40}
-                        onChange={(e) => handleRowChange(index, "comment", e.target.value)}
-                        className="w-full px-2 py-1 border "
+                        onChange={(e) =>
+                          handleRowChange(index, "comment", e.target.value)
+                        }
+                        className="w-full px-2 py-1 border"
                         placeholder="Max 40 characters"
                       />
                     </td>
@@ -235,7 +255,7 @@ const CandidateEditor = ({ candidate, showForm }) => {
               </tbody>
             </table>
           </div>
-          
+
           <button
             onClick={addRow}
             className="flex items-center gap-2 mt-3 px-3 py-1 bg-gray-500 text-white hover:bg-gray-700"
@@ -243,19 +263,18 @@ const CandidateEditor = ({ candidate, showForm }) => {
             <Plus size={18} />
             Add Row
           </button>
+        </div>
 
-          {/* Buttons */}
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm"
-            >
-              Close
-            </button>
-          </div>
+        {/* Buttons */}
+        <div className="col-span-2 pt-4 flex justify-end gap-2">
+          <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs">
+            Close
+          </button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default CandidateEditor;

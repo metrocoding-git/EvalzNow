@@ -154,7 +154,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 text-sm space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 text-sm ">
         {/* Basic Unit Details */}
         {[
           { label: "Unit Name", key: "unitName", type: "text" },
@@ -167,8 +167,8 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
             placeholder: "Ex: 2023-12-31",
           },
         ].map(({ label, key, type, placeholder }) => (
-          <div key={key} className="space-y-1">
-            <label className="block text-gray-700 font-medium">{label}:</label>
+          <div key={key} className="grid grid-cols-2 items-center gap-1 mb-1">
+            <label className="text-gray-700 font-medium">{label}:</label>
             <input
               type={type}
               placeholder={placeholder}
@@ -185,7 +185,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           </h3>
 
           {/* Assigned Leaders */}
-          <div className="space-y-1">
+          <div className="flex justify-between gap-2 space-y-1">
             <label className="block text-gray-700 font-medium">
               Assigned Leaders:
             </label>
@@ -196,7 +196,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                   setLookupFor("leaders");
                   setShowLookup(true);
                 }}
-                className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
               >
                 + Add Leader
               </button>
@@ -207,7 +207,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           </div>
 
           {/* Assigned Assessors */}
-          <div className="space-y-1">
+          <div className="flex justify-between gap-2 space-y-1">
             <label className="block text-gray-700 font-medium">
               Assigned Assessors:
             </label>
@@ -229,7 +229,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           </div>
 
           {/* Unit Director */}
-          <div className="space-y-1">
+          <div className="flex justify-between gap-2 space-y-1">
             <label className="block text-gray-700 font-medium">
               Unit Director:
             </label>
@@ -268,7 +268,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
             },
             { label: "Environment", key: "environment", options: ENVIRONMENTS },
           ].map(({ label, key, options }) => (
-            <div key={key} className="space-y-1">
+            <div key={key} className="grid grid-cols-2 items-center gap-2">
               <label className="block text-gray-700 font-medium">
                 {label}:
               </label>
@@ -434,12 +434,12 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           </div>
         </div>
 
-        {/* Fixed Bottom Actions */}
-        <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
+        {/*  Bottom Actions */}
+        <div className="border-t border-gray-300 pt-2 pr-2 bg-gray-50 flex-shrink-0">
           <div className="flex justify-end ">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm"
             >
               Close
             </button>
