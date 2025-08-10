@@ -38,14 +38,13 @@ export default function StaffLookup({ onClose, onSelect }) {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-4 shadow-md w-[600px]">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Staff Lookup</h2>
-          <button onClick={onClose}>
-            <X className="w-5 h-5 text-gray-700" />
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50">
+      <div className="bg-white p-4 w-[600px] border shadow-2xl border-gray-200">        <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Staff Lookup</h2>
+        <button onClick={onClose} className="cursor-pointer">
+          <X className="w-5 h-5 text-gray-700" />
+        </button>
+      </div>
 
         <input
           type="text"

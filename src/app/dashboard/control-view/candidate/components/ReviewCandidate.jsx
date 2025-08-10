@@ -1,11 +1,11 @@
 import React from "react";
 
 export default function ReviewCandidate({ candidate }) {
-  if (!candidate) {
-    return (
-      <div className="p-4 text-gray-600">No candidate selected for review.</div>
-    );
-  }
+  // if (!candidate) {
+  //   return (
+  //     <div className="p-4 text-gray-600">No candidate selected for review.</div>
+  //   );
+  // }
 
   // Mock unit data (simulate DB response)
   const mockUnits = [
@@ -17,12 +17,12 @@ export default function ReviewCandidate({ candidate }) {
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-lg font-semibold text-gray-900">
-        Reviewing: {candidate.firstName} {candidate.lastName}
+        Review: Last Name, First Name [Candidate ID]
       </h2>
 
       <div className="border-t border-gray-200 pt-2">
         <h3 className="text-md font-medium text-gray-800 mb-2">
-          Assigned Units
+          Connected Units
         </h3>
         <ul className="space-y-2">
           {mockUnits.map((unit) => (

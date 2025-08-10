@@ -53,33 +53,33 @@ export default function PlotSelections() {
   ];
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
 
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
+    // Curve Label
+    showLabel: false,
+    labelType: "X Type",
+    showLabelPrefix: false,
+    labelPrefix: "X File name",
+    showLabelSuffix: false,
+    labelSuffix: "Y subcase",
 
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
 
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    symbolFrequency: 1,
+    symbolScaleSize: 1,
 
-  // Shade area
-  shadeArea: "#ffffff",
-});
+    // Shade area
+    shadeArea: "#ffffff",
+  });
 
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: "", y: "" }))
@@ -305,7 +305,7 @@ export default function PlotSelections() {
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {}}
+                onClick={() => { }}
                 title="Create Material"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
@@ -331,9 +331,8 @@ export default function PlotSelections() {
                   {chart.map((chart, index) => (
                     <div
                       key={index}
-                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${
-                        index == 0 ? "bg-blue-300" : ""
-                      }`}
+                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? "bg-blue-300" : ""
+                        }`}
                     >
                       <span className="text-xl">{chart.icon}</span>
                       <span className="text-sm text-gray-700">
@@ -349,21 +348,19 @@ export default function PlotSelections() {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
-                    activeAdjustPropertieTab === "Property editor"
+                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === "Property editor"
                       ? "bg-blue-100 text-blue-600 font-semibold"
                       : "hover:bg-gray-100"
-                  }`}
+                    }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
-                    activeAdjustPropertieTab === "Table"
+                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === "Table"
                       ? "bg-blue-100 text-blue-600 font-semibold"
                       : "hover:bg-gray-100"
-                  }`}
+                    }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
                 >
                   Table
@@ -426,6 +423,8 @@ export default function PlotSelections() {
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
           <div className="h-full overflow-auto m-5">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">📊 Main Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs)</h2>
+
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
                 data={floatChartData}

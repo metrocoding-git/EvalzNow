@@ -20,7 +20,7 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
         "Department": staff.department || "",
         "Date of Birth": staff.dob || "",
         "Date of Employment": staff.doe || "",
-        "Employee No.": staff.id || "",
+        "Staff No.": staff.id || "",
         "Contact Number": staff.phone || "",
         "Company E-mail Address": staff.email || "",
         "Access Level": staff.accessLevel || accessLevels[0],
@@ -47,7 +47,7 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
     </div>
 
     {!staff ? (
-      <div className="flex-1 flex items-center justify-center p-4 text-gray-500 text-sm">No staff selected.</div>
+      <div className="flex-1 flex items-center justify-center p-4 text-gray-500 text-sm"></div>
     ) : showForm ? (
       <form className="p-2 text-xs grid grid-cols-2 gap-1 overflow-y-auto">
         {/* Text Inputs */}
@@ -58,7 +58,7 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
           "Department",
           "Date of Birth",
           "Date of Employment",
-          "Employee No.",
+          "Staff ID",
           "Contact Number",
           "Company E-mail Address",
         ].map((label, idx) => (
@@ -113,7 +113,7 @@ const StaffEditor = ({ onClose, showForm, staff }) => {
             onClick={onClose}
             className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs"
           >
-            Close
+            Edit
           </button>
         </div>
       </form>

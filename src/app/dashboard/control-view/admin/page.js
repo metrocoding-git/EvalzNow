@@ -154,7 +154,7 @@ export default function AdminControl() {
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
-                { key: "id", label: "Executive Id" },
+                { key: "id", label: "Executive ID" },
               ].map((col) => (
                 <div
                   key={col.key}

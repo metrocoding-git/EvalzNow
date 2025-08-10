@@ -30,7 +30,7 @@ const SecondaryInputForm = ({ onClose }) => {
           <label className="block font-medium text-gray-700 mb-1">
             PP ID Range
           </label>
-        
+
           <input
             type="number"
             value={ppIdFrom}
@@ -52,7 +52,7 @@ const SecondaryInputForm = ({ onClose }) => {
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
           </label>
-        
+
           <input
             type="date"
             value={criticalDate}
@@ -87,14 +87,18 @@ const SecondaryInputForm = ({ onClose }) => {
         </div> */}
       </div>
       {/* Submit Button */}
-      <div className="flex justify-end gap-2 pr-3 border-t border-gray-600  bg-gray-100">
-        <button
-          onClick={handleSubmit}
-          className="px-3 py-0.5 text-sm bg-gray-400 text-white border border-gray-400 hover:bg-gray-500"
-        >
-          Submit
-        </button>
+      <div className="border-t border-gray-200 p-2 bg-gray-50">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
+          >
+            Submit
+          </button>
+        </div>
       </div>
+
     </div>
   );
 };

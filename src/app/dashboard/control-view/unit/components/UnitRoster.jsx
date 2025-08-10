@@ -61,15 +61,14 @@ const DIRECT_DELIVERY = [
   "During Unit Operations (training)",
 ];
 
-export default function UnitRoster() {
-  const [selectedRows, setSelectedRows] = useState([]);
+export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit }) {
+  const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
   );
   const [visible, setVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState("Indirect");
 
   const handlePointChange = (index, field, value) => {
     const updated = [...points];
@@ -78,37 +77,40 @@ export default function UnitRoster() {
   };
 
   const toggleRowSelection = (index) => {
-    setSelectedRows((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    // setSelectedRow((prev) =>
+    //   prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    // );
+    setSelectedRow(index)
   };
 
   const handleDeleteCurve = () => {
-    const updated = points.filter((_, index) => !selectedRows.includes(index));
-    setPoints(updated);
-    setSelectedRows([]); // reset selection
+    // const updated = points.filter((_, index) => !selectedRow.includes(index));
+    // setPoints(updated);
+    setSelectedRow(null); // reset selection
   };
 
   const moveRowUp = () => {
-    if (selectedRows.length !== 1) return;
-    const index = selectedRows[0];
-    if (index === 0) return;
+    // if (selectedRow.length !== 1) return;
+
+    // if (index === 0) return;
 
     const updated = [...points];
-    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
-    setPoints(updated);
-    setSelectedRows([index - 1]);
+    // [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    // setPoints(updated);
+    setSelectedRow(selectedRow - 1);
   };
 
   const moveRowDown = () => {
-    if (selectedRows.length !== 1) return;
-    const index = selectedRows[0];
-    if (index === points.length - 1) return;
+    // if (selectedRow.length !== 1) return;
+    // if (index === points.length - 1) return;
 
     const updated = [...points];
-    [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
-    setPoints(updated);
-    setSelectedRows([index + 1]);
+    // [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
+    // setPoints(updated);
+    console.log("11", selectedRow)
+    setSelectedRow(selectedRow + 1);
+    console.log("22", selectedRow)
+
   };
 
   const handleCandidateSelect = (candidate) => {
@@ -125,7 +127,7 @@ export default function UnitRoster() {
   return (
     <div className="flex flex-col h-[80vh]">
       {/* Unit Config */}
-        <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col">
+      <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col">
         <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
           <span className="pl-2 text-md text-gray-800">Unit Config</span>
           <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
@@ -310,8 +312,8 @@ export default function UnitRoster() {
         </div>
       </div>
 
-       {/* Assessment Block Manager */}
-       <div className=" h-1/2 overflow-hidden  border-t border-gray-800 flex flex-col mt-1">
+      {/* Assessment Block Manager */}
+      <div className=" h-1/2 overflow-hidden  border-t border-gray-800 flex flex-col mt-1">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
             <div>
@@ -323,22 +325,20 @@ export default function UnitRoster() {
             {/* Tab Buttons */}
             <div className="flex space-x-2 border-b p-1 bg-gray-100">
               <button
-                className={`px-3 py-1 text-sm ${
-                  activeTab === "Indirect"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => setActiveTab("Indirect")}
+                className={`px-3 py-1 text-sm ${activeTab === "Indirect"
+                  ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                  : "hover:bg-gray-100"
+                  }`}
+                onClick={() => {setActiveTab("Indirect"); setSelectedRow(-0)}}
               >
                 Indirect Performance Points (Master)
               </button>
               <button
-                className={`px-3 py-1 text-sm ${
-                  activeTab === "Direct"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => setActiveTab("Direct")}
+                className={`px-3 py-1 text-sm ${activeTab === "Direct"
+                  ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                  : "hover:bg-gray-100"
+                  }`}
+                onClick={() => {setActiveTab("Direct"); setSelectedRow(+0)}}
               >
                 <p>Direct Performance Points (Master)</p>
               </button>
@@ -353,45 +353,52 @@ export default function UnitRoster() {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
-                      <th className="border p-1">Period Type</th>
-                      <th className="border p-1">Short Description</th>
-                      <th className="border p-1">Delivery</th>
+                      <th className="border p-1 text-center">Period Type</th>
+                      <th className="border p-1 text-center">Short Description</th>
+                      <th className="border p-1 text-center">Delivery</th>
                     </tr>
                   </thead>
                   <tbody>
                     {points.map((_, index) => (
-                      <tr key={`direct-${index}`}>
-                        <td className="border flex justify-between p-1 text-center">
+                      <tr className={`hover:bg-gray-50 cursor-pointer ${selectedRow === +index && 'bg-gray-100'} `} key={`direct-${index}`} onClick={() => { toggleRowSelection(+index); setShowEditBlockManager(true); setShowEdit(false) }}>
+                        {/* <td className="border flex justify-between p-1 text-center">
                           <input
                             type="checkbox"
-                            checked={selectedRows.includes(index)}
-                            onChange={() => toggleRowSelection(index)}
+                            checked={selectedRow.includes(index)}
+                            onChange={() =>{toggleRowSelection(index); setShowEditBlockManager(true); setShowEdit(false)} }
                             className="mr-1"
                           />
+                          +{index + 1}
+                        </td> */}
+                        <td className="border flex justify-between p-1 text-center">
+
                           +{index + 1}
                         </td>
 
                         <td className="border p-1">
-                          <select className="w-full border px-2 py-0.5">
+                          {/* <select className="w-full border px-2 py-0.5">
                             {PERIOD_TYPES.map((type, i) => (
                               <option key={`direct-period-${i}`}>{type}</option>
                             ))}
-                          </select>
+                          </select> */}
+                          Blended - Instructor
                         </td>
                         <td className="border p-1">
-                          <input
+                          {/* <input
                             type="text"
                             maxLength={50}
                             placeholder="Short Description"
                             className="w-full border px-2 py-0.5"
-                          />
+                          /> */}
+                          Sample Short Description
                         </td>
                         <td className="border p-1">
-                          <select className="w-full border px-2 py-0.5">
+                          {/* <select className="w-full border px-2 py-0.5">
                             {DIRECT_DELIVERY.map((d, i) => (
                               <option key={`direct-delivery-${i}`}>{d}</option>
                             ))}
-                          </select>
+                          </select> */}
+                          During Unit Operations (practice)
                         </td>
                       </tr>
                     ))}
@@ -406,49 +413,54 @@ export default function UnitRoster() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
-                      <th className="border p-1">Period Type</th>
-                      <th className="border p-1">Short Description</th>
-                      <th className="border p-1">Delivery</th>
+                      <th className="border p-1 text-center">Period Type</th>
+                      <th className="border p-1 text-center">Short Description</th>
+                      <th className="border p-1 text-center">Delivery</th>
                     </tr>
                   </thead>
                   <tbody>
                     {points.map((_, index) => (
-                      <tr key={`indirect-${index}`}>
+
+                      <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === -index && 'bg-gray-100'} `} key={`indirect-${index}`} onClick={() => { toggleRowSelection(-index); setShowEditBlockManager(true); setShowEdit(false) }}>
+
                         <td className="border flex justify-between p-1 ">
-                          <input
+                          {/* <input
                             type="checkbox"
-                            checked={selectedRows.includes(index)}
+                            checked={selectedRow.includes(index)}
                             onChange={() => toggleRowSelection(index)}
                             className="mr-1"
-                          />
+                          /> */}
                           -{index + 1}
                         </td>
 
                         <td className="border p-1">
-                          <select className="w-full border px-2 py-0.5">
+                          {/* <select className="w-full border px-2 py-0.5">
                             {PERIOD_TYPES.map((type, i) => (
                               <option key={`indirect-period-${i}`}>
                                 {type}
                               </option>
                             ))}
-                          </select>
+                          </select> */}
+                          Blended - Instructor
                         </td>
                         <td className="border p-1">
-                          <input
+                          {/* <input
                             type="text"
                             maxLength={50}
                             placeholder="Short Description"
                             className="w-full border px-2 py-0.5"
-                          />
+                          /> */}
+                          Sample Description
                         </td>
                         <td className="border p-1">
-                          <select className="w-full border px-2 py-0.5">
+                          {/* <select className="w-full border px-2 py-0.5">
                             {INDIRECT_DELIVERY.map((d, i) => (
                               <option key={`indirect-delivery-${i}`}>
                                 {d}
                               </option>
                             ))}
-                          </select>
+                          </select> */}
+                          Before Unit Operations (MISC)
                         </td>
                       </tr>
                     ))}

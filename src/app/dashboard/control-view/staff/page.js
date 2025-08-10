@@ -84,11 +84,11 @@ export default function StaffControl() {
       }
     };
 
-    if(dataList.length>0){
+    if (dataList.length > 0) {
       setSelectedStaff(dataList[0]);
       setShowEdit(true);
       setShowAdd(false);
-    }else {
+    } else {
       setSelectedStaff(null);
       setShowEdit(false);
     }
@@ -149,7 +149,7 @@ export default function StaffControl() {
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
-                { key: "id", label: "ID" },
+                { key: "id", label: "Staff ID" },
               ].map((col) => (
                 <div
                   key={col.key}
@@ -191,11 +191,10 @@ export default function StaffControl() {
                 return (
                   <div
                     key={item.id}
-                    className={`staff-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                      isSelected
-                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                        : "hover:bg-gray-50"
-                    }`}
+                    className={`staff-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${isSelected
+                      ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                      : "hover:bg-gray-50"
+                      }`}
                     onClick={() => {
                       setSelectedStaff(item);
                       setShowEdit(true);
@@ -214,23 +213,20 @@ export default function StaffControl() {
                     }}
                   >
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.lastName}
                     </p>
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.firstName}
                     </p>
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.id}
                     </p>
@@ -238,7 +234,7 @@ export default function StaffControl() {
                 );
               })}
 
-            
+
           </div>
         </div>
 
@@ -271,12 +267,10 @@ export default function StaffControl() {
       </div>
 
       {/* Right Panel - Create Staff */}
-      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
-        <div className="h-full flex flex-col">
+      <div className="w-1/2 lg:w-9/12 bg-white">
+        <div className="h-full flex flex-col w-96">
           {showAdd && (
-            <div className="overflow-auto my-2 w-96">
-              <CreateStaffForm onClose={() => setShowAdd(false)} />
-            </div>
+            <CreateStaffForm onClose={() => setShowAdd(false)} />
           )}
         </div>
       </div>
