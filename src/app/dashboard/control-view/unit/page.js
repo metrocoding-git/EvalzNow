@@ -20,18 +20,26 @@ import { useRouter } from "next/navigation";
 import UnitEditor from "./components/UnitEditor";
 import CreateUnitForm from "./components/CreateUnitForm";
 import UnitRoster from "./components/UnitRoster";
+import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
 
 export default function UnitControl() {
   const router = useRouter();
   const contextRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showAddBlockManager, setShowAddBlockManager] = useState(false);
+
   const [showEdit, setShowEdit] = useState(false);
+  const [showEditBlockManager, setShowEditBlockManager] = useState(false);
+
   const [showList, setShowList] = useState(true);
   const [sortField, setSortField] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   const formRef = useRef(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [showUnitRoster, setUnitRoster] = useState(false);
+
+  // unit tabs
+  const [activeTab, setActiveTab] = useState("Indirect");
 
   const [dataList, setDataList] = useState([
     { id: "u001", name: "Unit1" },
@@ -108,9 +116,14 @@ export default function UnitControl() {
                 <button
                   className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
                   onClick={() => {
-                    setSelectedUnit(null);
-                    setShowAdd(true);
+                    if (showUnitRoster) {
+                      setShowAddBlockManager(true);
+                    } else {
+                      setSelectedUnit(null);
+                      setShowAdd(true);
+                    }
                   }}
+
                 >
                   <Plus className="w-3.5 h-3.5 text-black" />
                 </button>
@@ -161,7 +174,7 @@ export default function UnitControl() {
                   }
                 }}
               >
-                ID
+                Unit ID
               </div>
             </div>
           </div>
@@ -188,11 +201,10 @@ export default function UnitControl() {
                 return (
                   <div
                     key={item.id}
-                    className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                      isSelected
-                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                        : "hover:bg-gray-50"
-                    }`}
+                    className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${isSelected
+                      ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                      : "hover:bg-gray-50"
+                      }`}
                     onClick={() => {
                       setSelectedUnit(item);
                       setShowEdit(true);
@@ -211,32 +223,28 @@ export default function UnitControl() {
                     }}
                   >
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.name}
                     </p>
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.id}
                     </p>
                     {isSelected && (
-                      <div className="border border-gray-200 p-2 px-4">
-                        <p className="text-sm text-gray-600">
-                          Unit Name: Unit 1
-                        </p>
-                        <p className="text-sm text-gray-600">Unit ID: UA123</p>
-                        <p className="text-sm text-gray-600">
-                          Unit Type: Group
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Signature Profile: Signature 1
-                        </p>
+                      <div className="col-span-2 mt-2 border border-gray-400 p-2 px-4">
+                        <span className="text-sm text-gray-600">Unit Name: Unit 1</span>
+                        <br />
+                        <span className="text-sm text-gray-600">Unit ID: UA123</span>
+                        <br />
+                        <span className="text-sm text-gray-600">Unit Type: Group</span>
+                        <br />
+                        <span className="text-sm text-gray-600">Signature Profile: Signature 1</span>
                       </div>
+
                     )}
                   </div>
                 );
@@ -311,28 +319,35 @@ export default function UnitControl() {
         {/* Unit editor Section */}
         <div className="h-1/2 my-0.5" ref={formRef}>
           <UnitEditor
-            onClose={() => setShowEdit(false)}
-            showForm={selectedUnit && showEdit}
+            onClose={() => {setShowEdit(false); setShowEditBlockManager(false)}}
+            showUnitForm={selectedUnit && showEdit}
+            showEditBlockManager={selectedUnit && showEditBlockManager}
+            activeTab={activeTab}
           />
         </div>
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 bg-white w-6/12 lg:w-9/12">
-        <div className="h-full flex flex-col">
-          {showAdd && (
-            <div className="overflow-auto my-2 w-96">
-              <CreateUnitForm onClose={() => setShowAdd(false)} />
-            </div>
-          )}
+      <div className="w-1/2 lg:w-9/12 bg-white">
+        {showAdd && (
+          <div className="h-full flex flex-col w-96">
+            <CreateUnitForm onClose={() => setShowAdd(false)} />
+          </div>
+        )}
 
-          {!showAdd && showUnitRoster && (
-            <div>
-              <UnitRoster onClose={() => setUnitRoster(false)} />
-            </div>
-          )}
-        </div>
+        {showAddBlockManager && (
+          <div className="h-full flex flex-col w-96">
+            <CreateBlockManagerForm onClose={() => setShowAddBlockManager(false)} activeTab={activeTab} />
+          </div>
+        )}
+
+        {!showAdd && showUnitRoster && (
+          <div className="h-full overflow-auto">
+            <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit} />
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

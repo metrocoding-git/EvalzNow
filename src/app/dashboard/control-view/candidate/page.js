@@ -155,7 +155,7 @@ export default function CandidateControl() {
               {[
                 { key: "lastName", label: "Last Name" },
                 { key: "firstName", label: "First Name" },
-                { key: "id", label: "ID" },
+                { key: "id", label: "Candidate ID" },
               ].map((col) => (
                 <div
                   key={col.key}
@@ -264,7 +264,7 @@ export default function CandidateControl() {
                   {/* Ethnicity Inputs */}
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Ethnicities (max 10):
+                      Ethnicities (Max 10):
                     </label>
                     <div className="space-y-1">
                       {ethnicities.map((eth, idx) => (
@@ -309,7 +309,7 @@ export default function CandidateControl() {
                   {/* Income Inputs */}
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Incomes (max 10):
+                      Incomes Ranges (Max 10):
                     </label>
                     <div className="space-y-1">
                       {incomes.map((income, idx) => (
@@ -324,7 +324,7 @@ export default function CandidateControl() {
                               setIncomes(updated);
                             }}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                            placeholder={`Income ${idx + 1}`}
+                            placeholder={`Income Ranges ${idx + 1}`}
                           />
                           <button
                             type="button"
@@ -399,15 +399,14 @@ export default function CandidateControl() {
       </div>
 
       {/* Right Panel - Create Candidate */}
-      <div className="flex-1 bg-white w-1/2 lg:w-9/12">
+      <div className="w-1/2 lg:w-9/12 bg-white">
         
           {showAdd && (
-            <div className="h-full overflow-auto w-96">
+            <div className="h-full flex flex-col w-96">
               <CreateCandidateForm onClose={() => setShowAdd(false)} />
             </div>
           )}
-
-          {showReview && selectedCandidate && (
+          {showReview && (
             <div className="h-full overflow-auto">
               <ReviewCandidate candidate={selectedCandidate} />
             </div>

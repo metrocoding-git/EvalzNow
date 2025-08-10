@@ -32,7 +32,7 @@ export default function CreateCandidateForm({ onClose }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white z-20 border shadow-2xl border-gray-300">
+    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
       {/* Header */}
       <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
@@ -40,6 +40,8 @@ export default function CreateCandidateForm({ onClose }) {
           Create Candidate
         </div>
       </div>
+
+      
 
       {/* Scrollable Content */}
       <div className="flex-1 p-4 overflow-y-auto">
@@ -94,7 +96,7 @@ export default function CreateCandidateForm({ onClose }) {
           ))}
 
           {/* Section Header - Irregularities */}
-          <h3 className="col-span-2 pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200">
+          <h3 className="col-span-2 pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200 ">
             Irregularities
           </h3>
 
@@ -102,14 +104,25 @@ export default function CreateCandidateForm({ onClose }) {
             <table className="w-full text-sm border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Irregularities</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">ID</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Comments</th>
+                     <th className="border border-gray-300 px-3 py-2 text-center">ID</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center ">Irregularities</th>
+               
+                  <th className="border border-gray-300 px-3 py-2 text-center">Comments</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, index) => (
                   <tr key={index} className="even:bg-gray-50">
+                    <td className=" px-2 py-1">
+                      <input
+                        type="number"
+                        min={1}
+                        value={index + 1}
+                        readOnly
+                        onChange={(e) => handleRowChange(index, "id", e.target.value)}
+                        className="w-full px-2 py-1 border-0 text-center"
+                      />
+                    </td>
                     <td className="border border-gray-300 px-2 py-1">
                       <select
                         value={row.type}
@@ -122,15 +135,7 @@ export default function CreateCandidateForm({ onClose }) {
                         ))}
                       </select>
                     </td>
-                    <td className="border border-gray-300 px-2 py-1">
-                      <input
-                        type="number"
-                        min={1}
-                        value={row.id}
-                        onChange={(e) => handleRowChange(index, "id", e.target.value)}
-                        className="w-full px-2 py-1 border"
-                      />
-                    </td>
+                    
                     <td className="border border-gray-300 px-2 py-1">
                       <input
                         type="text"

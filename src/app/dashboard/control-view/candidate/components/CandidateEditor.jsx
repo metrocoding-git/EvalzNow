@@ -121,14 +121,14 @@ const CandidateEditor = ({ candidate, showForm }) => {
           Entity Editor
         </div>
         <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          No candidate selected.
+       
         </div>
       </div>
     );
   }
 
   return (
-  <div className="h-full flex flex-col bg-white">
+  <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
     {/* Header */}
     <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
       <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm">
