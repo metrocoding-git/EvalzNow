@@ -1,22 +1,19 @@
 "use client";
 
 import {
-  Edit3,
-  Trash2,
-  Plus,
   Trash,
+  Plus,
   ChevronRight,
   ChevronDown,
-  Users,
   Search,
+  Trash2,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import CreateClientForm from "./components/CreateClientForm";
 import ClientEditor from "./components/ClientEditor";
+import CreateClientForm from "./components/CreateClientForm";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [showList, setShowList] = useState(true);
   const formRef = useRef(null);
@@ -50,17 +47,6 @@ export default function AdminControl() {
     },
   ]);
 
-  //Sort order state
-  const getSortedDataList = () => {
-    const sorted = [...dataList].sort((a, b) => {
-      const valA = (a[sortBy] || "").toLowerCase();
-      const valB = (b[sortBy] || "").toLowerCase();
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-    return sorted;
-  };
 
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -69,112 +55,110 @@ export default function AdminControl() {
     selectedClient: null,
   });
 
-  const contextRef = useRef(null);
+  // Sort the dataList based on sortBy and sortOrder
+  const getSortedDataList = () => {
+    return [...dataList].sort((a, b) => {
+      const valA = (a[sortBy] || "").toLowerCase();
+      const valB = (b[sortBy] || "").toLowerCase();
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      const isContextMenuClick =
-        contextRef.current && contextRef.current.contains(e.target);
-      const isClientClick = e.target.closest(".client-item");
-      const isFormClick = formRef.current && formRef.current.contains(e.target);
-
-      // If clicked outside both context menu and client item will deselect
-      if (!isContextMenuClick && !isClientClick && !isFormClick) {
-        setContextMenu({ visible: false, x: 0, y: 0, selectedClient: null });
-        setSelectedClient(null);
-        setShowEdit(false);
-      }
-    };
+    // Select first client by default
     if (dataList.length > 0) {
       setSelectedClient(dataList[0]);
-      setShowEdit(true);
-      setShowAdd(false);
     } else {
       setSelectedClient(null);
-      setShowEdit(false);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dataList]);
 
   const handleDelete = (id) => {
     const updatedData = dataList.filter((item) => item.id !== id);
     setDataList(updatedData);
-
     if (selectedClient?.id === id) {
-      setSelectedClient(null);
-      setShowEdit(false);
+      setSelectedClient(updatedData[0] || null);
     }
+  };
+
+  const handleUpdateClient = (updatedClient) => {
+    setDataList((prev) =>
+      prev.map((c) => (c.id === updatedClient.id ? updatedClient : c))
+    );
+    setSelectedClient(updatedClient);
   };
 
   return (
     <div className="flex h-full overflow-hidden">
+      
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden">
           {/* Header with controls */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
-              <div className="flex justify-end gap-1">
-                <button
-                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
-                  onClick={() => {
-                    setSelectedClient(null);
-                    setShowEdit(false);
-                    setShowAdd(true);
-                    
-                  }}
-                >
-                  <Plus className="w-3.5 h-3.5 text-black" />
-                </button>
+                <div className="flex justify-end gap-1">
+                  <button
+                    className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                    onClick={() => {
+                      setSelectedClient(null);
+                      
+                      setShowAdd(true);
+                      
+                    }}
+                  >
+                    <Plus className="w-3.5 h-3.5 text-black" />
+                  </button>
 
-                {selectedClient && (
-                  <div className="flex gap-1 client-item">
-                    <button
-                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
-                      onClick={() => handleDelete(selectedClient.id)}
-                    >
-                      <Trash className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="relative w-full mt-1">
-                <input
-                  type="text"
-                  className="border w-full pl-2 pr-8 py-1 text-sm"
-                  placeholder="Search"
-                />
-                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Column Headers */}
-            <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
-              {[
-                { key: "lastName", label: "Last Name" },
-                { key: "firstName", label: "First Name" },
-                { key: "id", label: "Executive ID" },
-              ].map((col) => (
-                <div
-                  key={col.key}
-                  className="flex items-center cursor-pointer hover:text-black transition-colors"
-                  onClick={() => {
-                    if (sortBy === col.key) {
-                      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-                    } else {
-                      setSortBy(col.key);
-                      setSortOrder("asc");
-                    }
-                  }}
-                >
-                  {col.label}
+                  {selectedClient && (
+                    <div className="flex gap-1 client-item">
+                      <button
+                        className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                        onClick={() => handleDelete(selectedClient.id)}
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+                <div className="relative w-full mt-1">
+                  <input
+                    type="text"
+                    className="border w-full pl-2 pr-8 py-1 text-sm"
+                    placeholder="Search"
+                  />
+                  <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+                </div>
+              </div>
             </div>
+
+          {/* Column headers */}
+          <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide px-4 py-2">
+            {[
+              { key: "lastName", label: "Last Name" },
+              { key: "firstName", label: "First Name" },
+              { key: "id", label: "Executive ID" },
+            ].map((col) => (
+              <div
+                key={col.key}
+                className="flex items-center cursor-pointer hover:text-black transition-colors"
+                onClick={() => {
+                  if (sortBy === col.key) {
+                    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                  } else {
+                    setSortBy(col.key);
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                {col.label}
+              </div>
+            ))}
           </div>
 
-          {/* Client List Section - Fixed height */}
+          {/* Client list */}
           <div className="flex-[1.1] min-h-0 overflow-auto">
             {/* List toggle */}
             <div
@@ -193,10 +177,9 @@ export default function AdminControl() {
 
             {/* Client items */}
             {showList && (
-              <div className="flex-1 ">
+              <div className="flex-1">
                 {getSortedDataList().map((item) => {
-                  const isSelected =
-                    selectedClient && selectedClient.id === item.id;
+                  const isSelected = selectedClient && selectedClient.id === item.id;
                   return (
                     <div
                       key={item.id}
@@ -205,12 +188,7 @@ export default function AdminControl() {
                           ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                           : "hover:bg-gray-50"
                       }`}
-                      onClick={(e) => {
-                        setSelectedClient(item);
-                        e.stopPropagation();
-                        setShowEdit(true);
-                        setShowAdd(false);
-                      }}
+                      onClick={() => setSelectedClient(item)}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         setSelectedClient(item);
@@ -221,6 +199,7 @@ export default function AdminControl() {
                           selectedClient: item,
                         });
                       }}
+                      
                     >
                       <p
                         className={`text-sm font-medium truncate ${
@@ -248,41 +227,38 @@ export default function AdminControl() {
                 })}
               </div>
             )}
-
-            <div className="flex items-center px-4 py-1.5 cursor-pointer select-none hover:text-gray-700 transition-colors flex-shrink-0">
-              <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
-              <span className="text-sm font-medium text-gray-900">
-                SaaS Service Usage Report
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Client Editor Section - Fixed height */}
-        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
-          <ClientEditor client={selectedClient} />
-        </div>
         {/* Context Menu */}
         {contextMenu.visible && (
           <div
-            ref={contextRef}
-            className="absolute bg-gray-200 border hover:bg-red-50 border-gray-300 shadow-lg z-50 py-1 min-w-40"
+            className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button
-              className="flex items-center justify-between w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 border-gray-100 transition-colors"
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
               onClick={() => {
-                handleDelete(contextMenu.selectedClient.id);
+                handleDelete(contextMenu.selectedStaff.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >
-              <span className="flex items-center">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              <span className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4" /> Delete
               </span>
-              <span className="text-xs text-gray-400">Del</span>
+              <span className="text-gray-400 text-xs ml-4">Del</span>
             </button>
           </div>
         )}
+
+        {/* Client editor */}
+        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
+          <ClientEditor
+            client={selectedClient}
+            onClose={() => setSelectedClient(null)}
+            onSave={handleUpdateClient}
+          />
+        </div>
       </div>
 
       {/* Right Panel */}
