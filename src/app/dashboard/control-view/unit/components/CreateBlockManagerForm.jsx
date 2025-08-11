@@ -1,5 +1,5 @@
 "use client";
-import { ListFilterPlus } from "lucide-react";
+import { ListFilterPlus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 
@@ -76,10 +76,18 @@ export default function CreateBlockManagerForm({ onClose, activeTab }) {
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
       {/* Header */}
-      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
+      <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-4 h-4" /> Create Assessment BlockManager
         </div>
+
+        {/* Close icon */}
+        <button
+          onClick={onClose}
+          className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Scrollable Content */}
@@ -129,8 +137,8 @@ export default function CreateBlockManagerForm({ onClose, activeTab }) {
                 </select>
               </div>
             </div>
-          )} 
-          
+          )}
+
           {activeTab === "Indirect" && (
             <div className="flex justify-between gap-2 space-y-1">
               <label className="col-span-1 flex items-center text-gray-700">

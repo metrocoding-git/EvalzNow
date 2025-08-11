@@ -5,67 +5,11 @@ import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
 
-const PERIOD_TYPES = [
-  "Audit/Survey",
-  "Blended - Instructor",
-  "Blended - Platform",
-  "Camp",
-  "Case Study",
-  "Certification",
-  "Coaching",
-  "Conditioning",
-  "Exam/Test",
-  "Experimental",
-  "External Eval",
-  "Flex",
-  "Flipped",
-  "Homework",
-  "Immersion",
-  "Intern/Co-Op",
-  "Internal Eval",
-  "Lab",
-  "LMS - Distance",
-  "Online - Distance",
-  "Other",
-  "Placement",
-  "Probationary",
-  "Promotion",
-  "Pull-Out",
-  "Push-In",
-  "Reassigned Work",
-  "Research/R&D",
-  "Reskilling/CPD/CMP",
-  "Rework",
-  "Rotation",
-  "Scaffolding",
-  "Seminar",
-  "Study Abroad",
-  "Summer Program",
-  "Training for Trainees",
-  "Training for Trainers",
-  "Work",
-  "Workshop",
-  "Work-Study",
-];
 
-const INDIRECT_DELIVERY = [
-  "After Unit Operations (MISC)",
-  "Before Unit Operations (MISC)",
-  "Sensitivity or Exploratory Checking",
-  "Pre-Employment",
-];
-
-const DIRECT_DELIVERY = [
-  "During Unit Operations (on-site)",
-  "During Unit Operations (practice)",
-  "During Unit Operations (remote)",
-  "During Unit Operations (training)",
-];
-
-export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit }) {
+export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
-  const [selectedEntitiyRows, setSelectedEntityRows] = useState([]); 
+  const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
 
   const [showCreateBlockForm, setShowCreateBlockForm] = useState(false);
 
@@ -88,10 +32,17 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     setSelectedRow(index)
   };
 
-  const handleDeleteCurve = () => {
+  const handleUnitRosterDeleteCurve = () => {
+    // const updated = points.filter((_, index) => !selectedRow.includes(index));
+    // setPoints(updated);
+    setSelectedEntityRows([]); // reset selection
+  };
+
+  const handleBlockManagerDeleteCurve = () => {
     // const updated = points.filter((_, index) => !selectedRow.includes(index));
     // setPoints(updated);
     setSelectedRow(null); // reset selection
+    setShowEditBlockManager(false);
   };
 
   const moveRowUp = () => {
@@ -112,9 +63,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     const updated = [...points];
     // [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
     // setPoints(updated);
-    console.log("11", selectedRow)
     setSelectedRow(selectedRow + 1);
-    console.log("22", selectedRow)
 
   };
 
@@ -134,7 +83,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
         : [...prev, index]
     );
   };
-  
+
 
   if (!visible) return null;
 
@@ -156,32 +105,21 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
               title="Search Candidates"
               className="text-gray-600 hover:text-black cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
             </button>
 
-            <button
-              onClick={handleDeleteCurve}
-              title="Delete Selected Row(s)"
-              className="text-gray-600 hover:text-red-600 cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {selectedEntitiyRows.length > 0 && (
+              <button
+                onClick={handleUnitRosterDeleteCurve}
+                title="Delete Selected Row(s)"
+                className="text-gray-600 hover:text-red-600 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
 
-            <button
-              onClick={moveRowUp}
-              title="Move Up"
-              className="text-gray-600 hover:text-black cursor-pointer"
-            >
-              <ArrowUp className="w-4 h-4" />
-            </button>
 
-            <button
-              onClick={moveRowDown}
-              title="Move Down"
-              className="text-gray-600 hover:text-black cursor-pointer"
-            >
-              <ArrowDown className="w-4 h-4" />
-            </button>
+
           </div>
         </div>
         <div>
@@ -219,10 +157,10 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                     unexcusedAbs +
                     excusedTardy +
                     unexcusedTardy;
-                  
+
                   const isSelected = selectedEntitiyRows.includes(index);
                   return (
-                    <tr key={index} onClick={() => toggleRowSelectionMulti(index)} 
+                    <tr key={index} onClick={() => toggleRowSelectionMulti(index)}
                       className={`cursor-pointer ${isSelected ? "bg-gray-200" : ""}`}>
                       <td className="border  text-center">{index + 1}</td>
                       <td className="border ">
@@ -344,20 +282,20 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
               {/* Tab Buttons */}
               <div className="flex space-x-2">
                 <button
-                  className={`px-3 py-1 text-sm ${activeTab === "Indirect"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Indirect"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
                     : "hover:bg-gray-100"
                     }`}
-                  onClick={() => {setActiveTab("Indirect"); setSelectedRow(-0)}}
+                  onClick={() => { setActiveTab("Indirect"); setSelectedRow(null); setShowEditBlockManager(false) }}
                 >
                   Indirect Performance Points (Master)
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm ${activeTab === "Direct"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Direct"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
                     : "hover:bg-gray-100"
                     }`}
-                  onClick={() => {setActiveTab("Direct"); setSelectedRow(+0)}}
+                  onClick={() => { setActiveTab("Direct"); setSelectedRow(null); setShowEditBlockManager(false) }}
                 >
                   <p>Direct Performance Points (Master)</p>
                 </button>
@@ -369,11 +307,47 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 <button
                   onClick={() => setShowCreateBlockForm(true)}
                   title="Add new"
-                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors rounded"
+                  className="p-1.5 text-gray-600 hover:text-black transition-colors cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 text-black" />
+                  <Plus className="w-3.5 h-3.5 " />
+                </button>
+
+
+                {selectedRow && (
+                  <button
+                    className="p-1.5 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                    onClick={() => {
+                      // handleDelete(contextMenu.selectedUnit.id);
+                      // setContextMenu((prev) => ({ ...prev, visible: false }));
+                      handleBlockManagerDeleteCurve();
+                    }}
+                  >
+                    <span className="flex items-center gap-2 ">
+                      <Trash2 className="w-3.5 h-3.5 " />
+                    </span>
+
+                  </button>
+                )}
+
+
+                <button
+                  onClick={moveRowUp}
+                  title="Move Up"
+                  className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={moveRowDown}
+                  title="Move Down"
+                  className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                >
+                  <ArrowDown className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+
             </div>
           </div>
 
@@ -512,18 +486,18 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
         />
       )}
 
-    {showCreateBlockForm && (
-      <div className="w-1/2 lg:w-9/12 bg-white mb-2">
-        <div className="h-full flex flex-col w-96">
-          <CreateBlockManagerForm
-            onClose={() => setShowCreateBlockForm(false)}
-            activeTab={activeTab}
-          />
+      {showCreateBlockForm && (
+        <div className="w-1/2 lg:w-9/12 bg-white mb-2">
+          <div className="h-full flex flex-col w-96">
+            <CreateBlockManagerForm
+              onClose={() => setShowCreateBlockForm(false)}
+              activeTab={activeTab}
+            />
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
-    
+
     </div>
   );
 }

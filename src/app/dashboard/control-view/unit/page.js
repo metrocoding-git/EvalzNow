@@ -14,6 +14,7 @@ import {
   X,
   Search,
   Copy,
+  Undo2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -49,7 +50,7 @@ export default function UnitControl() {
   ]);
 
   const [selectedBlock, setSelectedBlock] = useState(null);
-  
+
   const sortedDataList = [...dataList].sort((a, b) => {
     const fieldA = a[sortField].toLowerCase?.() ?? a[sortField];
     const fieldB = b[sortField].toLowerCase?.() ?? b[sortField];
@@ -121,16 +122,16 @@ export default function UnitControl() {
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200 overflow-hidden">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
-                {selectedUnit ? (
+                {!showAdd && showUnitRoster ? (
                   // Back button shown only when a unit is selected
                   <button
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-gray-300 hover:bg-gray-400 rounded transition-colors"
+                    className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
                     onClick={() => {
                       // Reset selection and hide edit/add forms
                       setSelectedUnit(null);
@@ -141,13 +142,13 @@ export default function UnitControl() {
                       setUnitRoster(false);
                     }}
                   >
-                    Back
+                     <Undo2 className="w-3.5 h-3.5 text-black"/>
                   </button>
                 ) : (
-                
+
                   <>
                     <button
-                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
                       onClick={() => {
                         if (showUnitRoster) {
                           setShowAddBlockManager(true);
@@ -159,15 +160,18 @@ export default function UnitControl() {
                     >
                       <Plus className="w-3.5 h-3.5 text-black" />
                     </button>
-                    
-                    <div className="flex gap-1 unit-item">
-                      <button
-                        className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
-                        onClick={() => handleDelete(selectedUnit.id)}
-                      >
-                        <Trash className="w-3.5 h-3.5" />
-                      </button>
-                    </div> 
+
+                    {selectedUnit && (
+                      <div className="flex gap-1 unit-item">
+                        <button
+                          className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                          onClick={() => handleDelete(selectedUnit.id)}
+                        >
+                          <Trash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
                   </>
                 )}
               </div>
@@ -182,7 +186,7 @@ export default function UnitControl() {
               </div>
             </div>
 
-            
+
             {/* Column Headers */}
             <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
               <div
@@ -213,81 +217,96 @@ export default function UnitControl() {
               </div>
             </div>
           </div>
-          
 
-          {/* List Toggle */}
-          <div className="flex-[1.1] min-h-0 overflow-auto">
-            <div
-              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
-              onClick={() => setShowList((prev) => !prev)}
-            >
-              {showList ? (
-                <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
-              )}
-              <p className="text-sm font-medium text-gray-900">
-                Units ({dataList.length})
-              </p>
-            </div>
 
-            {/* Selected Unit Details Box */}
-            {selectedUnit && (
-              <div className="border border-gray-100 rounded p-3 mb-2 mx-3">
-                <h3 className="font-semibold  mb-1">Details</h3>
-                <p>
-                  <span className="">Name:</span> {selectedUnit.name}
+          {/* Selected Unit Config unit Box */}
+          {!showAdd && showUnitRoster && (
+            <div className="bg-blue-100 border-l-4 border-l-blue-400 pb-1">
+              <div className="unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 pt-2 transition-all text-black">
+                <p className="text-sm font-medium truncate text-black">
+                  {selectedUnit.name}
                 </p>
-                <p>
-                  <span className="">Unit ID:</span> {selectedUnit.id}
+                <p className="text-sm font-medium truncate text-black">
+                  {selectedUnit.id}
+                </p>
+
+              </div>
+              <div className="border border-gray-300 p-2  m-2">
+                <p className="text-sm text-gray-600">Unit Name:  {selectedUnit.name}</p>
+                <p className="text-sm text-gray-600">Unit ID: {selectedUnit.id}</p>
+                <p className="text-sm text-gray-600">Unit Type: Group</p>
+                <p className="text-sm text-gray-600">
+                  Signature Profile: Signature 1
                 </p>
               </div>
-            )}
 
-            {showList &&
-              sortedDataList.map((item, index) => {
-                const isSelected = selectedUnit && selectedUnit.id === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${isSelected
-                      ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                      : "hover:bg-gray-50"
-                      }`}
-                    onClick={() => {
-                      setSelectedUnit(item);
-                      setShowEdit(true);
-                      setShowAdd(false);
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setSelectedUnit(item);
-                      setContextMenu({
-                        visible: true,
-                        x: e.pageX,
-                        y: e.pageY,
-                        selectedUnit: item,
-                      });
-                    }}
-                  >
-                    <p
-                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+            </div>
+          )}
+
+          {/* List Toggle */}
+          {!showUnitRoster && (
+            <div className="flex-[1.1] min-h-0 overflow-auto">
+              <div
+                className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
+                onClick={() => setShowList((prev) => !prev)}
+              >
+                {showList ? (
+                  <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
+                )}
+                <p className="text-sm font-medium text-gray-900">
+                  Units ({dataList.length})
+                </p>
+              </div>
+
+
+
+              {showList &&
+                sortedDataList.map((item, index) => {
+                  const isSelected = selectedUnit && selectedUnit.id === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${isSelected
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                        : "hover:bg-gray-50"
                         }`}
+                      onClick={() => {
+                        setSelectedUnit(item);
+                        setShowEdit(true);
+                        setShowAdd(false);
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedUnit(item);
+                        setContextMenu({
+                          visible: true,
+                          x: e.pageX,
+                          y: e.pageY,
+                          selectedUnit: item,
+                        });
+                      }}
                     >
-                      {item.name}
-                    </p>
-                    <p
-                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                    >
-                      {item.id}
-                    </p>
-                    
-                  </div>
-                );
-              })}
-          </div>
+                      <p
+                        className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                          }`}
+                      >
+                        {item.name}
+                      </p>
+                      <p
+                        className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                          }`}
+                      >
+                        {item.id}
+                      </p>
+
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
 
         {/* Context Menu */}
@@ -316,6 +335,7 @@ export default function UnitControl() {
               onClick={() => {
                 setSelectedUnit(contextMenu.selectedUnit);
                 setUnitRoster(true);
+                 setShowAdd(false);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >
@@ -356,17 +376,18 @@ export default function UnitControl() {
 
         {/* Unit editor Section */}
         <div className="h-1/2 my-0.5" ref={formRef}>
-        <UnitEditor
-          unitId={selectedUnit?.id}
-          onClose={() => {
-            setShowEdit(false);
-            setShowEditBlockManager(false);
-          }}
-          showUnitForm={selectedUnit && showEdit}
-          showEditBlockManager={selectedUnit && showEditBlockManager}
-          activeTab={activeTab}
-          onSave={handleUnitSave}
-        />
+          <UnitEditor
+            unitId={selectedUnit?.id}
+            onClose={() => {
+              setShowEdit(false);
+              setShowEditBlockManager(false);
+            }}
+            showUnitForm={selectedUnit && showEdit}
+            showEditBlockManager={selectedUnit && showEditBlockManager}
+            activeTab={activeTab}
+            onSave={handleUnitSave}
+            showUnitRoster={showUnitRoster}
+          />
 
         </div>
       </div>
@@ -387,7 +408,7 @@ export default function UnitControl() {
 
         {!showAdd && showUnitRoster && (
           <div className="h-full overflow-auto">
-            <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit} />
+            <UnitRoster activeTab={activeTab} setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit} />
           </div>
         )}
       </div>

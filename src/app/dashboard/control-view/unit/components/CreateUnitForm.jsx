@@ -146,7 +146,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
 
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
@@ -199,7 +199,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
             {/* Assigned Leaders */}
             <div className="flex justify-between gap-2 space-y-1">
               <label className="col-span-1 flex items-center text-gray-700">
-                Assigned Leaders (Max-3):
+                Assigned Leaders:
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -213,7 +213,8 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                   + Add Leader
                 </button>
                 <div className="text-sm text-gray-700">
-                  {form.assignedLeaders?.length || 0} selected
+                  {/* {form.assignedLeaders?.length || 0} selected */}
+                  Max 3
                 </div>
               </div>
             </div>
@@ -221,7 +222,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
             {/* Assigned Assessors */}
             <div className="flex justify-between gap-2 space-y-1">
               <label className="col-span-1 flex items-center text-gray-700">
-                Assigned Assessors Max-3:
+                Assigned Assessors:
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -235,17 +236,16 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                   + Add Assessor
                 </button>
                 <div className="text-sm text-gray-700">
-                  {form.assignedAssessors?.length || 0} selected
+                  {/* {form.assignedAssessors?.length || 0} selected */}
+                  Max 3
                 </div>
               </div>
             </div>
 
             {/* Unit Director */}
             <div className="flex justify-between gap-2 space-y-1">
-              <label className="col-span-1 flex items-center text-gray-700">
-                Unit Director:
-              </label>
-              <div className="flex items-center gap-2">
+
+              {/* <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -262,8 +262,25 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                     "Selected"
                     : "None"}
                 </div>
-              </div>
+              </div> */}
+
+              <label className="col-span-1 flex items-center text-gray-700">
+                Unit Director:
+              </label>
+              <select
+                required
+                value=""
+                onChange={(e) => handleChange("UnitDirecto", e.target.value)}
+                className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              >
+                <option value="">Select Unit Directo</option>
+                
+              </select>
+
             </div>
+
+            
+
           </div>
 
           {/* Fixed Fields */}
@@ -382,7 +399,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                     />
                   </div>
 
-                 
+
 
                   {/* Benchmark Type */}
                   <div className="space-y-1">
@@ -407,7 +424,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                     </select>
                   </div>
 
-                   {/* Benchmark Ref */}
+                  {/* Benchmark Ref */}
                   <div className="space-y-1">
                     <label className="block text-gray-700 font-medium text-xs">
                       Benchmark Ref:
@@ -427,7 +444,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
                   </div>
 
 
-                   {/* Benchmark Ref */}
+                  {/* Benchmark Ref */}
                   <div className="space-y-1">
                     <label className="block text-gray-700 font-medium text-xs">
                       Benchmark Description:
@@ -485,15 +502,17 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
 
 
 
-      {showLookup && (
-        <StaffLookup
-          onClose={() => {
-            setShowLookup(false);
-            setLookupFor(null);
-          }}
-          onSelect={handleStaffSelect}
-        />
-      )}
-    </div>
+      {
+        showLookup && (
+          <StaffLookup
+            onClose={() => {
+              setShowLookup(false);
+              setLookupFor(null);
+            }}
+            onSelect={handleStaffSelect}
+          />
+        )
+      }
+    </div >
   );
 }

@@ -62,7 +62,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab }) => {
+const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
@@ -97,7 +97,8 @@ const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab }) 
           <div className="text-gray-500 text-sm">No unit selected.</div>
         </div>
       )} */}
-      {showUnitForm && (
+
+      {showUnitForm && !showUnitRoster &&(
         <div className="flex-1 overflow-auto flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
