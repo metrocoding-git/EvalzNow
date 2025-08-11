@@ -1,5 +1,5 @@
 "use client";
-import { ListFilterPlus, Plus } from "lucide-react";
+import { ListFilterPlus, Plus, X } from "lucide-react";
 import React, { useState } from "react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
@@ -34,11 +34,19 @@ export default function CreateCandidateForm({ onClose }) {
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
       {/* Header */}
-      <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
+      <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-5 h-5" />
           Create Candidate
         </div>
+
+        {/* Close icon */}
+        <button
+          onClick={onClose}
+          className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       

@@ -262,7 +262,19 @@ export default function StaffControl() {
         {/* Staff editor Section */}
 
         <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
-          <StaffEditor staff={selectedStaff} showForm={showEdit} />
+        <StaffEditor
+          staff={selectedStaff}
+          showForm={showEdit}
+          onClose={() => setShowEdit(false)}
+          onSave={(updatedStaff) => {
+            setDataList((prev) =>
+              prev.map((item) =>
+                item.id === updatedStaff.id ? updatedStaff : item
+              )
+            );
+            setSelectedStaff(updatedStaff);
+          }}
+        />
         </div>
       </div>
 

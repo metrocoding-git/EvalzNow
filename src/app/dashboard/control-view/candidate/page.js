@@ -394,7 +394,19 @@ export default function CandidateControl() {
 
         {/* Candidate editor Section */}
         <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
-          <CandidateEditor candidate={selectedCandidate} showForm={showEdit} />
+        <CandidateEditor
+          candidate={selectedCandidate}
+          showForm={showEdit}
+          onSave={(updatedCandidate) => {
+            setDataList((prev) =>
+              prev.map((c) =>
+                c.id === updatedCandidate.id ? updatedCandidate : c
+              )
+            );
+            setSelectedCandidate(updatedCandidate);
+          }}
+        />
+
         </div>
       </div>
 

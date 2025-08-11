@@ -48,6 +48,8 @@ export default function UnitControl() {
     { id: "u004", name: "Unit4" },
   ]);
 
+  const [selectedBlock, setSelectedBlock] = useState(null);
+  
   const sortedDataList = [...dataList].sort((a, b) => {
     const fieldA = a[sortField].toLowerCase?.() ?? a[sortField];
     const fieldB = b[sortField].toLowerCase?.() ?? b[sortField];
@@ -104,6 +106,18 @@ export default function UnitControl() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, [dataList, showUnitRoster]);
 
+
+  // Add this inside UnitControl function body:
+  const handleUnitSave = (updatedUnit) => {
+    // Update dataList with new unit info (keep existing fields if you want)
+    setDataList((prev) =>
+      prev.map((unit) => (unit.id === updatedUnit.unitId ? { ...unit, ...updatedUnit } : unit))
+    );
+    setSelectedUnit(updatedUnit);
+    setShowEdit(false);
+  };
+
+
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
@@ -113,32 +127,51 @@ export default function UnitControl() {
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
-                <button
-                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
-                  onClick={() => {
-                    if (showUnitRoster) {
-                      setShowAddBlockManager(true);
-                    } else {
+                {selectedUnit ? (
+                  // Back button shown only when a unit is selected
+                  <button
+                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-gray-300 hover:bg-gray-400 rounded transition-colors"
+                    onClick={() => {
+                      // Reset selection and hide edit/add forms
                       setSelectedUnit(null);
-                      setShowAdd(true);
-                    }
-                  }}
-
-                >
-                  <Plus className="w-3.5 h-3.5 text-black" />
-                </button>
-
-                {selectedUnit && (
-                  <div className="flex gap-1 unit-item">
+                      setShowEdit(false);
+                      setShowAdd(false);
+                      setShowAddBlockManager(false);
+                      setShowEditBlockManager(false);
+                      setUnitRoster(false);
+                    }}
+                  >
+                    Back
+                  </button>
+                ) : (
+                
+                  <>
                     <button
-                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
-                      onClick={() => handleDelete(selectedUnit.id)}
+                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                      onClick={() => {
+                        if (showUnitRoster) {
+                          setShowAddBlockManager(true);
+                        } else {
+                          setSelectedUnit(null);
+                          setShowAdd(true);
+                        }
+                      }}
                     >
-                      <Trash className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 text-black" />
                     </button>
-                  </div>
+                    
+                    <div className="flex gap-1 unit-item">
+                      <button
+                        className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                        onClick={() => handleDelete(selectedUnit.id)}
+                      >
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
+                    </div> 
+                  </>
                 )}
               </div>
+
               <div className="relative w-full mt-1">
                 <input
                   type="text"
@@ -148,6 +181,8 @@ export default function UnitControl() {
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
             </div>
+
+            
             {/* Column Headers */}
             <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
               <div
@@ -178,6 +213,7 @@ export default function UnitControl() {
               </div>
             </div>
           </div>
+          
 
           {/* List Toggle */}
           <div className="flex-[1.1] min-h-0 overflow-auto">
@@ -194,6 +230,19 @@ export default function UnitControl() {
                 Units ({dataList.length})
               </p>
             </div>
+
+            {/* Selected Unit Details Box */}
+            {selectedUnit && (
+              <div className="border border-gray-100 rounded p-3 mb-2 mx-3">
+                <h3 className="font-semibold  mb-1">Details</h3>
+                <p>
+                  <span className="">Name:</span> {selectedUnit.name}
+                </p>
+                <p>
+                  <span className="">Unit ID:</span> {selectedUnit.id}
+                </p>
+              </div>
+            )}
 
             {showList &&
               sortedDataList.map((item, index) => {
@@ -234,18 +283,7 @@ export default function UnitControl() {
                     >
                       {item.id}
                     </p>
-                    {isSelected && (
-                      <div className="col-span-2 mt-2 border border-gray-400 p-2 px-4">
-                        <span className="text-sm text-gray-600">Unit Name: Unit 1</span>
-                        <br />
-                        <span className="text-sm text-gray-600">Unit ID: UA123</span>
-                        <br />
-                        <span className="text-sm text-gray-600">Unit Type: Group</span>
-                        <br />
-                        <span className="text-sm text-gray-600">Signature Profile: Signature 1</span>
-                      </div>
-
-                    )}
+                    
                   </div>
                 );
               })}
@@ -318,12 +356,18 @@ export default function UnitControl() {
 
         {/* Unit editor Section */}
         <div className="h-1/2 my-0.5" ref={formRef}>
-          <UnitEditor
-            onClose={() => {setShowEdit(false); setShowEditBlockManager(false)}}
-            showUnitForm={selectedUnit && showEdit}
-            showEditBlockManager={selectedUnit && showEditBlockManager}
-            activeTab={activeTab}
-          />
+        <UnitEditor
+          unitId={selectedUnit?.id}
+          onClose={() => {
+            setShowEdit(false);
+            setShowEditBlockManager(false);
+          }}
+          showUnitForm={selectedUnit && showEdit}
+          showEditBlockManager={selectedUnit && showEditBlockManager}
+          activeTab={activeTab}
+          onSave={handleUnitSave}
+        />
+
         </div>
       </div>
 
