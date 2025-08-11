@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
+import CreateBlockManagerForm from "./CreateBlockManagerForm";
 
 const PERIOD_TYPES = [
   "Audit/Survey",
@@ -64,6 +65,9 @@ const DIRECT_DELIVERY = [
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
+  const [selectedEntitiyRows, setSelectedEntityRows] = useState([]); 
+
+  const [showCreateBlockForm, setShowCreateBlockForm] = useState(false);
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
@@ -75,6 +79,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     updated[index][field] = value;
     setPoints(updated);
   };
+
 
   const toggleRowSelection = (index) => {
     // setSelectedRow((prev) =>
@@ -121,6 +126,15 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     // - Store the selection for further processing
     setShowSearchLookup(false);
   };
+
+  const toggleRowSelectionMulti = (index) => {
+    setSelectedEntityRows((prev) =>
+      prev.includes(index)
+        ? prev.filter((i) => i !== index)
+        : [...prev, index]
+    );
+  };
+  
 
   if (!visible) return null;
 
@@ -205,9 +219,11 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                     unexcusedAbs +
                     excusedTardy +
                     unexcusedTardy;
-
+                  
+                  const isSelected = selectedEntitiyRows.includes(index);
                   return (
-                    <tr key={index}>
+                    <tr key={index} onClick={() => toggleRowSelectionMulti(index)} 
+                      className={`cursor-pointer ${isSelected ? "bg-gray-200" : ""}`}>
                       <td className="border  text-center">{index + 1}</td>
                       <td className="border ">
                         <span className="block px-2 py-0.5 text-sm text-gray-800">
@@ -322,26 +338,42 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
               </h2>
             </div>
-            {/* Tab Buttons */}
-            <div className="flex space-x-2 border-b p-1 bg-gray-100">
-              <button
-                className={`px-3 py-1 text-sm ${activeTab === "Indirect"
-                  ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
-                  : "hover:bg-gray-100"
-                  }`}
-                onClick={() => {setActiveTab("Indirect"); setSelectedRow(-0)}}
-              >
-                Indirect Performance Points (Master)
-              </button>
-              <button
-                className={`px-3 py-1 text-sm ${activeTab === "Direct"
-                  ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
-                  : "hover:bg-gray-100"
-                  }`}
-                onClick={() => {setActiveTab("Direct"); setSelectedRow(+0)}}
-              >
-                <p>Direct Performance Points (Master)</p>
-              </button>
+
+
+            <div className="flex items-center justify-between border-b p-1 bg-gray-100">
+              {/* Tab Buttons */}
+              <div className="flex space-x-2">
+                <button
+                  className={`px-3 py-1 text-sm ${activeTab === "Indirect"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                    : "hover:bg-gray-100"
+                    }`}
+                  onClick={() => {setActiveTab("Indirect"); setSelectedRow(-0)}}
+                >
+                  Indirect Performance Points (Master)
+                </button>
+                <button
+                  className={`px-3 py-1 text-sm ${activeTab === "Direct"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold"
+                    : "hover:bg-gray-100"
+                    }`}
+                  onClick={() => {setActiveTab("Direct"); setSelectedRow(+0)}}
+                >
+                  <p>Direct Performance Points (Master)</p>
+                </button>
+
+              </div>
+
+              {/* Right side: Plus button */}
+              <div className="mr-1">
+                <button
+                  onClick={() => setShowCreateBlockForm(true)}
+                  title="Add new"
+                  className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors rounded"
+                >
+                  <Plus className="w-3.5 h-3.5 text-black" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -479,6 +511,19 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
           onSelect={handleCandidateSelect}
         />
       )}
+
+    {showCreateBlockForm && (
+      <div className="w-1/2 lg:w-9/12 bg-white mb-2">
+        <div className="h-full flex flex-col w-96">
+          <CreateBlockManagerForm
+            onClose={() => setShowCreateBlockForm(false)}
+            activeTab={activeTab}
+          />
+        </div>
+      </div>
+    )}
+
+    
     </div>
   );
 }
