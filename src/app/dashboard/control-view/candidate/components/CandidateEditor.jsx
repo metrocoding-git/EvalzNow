@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Edit3, X, Plus, Edit } from "lucide-react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
@@ -90,11 +90,37 @@ const initialFormState = {
   Comments: "",
 };
 
-const CandidateEditor = ({ candidate, showForm }) => {
+const CandidateEditor = ({ candidate, showForm, onSave }) => {
   const [form, setForm] = useState(initialFormState);
   const [rows, setRows] = useState([
     { id: "", type: "", comment: "" }
   ]);
+
+  useEffect(() => {
+    if (candidate) {
+      setForm({
+        "Last Name": candidate.lastName || "",
+        "First Name": candidate.firstName || "",
+        "Candidate ID": candidate.id || "",
+        
+        "Special ID No.": candidate.specialIdNo || "",
+        "Date of Birth": candidate.dob || "",
+        "Start Date": candidate.startDate || "",
+        Nationality: candidate.nationality || "",
+        Gender: candidate.gender || "",
+        Ethnicity: candidate.ethnicity || "",
+        Income: candidate.income || "",
+        Religion: candidate.religion || "",
+        "Marital Status": candidate.maritalStatus || "",
+        "Job Type": candidate.jobType || "",
+        Disability: candidate.disability || false,
+        "Special Needs": candidate.specialNeeds || false,
+        Other: candidate.other || false,
+        Comments: candidate.comments || "",
+      });
+      
+    }
+  }, [candidate]);
 
   const handleChange = (label, value) => {
     setForm((prev) => ({
@@ -126,6 +152,42 @@ const CandidateEditor = ({ candidate, showForm }) => {
       </div>
     );
   }
+
+
+
+  
+
+
+  const handleSave = () => {
+    // Build updated candidate object from form state
+    const updatedCandidate = {
+      id: form["Candidate ID"],
+      lastName: form["Last Name"],
+      firstName: form["First Name"],
+      specialIdNo: form["Special ID No."],
+      dob: form["Date of Birth"],
+      startDate: form["Start Date"],
+      nationality: form.Nationality,
+      gender: form.Gender,
+      ethnicity: form.Ethnicity,
+      income: form.Income,
+      religion: form.Religion,
+      maritalStatus: form["Marital Status"],
+      jobType: form["Job Type"],
+      disability: form.Disability,
+      specialNeeds: form["Special Needs"],
+      other: form.Other,
+      comments: form.Comments,
+      
+    };
+  
+    if (typeof onSave === "function") {
+      onSave(updatedCandidate);
+      console.log(updatedCandidate);
+    }
+  };
+  
+
 
   return (
   <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -267,8 +329,8 @@ const CandidateEditor = ({ candidate, showForm }) => {
 
         {/* Buttons */}
         <div className="col-span-2 pt-4 flex justify-end gap-2">
-          <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs">
-            Close
+          <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs" onClick={handleSave}>
+            Edit
           </button>
         </div>
       </div>

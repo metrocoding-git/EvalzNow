@@ -92,11 +92,11 @@ const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab }) 
         </div>
       </div>
 
-      {!showUnitForm && !showEditBlockManager && (
+      {/* {!showUnitForm && !showEditBlockManager && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-gray-500 text-sm">No unit selected.</div>
         </div>
-      )}
+      )} */}
       {showUnitForm && (
         <div className="flex-1 overflow-auto flex flex-col">
           {/* Scrollable form area */}
