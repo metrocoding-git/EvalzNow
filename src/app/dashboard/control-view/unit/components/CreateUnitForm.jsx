@@ -63,6 +63,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
 
   const showThresholds = form.unitType !== "";
 
+  const [unitDirectors, setUnitDirectors] = useState([]);
   const defaultThresholds = {
     "Communicative I/O": {
       XEP: 0.7,
@@ -267,19 +268,19 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
               <label className="col-span-1 flex items-center text-gray-700">
                 Unit Director:
               </label>
-              <select
-                required
-                value=""
-                onChange={(e) => handleChange("UnitDirecto", e.target.value)}
+              <select required value={form.unitDirector || ""}
+                onChange={(e) => handleChange("unitDirector", e.target.value)}
                 className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
-                <option value="">Select Unit Directo</option>
-                
+                <option value="">Select Unit Director</option>
+                {unitDirectors.map((staff) => (
+                  <option key={staff.id} value={staff.id}>
+                    {staff.firstName} {staff.lastName} — {staff.jobTitle}
+                  </option>
+                ))}
               </select>
 
             </div>
-
-            
 
           </div>
 
@@ -509,7 +510,9 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
               setShowLookup(false);
               setLookupFor(null);
             }}
-            onSelect={handleStaffSelect}
+            onSelect={(staffArray) => {
+              setUnitDirectors(staffArray); // store selected staff here
+            }}
           />
         )
       }
