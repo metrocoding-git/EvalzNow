@@ -43,10 +43,10 @@ export default function UnitControl() {
   const [activeTab, setActiveTab] = useState("Indirect");
 
   const [dataList, setDataList] = useState([
-    { id: "u001", name: "Unit1" },
-    { id: "u002", name: "Unit2" },
-    { id: "u003", name: "Unit3" },
-    { id: "u004", name: "Unit4" },
+    { id: "u001", environment:'classroom', name: "Unit1", type:'communicative' },
+    { id: "u002", environment:'workspace', name: "Unit2", type:'theory practical' },
+    { id: "u003", environment:'classroom', name: "Unit3", type:'third parameter' },
+    { id: "u004", environment:'workspace', name: "Unit4", type:'communicative' },
   ]);
 
   const [selectedBlock, setSelectedBlock] = useState(null);
@@ -362,7 +362,7 @@ export default function UnitControl() {
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-                router.push("/dashboard/setup-view");
+                router.push(`/dashboard/setup-view/insert-scores?environment=${contextMenu.selectedUnit.environment}&type=${contextMenu.selectedUnit.type}`);
               }}
             >
               <span className="flex items-center gap-2">

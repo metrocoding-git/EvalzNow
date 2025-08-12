@@ -15,8 +15,8 @@ import CompetencyAccounting from "./components/CompetencyAccounting";
 export default function EntitiesManager() {
   // Initial table data in state
   const [data, setData] = useState([
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
+    { id: 1, environment: '', firstName: "John", lastName: "Doe" },
+    { id: 2, environment: '', firstName: "Jane", lastName: "Smith" },
     { id: 3, firstName: "Bob", lastName: "Johnson" },
     { id: 4, firstName: "Alice", lastName: "Williams" },
     { id: 5, firstName: "Charlie", lastName: "Brown" },
@@ -196,17 +196,20 @@ export default function EntitiesManager() {
 
           {/* Editor Panel */}
           <div className="h-2/5 overflow-auto my-2">
-            <ClientEditor
+            {/* <ClientEditor
               onClose={() => setShowEdit(false)}
               entity={selectedEntity}
               showForm={showEdit}
-            />
+            /> */}
+
+          {/* scoring criteria form */}
+          
           </div>
         </div>
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 bg-white flex flex-col border-l border-gray-200 ml-1 px-3 py-2 overflow-y-auto">
+      <div className="flex-1 bg-white flex flex-col  overflow-y-auto">
         {ScoresOpen && <CompetencyAccounting />}
       </div>
 

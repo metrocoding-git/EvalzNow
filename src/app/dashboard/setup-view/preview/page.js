@@ -54,6 +54,7 @@ const competencyData = [
     missingCompetencies: "None",
     error: "No",
   },
+  
 ];
 
 const activatedCandidates = [
@@ -233,7 +234,7 @@ export default function PreviewPage() {
               {/* Competency Accounting Table */}
               <div className="px-2 mt-4 mb-4">
                 <h2 className="text-md font-semibold text-gray-700 mb-2">
-                  Competency Accounting
+                  
                 </h2>
                 <CompetencyAccountingTable data={competencyData} />
               </div>
