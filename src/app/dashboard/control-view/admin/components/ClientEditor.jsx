@@ -58,7 +58,6 @@ export default function ClientEditor({ client, onClose, onSave }) {
   if (!client) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-        No client selected
       </div>
     );
   }

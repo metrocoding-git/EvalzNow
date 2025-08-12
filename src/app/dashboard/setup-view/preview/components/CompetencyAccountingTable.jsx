@@ -77,16 +77,10 @@ const CompetencyAccountingTable = ({ data }) => {
   };
 
   return (
-    <div className="overflow-x-auto border-1 border-gray-200 shadow-sm">
+    <div className=" border border-gray-300 flex flex-col m-1">
       {/* Tab Buttons */}
       <div className="flex flex-col">
-        <div>
-          <h2 className="text-md font-semibold bg-gray-100 p-0.5 pl-2 flex items-center border-b border-gray-200">
-            Competency Accounting
-            <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
-          </h2>
-        </div>
-
+      
         <div className="flex items-center justify-between border-b p-1 bg-gray-100">
           {/* Tab Buttons */}
           <div className="flex space-x-2">
@@ -98,7 +92,8 @@ const CompetencyAccountingTable = ({ data }) => {
               }`}
               onClick={() => setActiveTab("Indirect")}
             >
-              Indirect Performance Points (Sub)
+             Indirect Performance Point (Master)
+
             </button>
             <button
               className={`px-3 py-1 text-sm cursor-pointer ${
@@ -108,43 +103,7 @@ const CompetencyAccountingTable = ({ data }) => {
               }`}
               onClick={() => setActiveTab("Direct")}
             >
-              Direct Performance Points (Sub)
-            </button>
-          </div>
-
-          {/* Right side buttons */}
-          <div className="mr-1 flex items-center">
-            <button
-              title="Add new"
-              className="p-1.5 text-gray-600 hover:text-black transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-
-            {selectedRow !== null && (
-              <button
-                className="p-1.5 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
-                onClick={handleDelete}
-                title="Delete selected"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-
-            <button
-              onClick={moveRowUp}
-              title="Move Up"
-              className="text-gray-600 hover:text-black cursor-pointer p-1.5"
-            >
-              <ArrowUp className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={moveRowDown}
-              title="Move Down"
-              className="text-gray-600 hover:text-black cursor-pointer p-1.5"
-            >
-              <ArrowDown className="w-3.5 h-3.5" />
+              Direct Performance Point (Master)
             </button>
           </div>
         </div>
@@ -153,12 +112,12 @@ const CompetencyAccountingTable = ({ data }) => {
       <table className="min-w-full table-auto text-sm text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
-            <th className="px-4 py-3 border-1 border-gray-300">Master PP ID Callout</th>
-            <th className="px-4 py-3 border-1 border-gray-300">Short Description</th>
-            <th className="px-4 py-3 border-1 border-gray-300">Duration</th>
-            <th className="px-4 py-3 border-1 border-gray-300">Critical Reference Date</th>
-            <th className="px-4 py-3 border-1 border-gray-300">Missing Competencies</th>
-            <th className="px-4 py-3 border-1 border-gray-300">Error</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Short Description</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Missing Competencies</th>
+            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Error</th>
           </tr>
         </thead>
         <tbody className="text-gray-700">

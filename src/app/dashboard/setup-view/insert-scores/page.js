@@ -11,12 +11,15 @@ import {
 } from "lucide-react";
 import ClientEditor from "../../control-view/admin/components/ClientEditor";
 import CompetencyAccounting from "./components/CompetencyAccounting";
+import Editor from "./components/Editor";
+import CreateStaffForm from "../../control-view/staff/components/CreateStaffForm";
+import CreateInsertScoresForm from "./components/CreateInsertScoresForm";
 
 export default function EntitiesManager() {
   // Initial table data in state
   const [data, setData] = useState([
-    { id: 1, environment: '', firstName: "John", lastName: "Doe" },
-    { id: 2, environment: '', firstName: "Jane", lastName: "Smith" },
+    { id: 1, firstName: "John", lastName: "Doe" },
+    { id: 2, firstName: "Jane", lastName: "Smith" },
     { id: 3, firstName: "Bob", lastName: "Johnson" },
     { id: 4, firstName: "Alice", lastName: "Williams" },
     { id: 5, firstName: "Charlie", lastName: "Brown" },
@@ -40,6 +43,9 @@ export default function EntitiesManager() {
     y: 0,
   });
   const [rightClickedEntity, setRightClickedEntity] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [activeTab, setActiveTab] = useState("Indirect");
+  const [scoreAdd, setScoreAdd] = useState(false);
 
   useEffect(() => {
     const handleClick = () => {
@@ -48,18 +54,18 @@ export default function EntitiesManager() {
       }
     };
 
-    if(data.length>0){
+    if (data.length > 0) {
       setSelectedEntity(data[0]);
       setScoresOpen(true);
       setShowEdit(true);
-    }else{
+    } else {
       setSelectedEntity(null);
-       setScoresOpen(false);
+      setScoresOpen(false);
       setShowEdit(false);
     }
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
-  }, [contextMenu.visible,data]);
+  }, [contextMenu.visible, data]);
 
   const sortedData = [...data].sort((a, b) => {
     const valA = a[sortColumn];
@@ -89,7 +95,7 @@ export default function EntitiesManager() {
         <div className="flex-grow flex flex-col h-3/5">
           {/* Header */}
           <div className="flex flex-col items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
-             <div className="relative w-full mb-2">
+            <div className="relative w-full mb-2">
               <input
                 type="text"
                 className="border w-full pl-2 pr-8 py-1 text-sm"
@@ -125,16 +131,14 @@ export default function EntitiesManager() {
               onClick={() => setOpenMenu(!openMenu)}
             >
               <span
-                className={`transition-transform duration-200 text-gray-600 mr-1 ${
-                  openMenu ? "rotate-90" : "rotate-0"
-                }`}
+                className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
+                  }`}
               >
                 <ChevronRight />
               </span>
               <span
-                className={`text-md text-gray-800 ml-2 ${
-                  openMenu ? "font-bold text-black" : ""
-                }`}
+                className={`text-md text-gray-800 ml-2 ${openMenu ? "font-bold text-black" : ""
+                  }`}
               >
                 Details
               </span>
@@ -159,11 +163,10 @@ export default function EntitiesManager() {
                   {sortedData.map((item) => (
                     <div
                       key={item.id}
-                      className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${
-                        selectedEntity?.id === item.id
-                          ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                          : "hover:bg-gray-50"
-                      }`}
+                      className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${selectedEntity?.id === item.id
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                        : "hover:bg-gray-50"
+                        }`}
                       onClick={(e) => {
                         setSelectedEntity(item);
                         setShowEdit(true);
@@ -196,55 +199,28 @@ export default function EntitiesManager() {
 
           {/* Editor Panel */}
           <div className="h-2/5 overflow-auto my-2">
-            {/* <ClientEditor
-              onClose={() => setShowEdit(false)}
-              entity={selectedEntity}
-              showForm={showEdit}
-            /> */}
-
-          {/* scoring criteria form */}
-          
+            <Editor
+              details={selectedRow}
+              performancePoints={activeTab}
+            />
           </div>
         </div>
       </div>
 
       {/* Right Panel */}
       <div className="flex-1 bg-white flex flex-col  overflow-y-auto">
-        {ScoresOpen && <CompetencyAccounting />}
+        {scoreAdd && (
+          <div className="w-1/2 lg:w-9/12 bg-white h-full">
+            <div className="h-full flex flex-col w-96">
+              <CreateInsertScoresForm onClose={() => setScoreAdd(false)} />
+            </div>
+          </div>
+        )}
+        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
       </div>
 
-      {contextMenu.visible && (
-        <div
-          className="absolute bg-gray-50 border border-gray-300 shadow-md z-50 w-60"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-200 w-full text-left"
-            onClick={(e) => {
-              setShowEdit(true);
-              e.stopPropagation();
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Edit3 className="w-4 h-4" /> Edit
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
-          </button>
 
-          <button
-            className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-200 w-full text-left border-t border-gray-200"
-            onClick={() => {
-              setContextMenu((prev) => ({ ...prev, visible: false }));
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4" /> Delete
-            </span>
-            <span className="text-gray-400 text-xs ml-4">Del</span>
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -42,7 +42,6 @@ export default function ClientEditor({ client, onClose }) {
 
       {!client ? (
         <div className="flex-1 p-4 text-gray-500 text-sm flex items-center justify-center">
-          No client selected.
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto">

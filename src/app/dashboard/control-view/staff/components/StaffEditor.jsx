@@ -61,7 +61,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
 
       {!staff ? (
         <div className="flex-1 flex items-center justify-center p-4 text-gray-500 text-sm">
-          No staff selected
+
         </div>
       ) : showForm ? (
         <form

@@ -88,13 +88,15 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   if (!visible) return null;
 
   return (
-    <div className="flex flex-col h-[80vh]">
-      {/* Unit Config */}
-      <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col">
-        <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
-          <span className="pl-2 text-md text-gray-800">Unit Config</span>
-          <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
-        </h2>
+    <div className="flex flex-col h-full">
+     
+      <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
+        <span className="pl-2 text-md text-gray-800">Unit Config</span>
+        <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
+      </h2>
+
+       {/* Unit Roster */}
+      <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col m-1">
 
         <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
           <h2 className="text-sm font-semibold mx-1">Unit Roster</h2>
@@ -122,9 +124,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
 
           </div>
         </div>
-        <div>
-          <h4 className="text-sm font-semibold my-1 mx-3">Entities</h4>
-        </div>
+
         <div className="flex-1 overflow-auto px-3 ">
           <div className="flex-1 border border-gray-300 overflow-auto">
             <table className="w-full border text-left text-xs">
@@ -267,43 +267,13 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       </div>
 
       {/* Assessment Block Manager */}
-      <div className=" h-1/2 overflow-hidden  border-t border-gray-800 flex flex-col mt-1">
+      <div className=" h-1/2 overflow-hidden   flex flex-col m-1 ">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
-            <div>
-              <h2 className="text-md font-semibold bg-gray-100 p-0.5 pl-2 flex items-center border-b border-gray-200">
-                Assessment Block Manager
-                <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
-              </h2>
-            </div>
+            <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
+              <h2 className="text-sm font-semibold mx-1">Assessment Block Manager</h2>
 
-
-            <div className="flex items-center justify-between border-b p-1 bg-gray-100">
-              {/* Tab Buttons */}
-              <div className="flex space-x-2">
-                <button
-                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Indirect"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
-                    : "hover:bg-gray-100"
-                    }`}
-                  onClick={() => { setActiveTab("Indirect"); setSelectedRow(null); setShowEditBlockManager(false) }}
-                >
-                  Indirect Performance Points (Master)
-                </button>
-                <button
-                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Direct"
-                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
-                    : "hover:bg-gray-100"
-                    }`}
-                  onClick={() => { setActiveTab("Direct"); setSelectedRow(null); setShowEditBlockManager(false) }}
-                >
-                  <p>Direct Performance Points (Master)</p>
-                </button>
-
-              </div>
-
-              {/* Right side: Plus button */}
-              <div className="mr-1">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowCreateBlockForm(true)}
                   title="Add new"
@@ -345,9 +315,34 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 >
                   <ArrowDown className="w-3.5 h-3.5" />
                 </button>
+
+
+
               </div>
+            </div>
+            <div className="flex items-center justify-between border-b p-1 bg-gray-100 mx-2">
+              {/* Tab Buttons */}
+              <div className="flex space-x-2">
+                <button
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Indirect"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
+                    : "hover:bg-gray-100"
+                    }`}
+                  onClick={() => { setActiveTab("Indirect"); setSelectedRow(null); setShowEditBlockManager(false) }}
+                >
+                  Indirect Performance Points (Master)
+                </button>
+                <button
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeTab === "Direct"
+                    ? "bg-white border-t-2 border-blue-400 text-gray-800 font-semibold "
+                    : "hover:bg-gray-100"
+                    }`}
+                  onClick={() => { setActiveTab("Direct"); setSelectedRow(null); setShowEditBlockManager(false) }}
+                >
+                  <p>Direct Performance Points (Master)</p>
+                </button>
 
-
+              </div>
             </div>
           </div>
 

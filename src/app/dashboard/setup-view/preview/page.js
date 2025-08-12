@@ -11,31 +11,40 @@ const masterPPIDData = [
     ppId: -2,
     unitName: "Unit A",
     unitId: "UA123",
-    unitType: "Type X",
-    attainedListening: 85,
-    maxListening: 100,
-    attainedReading: 78,
-    maxReading: 100,
-    attainedSpeaking: 92,
-    maxSpeaking: 100,
-    attainedWriting: 88,
-    maxWriting: 100,
+    unitType: "Communicative I/O",
+    attainedListeningScore: 85,
+    maxListeningScore: 100,
+    attainedReadingScore: 78,
+    maxReadingScore: 100,
+    attainedSpeakingScore: 92,
+    maxSpeakingScore: 100,
+    attainedWritingScore: 88,
+    maxWritingScore: 100,
   },
   {
     ppId: 1,
     unitName: "Unit B",
     unitId: "UB456",
-    unitType: "Type Y",
-    attainedListening: 75,
-    maxListening: 90,
-    attainedReading: 80,
-    maxReading: 95,
-    attainedSpeaking: 70,
-    maxSpeaking: 85,
-    attainedWriting: 60,
-    maxWriting: 80,
+    unitType: "Theory & Practice",
+    attainedTheoryScore: 75,
+    maxTheoryScore: 90,
+    attainedPracticeScore: 80,
+    maxPracticeScore: 95,
+  },
+  {
+    ppId: 1,
+    unitName: "Unit C",
+    unitId: "UC789",
+    unitType: "Third Parameter",
+    attainedReceptiveScore: 70,
+    maxReceptiveScore: 85,
+    attainedProductiveScore: 65,
+    maxProductiveScore: 80,
+    attainedAcuityScore: 60,
+    maxAcuityScore: 75,
   },
 ];
+
 
 const competencyData = [
   {
@@ -54,7 +63,7 @@ const competencyData = [
     missingCompetencies: "None",
     error: "No",
   },
-  
+
 ];
 
 const activatedCandidates = [
@@ -146,16 +155,14 @@ export default function PreviewPage() {
             onClick={() => setOpen(!open)}
           >
             <span
-              className={`transition-transform duration-200 text-gray-600 mr-1 ${
-                open ? "rotate-90" : "rotate-0"
-              }`}
+              className={`transition-transform duration-200 text-gray-600 mr-1 ${open ? "rotate-90" : "rotate-0"
+                }`}
             >
               <ChevronRight />
             </span>
             <span
-              className={`text-md text-gray-800 ml-2 ${
-                open ? "font-bold text-black" : ""
-              }`}
+              className={`text-md text-gray-800 ml-2 ${open ? "font-bold text-black" : ""
+                }`}
             >
               Details
             </span>
@@ -185,11 +192,10 @@ export default function PreviewPage() {
                   <div
                     key={index}
                     onClick={() => setSelectedCandidate(candidate)}
-                    className={`grid grid-cols-3 text-sm gap-2 px-3 py-1 cursor-pointer ${
-                      selectedCandidate?.ppId === candidate.ppId
-                        ? "bg-blue-100 border-l-4 border-blue-400 font-semibold"
-                        : "hover:bg-gray-50 text-gray-700"
-                    }`}
+                    className={`grid grid-cols-3 text-sm gap-2 px-3 py-1 cursor-pointer ${selectedCandidate?.ppId === candidate.ppId
+                      ? "bg-blue-100 border-l-4 border-blue-400 font-semibold"
+                      : "hover:bg-gray-50 text-gray-700"
+                      }`}
                   >
                     <div>{candidate.lastName}</div>
                     <div>{candidate.firstName}</div>
@@ -200,47 +206,46 @@ export default function PreviewPage() {
             </div>
           )}
 
-           {/* Editor Panel */}
-          <div className="h-2/5 overflow-auto my-2">
+          {/* Editor Panel */}
+          {/* <div className="h-2/5 overflow-auto my-2">
             <ClientEditor
               onClose={() => setShowEdit(false)}
               entity={selectedCandidate}
               showForm={showEdit}
             />
-          </div>
+          </div> */}
         </div>
-        
-         
-        
+
+
+
       </div>
 
       {/* Right Panel */}
       <div className="flex-1 bg-white flex flex-col border-l border-gray-200 ml-1 overflow-y-auto">
-        <div className="h-full flex flex-col mx-2 my-3">
-          <h1 className="text-xl font-bold px-3 pb-2 border-b border-gray-200">
-            Preliminary Checkpoints
-          </h1>
+        <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
+          <span className="pl-2 text-md text-gray-800">Preliminary Checkpoints</span>
+          <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
+        </h2>
 
-          {selectedCandidate && (
-            <>
-              {/* Master PP ID Bin Totals */}
-              <div className="px-2 mt-4">
-                <h2 className="text-md font-semibold text-gray-700 mb-2">
-                  Master PP ID Bin Totals
-                </h2>
-                <MasterPpIdBinTable data={masterPPIDData} />
+        {selectedCandidate && (
+          <>
+            {/* Master PP ID Bin Totals */}
+            <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col">
+
+              <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700">
+                <h2 className="text-sm font-semibold mx-1"> Master PP ID Bin Totals</h2>
               </div>
 
-              {/* Competency Accounting Table */}
-              <div className="px-2 mt-4 mb-4">
-                <h2 className="text-md font-semibold text-gray-700 mb-2">
-                  
-                </h2>
-                <CompetencyAccountingTable data={competencyData} />
-              </div>
-            </>
-          )}
-        </div>
+              <MasterPpIdBinTable data={masterPPIDData} />
+            </div>
+
+            {/* Competency Accounting Table */}
+            <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col"> 
+              <CompetencyAccountingTable data={competencyData} />
+            </div>
+          </>
+        )}
+
       </div>
     </div>
   );

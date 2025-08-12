@@ -132,18 +132,14 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
-
-
-
-
 const engageLevel = ["High", "Medium", "Low"];
+
 const competencyTypes = {
   communicative: ["Listening", "Reading", "Speaking", "Writing"],
   'theory practical': ["Practice", "Theory"],
   'third parameter': ["Receptive", "Productive", "Acuity"],
   // Add more types if needed
 };
-
 
 const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
