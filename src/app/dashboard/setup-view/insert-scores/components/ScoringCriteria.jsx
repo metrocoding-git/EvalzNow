@@ -1,6 +1,7 @@
 "use client";
 import { ListFilterPlus, X } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from 'next/navigation';
 
 const workflowStages = [
   "Analysis",
@@ -131,7 +132,20 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
-const mockPpIds = ["001", "002", "003"];
+
+
+
+
+const engageLevel = ["High", "Medium", "Low"];
+const competencyTypes = {
+  communicative: ["Listening", "Reading", "Speaking", "Writing"],
+  'theory practical': ["Practice", "Theory"],
+  'third parameter': ["Receptive", "Productive", "Acuity"],
+  // Add more types if needed
+};
+
+
+const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 export default function ScoringCriteria({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -141,6 +155,12 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
     task: "",
     workflowStage: "",
   });
+
+  const searchParams = useSearchParams();
+  const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
+
+  // Get the appropriate competencies based on type
+  const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -286,7 +306,51 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
               ))}
             </select>
           </div>
+
+          {/* Engage Level */}
+          <div className="flex items-center">
+            <label className="w-40 pr-2 text-left text-gray-700">
+              Engage Level:
+            </label>
+            <select
+              value={formData.engageLevel || ""}
+              onChange={(e) => handleChange("engageLevel", e.target.value)}
+              className="flex-1 border px-2 py-1"
+            >
+              <option value="" disabled>
+                Select Engage Level
+              </option>
+              {engageLevel.map((level, i) => (
+                <option key={i} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Competency */}
+          <div className="flex items-center">
+            <label className="w-40 pr-2 text-left text-gray-700">
+              Competency:
+            </label>
+            <select
+              value={formData.competency || ""}
+              onChange={(e) => handleChange("competency", e.target.value)}
+              className="flex-1 border px-2 py-1"
+            >
+              <option value="" disabled>
+                Select Competency
+              </option>
+              {currentCompetencies.map((comp, i) => (
+                <option key={i} value={comp}>
+                  {comp}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
+        
 
         {/* Buttons */}
         <div className="flex justify-end gap-2 p-2 pr-3 border-t bg-gray-100">
