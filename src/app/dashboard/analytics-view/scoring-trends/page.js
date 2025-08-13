@@ -81,48 +81,21 @@ export default function ScoringTrends() {
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
                       onClick={() => handleSort("lastName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      Last Name{" "}
-                      {sortKey === "lastName" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      Last Name
                     </div>
                     <div
                       onClick={() => handleSort("firstName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      First Name{" "}
-                      {sortKey === "firstName" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      First Name
                     </div>
                     <div
                       onClick={() => handleSort("id")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      ID{" "}
-                      {sortKey === "id" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      ID
                     </div>
                   </div>
                   <div className="flex-1 overflow-auto">
@@ -143,7 +116,7 @@ export default function ScoringTrends() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 

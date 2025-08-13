@@ -25,18 +25,21 @@ export default function TabulationTables() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [activeCandidateId, setActiveCandidateId] = useState(null);
 
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+
   const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
+    { id: 1, firstName: "John", lastName: "Doe", candidateStartDate: "2023-01-10", unitStartDate: "2023-01-15" },
+    { id: 2, firstName: "Jane", lastName: "Smith", candidateStartDate: "2023-02-05", unitStartDate: "2023-02-10" },
+    { id: 3, firstName: "Bob", lastName: "Johnson", candidateStartDate: "2023-03-12", unitStartDate: "2023-03-17" },
+    { id: 4, firstName: "Alice", lastName: "Williams", candidateStartDate: "2023-04-01", unitStartDate: "2023-04-06" },
+    { id: 5, firstName: "Charlie", lastName: "Brown", candidateStartDate: "2023-05-20", unitStartDate: "2023-05-25" },
+    { id: 6, firstName: "David", lastName: "Jones", candidateStartDate: "2023-06-14", unitStartDate: "2023-06-19" },
+    { id: 7, firstName: "Eva", lastName: "Miller", candidateStartDate: "2023-07-08", unitStartDate: "2023-07-13" },
+    { id: 8, firstName: "Frank", lastName: "Davis", candidateStartDate: "2023-08-03", unitStartDate: "2023-08-08" },
+    { id: 9, firstName: "Grace", lastName: "Wilson", candidateStartDate: "2023-09-11", unitStartDate: "2023-09-16" },
+    { id: 10, firstName: "Henry", lastName: "Moore", candidateStartDate: "2023-10-27", unitStartDate: "2023-11-01" },
   ];
+  
   const [openMenu, setopenMenu] = useState(true);
 
   const handleSort = (key) => {
@@ -60,10 +63,12 @@ export default function TabulationTables() {
     }
   });
 
+  
+
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
-        {/* Tab buttons */}
+        {/* Tab buttons
         <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
             {tabs.map((tab, index) => (
@@ -82,22 +87,23 @@ export default function TabulationTables() {
               </Link>
             ))}
           </div>
-        </div>
+        </div> */}
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
           <div className="flex flex-col h-full">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-full">
+              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200  p-1">
+                <div className="flex-grow border border-gray-200  flex flex-col h-full">
                   {/* Header */}
-                  <div className="bg-blue-100 px-4 py-2 border-b border-blue-300 grid grid-cols-3 text-blue-800 font-semibold text-sm">
+                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-600 font-semibold text-sm">
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      Last Name{" "}
+                      Last Name
+                      {/* {" "}
                       {sortKey === "lastName" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -106,13 +112,14 @@ export default function TabulationTables() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                     <div
                       onClick={() => handleSort("firstName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      First Name{" "}
+                      First Name
+                      {/* {" "}
                       {sortKey === "firstName" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -121,13 +128,14 @@ export default function TabulationTables() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                     <div
                       onClick={() => handleSort("id")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      ID{" "}
+                      ID
+                      {/* {" "}
                       {sortKey === "id" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -136,7 +144,7 @@ export default function TabulationTables() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                   </div>
 
@@ -158,7 +166,7 @@ export default function TabulationTables() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
@@ -193,6 +201,9 @@ export default function TabulationTables() {
                                 onDoubleClick={() => {
                                   setViewerOpen(true);
                                   setActiveCandidateId(item.id);
+                                  const selectedCandidate = data.find(candidate => candidate.id === item.id);
+                                    setSelectedCandidate(selectedCandidate);
+                                  console.log(selectedCandidate);
                                 }}
                               >
                                 <span className="text-gray-800">
@@ -215,8 +226,8 @@ export default function TabulationTables() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
-                {ViewerOpen && <ViewerSelections />}
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 rounded-md ">
+                {ViewerOpen && <ViewerSelections candidate={selectedCandidate} />}
               </div>
             </div>
             {/* ------- */}
