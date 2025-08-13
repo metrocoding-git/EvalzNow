@@ -71,35 +71,36 @@ export default function PlotSelections({ selectedSort }) {
   ];
 
   const activateCandidateLevel = [
-    { name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📈", type: "line" },
-    { name: "Receptive Growth Differentials (∆RR)", icon: "📈", type: "line" },
-    { name: "Productive Growth Differentials (∆PR)", icon: "📈", type: "line" },
-    { name: "Acuity Growth Differentials (∆AR)", icon: "📈", type: "line" },
-    { name: "Performance Ratio (RR)", icon: "📊", type: "line" },
-    { name: "Performance Ratios (PR)", icon: "📊", type: "line" },
-    { name: "Performance Ratios (AR)", icon: "📊", type: "line" },
-    { name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
-    { name: "GT 1 Component", icon: "🧪", type: "line" },
-    { name: "GT 2 Component", icon: "🧪", type: "line" },
-    { name: "GT 3 Component", icon: "🧪", type: "line" },
-    { name: "GT 4 Component", icon: "🧪", type: "line" },
-    { name: "GT 5 Component", icon: "🧪", type: "line" },
-    { name: "∆RR Growth Projections", icon: "📉", type: "line" },
-    { name: "∆PR Growth Projections", icon: "📉", type: "line" },
-    { name: "∆AR Growth Projections", icon: "📉", type: "line" },
+    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📈", type: "line" },
+    { id: "acl-2", name: "Receptive Growth Differentials (∆RR)", icon: "📈", type: "line" },
+    { id: "acl-3", name: "Productive Growth Differentials (∆PR)", icon: "📈", type: "line" },
+    { id: "acl-4", name: "Acuity Growth Differentials (∆AR)", icon: "📈", type: "line" },
+    { id: "acl-5", name: "Performance Ratio (RR)", icon: "📊", type: "line" },
+    { id: "acl-6", name: "Performance Ratios (PR)", icon: "📊", type: "line" },
+    { id: "acl-7", name: "Performance Ratios (AR)", icon: "📊", type: "line" },
+    { id: "acl-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
+    { id: "acl-9", name: "GT 1 Component", icon: "🧪", type: "line" },
+    { id: "acl-10", name: "GT 2 Component", icon: "🧪", type: "line" },
+    { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
+    { id: "acl-12", name: "GT 4 Component", icon: "🧪", type: "line" },
+    { id: "acl-13", name: "GT 5 Component", icon: "🧪", type: "line" },
+    { id: "acl-14", name: "∆RR Growth Projections", icon: "📉", type: "line" },
+    { id: "acl-15", name: "∆PR Growth Projections", icon: "📉", type: "line" },
+    { id: "acl-16", name: "∆AR Growth Projections", icon: "📉", type: "line" },
   ];
 
   const activateUnitLevel = [
-    { name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📊", type: "scatter" },
-    { name: "Receptive Growth Differentials (∆RR)", icon: "📊", type: "scatter" },
-    { name: "Productive Growth Differentials (∆PR)", icon: "📊", type: "scatter" },
-    { name: "Acuity Growth Differentials (∆AR)", icon: "📊", type: "scatter" },
-    { name: "Performance Ratio (RR)", icon: "📈", type: "scatter" },
-    { name: "Performance Ratios (PR)", icon: "📈", type: "scatter" },
-    { name: "Performance Ratios (AR)", icon: "📈", type: "scatter" },
-    { name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
+      { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📊", type: "scatter" },
+      { id: "aul-2", name: "Receptive Growth Differentials (∆RR)", icon: "📊", type: "scatter" },
+      { id: "aul-3", name: "Productive Growth Differentials (∆PR)", icon: "📊", type: "scatter" },
+      { id: "aul-4", name: "Acuity Growth Differentials (∆AR)", icon: "📊", type: "scatter" },
+      { id: "aul-5", name: "Performance Ratio (RR)", icon: "📈", type: "scatter" },
+      { id: "aul-6", name: "Performance Ratios (PR)", icon: "📈", type: "scatter" },
+      { id: "aul-7", name: "Performance Ratios (AR)", icon: "📈", type: "scatter" },
+      { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
   ];
 
+  const [selectedChart, setSelectedChart] = useState(null);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -134,9 +135,9 @@ export default function PlotSelections({ selectedSort }) {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1'>
-          <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
-            <h2 className="text-sm font-semibold">Plots</h2>
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
+            <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
+              <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
@@ -149,40 +150,52 @@ export default function PlotSelections({ selectedSort }) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className=" h-1/2 flex flex-col border border-gray-200  ">
-
-              <div className="flex-1 overflow-auto  p-1 ">
-                <div className="space-y-1">
-                  {selectedSort == 'activateCandidateLevel' && (
+          <div className="h-1/2 flex flex-col border border-gray-200">
+              <div className="flex-1 overflow-auto p-1">
+                {/* Fixed Header */}
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
+                  <div className="col-span-2  py-1 text-center">Icon</div>
+                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
+                  <div className="col-span-2  py-1 text-left">Type</div>
+                  <div className="col-span-2  py-1 text-left">ID</div>
+                </div>
+                
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto max-h-[calc(100%-40px)]">
+                  {selectedSort === 'activateCandidateLevel' && (
                     activateCandidateLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer `}
+                        onClick={() => {
+                          setSelectedChart(chart);
+                        }}
                       >
-                        <span className="text-xl">{chart.icon}</span>
-                        <span className="text-sm text-gray-700">{chart.name}</span>
-                        <span className="text-xs text-gray-400">{chart.type}</span>
+                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
+                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
-                  {selectedSort == 'activateUnitLevel' && (
+                  {selectedSort === 'activateUnitLevel' && (
                     activateUnitLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer }`}
+                        onClick={() => {
+                          setSelectedChart(chart); 
+                        }}
                       >
-                        <span className="text-xl">{chart.icon}</span>
-                        <span className="text-sm text-gray-700">{chart.name}</span>
-                        <span className="text-xs text-gray-400">{chart.type}</span>
-
+                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
+                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
-
-
                 </div>
               </div>
-
             </div>
 
 
@@ -266,6 +279,10 @@ export default function PlotSelections({ selectedSort }) {
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+
+          <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
+          </h2>
           <div className="h-full overflow-auto m-5">
             <ResponsiveContainer width="100%" height="95%">
               <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>

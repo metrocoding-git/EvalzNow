@@ -77,7 +77,7 @@ export default function GrowthMetrics() {
         {/* Tab buttons */}
         <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
-            {tabs.map((tab, index) => (
+            {/* {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
                 <span
                   onClick={() => setActiveTab(tab.label)}
@@ -91,7 +91,7 @@ export default function GrowthMetrics() {
                   {tab.label}
                 </span>
               </Link>
-            ))}
+            ))} */}
           </div>
           <div className="w-6/12 lg:w-9/12 flex flex-col border-l-2 h-full border-gray-200  p-1">
             <div className="flex justify-start items-center space-x-2 px-4">
@@ -118,15 +118,16 @@ export default function GrowthMetrics() {
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-3/5">
+              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-3/5">
                   {/* Header */}
-                  <div className="bg-blue-100 px-4 py-2 border-b border-blue-300 grid grid-cols-3 text-blue-800 font-semibold text-sm">
+                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      Last Name{" "}
+                      Last Name
+                      {/* {" "}
                       {sortKey === "lastName" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -135,13 +136,14 @@ export default function GrowthMetrics() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                     <div
                       onClick={() => handleSort("firstName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      First Name{" "}
+                      First Name
+                      {/* {" "}
                       {sortKey === "firstName" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -150,13 +152,14 @@ export default function GrowthMetrics() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                     <div
                       onClick={() => handleSort("id")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      ID{" "}
+                      ID
+                      {/* {" "}
                       {sortKey === "id" ? (
                         sortOrder === "asc" ? (
                           <ChevronUp className="w-4 h-4" />
@@ -165,7 +168,7 @@ export default function GrowthMetrics() {
                         )
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      )} */}
                     </div>
                   </div>
 
@@ -255,7 +258,7 @@ export default function GrowthMetrics() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-gray-200 rounded-md p-1 ml-1">
                 {ScoresOpen && <PlotSelections selectedSort={selectedSort} />}
               </div>
             </div>

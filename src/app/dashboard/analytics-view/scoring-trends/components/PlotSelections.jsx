@@ -91,6 +91,7 @@ export default function PlotSelections() {
 
   const canvasRef = useRef(null);
 
+
   // Example line chart data
   const data = [
     { name: "A", uv: 400, pv: 240 },
@@ -102,172 +103,216 @@ export default function PlotSelections() {
     {
       name: "Main Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Extra Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs, criteria must match the unit)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Attained Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)",
       icon: "📉",
+      id: '1'
     },
     {
       name: "Maximum Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Main Criteria Percentage by Units (Workforce Only - Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Extra Criteria Percentage by Units (Workforce Only - Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Attained Score Average by Units (Classroom + Workforce - Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Maximum Score Average by Units (Classroom + Workforce - Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Insert Score Count by Criteria Type (Pie Chart)",
       icon: "🥧",
+      id: '1'
     },
     {
       name: "Insert Score Count by Units (Pie Chart)",
       icon: "🥧",
+      id: '1'
     },
     {
       name: "Insert Score Count by Month (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Insert Score Count by Day (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Average Attained Score per Month (Line Graph)",
       icon: "📉",
+      id: '1'
     },
     {
       name: "Average Attained Score per Day (Line Graph)",
       icon: "📉",
+      id: '1'
     },
     {
       name: "Average Maximum Score per Month (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Average Maximum Score per Day (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Main Criteria Completion Rate (Donut Chart)",
       icon: "🍩",
+      id: '1'
     },
     {
       name: "Extra Criteria Completion Rate (Donut Chart)",
       icon: "🍩",
+      id: '1'
     },
     {
       name: "Unit-wise Criteria Completion Comparison (Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Criteria Type Distribution (Stacked Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Insert Score Trend (Last 30 Days - Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Insert Score Trend (Last 12 Months - Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Classroom vs. Workforce Score Comparison (Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Insert Score Count by Instructor (Bar Chart)",
       icon: "👨‍🏫",
+      id: '1'
     },
     {
       name: "Insert Score Count by Student (Bar Chart)",
       icon: "🧑‍🎓",
+      id: '1'
     },
     {
       name: "Score Deviation from Maximum (Line Graph)",
       icon: "📉",
+      id: '1'
     },
     {
       name: "Unit Performance vs. Overall Average (Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Monthly Performance Comparison by Unit (Grouped Bar Chart)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Main Criteria Distribution Over Time (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Extra Criteria Distribution Over Time (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Cumulative Insert Score Over Time (Area Chart)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Criteria Type by Course Category (Pie Chart)",
       icon: "🥧",
+      id: '1'
     },
     {
       name: "Insert Score Range Distribution (Histogram)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Monthly Insert Activity (Calendar Heatmap)",
       icon: "📅",
+      id: '1'
     },
     {
       name: "Unit-wise Attained Score Progress (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Unit-wise Maximum Score Progress (Line Graph)",
       icon: "📈",
+      id: '1'
     },
     {
       name: "Insert Score Count per Day of Week (Bar Chart)",
       icon: "📆",
+      id: '1'
     },
     {
       name: "Insert Score Count per Hour of Day (Bar Chart)",
       icon: "🕒",
+      id: '1'
     },
     {
       name: "Score Type Proportion per Unit (Stacked Bar)",
       icon: "📊",
+      id: '1'
     },
     {
       name: "Insert Score vs. Time Spent (Scatter Plot)",
       icon: "🔘",
+      id: '1'
     },
     {
       name: "Criteria Fulfillment Rate by Category (Donut Chart)",
       icon: "🍩",
+      id: '1'
     },
     {
       name: "Insert Score Median vs. Mean by Unit (Box Plot)",
       icon: "📦",
+      id: '1'
     },
   ];
+
+  const [selectedChart, setSelectedChart] = useState(chart[0]);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -300,8 +345,8 @@ export default function PlotSelections() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-          <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
+        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
+          <div className="flex items-center justify-between px-1 mx-1  text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button
@@ -326,21 +371,35 @@ export default function PlotSelections() {
 
           <div className=" h-full overflow-hidden w-full my-2">
             <div className=" h-1/2 flex flex-col border border-gray-200  ">
-              <div className="flex-1 overflow-auto  p-1 ">
-                <div className="space-y-1">
-                  {chart.map((chart, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? "bg-blue-300" : ""
-                        }`}
-                    >
-                      <span className="text-xl">{chart.icon}</span>
-                      <span className="text-sm text-gray-700">
-                        {chart.name}
-                      </span>
+              <div className="flex-1 overflow-auto  ">
+                <div className="h-full overflow-hidden flex flex-col">
+                    {/* Table Header - Fixed */}
+                    <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm">
+                      <div className="col-span-10 px-2 py-1 text-left font-medium">Entities</div>
+                      <div className="col-span-2 py-1 text-left font-medium">ID</div>
                     </div>
-                  ))}
-                </div>
+                    
+                    {/* Table Body - Scrollable */}
+                    <div className="flex-1 overflow-y-auto">
+                      {chart.map((item, index) => (
+                        <div 
+                          key={index} 
+                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${selectedChart.name === item.name ? "bg-gray-100" : ""}`}
+                          onClick={() => setSelectedChart(item)}
+                        >
+                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <span className="mr-1 text-[10px]">{item.icon}</span>
+                              <span className="truncate">{item.name}</span>
+                            </div>
+                          </div>
+                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                            {item.id}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
               </div>
             </div>
 
@@ -421,9 +480,9 @@ export default function PlotSelections() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">📊 Main Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs)</h2>
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
