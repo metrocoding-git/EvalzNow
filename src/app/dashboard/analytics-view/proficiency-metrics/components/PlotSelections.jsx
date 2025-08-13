@@ -32,6 +32,7 @@ export default function PlotSelections({ selectedSort }) {
   const [activeTab, setActiveTab] = useState('IndirectPerformancePoint');
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
 
+  const [selectedChart, setSelectedChart] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -42,42 +43,43 @@ export default function PlotSelections({ selectedSort }) {
     { name: 'C', uv: 200, pv: 980 },
   ];
 
+  
   const activateCandidateLevel = [
-    { name: "Equivalent Proficiency (XEP)", icon: "📈", type: "line" },
-    { name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
-    { name: "Reading Ratio (XRR)", icon: "📘", type: "line" },
-    { name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
-    { name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
-    { name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
-    { name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
-    { name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
-    { name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
-    { name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
-    { name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
-    { name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
-    { name: "Band Proficiency (BXP)", icon: "🎼", type: "line" },
-    { name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
-    { name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📈", type: "line" },
+    { id: "1", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
+    { id: "1", name: "Reading Ratio (XRR)", icon: "📘", type: "line" },
+    { id: "1", name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
+    { id: "1", name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
+    { id: "1", name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
+    { id: "1", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
+    { id: "1", name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
+    { id: "1", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
+    { id: "1", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
+    { id: "1", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
+    { id: "1", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
+    { id: "1", name: "Band Proficiency (BXP)", icon: "🎼", type: "line" },
+    { id: "1", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
+    { id: "1", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
 
   const activateUnitLevel = [
-    { name: "Equivalent Proficiency (XEP)", icon: "📊", type: "scatter" },
-    { name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
-    { name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
-    { name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
-    { name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
-    { name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
-    { name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
-    { name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
-    { name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
-    { name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
-    { name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "scatter" },
-    { name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
-    { name: "Band Proficiency (BXP)", icon: "🎼", type: "scatter" },
-    { name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
-    { name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📊", type: "scatter" },
+    { id: "1", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
+    { id: "1", name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
+    { id: "1", name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
+    { id: "1", name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
+    { id: "1", name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
+    { id: "1", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
+    { id: "1", name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
+    { id: "1", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
+    { id: "1", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
+    { id: "1", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "scatter" },
+    { id: "1", name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
+    { id: "1", name: "Band Proficiency (BXP)", icon: "🎼", type: "scatter" },
+    { id: "1", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
+    { id: "1", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
-
+  
   const [chartProperties, setChartProperties] = useState({
   // Standard
   visibility: true,
@@ -138,12 +140,12 @@ export default function PlotSelections({ selectedSort }) {
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
-        <span className='pl-2 text-md'>Plot Selections</span>
+        <span className="pl-2 text-md">Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1'>
-          <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
+          <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => { }} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
@@ -156,44 +158,56 @@ export default function PlotSelections({ selectedSort }) {
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-2">
-            <div className=" h-1/2 flex flex-col border border-gray-200  ">
-
-              <div className="flex-1 overflow-auto  p-1 ">
-                <div className="space-y-1">
-                  {selectedSort == 'activateCandidateLevel' && (
+          <div className="h-full overflow-hidden w-full my-2">
+            <div className="h-1/2 flex flex-col border border-gray-200">
+              <div className="flex-1 overflow-auto p-1">
+                {/* Fixed Header */}
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
+                  <div className="col-span-2  py-1 text-center">Icon</div>
+                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
+                  <div className="col-span-2  py-1 text-left">Type</div>
+                  <div className="col-span-2  py-1 text-left">ID</div>
+                </div>
+                
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto max-h-[calc(100%-40px)]">
+                  {selectedSort === 'activateCandidateLevel' && (
                     activateCandidateLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer `}
+                        onClick={() => {
+                          setSelectedChart(chart);
+                        }}
                       >
-                        <span className="text-xl">{chart.icon}</span>
-                        <span className="text-sm text-gray-700">{chart.name}</span>
-                        <span className="text-xs text-gray-400">{chart.type}</span>
+                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
+                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
-                  {selectedSort == 'activateUnitLevel' && (
+                  {selectedSort === 'activateUnitLevel' && (
                     activateUnitLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer }`}
+                        onClick={() => {
+                          setSelectedChart(chart); 
+                        }}
                       >
-                        <span className="text-xl">{chart.icon}</span>
-                        <span className="text-sm text-gray-700">{chart.name}</span>
-                        <span className="text-xs text-gray-400">{chart.type}</span>
-
+                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
+                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
-
-
                 </div>
               </div>
-
             </div>
 
-
+            {/* Rest of your code remains the same for the property editor and table tabs */}
             <div className="h-1/2 flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
@@ -227,7 +241,6 @@ export default function PlotSelections({ selectedSort }) {
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && (
-
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
@@ -250,16 +263,19 @@ export default function PlotSelections({ selectedSort }) {
                       </tbody>
                     </table>
                   </div>
-
-
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ">
           <div className="h-full overflow-auto m-5">
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
+            </h2>
+            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
+            
             <ResponsiveContainer width="100%" height="95%">
               <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
