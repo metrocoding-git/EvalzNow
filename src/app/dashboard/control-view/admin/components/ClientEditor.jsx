@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
+import { updateClient } from "@/services/clientService";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -17,6 +18,9 @@ const companySizes = [
 
 export default function ClientEditor({ client, onClose, onSave }) {
   const [form, setForm] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
     if (client) {
@@ -24,13 +28,13 @@ export default function ClientEditor({ client, onClose, onSave }) {
         "Executive Last Name": client.lastName || "",
         "Executive First Name": client.firstName || "",
         "Executive Job Title": client.jobTitle || "",
-        "Executive E-mail Address": client.email || "",
+        "Executive E-mail Address": client.emailAddress || "", // Fixed field name to match backend
         "Company Name": client.companyName || "",
-        "Company Contact Number": client.contactNumber || "",
-        "Institutional Type": client.institutionType || "",
-        "Business Registration No.": client.registrationNo || "",
+        "Company Contact Number": client.companyContactNumber || "", // Fixed field name
+        "Institutional Type": client.institutionalType || "", // Fixed field name
+        "Business Registration No.": client.businessRegistrationNo || "", // Fixed field name
         Country: client.country || "",
-        "Company Size": client.companySize || "",
+        "Company Size": client.companySizeId || "", // Changed to companySizeId to match backend
         Status: client.status || "Activate",
       });
     }
@@ -53,6 +57,39 @@ export default function ClientEditor({ client, onClose, onSave }) {
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Map form fields to match your backend model
+      const updatedData = {
+        lastName: form["Executive Last Name"],
+        firstName: form["Executive First Name"],
+        jobTitle: form["Executive Job Title"],
+        emailAddress: form["Executive E-mail Address"],
+        companyName: form["Company Name"],
+        companyContactNumber: form["Company Contact Number"],
+        institutionalType: form["Institutional Type"],
+        businessRegistrationNo: form["Business Registration No."],
+        country: form["Country"],
+        companySizeId: form["Company Size"], // Make sure this matches your backend
+        status: form["Status"],
+      };
+
+      // Call the update API
+      const updatedClient = await updateClient(client.id, updatedData);
+      
+      // Notify parent component
+      onSave(updatedClient);
+    } catch (error) {
+      console.error("Update error:", error);
+      setError(error.response?.data?.message || "Failed to update client");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!client) {
@@ -139,14 +176,7 @@ export default function ClientEditor({ client, onClose, onSave }) {
           <div className="col-span-2 pt-4 flex justify-end gap-2">
             <button
                 type="button"
-                onClick={() => {
-                  const updatedClient = {
-                    ...client,
-                    ...mapFormToClient(form),
-                  };
-                  console.log("Saving client:", updatedClient);
-                  onSave(updatedClient);
-                }}
+                onClick={handleSubmit}
                 
                 className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs"
               >
