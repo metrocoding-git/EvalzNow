@@ -155,7 +155,7 @@ export default function ScoringCriteria({ onClose }) {
     <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-gray-50 text-black border shadow-lg rounded overflow-y-auto z-50  w-full m-auto max-w-5xl  fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ">
         {/* Header */}
-        <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
+        <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-blue-300">
           <div className="flex items-center gap-2 text-blue-800 font-semibold">
             <ListFilterPlus className="w-5 h-5" />
             Insert Scores for Competency Accounting

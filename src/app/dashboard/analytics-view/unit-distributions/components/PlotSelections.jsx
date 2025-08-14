@@ -96,55 +96,57 @@ export default function PlotSelections() {
     { name: "C", uv: 200, pv: 980 },
   ];
 
-  const graph = [
-    { name: "Normal Distribution - RR", icon: "📈", type: "line" },
-    { name: "Normal Distribution - PR", icon: "📈", type: "line" },
-    { name: "Normal Distribution - AR", icon: "📈", type: "line" },
-    { name: "Normal Distribution - ∆RR", icon: "📈", type: "line" },
-    { name: "Normal Distribution - ∆PR", icon: "📈", type: "line" },
-    { name: "Normal Distribution - ∆AR", icon: "📈", type: "line" },
-
-    { name: "T Distribution - RR", icon: "📉", type: "line" },
-    { name: "T Distribution - PR", icon: "📉", type: "line" },
-    { name: "T Distribution - AR", icon: "📉", type: "line" },
-    { name: "T Distribution - ∆RR", icon: "📉", type: "line" },
-    { name: "T Distribution - ∆PR", icon: "📉", type: "line" },
-    { name: "T Distribution - ∆AR", icon: "📉", type: "line" },
-
-    { name: "Exponential Distribution - RR", icon: "📈", type: "line" },
-    { name: "Exponential Distribution - PR", icon: "📈", type: "line" },
-    { name: "Exponential Distribution - AR", icon: "📈", type: "line" },
-    { name: "Exponential Distribution - ∆RR", icon: "📈", type: "line" },
-    { name: "Exponential Distribution - ∆PR", icon: "📈", type: "line" },
-    { name: "Exponential Distribution - ∆AR", icon: "📈", type: "line" },
-
-    { name: "Chi-Square - RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { name: "Chi-Square - PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { name: "Chi-Square - AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { name: "Chi-Square - ∆RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { name: "Chi-Square - ∆PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { name: "Chi-Square - ∆AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-
-    { name: "F Distribution - RR & PR", icon: "📉", type: "line" },
-    { name: "F Distribution - PR & AR", icon: "📉", type: "line" },
-    { name: "F Distribution - RR & AR", icon: "📉", type: "line" },
-    { name: "F Distribution - ∆RR & ∆PR", icon: "📉", type: "line" },
-    { name: "F Distribution - ∆PR & ∆AR", icon: "📉", type: "line" },
-    { name: "F Distribution - ∆RR & ∆AR", icon: "📉", type: "line" },
-
-    { name: "Beta Distribution - STA_P", icon: "🧪", type: "line" },
-    { name: "Beta Distribution - STA_G", icon: "🧪", type: "line" },
-
-    { name: "Uniform Distribution - STA_P", icon: "🔢", type: "bar" },
-    { name: "Uniform Distribution - STA_G", icon: "🔢", type: "bar" },
-
-    { name: "Weibull CDF - RR vs Days", icon: "⏳", type: "area" },
-    { name: "Weibull CDF - PR vs Days", icon: "⏳", type: "area" },
-    { name: "Weibull CDF - AR vs Days", icon: "⏳", type: "area" },
-    { name: "Weibull CDF - ∆RR vs Days", icon: "⏳", type: "area" },
-    { name: "Weibull CDF - ∆PR vs Days", icon: "⏳", type: "area" },
-    { name: "Weibull CDF - ∆AR vs Days", icon: "⏳", type: "area" },
+  const chart = [
+    { id: 1, name: "Normal Distribution - RR", icon: "📈", type: "line" },
+    { id: 2, name: "Normal Distribution - PR", icon: "📈", type: "line" },
+    { id: 3, name: "Normal Distribution - AR", icon: "📈", type: "line" },
+    { id: 4, name: "Normal Distribution - ∆RR", icon: "📈", type: "line" },
+    { id: 5, name: "Normal Distribution - ∆PR", icon: "📈", type: "line" },
+    { id: 6, name: "Normal Distribution - ∆AR", icon: "📈", type: "line" },
+  
+    { id: 7, name: "T Distribution - RR", icon: "📉", type: "line" },
+    { id: 8, name: "T Distribution - PR", icon: "📉", type: "line" },
+    { id: 9, name: "T Distribution - AR", icon: "📉", type: "line" },
+    { id: 10, name: "T Distribution - ∆RR", icon: "📉", type: "line" },
+    { id: 11, name: "T Distribution - ∆PR", icon: "📉", type: "line" },
+    { id: 12, name: "T Distribution - ∆AR", icon: "📉", type: "line" },
+  
+    { id: 13, name: "Exponential Distribution - RR", icon: "📈", type: "line" },
+    { id: 14, name: "Exponential Distribution - PR", icon: "📈", type: "line" },
+    { id: 15, name: "Exponential Distribution - AR", icon: "📈", type: "line" },
+    { id: 16, name: "Exponential Distribution - ∆RR", icon: "📈", type: "line" },
+    { id: 17, name: "Exponential Distribution - ∆PR", icon: "📈", type: "line" },
+    { id: 18, name: "Exponential Distribution - ∆AR", icon: "📈", type: "line" },
+  
+    { id: 19, name: "Chi-Square - RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 20, name: "Chi-Square - PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 21, name: "Chi-Square - AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 22, name: "Chi-Square - ∆RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 23, name: "Chi-Square - ∆PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 24, name: "Chi-Square - ∆AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+  
+    { id: 25, name: "F Distribution - RR & PR", icon: "📉", type: "line" },
+    { id: 26, name: "F Distribution - PR & AR", icon: "📉", type: "line" },
+    { id: 27, name: "F Distribution - RR & AR", icon: "📉", type: "line" },
+    { id: 28, name: "F Distribution - ∆RR & ∆PR", icon: "📉", type: "line" },
+    { id: 29, name: "F Distribution - ∆PR & ∆AR", icon: "📉", type: "line" },
+    { id: 30, name: "F Distribution - ∆RR & ∆AR", icon: "📉", type: "line" },
+  
+    { id: 31, name: "Beta Distribution - STA_P", icon: "🧪", type: "line" },
+    { id: 32, name: "Beta Distribution - STA_G", icon: "🧪", type: "line" },
+  
+    { id: 33, name: "Uniform Distribution - STA_P", icon: "🔢", type: "bar" },
+    { id: 34, name: "Uniform Distribution - STA_G", icon: "🔢", type: "bar" },
+  
+    { id: 35, name: "Weibull CDF - RR vs Days", icon: "⏳", type: "area" },
+    { id: 36, name: "Weibull CDF - PR vs Days", icon: "⏳", type: "area" },
+    { id: 37, name: "Weibull CDF - AR vs Days", icon: "⏳", type: "area" },
+    { id: 38, name: "Weibull CDF - ∆RR vs Days", icon: "⏳", type: "area" },
+    { id: 39, name: "Weibull CDF - ∆PR vs Days", icon: "⏳", type: "area" },
+    { id: 40, name: "Weibull CDF - ∆AR vs Days", icon: "⏳", type: "area" },
   ];
+  
+  const [selectedChart, setSelectedChart] = useState(chart[0]);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -177,7 +179,7 @@ export default function PlotSelections() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
+        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -203,25 +205,35 @@ export default function PlotSelections() {
 
           <div className=" h-full overflow-hidden w-full my-2">
             <div className=" h-1/2 flex flex-col border border-gray-200  ">
-              <div className="flex-1 overflow-auto  p-1 ">
-                <div className="space-y-1">
-                  {graph.map((chart, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${
-                        index == 0 ? "bg-blue-300" : ""
-                      }`}
-                    >
-                      <span className="text-xl">{chart.icon}</span>
-                      <span className="text-sm text-gray-700">
-                        {chart.name}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {chart.type}
-                      </span>
+              <div className="flex-1 overflow-auto  ">
+                <div className="h-full overflow-hidden flex flex-col">
+                    {/* Table Header - Fixed */}
+                    <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm">
+                      <div className="col-span-10 px-2 py-1 text-left font-medium">Entities</div>
+                      <div className="col-span-2 py-1 text-left font-medium">ID</div>
                     </div>
-                  ))}
-                </div>
+                    
+                    {/* Table Body - Scrollable */}
+                    <div className="flex-1 overflow-y-auto">
+                      {chart.map((item, index) => (
+                        <div 
+                          key={index} 
+                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${selectedChart.name === item.name ? "bg-gray-100" : ""}`}
+                          onClick={() => setSelectedChart(item)}
+                        >
+                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <span className="mr-1 text-[10px]">{item.icon}</span>
+                              <span className="truncate">{item.name}</span>
+                            </div>
+                          </div>
+                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                            {item.id}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
               </div>
             </div>
 
@@ -304,8 +316,10 @@ export default function PlotSelections() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col ml-1 border-2 h-full border-gray-200 rounded-md bg-gray-100">
           <div className="h-full overflow-auto m-5">
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
+
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
                 data={floatChartData}

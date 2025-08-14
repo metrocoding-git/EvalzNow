@@ -72,8 +72,8 @@ export default function UnitDistributions() {
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
-          <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
+        <div className="flex space-x-0 px-0  border-b border-gray-200 bg-gray-50 ">
+          {/* <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
             {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
                 <span
@@ -89,7 +89,7 @@ export default function UnitDistributions() {
                 </span>
               </Link>
             ))}
-          </div>
+          </div> */}
         </div>
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
@@ -97,61 +97,33 @@ export default function UnitDistributions() {
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-blue-500 rounded-md flex flex-col h-2/4">
+              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/5">
                   {/* Header */}
-                  <div className="bg-blue-100 px-4 py-2 border-b border-blue-300 grid grid-cols-3 text-blue-800 font-semibold text-sm">
+                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
                       onClick={() => handleSort("lastName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      Last Name{" "}
-                      {sortKey === "lastName" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      Last Name
                     </div>
                     <div
                       onClick={() => handleSort("firstName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      First Name{" "}
-                      {sortKey === "firstName" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      First Name
                     </div>
                     <div
                       onClick={() => handleSort("id")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer"
                     >
-                      ID{" "}
-                      {sortKey === "id" ? (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      )}
+                      ID
                     </div>
                   </div>
-
                   <div className="flex-1 overflow-auto">
                     <div className=" px-3 py-1">
                       <div
-                        className="flex items-center cursor-pointer select-none hover:bg-blue-50 rounded-md px-2 py-1"
+                        className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-2 py-1"
                         onClick={() => setopenMenu(!openMenu)}
                       >
                         <span
@@ -166,14 +138,14 @@ export default function UnitDistributions() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
                       {openMenu && (
                         <>
                           <div className=" items-center justify-center  px-4 ">
-                            <div className="border border-blue-200 p-1 rounded-lg">
+                            <div className="border border-gray-200 p-1">
                               <span className="text-sm text-gray-400">
                                 Unit Name: Unit 1
                               </span>
@@ -196,8 +168,12 @@ export default function UnitDistributions() {
                             {sortedData.map((item) => (
                               <div
                                 key={item.id}
-                                className={`grid grid-cols-3 gap-2 items-center text-sm rounded-md px-2 py-1 cursor-pointer
-                                ${activeCandidateId === item.id ? "bg-blue-200" : "hover:bg-blue-50"}`}
+                                className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
+                                ${
+                                  activeCandidateId === item.id
+                                    ? "bg-blue-100 border-l-4 border-blue-400"
+                                    : "hover:bg-gray-100"
+                                }`}
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
@@ -243,7 +219,7 @@ export default function UnitDistributions() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-gray-200 rounded-md p-1 ml-1">
                 {ScoresOpen && <PlotSelections />}
               </div>
             </div>

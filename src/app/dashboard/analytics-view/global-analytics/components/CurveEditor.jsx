@@ -40,43 +40,44 @@ export default function CurveEditor() {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
   const chart = [
-    { name: "Global Signature Case Profile Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Unit Type Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Candidate-to-Leader Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Benchmark Count Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Assessment Block Count Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Attendance Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Open Action Item Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Percentage of Positive Candidate Marks", icon: "🥧", type: "pie" },
-    { name: "Global Percentage of Positive Leader Marks", icon: "🥧", type: "pie" },
-    { name: "Global Unit Outcome Passing Percentages", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Equivalent Proficiency - XEP", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XRR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XLR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XWR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XSR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XTR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XPR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XRVSR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XPVSR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Unilateral Proficiency - XAVSR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Composite Proficiency - XCP", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Band Proficiency - XBP", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Stability in Proficiency - STA/P", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Butler Interaction Proficiency - MSIP", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Interaction Class - IC", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Equivalent Growth - GEQ", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Growth - ∆RR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Growth - ∆PR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Average Growth - ∆AR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Cumulative Growth - ∆RR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Cumulative Growth - ∆PR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Stability in Growth - STA/G", icon: "🥧", type: "pie" },
-    { name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" }
+    { id: 1, name: "Global Signature Case Profile Percentages", icon: "🥧", type: "pie" },
+    { id: 2, name: "Global Unit Type Percentages", icon: "🥧", type: "pie" },
+    { id: 3, name: "Global Candidate-to-Leader Percentages", icon: "🥧", type: "pie" },
+    { id: 4, name: "Global Benchmark Count Percentages", icon: "🥧", type: "pie" },
+    { id: 5, name: "Global Assessment Block Count Percentages", icon: "🥧", type: "pie" },
+    { id: 6, name: "Global Attendance Percentages", icon: "🥧", type: "pie" },
+    { id: 7, name: "Global Open Action Item Percentages", icon: "🥧", type: "pie" },
+    { id: 8, name: "Global Percentage of Positive Candidate Marks", icon: "🥧", type: "pie" },
+    { id: 9, name: "Global Percentage of Positive Leader Marks", icon: "🥧", type: "pie" },
+    { id: 10, name: "Global Unit Outcome Passing Percentages", icon: "🥧", type: "pie" },
+    { id: 11, name: "Global Percentages of Average Equivalent Proficiency - XEP", icon: "🥧", type: "pie" },
+    { id: 12, name: "Global Percentages of Average Unilateral Proficiency - XRR", icon: "🥧", type: "pie" },
+    { id: 13, name: "Global Percentages of Average Unilateral Proficiency - XLR", icon: "🥧", type: "pie" },
+    { id: 14, name: "Global Percentages of Average Unilateral Proficiency - XWR", icon: "🥧", type: "pie" },
+    { id: 15, name: "Global Percentages of Average Unilateral Proficiency - XSR", icon: "🥧", type: "pie" },
+    { id: 16, name: "Global Percentages of Average Unilateral Proficiency - XTR", icon: "🥧", type: "pie" },
+    { id: 17, name: "Global Percentages of Average Unilateral Proficiency - XPR", icon: "🥧", type: "pie" },
+    { id: 18, name: "Global Percentages of Average Unilateral Proficiency - XRVSR", icon: "🥧", type: "pie" },
+    { id: 19, name: "Global Percentages of Average Unilateral Proficiency - XPVSR", icon: "🥧", type: "pie" },
+    { id: 20, name: "Global Percentages of Average Unilateral Proficiency - XAVSR", icon: "🥧", type: "pie" },
+    { id: 21, name: "Global Percentages of Average Composite Proficiency - XCP", icon: "🥧", type: "pie" },
+    { id: 22, name: "Global Percentages of Average Band Proficiency - XBP", icon: "🥧", type: "pie" },
+    { id: 23, name: "Global Percentages of Stability in Proficiency - STA/P", icon: "🥧", type: "pie" },
+    { id: 24, name: "Global Percentages of Average Butler Interaction Proficiency - MSIP", icon: "🥧", type: "pie" },
+    { id: 25, name: "Global Percentages of Average Interaction Class - IC", icon: "🥧", type: "pie" },
+    { id: 26, name: "Global Percentages of Equivalent Growth - GEQ", icon: "🥧", type: "pie" },
+    { id: 27, name: "Global Percentages of Average Growth - ∆RR", icon: "🥧", type: "pie" },
+    { id: 28, name: "Global Percentages of Average Growth - ∆PR", icon: "🥧", type: "pie" },
+    { id: 29, name: "Global Percentages of Average Growth - ∆AR", icon: "🥧", type: "pie" },
+    { id: 30, name: "Global Percentages of Cumulative Growth - ∆RR", icon: "🥧", type: "pie" },
+    { id: 31, name: "Global Percentages of Cumulative Growth - ∆PR", icon: "🥧", type: "pie" },
+    { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🥧", type: "pie" },
+    { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🥧", type: "pie" },
+    { id: 34, name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" }
   ];
+  
 
-
+  const [selectedChart, setSelectedChart] = useState(chart[0]);
 
 
   if (!visible) return null;
@@ -88,39 +89,48 @@ export default function CurveEditor() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-blue-200 rounded-md p-1'>
+        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
 
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className=" h-full flex flex-col border border-gray-200  ">
+            <div className="h-full flex flex-col border border-gray-200">
+              <div className="flex-1 overflow-auto p-1">
+                {/* Fixed Header */}
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
+                  <div className="col-span-2 py-1 text-center">Icon</div>
+                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
+                  <div className="col-span-2 py-1 text-left">Type</div>
+                  <div className="col-span-2 py-1 text-left">ID</div>
+                </div>
 
-              <div className="flex-1 overflow-auto  p-1 ">
-                <div className="space-y-1">
-                  {chart.map((chart, index) => (
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto max-h-[calc(100%-40px)]">
+                  {chart.map((item) => (
                     <div
-                      key={index}
-                      className={`flex items-center gap-2 border px-2 py-1 rounded-md hover:bg-blue-100 cursor-pointer ${index == 0 ? 'bg-blue-300' : ''}`}
+                      key={item.id}
+                      className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setSelectedChart(item);
+                      }}
                     >
-                      <span className="text-xl">{chart.icon}</span>
-                      <span className="text-sm text-gray-700">{chart.name}</span>
-                      <span className="text-sm text-gray-400">{chart.type}</span>
+                      <div className="col-span-2 text-center text-xl">{item.icon}</div>
+                      <div className="col-span-6 text-xs text-gray-700 truncate">{item.name}</div>
+                      <div className="col-span-2 pl-2 text-xs text-gray-400">{item.type}</div>
+                      <div className="col-span-2 pl-3 text-xs text-gray-400">{item.id}</div>
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
-
-
           </div>
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">📈 Global Signature Case Profile Percentages</h2>
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
             <div className="w-full h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

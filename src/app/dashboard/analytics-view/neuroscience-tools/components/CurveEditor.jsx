@@ -244,7 +244,7 @@ export default function CurveEditor() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-full flex flex-col border-2 h-full border-blue-200 rounded-md p-1'>
+        <div className='w-full flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
 
           <div className=" h-full overflow-hidden w-full my-2">
             {/* <div className=" h-1/2 flex flex-col border border-gray-200  ">
@@ -278,7 +278,7 @@ export default function CurveEditor() {
                 </div>
               </div>
               <div className="flex-1 overflow-auto px-3 ">
-                <div className="flex-1 border-2 border-blue-200 rounded-md overflow-auto">
+                <div className="flex-1 border-2 border-gray-200 rounded-md overflow-auto">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead className="bg-gray-100 text-gray-600">
                       <tr>
