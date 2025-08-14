@@ -222,7 +222,7 @@ export default function DataReports() {
               {/* Right Panel */}
               {RightPanelOpen && (
                 <div className="w-6/12 lg:w-9/12 bg-white flex flex-col  border-2 h-full border-gray-200 ">
-                  <div className="flex-1 h-full w-full bg-white shadow-md flex flex-col p-6 overflow-y-auto space-y-4">
+                  <div className="flex-1 flex flex-col items-center  h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
                     {/* Report Extraction Options */}
 
                     <div className="flex flex-col justify-center items-center text-base font-semibold text-gray-800 my-8 leading-relaxed">
@@ -232,7 +232,7 @@ export default function DataReports() {
                       <p> Candidate & Unit Report Generation</p>
                     </div>
 
-                    <div className="flex flex-col items-start space-y-3 text-sm ml-20">
+                    <div className="flex flex-col justify-center space-y-3 text-sm ">
                       {[
                         {
                           id: "candidate-report",

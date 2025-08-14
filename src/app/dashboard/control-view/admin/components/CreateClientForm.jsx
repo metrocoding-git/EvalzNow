@@ -1,4 +1,6 @@
 "use client";
+import { createClient } from "@/services/clientService";
+import { getCompanySize } from "@/services/companyService";
 import { ListFilterPlus, Plus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -20,9 +22,15 @@ const companySizes = [
   "Tier 10 - Mass Network : > 50000 Candidates",
 ];
 
-export default function CreateClientForm({ onClose }) {
+
+export default function CreateClientForm({ onClose, onCreate }) {
   const [form, setForm] = useState({});
   const [executiveId, setExecutiveId] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [companySize, setCompanySize] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setExecutiveId(generateExecutiveId());
@@ -32,8 +40,72 @@ export default function CreateClientForm({ onClose }) {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  useEffect(() => {
+    const fetchCompanySize = async () => {
+      try {
+        setLoading(true);
+        const data = await getCompanySize(); // Directly get data
+        setCompanySize(data);
+        console.log(data);
+        if (!data) {
+          throw new Error("No data received");
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch clients:", err);
+        setError("Failed to load clients. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCompanySize();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      const clientData = {
+        lastName: form["Executive Last Name"],
+        firstName: form["Executive First Name"],
+        jobTitle: form["Executive Job Title"],
+        emailAddress: form["Executive E-mail Address"],
+        companyName: form["Company Name"],
+        companyContactNumber: form["Company Contact Number"],
+        institutionalType: form["Institutional Type"],
+        businessRegistrationNo: form["Business Registration No."],
+        country: form["Country"],
+        companySizeId: form["Company Size"],
+        status: form["Status"] || "Activate",
+        executiveId: executiveId // Make sure to include this
+      };
+  
+      const response = await createClient(clientData);
+      
+      // Check if the response indicates success
+      if (response && (response.status === 201 || response.id)) {
+        onCreate(response);
+        onClose();
+      } else {
+        throw new Error("Unexpected response from server");
+      }
+    } catch (err) {
+      console.error("Failed to create client:", err);
+      // Try to get more detailed error message
+      const errorMessage = err.response?.data?.message || 
+                          err.message || 
+                          "Failed to create client";
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
      
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
@@ -52,88 +124,92 @@ export default function CreateClientForm({ onClose }) {
       </div>
 
 
-      {/* Scrollable form content */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
-          {[
-            "Executive Last Name",
-            "Executive First Name",
-            "Executive Job Title",
-            "Executive E-mail Address",
-            "Company Name",
-            "Company Contact Number",
-            "Institutional Type",
-            "Business Registration No.",
-            "Country",
-          ].map((label, idx) => (
-            <React.Fragment key={idx}>
-              <label className="col-span-1 flex items-center text-gray-700">
-                {label}:
-              </label>
-              <input
-                type="text"
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-                onChange={(e) => handleChange(label, e.target.value)}
-              />
-            </React.Fragment>
-          ))}
-
-          {/* Executive ID */}
-          <label className="col-span-1 flex items-center text-gray-700">
-            Executive ID:
-          </label>
-          <input
-            type="text"
-            value={executiveId}
-            disabled
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
-          />
-
-          {/* Company Size */}
-          <label className="col-span-1 flex items-center text-gray-700">
-            Company Size:
-          </label>
-          <select
-            defaultValue=""
-            onChange={(e) => handleChange("Company Size", e.target.value)}
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-          >
-            <option value="" disabled>
-              Select Size
-            </option>
-            {companySizes.map((size, i) => (
-              <option key={i} value={size}>
-                {size}
-              </option>
+    
+        {/* Scrollable form content */}
+        <div className="flex-1 p-4 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
+            {[
+              "Executive Last Name",
+              "Executive First Name",
+              "Executive Job Title",
+              "Executive E-mail Address",
+              "Company Name",
+              "Company Contact Number",
+              "Institutional Type",
+              "Business Registration No.",
+              "Country",
+            ].map((label, idx) => (
+              <React.Fragment key={idx}>
+                <label className="col-span-1 flex items-center text-gray-700">
+                  {label}:
+                </label>
+                <input
+                  type="text"
+                  className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  onChange={(e) => handleChange(label, e.target.value)}
+                />
+              </React.Fragment>
             ))}
-          </select>
 
-          {/* Status */}
-          <label className="col-span-1 flex items-center text-gray-700">
-            Status:
-          </label>
-          <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-            onChange={(e) => handleChange("Status", e.target.value)}
-          >
-            <option value="Activate">Activate</option>
-            <option value="Deactivate">Deactivate</option>
-          </select>
-        </div>
-      </div>
+            {/* Executive ID */}
+            <label className="col-span-1 flex items-center text-gray-700">
+              Executive ID:
+            </label>
+            <input
+              type="text"
+              value={executiveId}
+              disabled
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
+            />
 
-      {/* Fixed footer */}
-      <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
-          >
-            Close
-          </button>
+            {/* Company Size */}
+            <label className="col-span-1 flex items-center text-gray-700">
+              Company Size:
+            </label>
+            <select
+              defaultValue=""
+              onChange={(e) => handleChange("Company Size", e.target.value)}
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            >
+              <option value="" disabled>
+                Select Size
+              </option>
+              {companySize.map((size, i) => (
+                <option key={i} value={size.id}> {/* Use size.id as value if needed */}
+                  {size.tier} - {size.size} {/* Access the properties you want to display */}
+                </option>
+              ))}
+            </select>
+
+            {/* Status */}
+            <label className="col-span-1 flex items-center text-gray-700">
+              Status:
+            </label>
+            <select
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              onChange={(e) => handleChange("Status", e.target.value)}
+            >
+              <option value="Activate">Activate</option>
+              <option value="Deactivate">Deactivate</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </div>
+
+      
+
+        {/* Fixed footer */}
+        <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
+          <div className="flex justify-end gap-2">
+            <button
+              type="submit"
+              
+              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      
+    </form>
   );
 }

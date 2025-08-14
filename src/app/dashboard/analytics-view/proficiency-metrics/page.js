@@ -69,10 +69,10 @@ export default function ProficiencyMetrics() {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden mx-1 px-1 border-1 border-gray-800 rounded-md">
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
-          <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
+        <div className="flex space-x-0 px-0 border-b border-gray-200 bg-gray-50 ">
+           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
             {/* {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
                 <span
@@ -88,7 +88,7 @@ export default function ProficiencyMetrics() {
                 </span>
               </Link>
             ))} */}
-          </div>
+          </div> 
           <div className="w-6/12 lg:w-9/12 flex flex-col border-l-2 h-full border-gray-200  p-1">
             <div className="flex justify-start items-center space-x-2 px-4">
               {activeCandidateId && (

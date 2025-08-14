@@ -11,6 +11,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import ClientEditor from "./components/ClientEditor";
 import CreateClientForm from "./components/CreateClientForm";
+import { createClient, deleteClient, getAllClients } from "@/services/clientService";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -20,34 +21,76 @@ export default function AdminControl() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortBy, setSortBy] = useState("id");
   const [dataList, setDataList] = useState([
-    {
-      id: "5678",
-      firstName: "Sadeesha",
-      lastName: "Perera",
-    },
-    {
-      id: "5679",
-      firstName: "Nadeesha",
-      lastName: "Silva",
-    },
-    {
-      id: "5680",
-      firstName: "Kasun",
-      lastName: "Fernando",
-    },
-    {
-      id: "5681",
-      firstName: "Dilani",
-      lastName: "Gunasekara",
-    },
-    {
-      id: "5682",
-      firstName: "Tharindu",
-      lastName: "Jayasinghe",
-    },
+    // {
+    //   id: "5678",
+    //   firstName: "Sadeesha",
+    //   lastName: "Perera",
+    // },
+    // {
+    //   id: "5679",
+    //   firstName: "Nadeesha",
+    //   lastName: "Silva",
+    // },
+    // {
+    //   id: "5680",
+    //   firstName: "Kasun",
+    //   lastName: "Fernando",
+    // },
+    // {
+    //   id: "5681",
+    //   firstName: "Dilani",
+    //   lastName: "Gunasekara",
+    // },
+    // {
+    //   id: "5682",
+    //   firstName: "Tharindu",
+    //   lastName: "Jayasinghe",
+    // },
   ]);
+  const [clients, setClients] = useState([]); // Renamed from dataList to clients
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
 
+  
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllClients(); // Directly get data
+        console.log(data);
+        setDataList(data);
+        if (!data) {
+          throw new Error("No data received");
+        }
+        
+        setClients(Array.isArray(data) ? data : []); // Ensure it's an array
+      } catch (err) {
+        console.error("Failed to fetch clients:", err);
+        setError("Failed to load clients. Please try again.");
+        setClients([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  const handleCreate = async (newClient) => {
+    try {
+      const createdClient = await createClient(newClient);
+      setClients(prev => [...prev, createdClient]);
+      setDataList(prev => [...prev, createdClient]);
+      console.log(dataList);
+      setSelectedClient(createdClient);
+      setShowAdd(false);
+    } catch (err) {
+      console.error("Failed to create client:", err);
+      // You might want to set an error state here to show in the UI
+    }
+  };
+  
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -58,10 +101,24 @@ export default function AdminControl() {
   // Sort the dataList based on sortBy and sortOrder
   const getSortedDataList = () => {
     return [...dataList].sort((a, b) => {
-      const valA = (a[sortBy] || "").toLowerCase();
-      const valB = (b[sortBy] || "").toLowerCase();
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      const valA = a[sortBy];
+      const valB = b[sortBy];
+      
+      // Handle cases where values might be undefined/null
+      if (valA == null) return sortOrder === "asc" ? 1 : -1;
+      if (valB == null) return sortOrder === "asc" ? -1 : 1;
+      
+      // If both values are numbers, compare numerically
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return sortOrder === "asc" ? valA - valB : valB - valA;
+      }
+      
+      // Otherwise, compare as strings
+      const strA = String(valA).toLowerCase();
+      const strB = String(valB).toLowerCase();
+      
+      if (strA < strB) return sortOrder === "asc" ? -1 : 1;
+      if (strA > strB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
   };
@@ -75,13 +132,13 @@ export default function AdminControl() {
     }
   }, [dataList]);
 
-  const handleDelete = (id) => {
-    const updatedData = dataList.filter((item) => item.id !== id);
-    setDataList(updatedData);
-    if (selectedClient?.id === id) {
-      setSelectedClient(updatedData[0] || null);
-    }
-  };
+  // const handleDelete = (id) => {
+  //   const updatedData = dataList.filter((item) => item.id !== id);
+  //   setDataList(updatedData);
+  //   if (selectedClient?.id === id) {
+  //     setSelectedClient(updatedData[0] || null);
+  //   }
+  // };
 
   const handleUpdateClient = (updatedClient) => {
     setDataList((prev) =>
@@ -89,6 +146,34 @@ export default function AdminControl() {
     );
     setSelectedClient(updatedClient);
   };
+
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this client?")) {
+      return;
+    }
+
+    try {
+      // Call the delete service
+      await deleteClient(id);
+      
+      // Update local state
+      const updatedData = dataList.filter((item) => item.id !== id);
+      setDataList(updatedData);
+      
+      // Update selected client if needed
+      if (selectedClient?.id === id) {
+        setSelectedClient(updatedData[0] || null);
+      }
+      
+      // Show success message or notification
+      console.log("Client deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete client:", err);
+      setError("Failed to delete client. Please try again.");
+    }
+  };
+
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -220,7 +305,7 @@ export default function AdminControl() {
                           isSelected ? "text-black" : "text-gray-800"
                         }`}
                       >
-                        {item.id}
+                        {item.executiveId}
                       </p>
                     </div>
                   );
@@ -264,7 +349,7 @@ export default function AdminControl() {
       {/* Right Panel */}
       <div className="w-1/2 lg:w-9/12 bg-white">
         <div className="h-full flex flex-col w-96">
-          {showAdd && <CreateClientForm onClose={() => setShowAdd(false)} />}
+          {showAdd && <CreateClientForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />}
         </div>
       </div>
     </div>

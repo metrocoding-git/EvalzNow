@@ -17,9 +17,9 @@ const SecondaryInputForm = ({ onClose }) => {
   };
 
   return (
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
+    <div className="border-2 border-gray-500 rounded-md flex flex-col">
       {/* Section Header */}
-      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
+      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-gray-300">
         <div className="flex items-center gap-2 text-blue-800 font-semibold">
           <Edit className="w-5 h-5" />
           Secondary Input Area

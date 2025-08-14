@@ -150,7 +150,7 @@ export default function PlotSelections({ selectedSort }) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-          <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
