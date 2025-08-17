@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Edit3, X, Plus, Edit } from "lucide-react";
+import { updateCandidate } from "@/services/candidateService";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
@@ -96,6 +97,9 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
     { id: "", type: "", comment: "" }
   ]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+const [error, setError] = useState(null);
+
   useEffect(() => {
     if (candidate) {
       setForm({
@@ -104,7 +108,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
         "Candidate ID": candidate.id || "",
         
         "Special ID No.": candidate.specialIdNo || "",
-        "Date of Birth": candidate.dob || "",
+        "Date of Birth": candidate.dateOfBirth || "",
         "Start Date": candidate.startDate || "",
         Nationality: candidate.nationality || "",
         Gender: candidate.gender || "",
@@ -186,11 +190,59 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
       console.log(updatedCandidate);
     }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      const updatedData = {
+        id: form["Candidate ID"],
+        lastName: form["Last Name"],
+        firstName: form["First Name"],
+        specialIdNo: form["Special ID No."],
+        dateOfBirth: form["Date of Birth"],
+        startDate: form["Start Date"],
+        nationality: form.Nationality,
+        gender: form.Gender,
+        ethnicity: form.Ethnicity,
+        income: parseFloat(form.Income) || 0,
+        religion: form.Religion,
+        maritalStatus: form["Marital Status"],
+        jobType: form["Job Type"],
+        irregularities: rows
+          .filter(r => r.type)
+          .map((r, idx) => ({
+            type: r.type,
+            sequenceNumber: idx + 1,
+            comments: r.comment
+          }))
+      };
+  
+      const updatedCandidate = await updateCandidate(candidate.id, updatedData);
+  
+      if (typeof onSave === "function") {
+        onSave(updatedCandidate);
+      }
+  
+      if (typeof onClose === "function") {
+        onClose();
+      }
+  
+    } catch (err) {
+      console.error("Failed to update candidate:", err);
+      setError(err.response?.data?.message || "Failed to update candidate");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   
 
 
   return (
-  <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+  <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
     {/* Header */}
     <div className="flex items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
       <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm">
@@ -319,6 +371,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
           </div>
 
           <button
+            type="button"
             onClick={addRow}
             className="flex items-center gap-2 mt-3 px-3 py-1 bg-gray-500 text-white hover:bg-gray-700"
           >
@@ -329,13 +382,13 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
 
         {/* Buttons */}
         <div className="col-span-2 pt-4 flex justify-end gap-2">
-          <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs" onClick={handleSave}>
+          <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs" type="submit" >
             Edit
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 );
 };
 

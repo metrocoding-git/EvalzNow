@@ -1,4 +1,5 @@
 "use client";
+import { createStaff } from "@/services/staffService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState } from "react";
 
@@ -9,15 +10,48 @@ const accessLevels = [
 
 const accountStatuses = ["Enabled", "Disabled"];
 
-export default function CreateStaffForm({ onClose }) {
+export default function CreateStaffForm({ onClose, onCreate }) {
   const [form, setForm] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const staffData = {
+        lastName: form["Last Name"],
+        firstName: form["First Name"],
+        jobTitle: form["Job Title"],
+        department: form["Department"],
+        dateOfBirth: form["Date of Birth"],
+        dateOfEmployment: form["Date of Employment"],
+        contactNumber: form["Contact Number"],
+        emailAddress: form["Company E-mail Address"],
+        accessLevel: form["Access Level"] || "Leaders Access",
+        accountStatus: form["Account Status"] || "Enabled",
+      };
+
+      onCreate(staffData);
+      onClose();
+    } catch (err) {
+      console.error("Failed to create staff:", err);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Failed to create staff";
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
 
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
@@ -56,6 +90,7 @@ export default function CreateStaffForm({ onClose }) {
                 type={label.includes("Date") ? "date" : "text"}
                 className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
+                required
               />
             </React.Fragment>
           ))}
@@ -64,7 +99,8 @@ export default function CreateStaffForm({ onClose }) {
           <label className="col-span-1 flex items-center text-gray-700">Access Level:</label>
           <select
             className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
-            onChange={(e) => handleChange("Access Level", e.target.value)}
+            onChange={(e) => handleChange("Access Level", e.target.value)} 
+            required
           >
             <option value="">Select Access Level</option>
             {accessLevels.map((level, i) => (
@@ -81,6 +117,7 @@ export default function CreateStaffForm({ onClose }) {
           <select
             className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             onChange={(e) => handleChange("Account Status", e.target.value)}
+            required
           >
             <option value="">Select Status</option>
             {accountStatuses.map((status, i) => (
@@ -98,14 +135,14 @@ export default function CreateStaffForm({ onClose }) {
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
-            type="button"
-            onClick={onClose}
+            type="submit"
+            // onClick={onClose}
             className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
           >
             Close
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

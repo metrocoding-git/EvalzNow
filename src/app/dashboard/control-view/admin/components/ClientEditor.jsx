@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { updateClient } from "@/services/clientService";
+import { getCompanySize } from "@/services/companyService";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -20,6 +21,8 @@ export default function ClientEditor({ client, onClose, onSave }) {
   const [form, setForm] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [companySize, setCompanySize] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
@@ -53,6 +56,28 @@ export default function ClientEditor({ client, onClose, onSave }) {
     companySize: form["Company Size"] || "",
     status: form["Status"] || "Activate",
   });
+
+  useEffect(() => {
+    const fetchCompanySize = async () => {
+      try {
+        setLoading(true);
+        const data = await getCompanySize(); // Directly get data
+        setCompanySize(data);
+        console.log(data);
+        if (!data) {
+          throw new Error("No data received");
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch clients:", err);
+        setError("Failed to load clients. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCompanySize();
+  }, []);
   
 
   const handleChange = (label, value) => {
@@ -141,7 +166,7 @@ export default function ClientEditor({ client, onClose, onSave }) {
           <label className="col-span-1 flex items-center text-gray-700">Executive ID:</label>
           <input
             type="text"
-            value={client.id}
+            value={client.executiveId}
             disabled
             className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-xs"
           />
@@ -154,10 +179,10 @@ export default function ClientEditor({ client, onClose, onSave }) {
             className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="">Select Size</option>
-            {companySizes.map((size, i) => (
-              <option key={i} value={size}>
-                {size}
-              </option>
+            {companySize.map((size, i) => (
+                <option key={i} value={size.id}> {/* Use size.id as value if needed */}
+                  {size.tier} - {size.size} {/* Access the properties you want to display */}
+                </option>
             ))}
           </select>
 

@@ -13,9 +13,14 @@ const maritalStatusOptions = ["Married", "Non-disclosed", "Other", "Separated", 
 const jobTypeOptions = ["Contractor", "Employee", "Non-disclosed", "Other", "Student", "Trainee", "Trainer"];
 const irregularityOptions = ["Disability", "Special Needs", "Other"];
 
-export default function CreateCandidateForm({ onClose }) {
-  const [form, setForm] = useState({});
-  const [rows, setRows] = useState([{ id: "", type: "", comment: "" }]);
+
+export default function CreateCandidateForm({ onClose, onCreate }) {
+  const [form, setForm] = useState({
+    
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [rows, setRows] = useState([{ sequenceNumber: 1, type: "", comments: "" }]);
 
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
@@ -24,15 +29,56 @@ export default function CreateCandidateForm({ onClose }) {
   };
 
   const addRow = () => {
-    setRows([...rows, { id: "", type: "", comment: "" }]);
+    setRows([...rows, { sequenceNumber: rows.length + 1, type: "", comments: "" }]);
   };
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      const candidateData = {
+        lastName: form["Last Name"] || "",
+        firstName: form["First Name"] || "",
+        specialIdNo: form["Special ID No."] || "",
+        candidateId: form["Candidate ID"] || "",
+        dateOfBirth: form["Date of Birth"] || "",
+        startDate: form["Start Date"] || "",
+        nationality: form["Nationality"] || "",
+        gender: form["Gender"] || "",
+        ethnicity: form["Ethnicity"] || "",
+        income: parseFloat(form["Income"]) || 0,
+        religion: form["Religion"] || "",
+        maritalStatus: form["Marital Status"] || "",
+        jobType: form["Job Type"] || "",
+        irregularities: rows
+          .filter((r) => r.type)
+          .map((r, idx) => ({
+            type: r.type,
+            sequenceNumber: idx + 1,
+            comments: r.comments,
+          })),
+      };
+  
+      await onCreate(candidateData);
+      onClose();
+      
+    } catch (err) {
+      console.error("Failed to create candidate:", err);
+      setError(err.message || "Failed to create candidate");
+      
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
@@ -147,9 +193,9 @@ export default function CreateCandidateForm({ onClose }) {
                     <td className="border border-gray-300 px-2 py-1">
                       <input
                         type="text"
-                        value={row.comment}
+                        value={row.comments}
                         maxLength={40}
-                        onChange={(e) => handleRowChange(index, "comment", e.target.value)}
+                        onChange={(e) => handleRowChange(index, "comments", e.target.value)}
                         className="w-full px-2 py-1 border"
                         placeholder="Max 40 characters"
                       />
@@ -162,6 +208,7 @@ export default function CreateCandidateForm({ onClose }) {
 
           <div className="col-span-2">
             <button
+            type="button"
               onClick={addRow}
               className="flex items-center gap-2 mt-3 px-3 py-1 bg-gray-500 text-white hover:bg-gray-700"
             >
@@ -176,13 +223,14 @@ export default function CreateCandidateForm({ onClose }) {
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
-            onClick={onClose}
+            // onClick={onClose}
             className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm"
+            type="submit"
           >
             Close
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
