@@ -3,5 +3,8 @@ export const API_ROUTES = {
     REGISTER: "/auth/register",
     USERS: "/users",
     COMPANYSIZE: "/company",
-    CLIENTS: "/clients"
+    CLIENTS: "/clients",
+    STAFFS: "/staffs",
+    CANDIDATE: "/candidates",
+    UNIT: "/units"
 };
