@@ -149,9 +149,9 @@ export default function AdminControl() {
 
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this client?")) {
-      return;
-    }
+    // if (!window.confirm("Are you sure you want to delete this client?")) {
+    //   return;
+    // }
 
     try {
       // Call the delete service
@@ -173,6 +173,7 @@ export default function AdminControl() {
       setError("Failed to delete client. Please try again.");
     }
   };
+  
 
 
   return (
@@ -287,23 +288,23 @@ export default function AdminControl() {
                       
                     >
                       <p
-                        className={`text-sm font-medium truncate ${
+                        className={`text-sm  truncate ${
                           isSelected ? "text-black" : "text-gray-800"
-                        }`}
+                        } ${item.status === "Activate" ? "font-bold" : "font-medium"}`}
                       >
                         {item.lastName}
                       </p>
                       <p
                         className={`text-sm truncate ${
                           isSelected ? "text-black" : "text-gray-800"
-                        }`}
+                        } ${item.status === "Activate" ? "font-bold" : ""}`}
                       >
                         {item.firstName}
                       </p>
                       <p
-                        className={`text-sm font-mono truncate ${
+                        className={`text-sm  truncate ${
                           isSelected ? "text-black" : "text-gray-800"
-                        }`}
+                        } ${item.status === "Activate" ? "font-bold" : ""}`}
                       >
                         {item.executiveId}
                       </p>

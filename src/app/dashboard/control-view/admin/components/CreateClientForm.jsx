@@ -83,21 +83,13 @@ export default function CreateClientForm({ onClose, onCreate }) {
         executiveId: executiveId // Make sure to include this
       };
   
-      const response = await createClient(clientData);
+      onCreate(clientData);
+      onClose();
       
-      // Check if the response indicates success
-      if (response && (response.status === 201 || response.id)) {
-        onCreate(response);
-        onClose();
-      } else {
-        throw new Error("Unexpected response from server");
-      }
     } catch (err) {
       console.error("Failed to create client:", err);
       // Try to get more detailed error message
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to create client";
+      const errorMessage = err.response?.data?.message ||  err.message ||  "Failed to create client";
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -144,9 +136,10 @@ export default function CreateClientForm({ onClose, onCreate }) {
                   {label}:
                 </label>
                 <input
-                  type="text"
+                   type={label.includes("E-mail") ? "email" : "text"}
                   className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                   onChange={(e) => handleChange(label, e.target.value)}
+                  required
                 />
               </React.Fragment>
             ))}
@@ -168,6 +161,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
             </label>
             <select
               defaultValue=""
+              required 
               onChange={(e) => handleChange("Company Size", e.target.value)}
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
@@ -186,6 +180,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
               Status:
             </label>
             <select
+               required
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onChange={(e) => handleChange("Status", e.target.value)}
             >

@@ -138,7 +138,7 @@ export default function DataReports() {
                         className="flex items-center gap-1 cursor-pointer"
                         onClick={() => handleSort("id")}
                       >
-                        ID
+                        Candidate ID
                       </div>
                     </div>
                   </div>

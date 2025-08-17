@@ -158,7 +158,7 @@ export default function GrowthMetrics() {
                       onClick={() => handleSort("id")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      ID
+                      Candidate ID
                       {/* {" "}
                       {sortKey === "id" ? (
                         sortOrder === "asc" ? (

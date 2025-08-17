@@ -138,7 +138,7 @@ export default function DataExtractions() {
                         className="flex items-center gap-1 cursor-pointer select-none"
                         onClick={() => handleSort("id")}
                       >
-                        ID
+                        Candidate ID
                       </div>
                     </div>
                   </div>

@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import CandidateEditor from "./components/CandidateEditor";
 import CreateCandidateForm from "./components/CreateCandidateForm";
 import ReviewCandidate from "./components/ReviewCandidate";
+import { createCandidate, deleteCandidate, getAllCandidates } from "@/services/candidateService";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -31,30 +32,67 @@ export default function CandidateControl() {
   const [incomes, setIncomes] = useState([]);
   const [showObjects, setShowObjects] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [dataList, setDataList] = useState([
-    { id: "001", firstName: "John", lastName: "Doe" },
-    { id: "002", firstName: "Jane", lastName: "Smith" },
-    { id: "003", firstName: "Alex", lastName: "Johnson" },
-    { id: "004", firstName: "Emily", lastName: "Davis" },
-    { id: "005", firstName: "Chris", lastName: "Brown" },
-    { id: "006", firstName: "Pat", lastName: "Miller" },
-    { id: "007", firstName: "Taylor", lastName: "Wilson" },
-    { id: "008", firstName: "Jordan", lastName: "Moore" },
-    { id: "009", firstName: "Morgan", lastName: "Taylor" },
-    { id: "010", firstName: "Casey", lastName: "Anderson" },
+    // { id: "001", firstName: "John", lastName: "Doe" },
+    // { id: "002", firstName: "Jane", lastName: "Smith" },
+    // { id: "003", firstName: "Alex", lastName: "Johnson" },
+    // { id: "004", firstName: "Emily", lastName: "Davis" },
+    // { id: "005", firstName: "Chris", lastName: "Brown" },
+    // { id: "006", firstName: "Pat", lastName: "Miller" },
+    // { id: "007", firstName: "Taylor", lastName: "Wilson" },
+    // { id: "008", firstName: "Jordan", lastName: "Moore" },
+    // { id: "009", firstName: "Morgan", lastName: "Taylor" },
+    // { id: "010", firstName: "Casey", lastName: "Anderson" },
   ]);
 
-  const getSortedData = () => {
-    const sorted = [...dataList].sort((a, b) => {
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidates();
+        setDataList(Array.isArray(data) ? data : []);
+        if (data.length > 0) {
+          setSelectedCandidate(data[0]);
+          setShowEdit(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, []);
+
+  // Create candidate
+  const handleCreate = async (newCandidate) => {
+    try {
+      const created = await createCandidate(newCandidate);
+      setDataList(prev => [...prev, created]);
+      setSelectedCandidate(created);
+      setShowAdd(false);
+      setShowEdit(true);
+    } catch (err) {
+      console.error("Failed to create candidate:", err);
+      setError("Failed to create candidate.");
+    }
+  };
+
+   // Handle sorting
+   const getSortedData = () => {
+    return [...dataList].sort((a, b) => {
       let valA = a[sortBy];
       let valB = b[sortBy];
 
       if (sortBy === "id") {
-        // Convert to numbers for numeric sorting
         valA = Number(valA);
         valB = Number(valB);
       } else {
-        // For names: lowercase strings
         valA = (valA || "").toLowerCase();
         valB = (valB || "").toLowerCase();
       }
@@ -63,8 +101,6 @@ export default function CandidateControl() {
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
-
-    return sorted;
   };
 
   const [contextMenu, setContextMenu] = useState({
@@ -94,7 +130,7 @@ export default function CandidateControl() {
       setShowEdit(true);
       setShowAdd(false);
     }else {
-      setSelectedClient(null);
+      setSelectedCandidate(null);
       setShowEdit(false);
     }
 
@@ -102,12 +138,21 @@ export default function CandidateControl() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, [dataList]);
 
-  const handleDelete = (id) => {
-    const updated = dataList.filter((c) => c.id !== id);
-    setDataList(updated);
-    if (selectedCandidate?.id === id) {
-      setSelectedCandidate(null);
-      setShowEdit(false);
+  
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteCandidate(id);
+      const updated = dataList.filter(item => item.id !== id);
+      setDataList(updated);
+      if (selectedCandidate?.id === id) {
+        setSelectedCandidate(updated[0] || null);
+        setShowEdit(updated.length > 0);
+      }
+      setContextMenu(prev => ({ ...prev, visible: false }));
+    } catch (err) {
+      console.error("Failed to delete candidate:", err);
+      setError("Failed to delete candidate.");
     }
   };
 
@@ -415,7 +460,7 @@ export default function CandidateControl() {
         
           {showAdd && (
             <div className="h-full flex flex-col w-96">
-              <CreateCandidateForm onClose={() => setShowAdd(false)} />
+              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
             </div>
           )}
           {showReview && (

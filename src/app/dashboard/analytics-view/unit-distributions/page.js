@@ -117,7 +117,7 @@ export default function UnitDistributions() {
                       onClick={() => handleSort("id")}
                       className="cursor-pointer"
                     >
-                      ID
+                      Candidate ID
                     </div>
                   </div>
                   <div className="flex-1 overflow-auto">

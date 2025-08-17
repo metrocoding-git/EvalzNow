@@ -13,6 +13,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import StaffEditor from "./components/StaffEditor";
 import CreateStaffForm from "./components/CreateStaffForm";
+import { createStaff, deleteStaff, getAllStaffs } from "@/services/staffService";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -31,18 +32,53 @@ export default function StaffControl() {
     selectedStaff: null,
   });
 
-  const [dataList, setDataList] = useState([
-    { id: "001", firstName: "John", lastName: "Doe" },
-    { id: "002", firstName: "Jane", lastName: "Smith" },
-    { id: "003", firstName: "Michael", lastName: "Brown" },
-    { id: "004", firstName: "Emily", lastName: "Clark" },
-    { id: "005", firstName: "David", lastName: "Lee" },
-    { id: "006", firstName: "Sarah", lastName: "Wilson" },
-    { id: "007", firstName: "Daniel", lastName: "Johnson" },
-    { id: "008", firstName: "Laura", lastName: "Martinez" },
-    { id: "009", firstName: "Chris", lastName: "Davis" },
-    { id: "010", firstName: "Anna", lastName: "White" },
-  ]);
+  // const [dataList, setDataList] = useState([
+  //   { id: "001", firstName: "John", lastName: "Doe" },
+  //   { id: "002", firstName: "Jane", lastName: "Smith" },
+  //   { id: "003", firstName: "Michael", lastName: "Brown" },
+  //   { id: "004", firstName: "Emily", lastName: "Clark" },
+  //   { id: "005", firstName: "David", lastName: "Lee" },
+  //   { id: "006", firstName: "Sarah", lastName: "Wilson" },
+  //   { id: "007", firstName: "Daniel", lastName: "Johnson" },
+  //   { id: "008", firstName: "Laura", lastName: "Martinez" },
+  //   { id: "009", firstName: "Chris", lastName: "Davis" },
+  //   { id: "010", firstName: "Anna", lastName: "White" },
+  // ]);
+  const [dataList, setDataList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+
+  // Fetch staff data
+  useEffect(() => {
+    const fetchStaffs = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllStaffs();
+        setDataList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch staffs:", err);
+        setError("Failed to load staffs. Please try again.");
+        setDataList([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffs();
+  }, []);
+
+  // Create new staff
+  const handleCreate = async (newStaff) => {
+    try {
+      const createdStaff = await createStaff(newStaff);
+      setDataList((prev) => [...prev, createdStaff]);
+      setSelectedStaff(createdStaff);
+      setShowAdd(false);
+    } catch (err) {
+      console.error("Failed to create staff:", err);
+    }
+  };
 
   const getSortedDataList = () => {
     const sorted = [...dataList].sort((a, b) => {
@@ -96,14 +132,24 @@ export default function StaffControl() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, [dataList]);
 
-  const handleDelete = (id) => {
-    const updatedData = dataList.filter((item) => item.id !== id);
-    setDataList(updatedData);
-    if (selectedStaff?.id === id) {
-      setSelectedStaff(null);
-      setShowEdit(false);
+  const handleDelete = async (id) => {
+    try {
+      await deleteStaff(id); // API call to delete from backend
+      
+      setDataList((prev) => prev.filter((staff) => staff.id !== id)); // Remove from state
+      
+      if (selectedStaff?.id === id) {
+        setSelectedStaff(null);
+        setShowEdit(false);
+      }
+  
+      console.log("Staff deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete staff:", err);
+      setError("Failed to delete staff. Please try again.");
     }
   };
+  
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -282,7 +328,7 @@ export default function StaffControl() {
       <div className="w-1/2 lg:w-9/12 bg-white">
         <div className="h-full flex flex-col w-96">
           {showAdd && (
-            <CreateStaffForm onClose={() => setShowAdd(false)} />
+            <CreateStaffForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
           )}
         </div>
       </div>

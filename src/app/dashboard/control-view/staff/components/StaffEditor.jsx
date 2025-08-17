@@ -1,12 +1,15 @@
 // StaffEditor.jsx
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
+import { updateStaff } from "@/services/staffService";
 
 const accessLevels = ["Full Access", "Leaders Access"];
 const accountStatuses = ["Enabled", "Disabled"];
 
 const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
   const [form, setForm] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (staff) {
@@ -15,13 +18,13 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
         "First Name": staff.firstName || "",
         "Job Title": staff.jobTitle || "",
         "Department": staff.department || "",
-        "Date of Birth": staff.dob || "",
-        "Date of Employment": staff.doe || "",
-        "Staff ID": staff.id || "", // FIXED: matches form label
-        "Contact Number": staff.phone || "",
-        "Company E-mail Address": staff.email || "",
+        "Date of Birth": staff.dateOfBirth || "",
+        "Date of Employment": staff.dateOfEmployment || "",
+        "Staff ID": staff.staffId || "",
+        "Contact Number": staff.contactNumber || "",
+        "Company E-mail Address": staff.emailAddress || "",
         "Access Level": staff.accessLevel || accessLevels[0],
-        "Account Status": staff.status || accountStatuses[0],
+        "Account Status": staff.accountStatus || accountStatuses[0],
       });
     }
   }, [staff]);
@@ -30,22 +33,35 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
-  const handleSave = () => {
-    // Convert form state back to object with correct keys
-    const updatedStaff = {
-      id: form["Staff ID"],
-      lastName: form["Last Name"],
-      firstName: form["First Name"],
-      jobTitle: form["Job Title"],
-      department: form["Department"],
-      dob: form["Date of Birth"],
-      doe: form["Date of Employment"],
-      phone: form["Contact Number"],
-      email: form["Company E-mail Address"],
-      accessLevel: form["Access Level"],
-      status: form["Account Status"],
-    };
-    onSave(updatedStaff);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const updatedData = {
+        lastName: form["Last Name"],
+        firstName: form["First Name"],
+        jobTitle: form["Job Title"],
+        department: form["Department"],
+        dateOfBirth: form["Date of Birth"],
+        dateOfEmployment: form["Date of Employment"],
+        staffId: form["Staff ID"],
+        contactNumber: form["Contact Number"],
+        emailAddress: form["Company E-mail Address"],
+        accessLevel: form["Access Level"],
+        accountStatus: form["Account Status"],
+      };
+
+      const updatedStaff = await updateStaff(staff.id, updatedData);
+
+      onSave(updatedStaff); // Notify parent of changes
+      onClose(); // Close editor
+    } catch (err) {
+      console.error("Failed to update staff:", err);
+      setError(err.response?.data?.message || "Failed to update staff");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -128,7 +144,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           <div className="col-span-2 pt-4 flex justify-end gap-2">
             <button
               type="button"
-              onClick={handleSave}
+              onClick={handleSubmit}
               className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs"
             >
               Edit
