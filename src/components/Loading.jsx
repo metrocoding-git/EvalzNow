@@ -1,17 +1,17 @@
 import Image from 'next/image';
-import loadingImg from '../../public/images/loading-image.jpg';
-import loadingIcon from '../../public/icons/loading-icon.png';
-
+const loadingImg = "/images/loading-image.jpg";
+// import loadingIcon from '../../public/icons/loading-icon.png';
+const loadingIcon = "/icons/loading-icon.png";
 export default function Loading() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Full width image */}
-      <div className="w-full h-64 relative">
+      <div className="w-full h-[60vh] relative">
         <Image 
           src={loadingImg}
           alt="Loading background"
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: 'cover' }}
           priority
         />
       </div>

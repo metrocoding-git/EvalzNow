@@ -132,7 +132,7 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
-const engageLevel = ["High", "Medium", "Low"];
+const engageLevel = ["High", "Medium", "Low", "N/A"];
 
 const competencyTypes = {
   communicative: ["Listening", "Reading", "Speaking", "Writing"],
