@@ -8,10 +8,11 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import SecondaryArea from "../components/SecondaryArea";
+// import SecondaryArea from "../components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SecondaryInputForm from "./components/SecondaryArea";
 
 export default function HybridMetrics() {
   const tabs = [
@@ -252,7 +253,7 @@ export default function HybridMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-2/5 overflow-auto my-2">
-                    <SecondaryArea onClose={() => setShowSecondary(false)} />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)} />
                   </div>
                 )}
               </div>

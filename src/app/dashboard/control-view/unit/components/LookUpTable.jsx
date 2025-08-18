@@ -239,7 +239,7 @@ export default function SearchLookup({ onClose, onSelect }) {
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white  border border-gray-300 hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            Close
           </button>
         </div>
       </div>

@@ -1,12 +1,17 @@
 "use client";
 import { Edit, X } from "lucide-react";
 import { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const SecondaryInputForm = ({ onClose }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDate, setCriticalDate] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -53,13 +58,41 @@ const SecondaryInputForm = ({ onClose }) => {
             Critical Reference Date
           </label>
 
-          <input
-            type="date"
-            value={criticalDate}
-            onChange={(e) => setCriticalDate(e.target.value)}
-            className="border px-2 py-1 w-full"
-          />
+          
+          <DatePicker className="border px-2 py-1 w-full"
+            selectsRange
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(dates) => {
+              const [start, end] = dates;
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            isClearable
+            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
+            />
+          
+
+          {/* <div className="flex gap-2 w-full items-center">
+            <span>From: </span>
+            <input
+              type="date"
+              value={criticalDate}
+              onChange={(e) => setCriticalDate(e.target.value)}
+              className="border px-2 py-1 w-full" />
+          </div>
+          
+          <div className="flex gap-2 w-full items-center mt-2">
+            <span>To: </span>
+            <input
+              type="date"
+              value={criticalDate}
+              onChange={(e) => setCriticalDate(e.target.value)}
+              className="border px-2 py-1 w-full" />
+          </div> */}
         </div>
+
+        
 
         {/* Threshold Toggle */}
         {/* <div className="flex items-center justify-between p-2">

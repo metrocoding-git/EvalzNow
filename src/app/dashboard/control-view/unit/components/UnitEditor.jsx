@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Edit } from "lucide-react";
+import { getUnitById, updateUnit } from "@/services/unitService";
 
 
 
@@ -62,24 +63,95 @@ const DIRECT_DELIVERY = [
 ];
 
 
-const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster }) => {
+const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
     startDate: "",
     endDate: "",
-    leaders: [],
-    assessors: [],
-    director: "",
+    unitDirector: "",
     unitType: "",
     signatureProfile: "",
     environment: "",
     scoringSystem: "",
-    benchmarks: [],
+    benchmarks: []
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+   // Fetch unit data when unitId changes
+   useEffect(() => {
+    const fetchUnitData = async () => {
+      if (!unitId) return;
+      
+      try {
+        setIsLoading(true);
+        const unitData = await getUnitById(unitId);
+        
+        // Transform API data to match form state
+        setUnit({
+          unitName: unitData.unitName,
+          unitId: unitData.unitId,
+          startDate: unitData.unitStartDate, // Map API field to form field
+          endDate: unitData.unitEndDate,     // Map API field to form field
+          unitDirector: unitData.unitDirector,
+          unitType: unitData.unitType,
+          signatureProfile: unitData.signatureProfile,
+          environment: unitData.environment,
+          scoringSystem: unitData.scoringSystem || "",
+          benchmarks: unitData.benchmarks || []
+        });
+      } catch (err) {
+        console.error("Failed to fetch unit data:", err);
+        setError("Failed to load unit data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUnitData();
+  }, [unitId]);
+
 
   const handleChange = (field, value) => {
     setUnit((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Prepare the data for API
+      const updatedUnit = {
+        unitName: unit.unitName,
+        unitId: unit.unitId,
+        unitStartDate: unit.startDate, // Map form field to API field
+        unitEndDate: unit.endDate,     // Map form field to API field
+        unitDirector: unit.unitDirector,
+        unitType: unit.unitType,
+        signatureProfile: unit.signatureProfile,
+        environment: unit.environment,
+        scoringSystem: unit.scoringSystem,
+        benchmarks: unit.benchmarks
+      };
+
+      // Call API to update
+      const savedUnit = await updateUnit(unitId, updatedUnit);
+      
+      // Notify parent component
+      onSave(savedUnit);
+      console.log(savedUnit);
+      onClose();
+    } catch (err) {
+      console.error("Failed to update unit:", err);
+      setError(err.response?.data?.message || "Failed to update unit");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -99,10 +171,10 @@ const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab, sh
       )} */}
 
       {showUnitForm && !showUnitRoster &&(
-        <div className="flex-1 overflow-auto flex flex-col">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-auto flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
-            <form className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
+            <div className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
               {[
                 { label: "Unit Name", key: "unitName" },
                 { label: "Unit ID", key: "unitId" },
@@ -175,22 +247,22 @@ const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab, sh
                   </select>
                 </>
               )}
-            </form>
+            </div>
           </div>
 
           {/* Bottom Actions */}
           <div className="border-t border-gray-200 p-2 bg-gray-50">
             <div className="flex justify-end">
               <button
-                type="button"
-                onClick={onClose}
+                type="submit"
+                // onClick={onClose}
                 className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
               >
                 Edit
               </button>
             </div>
           </div>
-        </div>
+        </form>
       )}
 
       {showEditBlockManager && (
@@ -221,7 +293,9 @@ const UnitEditor = ({ onClose, showUnitForm, showEditBlockManager, activeTab, sh
                 <input
                   type="text"
                   placeholder="Enter short description"
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  name="shortDescription"
+                  value={unit.shortDescription || ""}
+                  onChange={(e) => handleChange("shortDescription", e.target.value)}
                   className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>

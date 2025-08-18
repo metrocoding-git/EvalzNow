@@ -2,6 +2,7 @@
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import StaffLookup from "./StaffLookUp";
+import { getAllCandidates } from "@/services/candidateService";
 
 const UNIT_TYPES = [
   "Communicative I/O",
@@ -45,16 +46,20 @@ const BENCHMARK_TYPES = [
   "Trial & Error",
 ];
 
-export default function CreateUnitForm({ onClose, staffPool = [] }) {
+export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
   const [form, setForm] = useState({
+    unitName: "",
+    unitId: "",
+    startDate: "",
+    endDate: "",
     unitType: "",
     environment: "",
     signatureProfile: "",
-    scoringSystem: "",
-    passThresholds: {},
+    unitDirector: "",
+    passThresholds: {}, // Initialize to avoid undefined errors
     benchmarks: [],
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -137,16 +142,80 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
   };
 
   useEffect(() => {
-    if (form.unitType) {
+    if (form.unitType && defaultThresholds[form.unitType]) {
       setForm((prev) => ({
         ...prev,
         passThresholds: defaultThresholds[form.unitType],
       }));
+    } else {
+      // Fallback if unitType is invalid
+      setForm((prev) => ({
+        ...prev,
+        passThresholds: {},
+      }));
     }
   }, [form.unitType]);
 
+  const isFormValid = () => {
   return (
-    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    form.unitName?.trim() &&
+    form.unitId?.trim() &&
+    form.startDate?.trim() &&
+    form.unitDirector?.trim() &&
+    form.unitType?.trim() &&
+    form.signatureProfile?.trim() &&
+    form.environment?.trim() &&
+    (form.environment !== "Workforce" || form.scoringSystem?.trim())
+  );
+};
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!form.unitName || !form.unitId || !form.unitType || !form.unitDirector) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      // Prepare benchmarks data
+      const benchmarks = form.benchmarks.map(bm => ({
+        benchmarkType: bm.type,
+        benchmarkRef: bm.ref,
+        benchmarkDescription: bm.description
+      }));
+
+      // Prepare the complete unit data
+      const unitData = {
+        unitName: form.unitName,
+        unitId: form.unitId,
+        unitStartDate: form.startDate,
+        unitEndDate: form.endDate,
+        unitDirector: form.unitDirector,
+        unitType: form.unitType,
+        signatureProfile: form.signatureProfile,
+        environment: form.environment,
+        benchmarks: benchmarks
+      };
+
+      await onSubmit(unitData);
+      console.log(unitData);
+      onClose();
+    } catch (error) {
+      console.error("Error creating unit:", error);
+      alert("Failed to create unit. Please try again.");
+    }
+    finally {
+      setIsSubmitting(false);
+    }
+    
+  };
+  
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
 
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
@@ -170,22 +239,18 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
 
           {/* Basic Unit Details */}
           {[
-            { label: "Unit Name", key: "unitName", type: "text" },
-            { label: "Unit ID", key: "unitId", type: "text" },
-            { label: "Unit Start Date", key: "startDate", type: "date" },
-            {
-              label: "Unit End Date",
-              key: "endDate",
-              type: "text",
-              placeholder: "Ex: 2023-12-31",
-            },
+            { label: "Unit Name", key: "unitName", type: "text", required: true },
+            { label: "Unit ID", key: "unitId", type: "text", required: true },
+            { label: "Unit Start Date", key: "startDate", type: "date", required: true },
+            { label: "Unit End Date", key: "endDate", type: "date" }
           ].map(({ label, key, type, placeholder }) => (
             <React.Fragment key={key}>
               <label className="col-span-1 flex items-center text-gray-700">{label}:</label>
               <input
-                type={type}
-                placeholder={placeholder}
-                onChange={(e) => handleChange(key, e.target.value)}
+               type={type}
+               required
+               value={form[key] || ""}
+               onChange={(e) => handleChange(key, e.target.value)}
                 className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </React.Fragment>
@@ -379,7 +444,7 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
               Unit Benchmarks
             </h3>
             <div className="space-y-2">
-              {form.benchmarks.map((bm, idx) => (
+              {(form.benchmarks || []).map((bm, idx) => (
                 <div key={idx} className="grid grid-cols-3 gap-2">
                   {/* Benchmark ID */}
                   <div className="space-y-1">
@@ -492,9 +557,13 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+            type="submit"
+            disabled={!isFormValid()}
+            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors ${
+              !isFormValid() 
+                ? "cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
           >
             Close
           </button>
@@ -516,6 +585,6 @@ export default function CreateUnitForm({ onClose, staffPool = [] }) {
           />
         )
       }
-    </div >
+    </form >
   );
 }

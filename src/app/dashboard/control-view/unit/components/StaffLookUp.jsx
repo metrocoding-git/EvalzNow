@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { getAllCandidates } from "@/services/candidateService";
+import { getAllStaffs } from "@/services/staffService";
 
 const SAMPLE_STAFFS = [
   {
@@ -104,12 +106,34 @@ const SAMPLE_STAFFS = [
 export default function StaffLookup({ onClose, onSelect }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [staffs, setStaffs] = useState([]);
 
-  const filteredStaffs = SAMPLE_STAFFS.filter((staff) =>
+  const filteredStaffs = staffs.filter((staff) =>
     `${staff.firstName} ${staff.lastName} ${staff.jobTitle} ${staff.email} ${staff.department}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchStaffs = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllStaffs();
+        setStaffs(data);
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffs();
+  }, []);
 
 
   const handleRowClick = (id) => {
@@ -122,12 +146,14 @@ export default function StaffLookup({ onClose, onSelect }) {
   };
 
   const handleSubmit = () => {
-    const selectedStaff = SAMPLE_STAFFS.filter((staff) =>
+    // Use fetched staffs instead of SAMPLE_STAFFS
+    const selectedStaff = staffs.filter((staff) =>
       selectedIds.includes(staff.id)
     );
     onSelect(selectedStaff);
     onClose();
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50">

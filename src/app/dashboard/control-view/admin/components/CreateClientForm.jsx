@@ -40,6 +40,26 @@ export default function CreateClientForm({ onClose, onCreate }) {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    const requiredFields = [
+      "Executive Last Name",
+      "Executive First Name",
+      "Executive Job Title",
+      "Executive E-mail Address",
+      "Company Name",
+      "Company Contact Number",
+      "Institutional Type",
+      "Business Registration No.",
+      "Country",
+      "Company Size",
+      "Status"
+    ];
+
+    return requiredFields.every((field) => form[field] && form[field].trim() !== "");
+  };
+
+
   useEffect(() => {
     const fetchCompanySize = async () => {
       try {
@@ -197,8 +217,12 @@ export default function CreateClientForm({ onClose, onCreate }) {
           <div className="flex justify-end gap-2">
             <button
               type="submit"
-              
-              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+              disabled={!isFormValid() || isSubmitting}
+              className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors ${
+                !isFormValid() || isSubmitting
+                  ? "cursor-not-allowed"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               Close
             </button>

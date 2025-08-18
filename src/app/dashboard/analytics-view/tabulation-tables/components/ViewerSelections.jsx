@@ -56,7 +56,7 @@ export default function ViewerSelections({candidate}) {
 
   const workspaceTableData = [
     {
-      ppId: "PP-001",
+      ppId: -1,
       criticalDate: "2025-08-01",
       dayCount: 12,
       productivityCSD: 95,
@@ -101,7 +101,7 @@ export default function ViewerSelections({candidate}) {
       argt5: 1
     },
     {
-      ppId: "PP-002",
+      ppId: 1,
       criticalDate: "2025-08-02",
       dayCount: 8,
       productivityCSD: 85,

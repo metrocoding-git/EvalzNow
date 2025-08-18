@@ -36,6 +36,31 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  // Check if required fields are filled
+  const isFormValid = () => {
+    const requiredFields = [
+      "Last Name",
+      "First Name",
+      "Candidate ID",
+      "Special ID No.",
+      "Date of Birth",
+      "Start Date",
+      "Nationality",
+      "Gender",
+      "Ethnicity",
+      "Income",
+      "Religion",
+      "Marital Status",
+      "Job Type",
+    ];
+
+    return requiredFields.every(
+      (field) => form[field] && form[field].toString().trim() !== ""
+    );
+  };
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -223,8 +248,13 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
+            disabled={!isFormValid() || isSubmitting}
             // onClick={onClose}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm"
+            className={`px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm ${
+              !isFormValid() || isSubmitting
+                ? "cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
             type="submit"
           >
             Close
