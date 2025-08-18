@@ -77,26 +77,31 @@ export default function PlotSelections({ selectedSort }) {
       name: "Interaction Class (IC) vs. PP ID",
       icon: "🔀",
       type: "line", // Separate lines for -PP IDs and +PP IDs
+      id: 1
     },
     {
       name: "PR vs. RR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 2
     },
     {
       name: "AR vs. RR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 3
     },
     {
       name: "PR vs. AR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 4
     },
     {
       name: "AR vs. PR vs. RR Cross Plot",
       icon: "📈",
       type: "scatter-3d", // Z, Y, X
+      id: 5
     },
   ];
 
@@ -106,26 +111,31 @@ export default function PlotSelections({ selectedSort }) {
       name: "Interaction Class (IC) vs. PP ID",
       icon: "🔀",
       type: "line", // Separate lines for -PP IDs and +PP IDs
+      id: 1
     },
     {
       name: "PR vs. RR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 2
     },
     {
       name: "AR vs. RR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 3
     },
     {
       name: "PR vs. AR Cross Plot",
       icon: "📊",
       type: "scatter-2d",
+      id: 4
     },
     {
       name: "AR vs. PR vs. RR Cross Plot",
       icon: "📈",
       type: "scatter-3d", // Z, Y, X
+      id: 5
     },
   ];
 
@@ -183,9 +193,9 @@ export default function PlotSelections({ selectedSort }) {
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  <div className="col-span-2  py-1 text-center">Icon</div>
-                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
-                  <div className="col-span-2  py-1 text-left">Type</div>
+                 
+                  <div className="col-span-9 px-1 py-1 text-left">Entities</div>
+                  
                   <div className="col-span-2  py-1 text-left">ID</div>
                 </div>
                 
@@ -198,9 +208,7 @@ export default function PlotSelections({ selectedSort }) {
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
                         onClick={() => setSelectedChart(chart)}
                       >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -211,9 +219,7 @@ export default function PlotSelections({ selectedSort }) {
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
                         onClick={() => setSelectedChart(chart)}
                       >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))

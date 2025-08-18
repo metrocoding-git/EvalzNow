@@ -46,38 +46,38 @@ export default function PlotSelections({ selectedSort }) {
   
   const activateCandidateLevel = [
     { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📈", type: "line" },
-    { id: "1", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
-    { id: "1", name: "Reading Ratio (XRR)", icon: "📘", type: "line" },
-    { id: "1", name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
-    { id: "1", name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
-    { id: "1", name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
-    { id: "1", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
-    { id: "1", name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
-    { id: "1", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
-    { id: "1", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
-    { id: "1", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
-    { id: "1", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
-    { id: "1", name: "Band Proficiency (BXP)", icon: "🎼", type: "line" },
-    { id: "1", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
-    { id: "1", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
+    { id: "3", name: "Reading Ratio (XRR)", icon: "📘", type: "line" },
+    { id: "4", name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
+    { id: "5", name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
+    { id: "6", name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
+    { id: "7", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
+    { id: "8", name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
+    { id: "9", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
+    { id: "10", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
+    { id: "11", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
+    { id: "12", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
+    { id: "13", name: "Band Proficiency (BXP)", icon: "🎼", type: "line" },
+    { id: "14", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
+    { id: "15", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
 
   const activateUnitLevel = [
     { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📊", type: "scatter" },
-    { id: "1", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
-    { id: "1", name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
-    { id: "1", name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
-    { id: "1", name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
-    { id: "1", name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
-    { id: "1", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
-    { id: "1", name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
-    { id: "1", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
-    { id: "1", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
-    { id: "1", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "scatter" },
-    { id: "1", name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
-    { id: "1", name: "Band Proficiency (BXP)", icon: "🎼", type: "scatter" },
-    { id: "1", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
-    { id: "1", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
+    { id: "3", name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
+    { id: "4", name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
+    { id: "5", name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
+    { id: "6", name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
+    { id: "7", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
+    { id: "8", name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
+    { id: "9", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
+    { id: "10", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
+    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "scatter" },
+    { id: "11", name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
+    { id: "12", name: "Band Proficiency (BXP)", icon: "🎼", type: "scatter" },
+    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
+    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
   
   const [chartProperties, setChartProperties] = useState({
@@ -163,10 +163,9 @@ export default function PlotSelections({ selectedSort }) {
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  <div className="col-span-2  py-1 text-center">Icon</div>
-                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
-                  <div className="col-span-2  py-1 text-left">Type</div>
-                  <div className="col-span-2  py-1 text-left">ID</div>
+                  
+                  <div className="col-span-9 px-1 py-1 text-left">Entities</div>
+                  <div className="col-span-3  py-1 text-left">ID</div>
                 </div>
                 
                 {/* Scrollable Content */}
@@ -180,10 +179,8 @@ export default function PlotSelections({ selectedSort }) {
                           setSelectedChart(chart);
                         }}
                       >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
@@ -196,10 +193,8 @@ export default function PlotSelections({ selectedSort }) {
                           setSelectedChart(chart); 
                         }}
                       >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}

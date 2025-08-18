@@ -223,7 +223,6 @@ export default function PlotSelections() {
                         >
                           <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                             <div className="flex items-center">
-                              <span className="mr-1 text-[10px]">{item.icon}</span>
                               <span className="truncate">{item.name}</span>
                             </div>
                           </div>

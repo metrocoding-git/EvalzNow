@@ -153,11 +153,9 @@ export default function PlotSelections({ selectedSort }) {
             <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
-                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  <div className="col-span-2  py-1 text-center">Icon</div>
-                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
-                  <div className="col-span-2  py-1 text-left">Type</div>
-                  <div className="col-span-2  py-1 text-left">ID</div>
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200"> 
+                  <div className="col-span-9 pl-2 py-1 text-left">Entities</div>
+                  <div className="col-span-3 pl-1  py-1 text-left">ID</div>
                 </div>
                 
                 {/* Scrollable Content */}
@@ -170,11 +168,9 @@ export default function PlotSelections({ selectedSort }) {
                         onClick={() => {
                           setSelectedChart(chart);
                         }}
-                      >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                      > 
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}
@@ -187,10 +183,8 @@ export default function PlotSelections({ selectedSort }) {
                           setSelectedChart(chart); 
                         }}
                       >
-                        <div className="col-span-2 text-center text-xl">{chart.icon}</div>
-                        <div className="col-span-6 text-xs text-gray-700 truncate">{chart.name}</div>
-                        <div className="col-span-2 pl-2 text-xs text-gray-400">{chart.type}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
                   )}

@@ -100,9 +100,9 @@ export default function CurveEditor() {
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  <div className="col-span-2 py-1 text-center">Icon</div>
-                  <div className="col-span-6 px-1 py-1 text-left">Entities</div>
-                  <div className="col-span-2 py-1 text-left">Type</div>
+                 
+                  <div className="col-span-10 px-1 py-1 text-left">Entities</div>
+                 
                   <div className="col-span-2 py-1 text-left">ID</div>
                 </div>
 
@@ -116,9 +116,9 @@ export default function CurveEditor() {
                         setSelectedChart(item);
                       }}
                     >
-                      <div className="col-span-2 text-center text-xl">{item.icon}</div>
-                      <div className="col-span-6 text-xs text-gray-700 truncate">{item.name}</div>
-                      <div className="col-span-2 pl-2 text-xs text-gray-400">{item.type}</div>
+                     
+                      <div className="col-span-10 text-xs text-gray-700 truncate">{item.name}</div>
+                    
                       <div className="col-span-2 pl-3 text-xs text-gray-400">{item.id}</div>
                     </div>
                   ))}
