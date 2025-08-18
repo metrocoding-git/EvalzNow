@@ -22,6 +22,8 @@ import UnitEditor from "./components/UnitEditor";
 import CreateUnitForm from "./components/CreateUnitForm";
 import UnitRoster from "./components/UnitRoster";
 import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
+import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unitService";
+import { getAllCandidates } from "@/services/candidateService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -41,24 +43,143 @@ export default function UnitControl() {
 
   // unit tabs
   const [activeTab, setActiveTab] = useState("Indirect");
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [dataList, setDataList] = useState([
-    { id: "u001", environment:'classroom', name: "Unit1", type:'communicative' },
-    { id: "u002", environment:'workspace', name: "Unit2", type:'theory practical' },
-    { id: "u003", environment:'classroom', name: "Unit3", type:'third parameter' },
-    { id: "u004", environment:'workspace', name: "Unit4", type:'communicative' },
+    // { id: "u001", environment:'classroom', name: "Unit1", type:'communicative' },
+    // { id: "u002", environment:'workspace', name: "Unit2", type:'theory practical' },
+    // { id: "u003", environment:'classroom', name: "Unit3", type:'third parameter' },
+    // { id: "u004", environment:'workspace', name: "Unit4", type:'communicative' },
   ]);
+
+  const [candidateList, setCandidateList] = useState([]);
+  const [sortBy, setSortBy] = useState("id");
+  const [candidateSortOrder, setCandidateSortOrder] = useState("asc");
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const [selectedBlock, setSelectedBlock] = useState(null);
 
-  const sortedDataList = [...dataList].sort((a, b) => {
-    const fieldA = a[sortField].toLowerCase?.() ?? a[sortField];
-    const fieldB = b[sortField].toLowerCase?.() ?? b[sortField];
+  // Fetch all units on mount
+  useEffect(() => {
+    const fetchUnits = async () => {
+      try {
+        setLoading(true);
+        const units = await getAllUnits();
+        setDataList(Array.isArray(units) ? units : []);
+        console.log(units);
+        if (units.length > 0) {
+          setSelectedUnit(units[0]);
+          setShowEdit(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch units:", err);
+        setError("Failed to load units. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
-    if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
+    fetchUnits();
+  }, []);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidates();
+        setCandidateList(Array.isArray(data) ? data : []);
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, []);
+
+  // Create candidate
+  const handleCreate = async (newUnit) => {
+    try {
+      setLoading(true);
+      
+      // Prepare the data for API
+      const unitData = {
+        unitName: newUnit.unitName,
+        unitId: newUnit.unitId,
+        unitStartDate: newUnit.unitStartDate, // Changed from startDate
+        unitEndDate: newUnit.unitEndDate,     // or newUnit.unitEndDate
+        unitDirector: newUnit.unitDirector,
+        unitType: newUnit.unitType,
+        signatureProfile: newUnit.signatureProfile,
+        environment: newUnit.environment,
+        environment: newUnit.environment,
+        benchmarks: newUnit.benchmarks
+      };
+
+      const createdUnit = await createUnit(unitData);
+      
+      // Update state
+      setDataList(prev => [...prev, createdUnit]);
+      setSelectedUnit(createdUnit);
+      setShowAdd(false);
+      setShowEdit(true);
+      
+      return createdUnit;
+    } catch (err) {
+      console.error("Failed to create unit:", err);
+      setError("Failed to create unit. Please try again.");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    
+
+  const sortedDataList = [...dataList].sort((a, b) => {
+    const getValue = (item) => {
+      const value = sortField === "name" ? item.unitName : item[sortField];
+      return sortField === "id" ? String(value) : String(value || "").toLowerCase();
+    };
+  
+    const valA = getValue(a);
+    const valB = getValue(b);
+  
+    if (sortField === "id") {
+      return sortOrder === "asc" 
+        ? valA.localeCompare(valB, undefined, { numeric: true })
+        : valB.localeCompare(valA, undefined, { numeric: true });
+    }
+  
+    return sortOrder === "asc" 
+      ? valA.localeCompare(valB)
+      : valB.localeCompare(valA);
   });
+
+  // Handle sorting
+  const getSortedData = () => {
+    return [...candidateList].sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+
+      if (sortBy === "id") {
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        valA = (valA || "").toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
+
+      if (valA < valB) return candidateSortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return candidateSortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  };
 
   // This used to manage right-click context menu
   const [contextMenu, setContextMenu] = useState({
@@ -68,13 +189,22 @@ export default function UnitControl() {
     selectedUnit: null,
   });
 
-  const handleDelete = (id) => {
-    console.log(`Delete item with name: ${id}`);
-    const updatedData = dataList.filter((item) => item.id !== id);
-    setDataList(updatedData);
-    if (selectedUnit?.id === id) {
-      setSelectedUnit(null);
-      setShowEdit(false);
+  // Delete unit
+  const handleDelete = async (id) => {
+    try {
+      await deleteUnit(id);
+      const updated = dataList.filter(item => item.id !== id);
+      setDataList(updated);
+      
+      if (selectedUnit?.id === id) {
+        setSelectedUnit(updated[0] || null);
+        setShowEdit(updated.length > 0);
+      }
+      
+      setContextMenu(prev => ({ ...prev, visible: false }));
+    } catch (err) {
+      console.error("Failed to delete unit:", err);
+      setError("Failed to delete unit.");
     }
   };
 
@@ -108,21 +238,35 @@ export default function UnitControl() {
   }, [dataList, showUnitRoster]);
 
 
-  // Add this inside UnitControl function body:
-  const handleUnitSave = (updatedUnit) => {
-    // Update dataList with new unit info (keep existing fields if you want)
-    setDataList((prev) =>
-      prev.map((unit) => (unit.id === updatedUnit.unitId ? { ...unit, ...updatedUnit } : unit))
-    );
-    setSelectedUnit(updatedUnit);
-    setShowEdit(false);
+  // Modify the handleUnitSave function in UnitControl
+  const handleUnitSave = async (updatedUnit) => {
+    try {
+      setLoading(true);
+      // Call the update API
+      const result = await updateUnit(updatedUnit.id, updatedUnit);
+      
+      console.log(result);
+      // Update the local state
+      setDataList(prev =>
+        prev.map(unit => unit.id === updatedUnit.id ? result : unit)
+      );
+      setSelectedUnit(result);
+      setShowEdit(false);
+      return result;
+    } catch (err) {
+      console.error("Failed to update unit:", err);
+      setError("Failed to update unit. Please try again.");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
 
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/3 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
@@ -192,10 +336,10 @@ export default function UnitControl() {
               <div
                 className="flex items-center cursor-pointer select-none"
                 onClick={() => {
-                  if (sortField === "name") {
+                  if (sortField === "unitName") {
                     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
                   } else {
-                    setSortField("name");
+                    setSortField("unitName");
                     setSortOrder("asc");
                   }
                 }}
@@ -224,7 +368,7 @@ export default function UnitControl() {
             <div className="bg-blue-100 border-l-4 border-l-blue-400 pb-1">
               <div className="unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 pt-2 transition-all text-black">
                 <p className="text-sm font-medium truncate text-black">
-                  {selectedUnit.name}
+                  {selectedUnit.unitName}
                 </p>
                 <p className="text-sm font-medium truncate text-black">
                   {selectedUnit.id}
@@ -259,7 +403,25 @@ export default function UnitControl() {
                   Units ({dataList.length})
                 </p>
               </div>
-
+              <div className=" items-center justify-center  px-4 ">
+                <div className="border border-gray-200 p-1">
+                  <span className="text-sm text-gray-400">
+                    Unit Name: Unit 1
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-400">
+                    Unit ID: UA123
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-400">
+                    Unit Type: Group
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-400">
+                    Signature Profile: Signature 1
+                  </span>
+                </div>
+              </div>
 
 
               {showList &&
@@ -293,7 +455,7 @@ export default function UnitControl() {
                         className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
                           }`}
                       >
-                        {item.name}
+                        {item.unitName}
                       </p>
                       <p
                         className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
@@ -308,6 +470,115 @@ export default function UnitControl() {
             </div>
           )}
         </div>
+
+
+        <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/3">
+          {/* Header */}
+          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
+            {/* Control buttons */}
+            <div className="flex flex-col ">
+              <div className="flex justify-end gap-1">
+                
+              
+              </div>
+              {/* Column Headers */}
+              <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
+                {[
+                  { key: "lastName", label: "Last Name" },
+                  { key: "firstName", label: "First Name" },
+                  { key: "id", label: "Candidate ID" },
+                ].map((col) => (
+                  <div
+                    key={col.key}
+                    className="flex items-center cursor-pointer select-none"
+                    onClick={() => {
+                      if (sortBy === col.key) {
+                        setCandidateSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                      } else {
+                        setSortBy(col.key);
+                        setCandidateSortOrder("asc");
+                      }
+                    }}
+                  >
+                    {col.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* List Toggle */}
+          <div className="flex-[1.1] min-h-0 overflow-auto">
+            {/* <div
+              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
+              onClick={() => setShowList((prev) => !prev)}
+            >
+              {showList ? (
+                <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
+              )}
+              <p className="text-sm font-medium text-gray-900">
+                Candidates ({dataList.length})
+              </p>
+            </div> */}
+
+            {showList &&
+              getSortedData().map((item, index) => {
+                const isSelected = selectedCandidate?.id === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    className={`candidate-item grid grid-cols-3 gap-4 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
+                      isSelected
+                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => {
+                      
+                      setShowEdit(true);
+                      setShowAdd(false);
+                      setShowReview(false);
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      setContextMenu({
+                        visible: true,
+                        x: e.pageX,
+                        y: e.pageY,
+                        selectedCandidate: item,
+                      });
+                    }}
+                  >
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.lastName}
+                    </p>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.firstName}
+                    </p>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        isSelected ? "text-black" : "text-gray-800"
+                      }`}
+                    >
+                      {item.id}
+                    </p>
+                  </div>
+                );
+              })}
+
+          </div>
+        </div> 
 
         {/* Context Menu */}
         {contextMenu.visible && (
@@ -362,7 +633,7 @@ export default function UnitControl() {
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-                router.push(`/dashboard/setup-view/insert-scores?environment=${contextMenu.selectedUnit.environment}&type=${contextMenu.selectedUnit.type}`);
+                router.push(`/dashboard/setup-view/insert-scores?environment=${contextMenu.selectedUnit.environment}&type=${contextMenu.selectedUnit.unitType}`);
               }}
             >
               <span className="flex items-center gap-2">
@@ -375,7 +646,7 @@ export default function UnitControl() {
         )}
 
         {/* Unit editor Section */}
-        <div className="h-1/2 my-0.5" ref={formRef}>
+        <div className="h-1/3 my-0.5" ref={formRef}>
           <UnitEditor
             unitId={selectedUnit?.id}
             onClose={() => {
@@ -385,8 +656,8 @@ export default function UnitControl() {
             showUnitForm={selectedUnit && showEdit}
             showEditBlockManager={selectedUnit && showEditBlockManager}
             activeTab={activeTab}
-            onSave={handleUnitSave}
-            showUnitRoster={showUnitRoster}
+            onSave={handleUnitSave} 
+            updateUnit={updateUnit} 
           />
 
         </div>
@@ -396,7 +667,7 @@ export default function UnitControl() {
       <div className="w-1/2 lg:w-9/12 bg-white">
         {showAdd && (
           <div className="h-full flex flex-col w-96">
-            <CreateUnitForm onClose={() => setShowAdd(false)} />
+            <CreateUnitForm onClose={() => setShowAdd(false)} onSubmit={handleCreate}  />
           </div>
         )}
 

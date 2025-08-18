@@ -19,6 +19,25 @@ export default function CreateStaffForm({ onClose, onCreate }) {
     setForm((prev) => ({ ...prev, [label]: value }));
   };
 
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    const requiredFields = [
+      "Last Name",
+      "First Name",
+      "Job Title",
+      "Department",
+      "Date of Birth",
+      "Date of Employment",
+      "Staff ID",
+      "Contact Number",
+      "Company E-mail Address",
+      "Access Level",
+      "Account Status"
+    ];
+    return requiredFields.every((field) => form[field] && form[field].toString().trim() !== "");
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -136,8 +155,13 @@ export default function CreateStaffForm({ onClose, onCreate }) {
         <div className="flex justify-end gap-2">
           <button
             type="submit"
+            disabled={!isFormValid() || isSubmitting}
             // onClick={onClose}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+            className={`px-4 py-1 bg-gray-200  text-sm transition-colors ${
+              !isFormValid() || isSubmitting
+                ? "cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
           >
             Close
           </button>
