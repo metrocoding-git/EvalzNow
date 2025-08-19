@@ -59,7 +59,7 @@ const SecondaryInputForm = ({ onClose }) => {
           </label>
 
           
-          <DatePicker className="border px-2 py-1 w-full"
+          {/* <DatePicker className="border px-2 py-1 w-full"
             selectsRange
             startDate={startDate}
             endDate={endDate}
@@ -70,10 +70,10 @@ const SecondaryInputForm = ({ onClose }) => {
             }}
             isClearable
             placeholderText="MM/DD/YYYY - MM/DD/YYYY"
-            />
+            /> */}
           
 
-          {/* <div className="flex gap-2 w-full items-center">
+          <div className="flex gap-2 w-full items-center">
             <span>From: </span>
             <input
               type="date"
@@ -89,7 +89,7 @@ const SecondaryInputForm = ({ onClose }) => {
               value={criticalDate}
               onChange={(e) => setCriticalDate(e.target.value)}
               className="border px-2 py-1 w-full" />
-          </div> */}
+          </div>
         </div>
 
         {/* Threshold Toggle */}

@@ -8,7 +8,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import SecondaryArea from "../components/SecondaryArea";
+import SecondaryArea from "./components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -98,7 +98,7 @@ export default function UnitDistributions() {
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/5">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/3">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -203,13 +203,13 @@ export default function UnitDistributions() {
 
                 {/* Secondary Input Area */}
                 {showSecondary && (
-                  <div className="h-1/4 overflow-auto my-2">
+                  <div className="h-1/3 overflow-auto ">
                     <SecondaryArea onClose={() => setShowSecondary(false)} />
                   </div>
                 )}
 
                 {/* Editor */}
-                <div className="h-1/4 overflow-auto my-2">
+                <div className="h-1/3 overflow-auto ">
                   <ClientEditor
                     onClose={() => setShowEdit(false)}
                     client={true}

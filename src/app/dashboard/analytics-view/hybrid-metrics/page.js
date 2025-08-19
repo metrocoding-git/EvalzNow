@@ -120,7 +120,7 @@ export default function HybridMetrics() {
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-3/5">
+                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/2">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -252,7 +252,7 @@ export default function HybridMetrics() {
 
                 {/* Secondary Input Area */}
                 {showSecondary && (
-                  <div className="h-2/5 overflow-auto my-2">
+                  <div className="h-1/2 overflow-auto ">
                     <SecondaryInputForm onClose={() => setShowSecondary(false)} />
                   </div>
                 )}

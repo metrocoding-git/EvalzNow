@@ -16,7 +16,7 @@ const SIGNATURE_PROFILES = [
   "Case 3a: Productive‑Weighted",
   "Case 3b: Receptive‑Weighed",
 ];
-const SCORING_SYSTEMS = ["3‑Point", "5‑Point"];
+const SCORING_SYSTEMS = ["3-Point", "5-Point"];
 
 const BENCHMARK_TYPES = [
   "Academic",
@@ -391,7 +391,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
                 </label>
                 <select
                   required
-                  value={form.scoringSystem || ""}
+                  value={form.scoringSystem}
                   onChange={(e) => handleChange("scoringSystem", e.target.value)}
                   className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 >

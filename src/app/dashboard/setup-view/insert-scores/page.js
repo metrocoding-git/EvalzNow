@@ -92,7 +92,7 @@ export default function EntitiesManager() {
     <div className="flex h-full overflow-hidden">
       {/* Sidebar */}
       <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
-        <div className="flex-grow flex flex-col h-3/5">
+        <div className="flex-grow flex flex-col h-1/2">
           {/* Header */}
           <div className="flex flex-col items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
             <div className="relative w-full mb-2">
@@ -198,7 +198,7 @@ export default function EntitiesManager() {
           </div>
 
           {/* Editor Panel */}
-          <div className="h-2/5 overflow-auto my-2">
+          <div className="h-1/2 overflow-auto my-2">
             <Editor
               details={selectedRow}
               performancePoints={activeTab}

@@ -24,6 +24,7 @@ import UnitRoster from "./components/UnitRoster";
 import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
 import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unitService";
 import { getAllCandidates } from "@/services/candidateService";
+import { getAllUnitRoster } from "@/services/unitRosterService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function UnitControl() {
     // { id: "u003", environment:'classroom', name: "Unit3", type:'third parameter' },
     // { id: "u004", environment:'workspace', name: "Unit4", type:'communicative' },
   ]);
-
+  const [unitRosterData, setUnitRosterData] = useState([]);
   const [candidateList, setCandidateList] = useState([]);
   const [sortBy, setSortBy] = useState("id");
   const [candidateSortOrder, setCandidateSortOrder] = useState("asc");
@@ -100,6 +101,34 @@ export default function UnitControl() {
     };
 
     fetchCandidates();
+  }, []);
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchUnitRoster  = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllUnitRoster();
+        setUnitRosterData(Array.isArray(data) ? data : []);
+        // Extract unique candidates from roster data
+        const uniqueCandidates = data.reduce((acc, rosterItem) => {
+          if (rosterItem.candidate && !acc.some(c => c.id === rosterItem.candidate.id)) {
+            acc.push(rosterItem.candidate);
+          }
+          return acc;
+        }, []);
+        
+        setCandidateList(uniqueCandidates);
+        console.log(uniqueCandidates);
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUnitRoster();
   }, []);
 
   // Create candidate
@@ -266,18 +295,18 @@ export default function UnitControl() {
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/3 ">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
+            {/* Control buttons */}
+          
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
                 {!showAdd && showUnitRoster ? (
-                  // Back button shown only when a unit is selected
                   <button
                     className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
                     onClick={() => {
-                      // Reset selection and hide edit/add forms
                       setSelectedUnit(null);
                       setShowEdit(false);
                       setShowAdd(false);
@@ -286,10 +315,9 @@ export default function UnitControl() {
                       setUnitRoster(false);
                     }}
                   >
-                     <Undo2 className="w-3.5 h-3.5 text-black"/>
+                    <Undo2 className="w-3.5 h-3.5 text-black"/>
                   </button>
                 ) : (
-
                   <>
                     <button
                       className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
@@ -315,7 +343,6 @@ export default function UnitControl() {
                         </button>
                       </div>
                     )}
-
                   </>
                 )}
               </div>
@@ -330,60 +357,86 @@ export default function UnitControl() {
               </div>
             </div>
 
-
-            {/* Column Headers */}
-            <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
-              <div
-                className="flex items-center cursor-pointer select-none"
-                onClick={() => {
-                  if (sortField === "unitName") {
-                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                  } else {
-                    setSortField("unitName");
-                    setSortOrder("asc");
-                  }
-                }}
-              >
-                Name
+            {/* Conditional Column Headers */}
+            {showUnitRoster ? (
+              <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
+                <div className="cursor-pointer select-none">Last Name</div>
+                <div className="cursor-pointer select-none">First Name</div>
+                <div className="cursor-pointer select-none">Candidate ID</div>
               </div>
-              <div
-                className="flex items-center cursor-pointer select-none"
-                onClick={() => {
-                  if (sortField === "id") {
-                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-                  } else {
-                    setSortField("id");
-                    setSortOrder("asc");
-                  }
-                }}
-              >
-                Unit ID
+            ) : (
+              <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
+                <div
+                  className="flex items-center cursor-pointer select-none"
+                  onClick={() => {
+                    if (sortField === "unitName") {
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortField("unitName");
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  Name
+                </div>
+                <div
+                  className="flex items-center cursor-pointer select-none"
+                  onClick={() => {
+                    if (sortField === "id") {
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortField("id");
+                      setSortOrder("asc");
+                    }
+                  }}
+                >
+                  Unit ID
+                </div>
               </div>
-            </div>
+            )}
+        
           </div>
 
 
-          {/* Selected Unit Config unit Box */}
           {!showAdd && showUnitRoster && (
-            <div className="bg-blue-100 border-l-4 border-l-blue-400 pb-1">
-              <div className="unit-item grid grid-cols-2 gap-2 items-center cursor-pointer px-4 pt-2 transition-all text-black">
-                <p className="text-sm font-medium truncate text-black">
-                  {selectedUnit.unitName}
-                </p>
-                <p className="text-sm font-medium truncate text-black">
-                  {selectedUnit.id}
-                </p>
-
+            <div className=" pb-1">
+              {/* Candidate List */}
+              <div className="max-h-40 overflow-y-auto">
+                {unitRosterData
+                  .filter(roster => roster.unitId === selectedUnit?.id)
+                  .map((rosterItem, index) => (
+                    <div 
+                      key={index}
+                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
+                    >
+                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                    </div>
+                  ))
+                }
               </div>
-              <div className="border border-gray-300 p-2  m-2">
-                <p className="text-sm text-gray-600">Unit Name:  {selectedUnit.name}</p>
-                <p className="text-sm text-gray-600">Unit ID: {selectedUnit.id}</p>
-                <p className="text-sm text-gray-600">Unit Type: Group</p>
-                <p className="text-sm text-gray-600">
-                  Signature Profile: Signature 1
-                </p>
-              </div>
 
+              {/* Unit Details (smaller and less prominent) */}
+              <div className="items-center justify-center px-4 mt-1">
+                <div className="border border-gray-200 p-2">
+                  <span className="text-sm text-gray-600">
+                    Unit Name: {selectedUnit?.unitName || "N/A"}
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-600">
+                    Unit ID: {selectedUnit?.unitId || "N/A"}
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-600">
+                    Unit Type: {selectedUnit?.unitType || "N/A"}
+                  </span>
+                  <br />
+                  <span className="text-sm text-gray-600">
+                    Signature Profile: {selectedUnit?.signatureProfile || "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -403,26 +456,25 @@ export default function UnitControl() {
                   Units ({dataList.length})
                 </p>
               </div>
-              <div className=" items-center justify-center  px-4 ">
+              <div className="items-center justify-center px-4">
                 <div className="border border-gray-200 p-1">
-                  <span className="text-sm text-gray-400">
-                    Unit Name: Unit 1
+                  <span className="text-sm text-gray-600">
+                    Unit Name: {selectedUnit?.unitName || "N/A"}
                   </span>
                   <br />
-                  <span className="text-sm text-gray-400">
-                    Unit ID: UA123
+                  <span className="text-sm text-gray-600">
+                    Unit ID: {selectedUnit?.unitId || "N/A"}
                   </span>
                   <br />
-                  <span className="text-sm text-gray-400">
-                    Unit Type: Group
+                  <span className="text-sm text-gray-600">
+                    Unit Type: {selectedUnit?.unitType || "N/A"}
                   </span>
                   <br />
-                  <span className="text-sm text-gray-400">
-                    Signature Profile: Signature 1
+                  <span className="text-sm text-gray-600">
+                    Signature Profile: {selectedUnit?.signatureProfile || "N/A"}
                   </span>
                 </div>
               </div>
-
 
               {showList &&
                 sortedDataList.map((item, index) => {
@@ -467,63 +519,15 @@ export default function UnitControl() {
                     </div>
                   );
                 })}
-            </div>
-          )}
-        </div>
 
+                {/* Header */}
+          
 
-        <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/3">
-          {/* Header */}
-          <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
-            {/* Control buttons */}
-            <div className="flex flex-col ">
-              <div className="flex justify-end gap-1">
-                
-              
-              </div>
-              {/* Column Headers */}
-              <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide">
-                {[
-                  { key: "lastName", label: "Last Name" },
-                  { key: "firstName", label: "First Name" },
-                  { key: "id", label: "Candidate ID" },
-                ].map((col) => (
-                  <div
-                    key={col.key}
-                    className="flex items-center cursor-pointer select-none"
-                    onClick={() => {
-                      if (sortBy === col.key) {
-                        setCandidateSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-                      } else {
-                        setSortBy(col.key);
-                        setCandidateSortOrder("asc");
-                      }
-                    }}
-                  >
-                    {col.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            {/* List Toggle */}
+            <div className="flex-[1.1] min-h-0 overflow-auto">
+            
 
-          {/* List Toggle */}
-          <div className="flex-[1.1] min-h-0 overflow-auto">
-            {/* <div
-              className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
-              onClick={() => setShowList((prev) => !prev)}
-            >
-              {showList ? (
-                <ChevronDown className="w-4 h-4 text-gray-700 mr-2" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-gray-700 mr-1" />
-              )}
-              <p className="text-sm font-medium text-gray-900">
-                Candidates ({dataList.length})
-              </p>
-            </div> */}
-
-            {showList &&
+            {/* {showList &&
               getSortedData().map((item, index) => {
                 const isSelected = selectedCandidate?.id === item.id;
                 return (
@@ -575,10 +579,18 @@ export default function UnitControl() {
                     </p>
                   </div>
                 );
-              })}
+              })} */}
 
+            </div>
+                
           </div>
-        </div> 
+          )}
+        </div>
+
+
+        {/* <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/3">
+          
+        </div>  */}
 
         {/* Context Menu */}
         {contextMenu.visible && (
@@ -646,7 +658,7 @@ export default function UnitControl() {
         )}
 
         {/* Unit editor Section */}
-        <div className="h-1/3 my-0.5" ref={formRef}>
+        <div className="h-1/2 my-0.5" ref={formRef}>
           <UnitEditor
             unitId={selectedUnit?.id}
             onClose={() => {
