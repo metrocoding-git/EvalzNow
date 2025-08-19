@@ -6,5 +6,6 @@ export const API_ROUTES = {
     CLIENTS: "/clients",
     STAFFS: "/staffs",
     CANDIDATE: "/candidates",
-    UNIT: "/units"
+    UNIT: "/units",
+    ROSTER: "/unit_roster",
 };
