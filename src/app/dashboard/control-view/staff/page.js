@@ -154,7 +154,7 @@ export default function StaffControl() {
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200  overflow-hidden">
+        <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/2">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
@@ -307,7 +307,7 @@ export default function StaffControl() {
 
         {/* Staff editor Section */}
 
-        <div className="h-2/3 overflow-auto my-0.5" ref={formRef}>
+        <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
         <StaffEditor
           staff={selectedStaff}
           showForm={showEdit}

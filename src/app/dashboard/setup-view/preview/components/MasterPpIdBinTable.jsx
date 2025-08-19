@@ -31,6 +31,13 @@ const MasterPpIdBinTable = ({ data }) => {
     return absA - absB;
   });
 
+  const presentUnitTypes = [...new Set(data.map(item => item.unitType))];
+  
+  // Get the first unit type (assuming all rows have same unit type)
+  // If there are multiple unit types, you may need to adjust this logic
+  const currentUnitType = presentUnitTypes[0];
+  const currentCompetencies = competencyTypes[currentUnitType] || [];
+
   return (
     <div className="overflow-x-auto border-1 border-gray-200 shadow-sm h-full">
       <table className="w-full table-auto text-sm text-left border-collapse">
@@ -42,7 +49,7 @@ const MasterPpIdBinTable = ({ data }) => {
             <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Unit Type</th>
 
 
-            {Object.values(competencyTypes).flat().map((comp, idx) => (
+            {currentCompetencies.map((comp, idx) => (
               <React.Fragment key={idx}>
                 <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{comp.attained}</th>
                 <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{comp.max}</th>
@@ -52,41 +59,26 @@ const MasterPpIdBinTable = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => {
-            // Get the relevant competencies for this row
-            const competencies = competencyTypes[row.unitType] || [];
+        {sortedData.map((row, index) => (
+            <tr key={index}>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unitName}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unitId}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unitType}</td>
 
-            return (
-              <tr key={index}>
-                <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                <td className="border-1 border-gray-400 px-2 py-1">{row.unitName}</td>
-                <td className="border-1 border-gray-400 px-2 py-1">{row.unitId}</td>
-                <td className="border-1 border-gray-400 px-2 py-1">{row.unitType}</td>
-
-                {/* Dynamically render data cells based on competency type */}
-                {Object.values(competencyTypes).flat().map((comp, idx) => {
-                  const match = competencies.find(c => c.attained === comp.attained);
-                  if (match) {
-                    const attainedKey = `attained${match.dataKey.charAt(0).toUpperCase() + match.dataKey.slice(1)}`;
-                    const maxKey = `max${match.dataKey.charAt(0).toUpperCase() + match.dataKey.slice(1)}`;
-                    return (
-                      <React.Fragment key={idx}>
-                        <td className="border-1 border-gray-400 px-2 py-1">{row[attainedKey]}</td>
-                        <td className="border-1 border-gray-400 px-2 py-1">{row[maxKey]}</td>
-                      </React.Fragment>
-                    );
-                  } else {
-                    return (
-                      <React.Fragment key={idx}>
-                        <td className="border-1 border-gray-400 px-2 py-1">-</td>
-                        <td className="border-1 border-gray-400 px-2 py-1">-</td>
-                      </React.Fragment>
-                    );
-                  }
-                })}
-              </tr>
-            );
-          })}
+              {/* Only render data cells for the current unit type */}
+              {currentCompetencies.map((comp, idx) => {
+                const attainedKey = `attained${comp.dataKey.charAt(0).toUpperCase() + comp.dataKey.slice(1)}`;
+                const maxKey = `max${comp.dataKey.charAt(0).toUpperCase() + comp.dataKey.slice(1)}`;
+                return (
+                  <React.Fragment key={idx}>
+                    <td className="border-1 border-gray-400 px-2 py-1">{row[attainedKey]}</td>
+                    <td className="border-1 border-gray-400 px-2 py-1">{row[maxKey]}</td>
+                  </React.Fragment>
+                );
+              })}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

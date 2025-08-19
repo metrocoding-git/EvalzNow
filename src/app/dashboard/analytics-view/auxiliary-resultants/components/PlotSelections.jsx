@@ -74,69 +74,105 @@ export default function PlotSelections({ selectedSort }) {
 
   const activateCandidateLevel = [
     {
-      name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
-      type: "line", // Separate lines for -PP IDs and +PP IDs
+      name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
+      icon: "📈",
+      type: "multi-line",
       id: 1
     },
     {
-      name: "PR vs. RR Cross Plot",
+      name: "Actual Tenure Period (Days) vs. PP ID",
       icon: "📊",
       type: "scatter-2d",
       id: 2
     },
     {
-      name: "AR vs. RR Cross Plot",
+      name: "Effective Work Count (Days) vs. PP ID",
       icon: "📊",
       type: "scatter-2d",
       id: 3
     },
     {
-      name: "PR vs. AR Cross Plot",
-      icon: "📊",
-      type: "scatter-2d",
+      name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
+      icon: "📈",
+      type: "multi-line",
       id: 4
     },
     {
-      name: "AR vs. PR vs. RR Cross Plot",
-      icon: "📈",
-      type: "scatter-3d", // Z, Y, X
+      name: "Actual Tenure Period (Days) vs. PP ID",
+      icon: "📊",
+      type: "scatter-2d",
       id: 5
     },
+    {
+      name: "Effective Work Count (Days) vs. PP ID",
+      icon: "📊",
+      type: "scatter-2d",
+      id: 6
+    },
+    {
+      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
+      icon: "📈",
+      type: "line",
+      id: 7
+    },
+    {
+      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
+      icon: "📈",
+      type: "line",
+      id: 8
+    },
+    {
+      name: "Attendance Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 9
+    },
+    {
+      name: "Engagement Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 10
+    }
   ];
 
 
   const activateUnitLevel = [
     {
-      name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
-      type: "line", // Separate lines for -PP IDs and +PP IDs
+      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
+      icon: "📊",
+      type: "scatter-2d",
       id: 1
     },
     {
-      name: "PR vs. RR Cross Plot",
+      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
       icon: "📊",
       type: "scatter-2d",
       id: 2
     },
     {
-      name: "AR vs. RR Cross Plot",
-      icon: "📊",
-      type: "scatter-2d",
+      name: "Attendance Tracking",
+      icon: "🥧",
+      type: "pie",
       id: 3
     },
     {
-      name: "PR vs. AR Cross Plot",
-      icon: "📊",
-      type: "scatter-2d",
+      name: "Engagement Tracking",
+      icon: "🥧",
+      type: "pie",
       id: 4
     },
     {
-      name: "AR vs. PR vs. RR Cross Plot",
-      icon: "📈",
-      type: "scatter-3d", // Z, Y, X
+      name: "Unit Outcomes",
+      icon: "🥧",
+      type: "pie",
       id: 5
     },
+    {
+      name: "Needs Assessment Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 6
+    }
   ];
 
 
@@ -178,13 +214,16 @@ export default function PlotSelections({ selectedSort }) {
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
+              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+                <Plus className="w-4 h-4 hover:text-blue-600" />
+              </button>
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
-           
+              
             </div>
           </div>
 
