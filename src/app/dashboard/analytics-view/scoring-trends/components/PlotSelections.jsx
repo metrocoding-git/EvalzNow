@@ -407,18 +407,18 @@ export default function PlotSelections() {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === "Property editor"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "hover:bg-gray-100"
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Property editor"
+                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === "Table"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "hover:bg-gray-100"
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Table"
+                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
                 >

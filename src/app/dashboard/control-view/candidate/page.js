@@ -53,9 +53,13 @@ export default function CandidateControl() {
       try {
         setLoading(true);
         const data = await getAllCandidates();
-        setDataList(Array.isArray(data) ? data : []);
-        if (data.length > 0) {
-          setSelectedCandidate(data[0]);
+        const sortedData = Array.isArray(data)
+          ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
+          : [];
+        setDataList(sortedData);
+
+        if (sortedData.length > 0) {
+          setSelectedCandidate(sortedData[0]);
           setShowEdit(true);
         }
       } catch (err) {

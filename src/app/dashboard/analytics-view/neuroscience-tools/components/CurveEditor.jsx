@@ -5,9 +5,11 @@ import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-r
 import IndicatorTable from "./IndicatorTable";
 import LoadTable from "./LoadTable";
 import LineChart from "./LineChart";
+import PropertyEditor from '../../components/PropertyEditor';
+import NeuroObject from './NeuroObject';
 
 export default function CurveEditor() {
-  const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
+  const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve1' }, { id: 6, name: 'curve2' }, { id: 16, name: 'curve3' }, { id: 15, name: 'curve4' }, { id: 14, name: 'curve5' }, { id: 13, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
@@ -28,7 +30,7 @@ export default function CurveEditor() {
   const [visible, setVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('IndirectPerformancePoint');
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Loads');
-
+  const [showNeuroObject, setShowNeuroObject] = useState(false);
 
   const canvasRef = useRef(null);
 
@@ -38,6 +40,35 @@ export default function CurveEditor() {
     { name: 'B', uv: 300, pv: 139 },
     { name: 'C', uv: 200, pv: 980 },
   ];
+
+  const [chartProperties, setChartProperties] = useState({
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
+  
+    // Curve Label
+    showLabel: false,
+    labelType: "X Type",
+    showLabelPrefix: false,
+    labelPrefix: "X File name",
+    showLabelSuffix: false,
+    labelSuffix: "Y subcase",
+  
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
+  
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    symbolFrequency: 1,
+    symbolScaleSize: 1,
+  
+    // Shade area
+    shadeArea: "#ffffff",
+  });
 
   const chart = [
     {
@@ -235,14 +266,32 @@ export default function CurveEditor() {
     }
   };
 
+  const handlePlusClick = () => {
+    setShowNeuroObject(true);
+  };
+
+  // Function to close the NeuroObject table - FIXED: Added this missing function
+  const handleCloseNeuroObject = () => {
+    setShowNeuroObject(false);
+  };
+
+
   if (!visible) return null;
 
   return (
     <>
-      <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
+      <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center relative">
         <span className='pl-2 text-md'>Curve Editor</span>
-        <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
+        
+
+        {/* POPUP NEURO OBJECT RIGHT UNDER HEADING */}
+        {showNeuroObject && (
+          <div className="absolute top-0 left-0  z-50 w-[500px] h-[400px] bg-white shadow-2xl border border-gray-200 rounded-md">
+            <NeuroObject onClose={handleCloseNeuroObject} />
+          </div>
+        )}
       </h2>
+
       <div className="flex h-full w-full my-2">
         <div className='w-full flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
 
@@ -268,6 +317,9 @@ export default function CurveEditor() {
               <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
                 <h2 className="text-sm font-semibold">Curve</h2>
                 <div className="flex items-center gap-2">
+                  <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-red-600 hover:text-red-800 cursor-pointer'>
+                    <Plus className="w-4 h-4 hover:text-blue-600" />
+                  </button>
                   <button onClick={() => { }} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                     <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
                   </button>
@@ -307,22 +359,40 @@ export default function CurveEditor() {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Indicators'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Indicators'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Indicators')}
                 >
                   Indicators
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Loads'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Loads'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Loads')}
                 >
                   Loads
+                </button>
+                <button
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
+                    }`}
+                  onClick={() => setActiveAdjustPropertieTab('Property editor')}
+                >
+                  Property Editor
+                </button>
+                <button
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Tables'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
+                    }`}
+                  onClick={() => setActiveAdjustPropertieTab('Tables')}
+                >
+                  Tables
                 </button>
               </div>
 
@@ -368,6 +438,41 @@ export default function CurveEditor() {
 
 
                 )}
+
+                {activeAdjustPropertieTab === 'Tables' && (
+
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+                    <table className="table-auto w-full text-sm border border-gray-300">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Month</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">X Axis Value</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Y Axis Value</th>
+                          <th className="border border-gray-300 px-3 py-2 text-left">Z Axis Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {floatChartData.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-blue-50">
+                            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
+                            <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
+                            <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
+                            <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+
+                {activeAdjustPropertieTab === 'Property editor' && (
+                  <PropertyEditor
+                    properties={chartProperties}
+                    onChange={setChartProperties}
+                  />
+                )}
+
               </div>
             </div>
           </div>

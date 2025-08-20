@@ -12,7 +12,7 @@ import SecondaryArea from "./components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ClientEditor from "../components/ClientEditor";
+import ClientEditor from "./components/ClientEditor";
 
 export default function UnitDistributions() {
   const tabs = [
@@ -30,9 +30,9 @@ export default function UnitDistributions() {
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [ScoresOpen, setScoresOpen] = useState(false);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [activeCandidateId, setActiveCandidateId] = useState(null);
+  // const [activeCandidateId, setActiveCandidateId] = useState(null);
 
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -46,6 +46,11 @@ export default function UnitDistributions() {
     { id: 9, firstName: "Grace", lastName: "Wilson" },
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
+
+  const [activeCandidateId, setActiveCandidateId] = useState(
+    data.length > 0 ? data[0].id : null
+  );
+
   const [openMenu, setopenMenu] = useState(true);
 
   const handleSort = (key) => {
@@ -70,9 +75,9 @@ export default function UnitDistributions() {
   });
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden m-1 p-1 ">
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0  border-b border-gray-200 bg-gray-50 ">
+        <div className="flex space-x-0 px-0   bg-gray-50 ">
           {/* <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
             {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
@@ -92,13 +97,13 @@ export default function UnitDistributions() {
           </div> */}
         </div>
         {/* Active tab content */}
-        <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
+        <div className="flex-1 overflow-auto bg-white  p-1">
           <div className="flex flex-col h-full">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/3">
+              <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
+                <div className="flex-grow  flex flex-col h-1/3">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -219,7 +224,7 @@ export default function UnitDistributions() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-gray-200 rounded-md p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
                 {ScoresOpen && <PlotSelections />}
               </div>
             </div>

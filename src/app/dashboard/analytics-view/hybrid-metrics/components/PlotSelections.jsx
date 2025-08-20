@@ -178,10 +178,10 @@ export default function PlotSelections({ selectedSort }) {
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+              <button onClick={() => setShowCreateMaterial(true)} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
-              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={handleDeleteCurve} title="Export" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
            
@@ -235,18 +235,18 @@ export default function PlotSelections({ selectedSort }) {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Property editor')}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Table'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Table'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Table')}
                 >
@@ -298,7 +298,7 @@ export default function PlotSelections({ selectedSort }) {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}

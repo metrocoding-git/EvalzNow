@@ -197,27 +197,27 @@ export default function PlotSelections({ selectedSort }) {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Property editor')}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Table'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Table'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Table')}
                 >
                   Table
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'projections'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'projections'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('projections')}
                 >
@@ -264,15 +264,74 @@ export default function PlotSelections({ selectedSort }) {
 
                 {activeAdjustPropertieTab === 'projections' && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-
-                  </div>
+                  <table className="table-auto w-full text-sm border border-gray-300">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Callout</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">PP ID</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">RRN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">PRN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">ARN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">IC</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">ΔRRN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">ΔPRN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">ΔARN</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Day Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        "First PP Selection",
+                        "Second PP Selection",
+                        "Third PP Selection",
+                        "Projection Termination Point",
+                        "Overshoot",
+                        "Undershoot",
+                        "Average",
+                        "Overshoot",
+                        "Undershoot",
+                        "Average",
+                      ].map((callout, idx) => (
+                        <tr key={idx} className="hover:bg-blue-50">
+                          {/* Callout column */}
+                          <td className="border border-gray-300 px-3 py-2">{callout}</td>
+                
+                          {/* PP ID column - dropdown for first 3 rows */}
+                          <td className="border border-gray-300 px-3 py-2">
+                            {idx < 3 ? (
+                              <select className="border rounded px-2 py-1 w-full">
+                                <option value="">Select</option>
+                                <option value="PP1">PP1</option>
+                                <option value="PP2">PP2</option>
+                                <option value="PP3">PP3</option>
+                              </select>
+                            ) : (
+                              "0"
+                            )}
+                          </td>
+                
+                          {/* Other columns with default 0 */}
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                          <td className="border border-gray-300 px-3 py-2">0</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}

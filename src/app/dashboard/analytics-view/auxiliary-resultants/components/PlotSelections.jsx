@@ -132,10 +132,35 @@ export default function PlotSelections({ selectedSort }) {
       icon: "🥧",
       type: "pie",
       id: 10
+    },
+  
+    // 👉 Added table-based items for Candidate Level
+    {
+      name: "Needs Assessment Table",
+      icon: "📑",
+      type: "table",
+      id: 11
+    },
+    {
+      name: "Needs Assessment Chains",
+      icon: "🔗",
+      type: "table",
+      id: 12
+    },
+    {
+      name: "Task Declarations",
+      icon: "📝",
+      type: "table",
+      id: 13
+    },
+    {
+      name: "Candidate Marks",
+      icon: "✅",
+      type: "table",
+      id: 14
     }
   ];
-
-
+  
   const activateUnitLevel = [
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
@@ -172,8 +197,22 @@ export default function PlotSelections({ selectedSort }) {
       icon: "🥧",
       type: "pie",
       id: 6
+    },
+  
+    {
+      name: "Unit Improvements & Optimization",
+      icon: "⚙️",
+      type: "table",
+      id: 7
+    },
+    {
+      name: "Leader Marks",
+      icon: "⭐",
+      type: "table",
+      id: 8
     }
   ];
+  
 
 
 
@@ -203,6 +242,96 @@ export default function PlotSelections({ selectedSort }) {
 
   if (!visible) return null;
 
+
+  const renderChartContent = () => {
+    if (!selectedChart) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">Select a plot from the list</p>
+        </div>
+      );
+    }
+
+    if (selectedChart.type === "table") {
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+          <table className="table-auto w-full text-sm border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border border-gray-300 px-3 py-2 text-left">Entry</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Impact Type</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Concern Identified</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Identity Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Concern Resolved</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Resolution Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <tr key={num} className="hover:bg-blue-50">
+                  <td className="border border-gray-300 px-3 py-2">{num}</td>
+                  <td className="border border-gray-300 px-3 py-2">Type {num}</td>
+                  <td className="border border-gray-300 px-3 py-2">Concern {num}</td>
+                  <td className="border border-gray-300 px-3 py-2">2025-08-0{num}</td>
+                  <td className="border border-gray-300 px-3 py-2">{num % 2 === 0 ? "Yes" : "No"}</td>
+                  <td className="border border-gray-300 px-3 py-2">
+                    {num % 2 === 0 ? `2025-08-1${num}` : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    } else {
+      // Render chart for all other types
+      return (
+        <ResponsiveContainer width="100%" height="95%">
+          <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name">
+              <Label value="Time Period (X)" offset={-10} position="insideBottom" />
+            </XAxis>
+            <YAxis>
+              <Label
+                value="Score / Value (Y/Z)"
+                angle={-90}
+                position="insideLeft"
+                offset={10}
+              />
+            </YAxis>
+            <Tooltip />
+            <Legend verticalAlign="top" />
+            <Line
+              type="monotone"
+              dataKey="xValue"
+              name="X Axis Value"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot
+            />
+            <Line
+              type="monotone"
+              dataKey="yValue"
+              name="Y Axis Value"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot
+            />
+            <Line
+              type="monotone"
+              dataKey="zValue"
+              name="Z Axis Value"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              dot
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+  };
+
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
@@ -214,9 +343,7 @@ export default function PlotSelections({ selectedSort }) {
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <Plus className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
@@ -276,18 +403,18 @@ export default function PlotSelections({ selectedSort }) {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Property editor')}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Table'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Table'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Table')}
                 >
@@ -339,59 +466,14 @@ export default function PlotSelections({ selectedSort }) {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-blue-200 rounded-md bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
           </h2>
 
           <div className="h-full overflow-auto m-5">
-            <ResponsiveContainer width="100%" height="95%">
-              <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-
-                <XAxis dataKey="name">
-                  <Label value="Time Period (X)" offset={-10} position="insideBottom" />
-                </XAxis>
-
-                <YAxis>
-                  <Label
-                    value="Score / Value (Y/Z)"
-                    angle={-90}
-                    position="insideLeft"
-                    offset={10}
-                  />
-                </YAxis>
-
-                <Tooltip />
-                <Legend verticalAlign="top" />
-
-                <Line
-                  type="monotone"
-                  dataKey="xValue"
-                  name="X Axis Value"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="yValue"
-                  name="Y Axis Value"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="zValue"
-                  name="Z Axis Value"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {renderChartContent()}
           </div>
         </div>
       </div>

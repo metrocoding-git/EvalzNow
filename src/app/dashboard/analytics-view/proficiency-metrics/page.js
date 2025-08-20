@@ -29,9 +29,9 @@ export default function ProficiencyMetrics() {
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [ScoresOpen, setScoresOpen] = useState(false);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [activeCandidateId, setActiveCandidateId] = useState(null);
+  // const [activeCandidateId, setActiveCandidateId] = useState(null);
 
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -45,6 +45,11 @@ export default function ProficiencyMetrics() {
     { id: 9, firstName: "Grace", lastName: "Wilson" },
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
+
+  const [activeCandidateId, setActiveCandidateId] = useState(
+    data.length > 0 ? data[0].id : null
+  );
+
   const [openMenu, setopenMenu] = useState(true);
 
   const handleSort = (key) => {
@@ -70,10 +75,10 @@ export default function ProficiencyMetrics() {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden mx-1 px-1 border-1 border-gray-800 rounded-md">
+      <div className="h-full flex flex-col overflow-hidden mx-1 px-1  ">
         {/* Tab buttons */}
-        <div className="flex space-x-0 px-0 border-b border-gray-200 bg-gray-50 ">
-           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
+        <div className="flex space-x-0 px-0  bg-gray-50 ">
+           <div className="w-6/12 lg:w-3/12 flex flex-col  h-full border-gray-200  p-1">
             {/* {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>
                 <span
@@ -90,7 +95,7 @@ export default function ProficiencyMetrics() {
               </Link>
             ))} */}
           </div> 
-          <div className="w-6/12 lg:w-9/12 flex flex-col border-l-2 h-full border-gray-200  p-1">
+          <div className="w-6/12 lg:w-9/12 flex flex-col  h-full border-gray-200  p-1">
             <div className="flex justify-start items-center space-x-2 px-4">
               {activeCandidateId && (
                 <select
@@ -110,13 +115,13 @@ export default function ProficiencyMetrics() {
           </div>
         </div>
         {/* Active tab content */}
-        <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300">
+        <div className="flex-1 overflow-auto bg-white ">
           <div className="flex flex-col h-full">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/2">
+              <div className="w-6/12 lg:w-3/12 flex flex-col  border-2 h-full border-gray-200">
+                <div className="flex-grow  border-gray-300 flex flex-col h-1/2">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -194,7 +199,7 @@ export default function ProficiencyMetrics() {
                       {openMenu && (
                         <>
                           <div className=" items-center justify-center  px-4 ">
-                            <div className="border border-blue-200 p-1 rounded-lg">
+                            <div className="border border-gray-200 p-1 ">
                               <span className="text-sm text-gray-400">
                                 Unit Name: Unit 1
                               </span>
@@ -217,8 +222,9 @@ export default function ProficiencyMetrics() {
                             {sortedData.map((item) => (
                               <div
                                 key={item.id}
-                                className={`grid grid-cols-3 gap-2 items-center text-sm rounded-md px-2 py-1 cursor-pointer
-                                ${activeCandidateId === item.id ? "bg-blue-200" : "hover:bg-blue-50"}`}
+                                className={`grid grid-cols-3 gap-2 items-center text-sm  px-2 py-1 cursor-pointer
+                                ${activeCandidateId === item.id ? "bg-blue-100 border-l-4 border-blue-400"
+                                    : "hover:bg-gray-100"}`}
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
@@ -255,7 +261,7 @@ export default function ProficiencyMetrics() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-blue-200 rounded-md p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200   ml-1">
                 {ScoresOpen && <PlotSelections selectedSort={selectedSort} />}
               </div>
             </div>

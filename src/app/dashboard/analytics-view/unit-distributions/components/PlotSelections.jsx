@@ -185,20 +185,20 @@ export default function PlotSelections() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {}}
-                title="Create Material"
+                title="Reset"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 <RefreshCw
-                  className="w-4 h-4 hover:text-green-600"
+                  className="w-4 h-4 hover:text-blue-800"
                   onClick={() => setScoreAdd(true)}
                 />
               </button>
               <button
                 onClick={handleDeleteCurve}
-                title="Delete Curve"
+                title="Export"
                 className="text-red-600 hover:text-red-800 cursor-pointer"
               >
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                <FolderOutput className="w-4 h-4 hover:text-red-800" />
               </button>
             </div>
           </div>
@@ -240,20 +240,20 @@ export default function PlotSelections() {
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
+                  className={`px-3 py-1 text-sm  cursor-pointer ${
                     activeAdjustPropertieTab === "Property editor"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "hover:bg-gray-100"
+                      ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                   }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${
+                  className={`px-3 py-1 text-sm  cursor-pointer ${
                     activeAdjustPropertieTab === "Table"
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "hover:bg-gray-100"
+                      ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                   }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
                 >

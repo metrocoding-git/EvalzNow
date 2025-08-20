@@ -1,182 +1,84 @@
 "use client";
-import { useState } from "react";
-import { Edit, X } from "lucide-react";
+import { Edit } from "lucide-react";
+import React, { useState } from "react";
 
-const ClientEditor = ({ onClose }) => {
-  const [material, setMaterial] = useState({
-    name: "material1",
-    id: 1,
-    color: "#A05252",
-    defined: true,
-    cardImage: "MAT1",
-    comments: "Hide In Menu/Export",
-    E: 210000.0,
-    G: 80769.2,
-    NU: "",
-    RHO: "7.85e-09",
-    A: "",
-    TREF: "",
-    GE: "",
-    ST: "",
-  });
+export default function ClientEditor({ client }) {
+  const [valueOption, setValueOption] = useState("Omit Candidate");
+  const [selectedPpId, setSelectedPpId] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setMaterial({
-      ...material,
-      [name]: type === "checkbox" ? checked : value,
-    });
+  const availablePpIds = ["PP101", "PP102", "PP103", "PP104"];
+
+  // Sample client if not passed
+  const sampleClient = client || {
+    firstName: "John",
+    lastName: "Doe",
+    id: "001",
   };
 
   return (
-
-    <div className="border-2 border-blue-500 rounded-md flex flex-col">
-      <div className="flex justify-between items-center bg-blue-100 px-4 py-2 border-b border-blue-300">
-        <div className="flex items-center gap-2 text-blue-800 font-semibold">
-          <Edit className="w-5 h-5" />
-          Entity Editor - Client
+    <div className="h-full flex flex-col bg-white">
+      {/* Section Header */}
+      <div className="flex items-center bg-gray-100 px-4 py-1.5 border-b border-gray-300">
+        <div className="flex items-center gap-2 text-black font-semibold text-sm">
+            <Edit className="w-4 h-4" />
+            Entity Editor
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700 text-sm hover:bg-red-100 rounded-full p-1 cursor-pointer">
-          <X className="w-4 h-4 " />
-        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 text-xs p-2">
-        {/* <label className="col-span-1">Solver Keyword:</label>
-        <input
-          disabled
-          value="MAT1"
-          className="col-span-1 border px-2 py-1 bg-gray-100"
-        />
+      <div className="flex-1 overflow-y-auto px-3 py-2 text-sm">
+        {/* Candidate Info */}
+        <div className="flex flex-col gap-1 text-xs p-2">
+          <p>Last Name: {sampleClient.lastName}</p>
+          <p>First Name: {sampleClient.firstName}</p>
+          <p>Candidate ID: {sampleClient.id}</p>
+        </div>
 
-        <label>Name:</label>
-        <input
-          name="name"
-          value={material.name}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
+        {/* Value Selection */}
+        <div className="gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">Value</label>
+          <select
+            value={valueOption}
+            onChange={(e) => setValueOption(e.target.value)}
+            className="border px-2 py-1 w-full"
+          >
+            <option>Omit Candidate</option>
+            <option>Candidate Average</option>
+            <option>Available +PP ID Listings</option>
+          </select>
+        </div>
 
-        <label>ID:</label>
-        <input
-          name="id"
-          value={material.id}
-          onChange={handleChange}
-          type="number"
-          className="border px-2 py-1"
-        />
+        {/* Conditionally render PP ID selector */}
+        {valueOption === "Available +PP ID Listings" && (
+          <div className="gap-1 text-xs p-2">
+            <label className="block font-medium text-gray-700 mb-1">
+              Select PP ID
+            </label>
+            <select
+              value={selectedPpId}
+              onChange={(e) => setSelectedPpId(e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="">-- Select PP ID --</option>
+              {availablePpIds.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+          </div>
+        )} 
+        
+        {/* Buttons */} 
+        <div className="col-span-2 pt-4 flex justify-end gap-2"> 
+          <button type="button" className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors"
+           onClick={() => { 
+            // Save form data here if needed 
+             console.log("Saving client data:", form); }}  > 
+             Cancel 
+          </button> 
+        </div>
 
-        <label>Color:</label>
-        <input
-          name="color"
-          value={material.color}
-          onChange={handleChange}
-          type="color"
-          className="h-8"
-        />
-
-        <label>Include:</label>
-        <input
-          value="[Main Model]"
-          disabled
-          className="border px-2 py-1 bg-gray-100"
-        />
-
-        <label>Defined:</label>
-        <input
-          id="defined"
-          type="checkbox"
-          name="defined"
-          checked={material.defined}
-          onChange={handleChange}
-          className="w-4 h-4 mt-0.5"
-        />
-
-        <label>Card Image:</label>
-        <select
-          name="cardImage"
-          value={material.cardImage}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        >
-          <option value="MAT1">MAT1</option>
-        </select>
-
-        <label>User Comments:</label>
-        <input
-          name="comments"
-          value={material.comments}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>E:</label>
-        <input
-          name="E"
-          value={material.E}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>G:</label>
-        <input
-          name="G"
-          value={material.G}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>NU:</label>
-        <input
-          name="NU"
-          value={material.NU}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>RHO:</label>
-        <input
-          name="RHO"
-          value={material.RHO}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>A:</label>
-        <input
-          name="A"
-          value={material.A}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>TREF:</label>
-        <input
-          name="TREF"
-          value={material.TREF}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>GE:</label>
-        <input
-          name="GE"
-          value={material.GE}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        />
-
-        <label>ST:</label>
-        <input
-          name="ST"
-          value={material.ST}
-          onChange={handleChange}
-          className="border px-2 py-1"
-        /> */}
       </div>
-
     </div>
   );
-};
-
-export default ClientEditor;
+}
