@@ -56,6 +56,17 @@ export const getUnitById = async (id) => {
   }
 };
 
+// Get unit by ID
+export const getUniRostertByUnitId = async (id) => {
+  try {
+    const response = await api.get(`${API_ROUTES.ROSTER}/unit/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching unit:", error);
+    throw error;
+  }
+};
+
 // Get unit benchmarks
 export const getUnitBenchmarks = async (unitId) => {
   try {

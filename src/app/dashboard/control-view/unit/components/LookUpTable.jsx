@@ -4,7 +4,7 @@ import { getAllCandidates } from "@/services/candidateService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-export default function SearchLookup({ onClose, onSelect }) {
+export default function SearchLookup({ onClose, onSelect, existingCandidates = [], selectedUnit, unitRosterData = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -100,7 +100,7 @@ useEffect(() => {
 }, []);
 
   // Filter data based on search term
-  const filteredData = candidateData.filter(candidate =>
+  const filteredData = existingCandidates.filter(candidate =>
     candidate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     candidate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     candidate.candidateId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,6 +139,26 @@ useEffect(() => {
       searchInputRef.current.focus();
     }
   }, []);
+
+
+  // Function to create unit roster data structure
+  const createUnitRosterData = (candidates) => {
+    return candidates.map(candidate => ({
+      unitId: selectedUnit?.id || selectedUnit?.unitId,
+      candidate: candidate,
+      candidateId: candidate.id,
+      // Add default values for attendance fields
+      presentCount: 0,
+      excusedAbsences: 0,
+      unexcusedAbsences: 0,
+      excusedTardies: 0,
+      unexcusedTardies: 0,
+      unitOutcome: "Ongoing",
+      // You can add other unit roster specific fields here
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+  };
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-center z-50">
@@ -238,7 +258,7 @@ useEffect(() => {
               {sortedData.map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={`grid grid-cols-5 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${selectedIds.includes(candidate.id) ? "bg-gray-100" : "hover:bg-gray-50"}`}
+                  className={`grid grid-cols-5 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${selectedIds.includes(candidate.id) ? "bg-gray-200" : "hover:bg-gray-100"}`}
                   onClick={() => toggleSelect(candidate.id)}
                 >
                   <div className="text-sm font-medium text-gray-900 truncate">
@@ -271,16 +291,18 @@ useEffect(() => {
             type="button"
             onClick={() => {
               // Find selected candidates
-              const selectedCandidates = candidateData.filter(c =>
-                selectedIds.includes(c.id)
+              // Find the selected unit roster entries (real data)
+              const selectedUnitRosterEntries = unitRosterData.filter(ur =>
+                selectedIds.includes(ur.candidate.id)
               );
-              console.log("Selected Candidates:", selectedCandidates);
-          
-              // Optionally pass them back to parent
-              if (onSelect) {
-                onSelect(selectedCandidates);
+
+              console.log("Selected Unit Roster Entries:", selectedUnitRosterEntries);
+
+              // Pass the real unit roster data back to parent
+              if (onSelect && selectedUnitRosterEntries.length > 0) {
+                onSelect(selectedUnitRosterEntries);
               }
-          
+
               // Close the modal
               onClose();
             }}

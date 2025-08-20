@@ -1,17 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
+import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 
 
-export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, }) {
+export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
+  selectedUnit  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
 
   const [showCreateBlockForm, setShowCreateBlockForm] = useState(false);
+  const [displayRosterData, setDisplayRosterData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [assessmentBlocks, setAssessmentBlocks] = useState([]);
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
@@ -19,12 +26,20 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   const [visible, setVisible] = useState(true);
 
   const handlePointChange = (index, field, value) => {
-    const updated = [...points];
-    updated[index][field] = value;
-    setPoints(updated);
+    // Update the specific roster entry
+    setDisplayRosterData(prev => {
+      const updated = [...prev];
+      if (updated[index]) {
+        updated[index] = {
+          ...updated[index],
+          [field]: value
+        };
+      }
+      return updated;
+    });
   };
 
-
+  
   const toggleRowSelection = (index) => {
     // setSelectedRow((prev) =>
     //   prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
@@ -37,6 +52,26 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     // setPoints(updated);
     setSelectedEntityRows([]); // reset selection
   };
+
+  // Fetch all units on mount
+  useEffect(() => {
+    const fetchBlockByUnitId = async () => {
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitId(selectedUnit.id);
+        setAssessmentBlocks(Array.isArray(blocks) ? blocks : []);
+        console.log("Assessment Block", blocks);
+        // ❌ Missing: You're not storing the fetched data anywhere!
+      } catch (err) {
+        console.error("Failed to fetch units:", err);
+        setError("Failed to load units. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchBlockByUnitId();
+  }, [selectedUnit.id]);
 
   const handleBlockManagerDeleteCurve = () => {
     // const updated = points.filter((_, index) => !selectedRow.includes(index));
@@ -67,12 +102,13 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
 
   };
 
-  const handleCandidateSelect = (candidate) => {
-    console.log("Selected candidate:", candidate);
+  const handleCandidateSelect = (newUnitRosterEntries) => {
+    console.log("Selected candidate in roster:", newUnitRosterEntries);
     // Here, handle the selected candidate:
     // - Add them to the roster
     // - Fill in the form fields
     // - Store the selection for further processing
+    setDisplayRosterData(newUnitRosterEntries);
     setShowSearchLookup(false);
   };
 
@@ -84,6 +120,15 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     );
   };
 
+   // Extract candidate data from unit roster
+   const existingCandidates = unitRosterData
+   .filter(rosterItem => rosterItem.candidate)
+   .map(rosterItem => rosterItem.candidate);
+
+   const filteredAssessmentBlocks = assessmentBlocks.filter(block => 
+    block.manageType === activeTab
+  );
+   
 
   if (!visible) return null;
 
@@ -144,19 +189,18 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 </tr>
               </thead>
               <tbody>
-                {points.map((point, index) => {
-                  const present = parseInt(point.present || 0);
-                  const excusedAbs = parseInt(point.excusedAbs || 0);
-                  const unexcusedAbs = parseInt(point.unexcusedAbs || 0);
-                  const excusedTardy = parseInt(point.excusedTardy || 0);
-                  const unexcusedTardy = parseInt(point.unexcusedTardy || 0);
+                {displayRosterData.map((rosterItem, index) => {
 
-                  const total =
-                    present +
-                    excusedAbs +
-                    unexcusedAbs +
-                    excusedTardy +
-                    unexcusedTardy;
+                const candidate = rosterItem.candidate || {};
+                // const isSelected = selectedEntitiyRows.includes(index);
+
+                const present = parseInt(rosterItem.presentCount || 0);
+                const excusedAbs = parseInt(rosterItem.excusedAbsences || 0);
+                const unexcusedAbs = parseInt(rosterItem.unexcusedAbsences || 0);
+                const excusedTardy = parseInt(rosterItem.excusedTardies || 0);
+                const unexcusedTardy = parseInt(rosterItem.unexcusedTardies || 0);
+
+                const total = present + excusedAbs + unexcusedAbs + excusedTardy + unexcusedTardy;
 
                   const isSelected = selectedEntitiyRows.includes(index);
                   return (
@@ -165,21 +209,24 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                       <td className="border  text-center">{index + 1}</td>
                       <td className="border ">
                         <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {point.lastName || "last name"}
+                          {candidate.lastName || "last name"}
                         </span>
                       </td>
                       <td className="border p-1">
                         <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {point.firstName || "first name"}
+                          {candidate.firstName || "first name"}
                         </span>
                       </td>
                       <td className="border p-1">
                         <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {point.candidateID || "candidate ID"}
+                          {candidate.candidateId || "candidate ID"}
                         </span>
                       </td>
                       <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5">
+                        <select className="w-full border px-2 py-0.5" value={rosterItem.unitOutcome || "0"}
+                          onChange={(e) =>
+                            handlePointChange(index, "unitOutcome", e.target.value)
+                          }>
                           <option>Ongoing</option>
                           <option>Pass</option>
                           <option>Fail</option>
@@ -189,7 +236,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                         <input
                           type="number"
                           min="0"
-                          value={point.present || ""}
+                          value={rosterItem.presentCount || "0"}
                           onChange={(e) =>
                             handlePointChange(index, "present", e.target.value)
                           }
@@ -200,7 +247,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                         <input
                           type="number"
                           min="0"
-                          value={point.excusedAbs || ""}
+                          value={rosterItem.excusedAbsences || "0"}
                           onChange={(e) =>
                             handlePointChange(
                               index,
@@ -215,7 +262,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                         <input
                           type="number"
                           min="0"
-                          value={point.unexcusedAbs || ""}
+                          value={rosterItem.unexcusedAbsences || "0"}
                           onChange={(e) =>
                             handlePointChange(
                               index,
@@ -230,7 +277,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                         <input
                           type="number"
                           min="0"
-                          value={point.excusedTardy || ""}
+                          value={rosterItem.excusedTardies || "0"}
                           onChange={(e) =>
                             handlePointChange(
                               index,
@@ -245,7 +292,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                         <input
                           type="number"
                           min="0"
-                          value={point.unexcusedTardy || ""}
+                          value={rosterItem.unexcusedTardies || "0"}
                           onChange={(e) =>
                             handlePointChange(
                               index,
@@ -478,6 +525,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
         <SearchLookup
           onClose={() => setShowSearchLookup(false)}
           onSelect={handleCandidateSelect}
+          existingCandidates={existingCandidates}
+          selectedUnit={selectedUnit}
+          unitRosterData={unitRosterData}
         />
       )}
 
