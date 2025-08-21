@@ -33,7 +33,7 @@ export default function ClientEditor({ client, onClose }) {
 
    return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center bg-gray-100 px-4 py-1.5 border-2 border-gray-200">
+      <div className="flex items-center bg-gray-100 px-4 py-1.5 border-1 border-gray-200">
         <div className="flex items-center gap-2 text-black font-semibold text-sm">
           <Edit className="w-4 h-4" />
           Entity Editor

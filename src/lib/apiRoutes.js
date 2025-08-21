@@ -8,4 +8,6 @@ export const API_ROUTES = {
     CANDIDATE: "/candidates",
     UNIT: "/units",
     ROSTER: "/unit_roster",
+    ETHINICITY: "/ethinicity",
+    ASSESSMENTMANAGER: "/assessment_block_manager"
 };

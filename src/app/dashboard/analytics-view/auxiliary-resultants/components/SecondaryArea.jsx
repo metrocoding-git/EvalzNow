@@ -13,6 +13,10 @@ const SecondaryInputForm = ({ onClose }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  // Sample effort values
+  const csdEffort = "1.234";
+  const usdEffort = "5.678";
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
@@ -56,22 +60,7 @@ const SecondaryInputForm = ({ onClose }) => {
         <div className=" gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
-          </label>
-
-          
-          {/* <DatePicker className="border px-2 py-1 w-full"
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              setStartDate(start);
-              setEndDate(end);
-            }}
-            isClearable
-            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
-            /> */}
-          
+          </label>          
 
           <div className="flex gap-2 w-full items-center">
             <span>From: </span>
@@ -92,6 +81,30 @@ const SecondaryInputForm = ({ onClose }) => {
           </div>
         </div>
 
+        {/* Effort Fields */}
+        <div className="gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">
+            Effort - CSD
+          </label>
+          <input
+            type="text"
+            value={csdEffort}
+            disabled
+            className="border px-2 py-1 w-full  text-gray-600"
+          />
+        </div>
+
+        <div className="gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">
+            Effort - USD
+          </label>
+          <input
+            type="text"
+            value={usdEffort}
+            disabled
+            className="border px-2 py-1 w-full text-gray-600"
+          />
+        </div>
         
 
         {/* Threshold Toggle */}

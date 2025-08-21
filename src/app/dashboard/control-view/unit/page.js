@@ -24,7 +24,7 @@ import UnitRoster from "./components/UnitRoster";
 import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
 import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unitService";
 import { getAllCandidates } from "@/services/candidateService";
-import { getAllUnitRoster } from "@/services/unitRosterService";
+import { getAllUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -119,7 +119,7 @@ export default function UnitControl() {
         }, []);
         
         setCandidateList(uniqueCandidates);
-        console.log(uniqueCandidates);
+        // console.log(uniqueCandidates);
       } catch (err) {
         console.error("Failed to fetch candidates:", err);
         setError("Failed to load candidates. Please try again.");
@@ -130,6 +130,29 @@ export default function UnitControl() {
 
     fetchUnitRoster();
   }, []);
+
+
+  // Fetch all candidates on mount
+  // Fetch unit roster by unit ID when selectedUnit changes
+  useEffect(() => {
+    const fetchUnitRosterByUnitId = async () => {
+      if (!selectedUnit?.id) return;
+      
+      try {
+        setLoading(true);
+        const data = await getUniRostertByUnitId(selectedUnit.id);
+        setUnitRosterData(Array.isArray(data) ? data : []);
+        console.log("Unit Roster Data:", data);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUnitRosterByUnitId();
+  }, [selectedUnit?.id]);
 
   // Create candidate
   const handleCreate = async (newUnit) => {
@@ -291,6 +314,11 @@ export default function UnitControl() {
     }
   };
 
+  // Add this computed value to get filtered roster data
+  const filteredUnitRosterData = unitRosterData.filter(roster => 
+    roster.unitId === selectedUnit?.id || 
+    roster.unit?.id === selectedUnit?.id
+  );
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -397,25 +425,10 @@ export default function UnitControl() {
         
           </div>
 
-
+          {/* <div className=""> */}
           {!showAdd && showUnitRoster && (
-            <div className=" pb-1">
-              {/* Candidate List */}
-              <div className="max-h-40 overflow-y-auto">
-                {unitRosterData
-                  .filter(roster => roster.unitId === selectedUnit?.id)
-                  .map((rosterItem, index) => (
-                    <div 
-                      key={index}
-                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
-                    >
-                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
-                    </div>
-                  ))
-                }
-              </div>
+            <div className=" pb-1 flex-1 overflow-auto">
+              
 
               {/* Unit Details (smaller and less prominent) */}
               <div className="items-center justify-center px-4 mt-1">
@@ -437,8 +450,26 @@ export default function UnitControl() {
                   </span>
                 </div>
               </div>
+
+              {/* Candidate List */}
+              <div className="max-h-40 overflow-y-auto">
+                {unitRosterData
+                  .filter(roster => roster.unitId === selectedUnit?.id)
+                  .map((rosterItem, index) => (
+                    <div 
+                      key={index}
+                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
+                    >
+                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                    </div>
+                  ))
+                }
+              </div>
             </div>
           )}
+          {/* </div> */}
 
           {/* List Toggle */}
           {!showUnitRoster && (
@@ -456,7 +487,7 @@ export default function UnitControl() {
                   Units ({dataList.length})
                 </p>
               </div>
-              <div className="items-center justify-center px-4">
+              {/* <div className="items-center justify-center px-4">
                 <div className="border border-gray-200 p-1">
                   <span className="text-sm text-gray-600">
                     Unit Name: {selectedUnit?.unitName || "N/A"}
@@ -474,7 +505,7 @@ export default function UnitControl() {
                     Signature Profile: {selectedUnit?.signatureProfile || "N/A"}
                   </span>
                 </div>
-              </div>
+              </div> */}
 
               {showList &&
                 sortedDataList.map((item, index) => {
@@ -691,7 +722,9 @@ export default function UnitControl() {
 
         {!showAdd && showUnitRoster && (
           <div className="h-full overflow-auto">
-            <UnitRoster activeTab={activeTab} setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit} />
+            <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit}
+            unitRosterData={filteredUnitRosterData} // Pass filtered data
+            selectedUnit={selectedUnit}   />
           </div>
         )}
       </div>

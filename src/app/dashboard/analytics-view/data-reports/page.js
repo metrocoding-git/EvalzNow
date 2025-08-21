@@ -79,7 +79,7 @@ export default function DataReports() {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden  border-1 border-gray-300">
+      <div className="h-full flex flex-col overflow-hidden  ">
         {/* Tab buttons */}
         {/* <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
           <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
@@ -101,13 +101,13 @@ export default function DataReports() {
           </div>
         </div> */}
         {/* Active tab content */}
-        <div className="flex-1 overflow-auto bg-white border border-t-0 border-gray-300 p-1">
+        <div className="flex-1 overflow-auto bg-white m-1">
           <div className="flex flex-col h-full">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 ">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-2/4">
+                <div className="flex-grow  flex flex-col h-2/4">
                   {/* Header */}
                   <div className="flex flex-col bg-gray-100 px-4 py-1.5 gap-2 border-b border-gray-300">
                     <div className="relative w-full ">
@@ -221,7 +221,7 @@ export default function DataReports() {
 
               {/* Right Panel */}
               {RightPanelOpen && (
-                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col  border-2 h-full border-gray-200 ">
+                <div className="w-6/12 lg:w-9/12 bg-white flex flex-col  border-2 ml-1 h-full border-gray-200 ">
                   <div className="flex-1 flex flex-col items-center  h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
                     {/* Report Extraction Options */}
 

@@ -29,9 +29,10 @@ export default function ScoringTrends() {
   const [showSecondary, setShowSecondary] = useState(true);
   const [ScoresOpen, setScoresOpen] = useState(false);
   const [openMenu, setopenMenu] = useState(true);
-  const [sortKey, setSortKey] = useState("lastName");
+  const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [activeCandidateId, setActiveCandidateId] = useState(null);
+  
+  
 
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -45,6 +46,10 @@ export default function ScoringTrends() {
     { id: 9, firstName: "Grace", lastName: "Wilson" },
     { id: 10, firstName: "Henry", lastName: "Moore" },
   ];
+
+  const [activeCandidateId, setActiveCandidateId] = useState(
+    data.length > 0 ? data[0].id : null
+  );
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -69,14 +74,14 @@ export default function ScoringTrends() {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden p-1 border-1 border-gray-800"> 
+      <div className="h-full flex flex-col overflow-hidden p-1 "> 
         {/* Active tab content */}
-        <div className="flex-1 flex flex-col h-full overflow-auto bg-white border border-t-0 border-gray-300">
+        <div className="flex-1 flex flex-col h-full overflow-auto bg-white">
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 ">
-                <div className="flex-grow border-2 border-gray-300 flex flex-col h-1/2">
+                <div className="flex-grow flex flex-col h-1/2">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -155,6 +160,7 @@ export default function ScoringTrends() {
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
+                                  setActiveCandidateId(item.id); // ✅ mark candidate as active
                                 }}
                                 onDoubleClick={() => {
                                   setScoresOpen(true);
@@ -188,7 +194,7 @@ export default function ScoringTrends() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-2 h-full border-gray-200 p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200  ml-1">
                 {ScoresOpen && <PlotSelections />}
               </div>
             </div>
