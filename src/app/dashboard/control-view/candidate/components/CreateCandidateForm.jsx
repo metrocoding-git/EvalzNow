@@ -1,5 +1,5 @@
 "use client";
-import { ListFilterPlus, Plus, X } from "lucide-react";
+import { ListFilterPlus, Plus, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
@@ -225,7 +225,22 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
                         placeholder="Max 40 characters"
                       />
                     </td>
+
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedRows = rows.filter((_, i) => i !== index);
+                          setRows(updatedRows);
+                        }}
+                        className="px-2 py-1 text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
+
+                  
                 ))}
               </tbody>
             </table>

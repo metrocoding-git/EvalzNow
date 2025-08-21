@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   X,
@@ -51,6 +51,12 @@ export default function ScoringTrends() {
     data.length > 0 ? data[0].id : null
   );
 
+  useEffect(() => {
+    if (activeCandidateId) {
+      setScoresOpen(true);
+    }
+  }, [activeCandidateId]);
+
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -59,6 +65,7 @@ export default function ScoringTrends() {
       setSortOrder("asc");
     }
   };
+  
 
   const sortedData = [...data].sort((a, b) => {
     if (sortKey === "id") {

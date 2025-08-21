@@ -342,10 +342,10 @@ export default function PlotSelections() {
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
         <span className="pl-2 text-md">Plot Selections</span>
-        <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
+        
       </h2>
-      <div className="flex h-full w-full my-2">
-        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1">
+      <div className="flex h-full w-full my-2 mx-1">
+        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1">
           <div className="flex items-center justify-between px-1 mx-1  text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export default function PlotSelections() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1">
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 

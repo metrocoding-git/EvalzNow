@@ -18,6 +18,7 @@ import CandidateEditor from "./components/CandidateEditor";
 import CreateCandidateForm from "./components/CreateCandidateForm";
 import ReviewCandidate from "./components/ReviewCandidate";
 import { createCandidate, deleteCandidate, getAllCandidates } from "@/services/candidateService";
+import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicity } from "@/services/ethinictyService";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -72,6 +73,25 @@ export default function CandidateControl() {
 
     fetchCandidates();
   }, []);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchEthnicity = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllEthinicities();
+        setEthnicities(data.map(e => e.name)); // assuming backend returns {id, name}
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEthnicity();
+  }, []);
+  
+
 
   // Create candidate
   const handleCreate = async (newCandidate) => {
@@ -159,6 +179,51 @@ export default function CandidateControl() {
       setError("Failed to delete candidate.");
     }
   };
+
+  const handleEthnicityChange = async (idx, value) => {
+    const updated = [...ethnicities];
+    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
+    setEthnicities(updated);
+  
+    try {
+      // If existing (has id) → update
+      if (updated[idx].id) {
+        await updateEthinicity(updated[idx].id, { name: value });
+      } 
+      // Else → create new
+      else if (value.trim() !== "") {
+        const created = await createEthinicity({ name: value });
+        updated[idx] = created; // replace with saved object (with ID)
+        setEthnicities([...updated]);
+      }
+    } catch (err) {
+      console.error("Failed to save ethnicity:", err);
+    }
+  };
+  
+  
+  const handleEthnicityDelete = async (idx) => {
+    const eth = ethnicities[idx];
+  
+    try {
+      // Only delete from backend if it has an ID
+      if (eth.id) {
+        await deleteEthinicity(eth.id);
+      }
+  
+      // Remove from state
+      setEthnicities(ethnicities.filter((_, i) => i !== idx));
+    } catch (err) {
+      console.error("Failed to delete ethnicity:", err);
+    }
+  };
+
+  const handleAddEthnicity = () => {
+    setEthnicities([...ethnicities, { name: "" }]); // no id yet
+  };
+  
+
+  
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -321,22 +386,14 @@ export default function CandidateControl() {
                           <input
                             type="text"
                             maxLength={25}
-                            value={eth}
-                            onChange={(e) => {
-                              const updated = [...ethnicities];
-                              updated[idx] = e.target.value;
-                              setEthnicities(updated);
-                            }}
+                            value={eth.name || ""}
+                            onChange={(e) => handleEthnicityChange(idx, e.target.value)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Ethnicity ${idx + 1}`}
                           />
                           <button
                             type="button"
-                            onClick={() =>
-                              setEthnicities(
-                                ethnicities.filter((_, i) => i !== idx)
-                              )
-                            }
+                            onClick={() => handleEthnicityDelete(idx)}
                             className="text-red-500 text-xs"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -346,7 +403,7 @@ export default function CandidateControl() {
                       {ethnicities.length < 10 && (
                         <button
                           type="button"
-                          onClick={() => setEthnicities([...ethnicities, ""])}
+                          onClick={handleAddEthnicity}
                           className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-sm text-gray-800"
                         >
                           + Add Ethnicity

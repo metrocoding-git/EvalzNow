@@ -263,7 +263,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
       </h2>
 
       {/* Scoring Criteria is only applicable to the 'Workforce' Environment otherwise disable it. */}
-      {environment !== 'classroom' && (
+      {environment !== 'Classroom' && (
         <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col">
           {/* Only hide the scoring criteria section when environment is classroom */}
           <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700">
@@ -320,7 +320,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         </div>
       )}
 
-      <div className={` ${environment === 'classroom' ? ' h-full' : 'h-1/2'} border border-gray-300 flex flex-col m-1`}>
+      <div className={` ${environment === 'Classroom' ? ' h-full' : 'h-1/2'} border border-gray-300 flex flex-col m-1`}>
         <div className=" flex flex-col h-full p-1">
           {/* Tab Buttons */}
           <div className="flex flex-col">
@@ -400,7 +400,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
           <div className="flex-1 p-2">
             {/* bottom table */}
-            {environment == 'workspace' && (
+            {environment == 'Workspace' && (
               <>
                 {activeTab === "Direct" && (
                   <div className="h-full overflow-auto border border-gray-200">
@@ -581,7 +581,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                 )}
               </>
             )}
-            {environment == 'classroom' && (
+            {environment == 'Classroom' && (
               <>
                 {activeTab === "Direct" && (
                   <div className="h-full overflow-auto border border-gray-200">

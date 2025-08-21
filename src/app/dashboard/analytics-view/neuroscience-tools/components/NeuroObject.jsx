@@ -110,7 +110,13 @@ export default function NeuroObject({onClose}) {
                 <tr key={idx} className="hover:bg-blue-50">
                     
                     <td className="border border-gray-300 px-3 py-2">{row.func}</td>
-                    <td className="border border-gray-300 px-3 py-2"><input type="text" className="border border-gray-300"/></td>
+                    <td className="border border-gray-300 px-3 py-2">
+                      <select className="border border-gray-300 px-2 py-1">
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </td>
                 </tr>
                 ))}
             </tbody>

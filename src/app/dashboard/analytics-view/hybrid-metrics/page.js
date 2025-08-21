@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   X,
@@ -53,6 +53,12 @@ export default function HybridMetrics() {
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  useEffect(() => {
+    if (activeCandidateId) {
+      setScoresOpen(true);
+    }
+  }, [activeCandidateId]);
 
   const [openMenu, setopenMenu] = useState(true);
 
