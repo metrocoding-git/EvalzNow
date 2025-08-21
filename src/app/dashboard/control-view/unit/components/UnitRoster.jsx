@@ -4,11 +4,11 @@ import React, { useEffect, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
-import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { deleteAssessmentBlock, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit  }) {
+  selectedUnit, onBlockSelect  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
@@ -19,6 +19,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   const [error, setError] = useState(null);
 
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
+  const [selectedBlock, setSelectedBlock] = useState(null);
+
+
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
@@ -81,26 +84,35 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   };
 
   const moveRowUp = () => {
-    // if (selectedRow.length !== 1) return;
-
-    // if (index === 0) return;
-
-    const updated = [...points];
-    // [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
-    // setPoints(updated);
-    setSelectedRow(selectedRow - 1);
+    if (selectedRow === null || selectedRow === 0) return;
+  
+    // Find the block in full list
+    const blockToMove = filteredAssessmentBlocks[selectedRow];
+    const globalIndex = assessmentBlocks.findIndex(b => b.id === blockToMove.id);
+  
+    if (globalIndex > 0) {
+      const updated = [...assessmentBlocks];
+      [updated[globalIndex - 1], updated[globalIndex]] = [updated[globalIndex], updated[globalIndex - 1]];
+      setAssessmentBlocks(updated);
+      setSelectedRow(selectedRow - 1);
+    }
   };
-
+  
   const moveRowDown = () => {
-    // if (selectedRow.length !== 1) return;
-    // if (index === points.length - 1) return;
-
-    const updated = [...points];
-    // [updated[index + 1], updated[index]] = [updated[index], updated[index + 1]];
-    // setPoints(updated);
-    setSelectedRow(selectedRow + 1);
-
+    if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
+  
+    // Find the block in full list
+    const blockToMove = filteredAssessmentBlocks[selectedRow];
+    const globalIndex = assessmentBlocks.findIndex(b => b.id === blockToMove.id);
+  
+    if (globalIndex < assessmentBlocks.length - 1) {
+      const updated = [...assessmentBlocks];
+      [updated[globalIndex + 1], updated[globalIndex]] = [updated[globalIndex], updated[globalIndex + 1]];
+      setAssessmentBlocks(updated);
+      setSelectedRow(selectedRow + 1);
+    }
   };
+  
 
   const handleCandidateSelect = (newUnitRosterEntries) => {
     console.log("Selected candidate in roster:", newUnitRosterEntries);
@@ -120,6 +132,18 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     );
   };
 
+
+  const handleRowClick = (block, index) => {
+    setSelectedRow(index);
+    setSelectedBlock(block);   
+    setShowEditBlockManager(true);
+    setShowEdit(false);
+
+    if (onBlockSelect) {
+      onBlockSelect(block);
+    }
+  };
+
    // Extract candidate data from unit roster
    const existingCandidates = unitRosterData
    .filter(rosterItem => rosterItem.candidate)
@@ -128,6 +152,31 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
    const filteredAssessmentBlocks = assessmentBlocks.filter(block => 
     block.manageType === activeTab
   );
+
+    const handleDeleteBlock = async () => {
+      if (selectedRow === null) return; // no row selected
+    
+      try {
+        const blockToDelete = filteredAssessmentBlocks[selectedRow];
+        if (!blockToDelete) return;
+    
+        // Call API to delete
+        await deleteAssessmentBlock(blockToDelete.id);
+    
+        // Remove from local state
+        setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
+    
+        // Reset selection
+        setSelectedRow(null);
+        setShowEditBlockManager(false);
+    
+        console.log("Deleted block:", blockToDelete.id);
+      } catch (err) {
+        console.error("Failed to delete block:", err);
+        alert("Failed to delete block. Please try again.");
+      }
+    };
+  
    
 
   if (!visible) return null;
@@ -135,9 +184,20 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   return (
     <div className="flex flex-col h-full">
      
-      <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
+      <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200 relative">
         <span className="pl-2 text-md text-gray-800">Unit Config</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
+        
+        {showCreateBlockForm && (
+          <div className="absolute top-0 left-0  z-50 h-[250px] bg-white shadow-2xl border border-gray-200 rounded-md">
+            <CreateBlockManagerForm
+              onClose={() => setShowCreateBlockForm(false)}
+              unitId={selectedUnit.id}
+              activeTab={activeTab}
+            />
+          </div>
+        )}
+          
       </h2>
 
        {/* Unit Roster */}
@@ -314,7 +374,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       </div>
 
       {/* Assessment Block Manager */}
-      <div className=" h-1/2 overflow-hidden   flex flex-col m-1 ">
+      <div className=" h-1/2 overflow-hidden flex flex-col m-1 ">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
             <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
@@ -330,19 +390,14 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 </button>
 
 
-                {selectedRow && (
+                {selectedRow !== null && (
                   <button
                     className="p-1.5 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
-                    onClick={() => {
-                      // handleDelete(contextMenu.selectedUnit.id);
-                      // setContextMenu((prev) => ({ ...prev, visible: false }));
-                      handleBlockManagerDeleteCurve();
-                    }}
+                    onClick={handleDeleteBlock}
                   >
                     <span className="flex items-center gap-2 ">
                       <Trash2 className="w-3.5 h-3.5 " />
                     </span>
-
                   </button>
                 )}
 
@@ -362,7 +417,6 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                 >
                   <ArrowDown className="w-3.5 h-3.5" />
                 </button>
-
 
 
               </div>
@@ -396,9 +450,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
           {/* Tab Content */}
           <div className="flex-1 p-2">
             {activeTab === "Direct" && (
-              <div className="max-h-60 overflow-auto border border-gray-200">
-                <table className="w-full text-left text-xs mb-7">
-                  <thead className="bg-gray-100">
+              <div className="max-h-60 flex-1 overflow-y-auto border border-gray-200">
+                <table className="w-full text-left text-xs mb-7 border-collapse">
+                  <thead className="bg-gray-100 sticky top-0 z-10">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
                       <th className="border p-1 text-center">Period Type</th>
@@ -407,8 +461,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                     </tr>
                   </thead>
                   <tbody>
-                    {points.map((_, index) => (
-                      <tr className={`hover:bg-gray-50 cursor-pointer ${selectedRow === +index && 'bg-gray-100'} `} key={`direct-${index}`} onClick={() => { toggleRowSelection(+index); setShowEditBlockManager(true); setShowEdit(false) }}>
+                    {filteredAssessmentBlocks.map((block, index) => (
+                      <tr className={`hover:bg-gray-50 cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `} key={`direct-${block.id}`}
+                        onClick={() => handleRowClick(block, index)}>
                         {/* <td className="border flex justify-between p-1 text-center">
                           <input
                             type="checkbox"
@@ -418,36 +473,10 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                           />
                           +{index + 1}
                         </td> */}
-                        <td className="border flex justify-between p-1 text-center">
-
-                          +{index + 1}
-                        </td>
-
-                        <td className="border p-1">
-                          {/* <select className="w-full border px-2 py-0.5">
-                            {PERIOD_TYPES.map((type, i) => (
-                              <option key={`direct-period-${i}`}>{type}</option>
-                            ))}
-                          </select> */}
-                          Blended - Instructor
-                        </td>
-                        <td className="border p-1">
-                          {/* <input
-                            type="text"
-                            maxLength={50}
-                            placeholder="Short Description"
-                            className="w-full border px-2 py-0.5"
-                          /> */}
-                          Sample Short Description
-                        </td>
-                        <td className="border p-1">
-                          {/* <select className="w-full border px-2 py-0.5">
-                            {DIRECT_DELIVERY.map((d, i) => (
-                              <option key={`direct-delivery-${i}`}>{d}</option>
-                            ))}
-                          </select> */}
-                          During Unit Operations (practice)
-                        </td>
+                        <td className="border p-1 text-center">{block.ppId}</td>
+                        <td className="border p-1">{block.periodType}</td>
+                        <td className="border p-1">{block.shortDescription}</td>
+                        <td className="border p-1">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -456,9 +485,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
             )}
 
             {activeTab === "Indirect" && (
-              <div className="max-h-60 overflow-auto border border-gray-200">
-                <table className="w-full text-left text-xs mb-7">
-                  <thead className="bg-gray-50">
+              <div className="max-h-60 flex-1 overflow-y-auto border border-gray-200">
+                <table className="w-full text-left text-xs mb-7 border-collapse">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
                       <th className="border p-1 text-center">Period Type</th>
@@ -467,49 +496,15 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
                     </tr>
                   </thead>
                   <tbody>
-                    {points.map((_, index) => (
+                    {filteredAssessmentBlocks.map((block, index) => (
 
-                      <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === -index && 'bg-gray-100'} `} key={`indirect-${index}`} onClick={() => { toggleRowSelection(-index); setShowEditBlockManager(true); setShowEdit(false) }}>
+                      <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `}  key={`indirect-${block.id}`} 
+                        onClick={() => handleRowClick(block, index)}>
 
-                        <td className="border flex justify-between p-1 ">
-                          {/* <input
-                            type="checkbox"
-                            checked={selectedRow.includes(index)}
-                            onChange={() => toggleRowSelection(index)}
-                            className="mr-1"
-                          /> */}
-                          -{index + 1}
-                        </td>
-
-                        <td className="border p-1">
-                          {/* <select className="w-full border px-2 py-0.5">
-                            {PERIOD_TYPES.map((type, i) => (
-                              <option key={`indirect-period-${i}`}>
-                                {type}
-                              </option>
-                            ))}
-                          </select> */}
-                          Blended - Instructor
-                        </td>
-                        <td className="border p-1">
-                          {/* <input
-                            type="text"
-                            maxLength={50}
-                            placeholder="Short Description"
-                            className="w-full border px-2 py-0.5"
-                          /> */}
-                          Sample Description
-                        </td>
-                        <td className="border p-1">
-                          {/* <select className="w-full border px-2 py-0.5">
-                            {INDIRECT_DELIVERY.map((d, i) => (
-                              <option key={`indirect-delivery-${i}`}>
-                                {d}
-                              </option>
-                            ))}
-                          </select> */}
-                          Before Unit Operations (MISC)
-                        </td>
+                        <td className="border p-1 text-center">{block.ppId}</td>
+                        <td className="border p-1">{block.periodType}</td>
+                        <td className="border p-1">{block.shortDescription}</td>
+                        <td className="border p-1">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -530,18 +525,6 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
           unitRosterData={unitRosterData}
         />
       )}
-
-      {showCreateBlockForm && (
-        <div className="w-1/2 lg:w-9/12 bg-white mb-2">
-          <div className="h-full flex flex-col w-96">
-            <CreateBlockManagerForm
-              onClose={() => setShowCreateBlockForm(false)}
-              activeTab={activeTab}
-            />
-          </div>
-        </div>
-      )}
-
 
     </div>
   );

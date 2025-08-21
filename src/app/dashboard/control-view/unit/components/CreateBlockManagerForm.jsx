@@ -1,4 +1,5 @@
 "use client";
+import { createAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -61,15 +62,32 @@ const DIRECT_DELIVERY = [
 ];
 
 
-export default function CreateBlockManagerForm({ onClose, activeTab }) {
+export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
   const [form, setForm] = useState({
-    PeriodType: "",
-    ShortDescription: "",
-    Delivery: ""
+    periodType: "",
+    shortDescription: "",
+    delivery: ""
   });
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        unitId: unitId,                 // comes from Unit Roster page
+        manageType: activeTab,          // "Direct" or "Indirect"
+        periodType: form.periodType,
+        shortDescription: form.shortDescription,
+        delivery: form.delivery,
+      };
+
+      await createAssessmentBlock(payload);
+      onClose(); // close form after success
+    } catch (error) {
+      console.error("Error creating block:", error);
+    }
   };
 
 
@@ -100,9 +118,11 @@ export default function CreateBlockManagerForm({ onClose, activeTab }) {
               Period Type:
             </label>
             <div className="flex items-center gap-2">
-              <select className="w-full border px-2 py-0.5">
+              <select className="w-full border px-2 py-0.5" 
+                value={form.periodType}
+                onChange={(e) => handleChange("periodType", e.target.value)}>
                 {PERIOD_TYPES.map((type, i) => (
-                  <option key={`direct-period-${i}`}>{type}</option>
+                  <option key={`period-${i}`} value={type}>{type}</option>
                 ))}
               </select>
             </div>
@@ -117,58 +137,47 @@ export default function CreateBlockManagerForm({ onClose, activeTab }) {
               <input
                 type="text"
                 placeholder="Enter short description"
-                onChange={(e) => handleChange(key, e.target.value)}
+                value={form.shortDescription}
+                onChange={(e) => handleChange("shortDescription", e.target.value)}
                 className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
           </div>
 
           {/* Delivery */}
-          {activeTab === "Direct" && (
-            <div className="flex justify-between gap-2 space-y-1">
-              <label className="col-span-1 flex items-center text-gray-700">
-                Delivery:
-              </label>
-              <div className="flex items-center gap-2">
-                <select className="w-full border px-2 py-0.5">
-                  {DIRECT_DELIVERY.map((type, i) => (
-                    <option key={`direct-period-${i}`}>{type}</option>
-                  ))}
-                </select>
-              </div>
+          <div className="flex justify-between gap-2 space-y-1">
+            <label className="col-span-1 flex items-center text-gray-700">
+              Delivery:
+            </label>
+            <div className="flex items-center gap-2">
+              <select className="w-full border px-2 py-0.5" 
+                value={form.delivery}
+                onChange={(e) => handleChange("delivery", e.target.value)}>
+                  {(activeTab === "Direct" ? DIRECT_DELIVERY : INDIRECT_DELIVERY).map(
+                    (type, i) => (
+                      <option key={`delivery-${i}`} value={type}>
+                        {type}
+                      </option>
+                    )
+                  )}
+              </select>
             </div>
-          )}
+          </div>
 
-          {activeTab === "Indirect" && (
-            <div className="flex justify-between gap-2 space-y-1">
-              <label className="col-span-1 flex items-center text-gray-700">
-                Delivery:
-              </label>
-              <div className="flex items-center gap-2">
-                <select className="w-full border px-2 py-0.5">
-                  {INDIRECT_DELIVERY.map((type, i) => (
-                    <option key={`direct-period-${i}`}>{type}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
         </div>
       </div>
       {/*  Bottom Actions */}
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
-            type="button"
-            onClick={onClose}
+            type="submit"
+            onClick={handleSubmit}
             className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
           >
             Close
           </button>
         </div>
       </div>
-
-
 
     </div>
   );
