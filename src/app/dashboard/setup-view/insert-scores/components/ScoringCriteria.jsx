@@ -135,11 +135,11 @@ const scheduleImpacts = [
 const engageLevel = ["High", "Medium", "Low"];
 
 const competencyTypes = {
-  communicative: ["Listening", "Reading", "Speaking", "Writing"],
-  'theory practical': ["Practice", "Theory"],
-  'third parameter': ["Receptive", "Productive", "Acuity"],
-  // Add more types if needed
+  communicativeio: ["Listening", "Reading", "Speaking", "Writing"],
+  theorypractical: ["Practice", "Theory"],
+  thirdparameter: ["Receptive", "Productive", "Acuity"],
 };
+
 
 const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
@@ -153,10 +153,15 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
   });
 
   const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
+  const typeQuery = searchParams.get("type") || "Communicative I/O";
+  const environmentQuery = searchParams.get("environment") || "Classroom";
+
+  const type = typeQuery.toLowerCase().replace(/\s/g, ""); // "communicativeio"
+  const environment = environmentQuery; 
 
   // Get the appropriate competencies based on type
-  const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
+  const currentCompetencies = competencyTypes[type] || competencyTypes.communicativeio;
+
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

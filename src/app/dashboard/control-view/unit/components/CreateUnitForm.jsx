@@ -1,5 +1,5 @@
 "use client";
-import { ListFilterPlus, X } from "lucide-react";
+import { ListFilterPlus, Trash2, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import StaffLookup from "./StaffLookUp";
 import { getAllCandidates } from "@/services/candidateService";
@@ -527,6 +527,19 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
                         setForm((f) => ({ ...f, benchmarks: updated }));
                       }}
                     />
+                  </div>
+
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = form.benchmarks.filter((_, i) => i !== idx);
+                        setForm((f) => ({ ...f, benchmarks: updated }));
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
 
 

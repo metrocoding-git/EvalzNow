@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Edit } from "lucide-react";
 import { getUnitById, updateUnit } from "@/services/unitService";
+import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 
 
 
@@ -63,7 +64,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave }) => {
+const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
@@ -76,6 +77,15 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
     scoringSystem: "",
     benchmarks: []
   });
+
+  const [blockData, setBlockData] = useState({
+    ppId: "",
+    periodType: "",
+    shortDescription: "",
+    delivery: "",
+    manageType: "",
+  });
+  
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -113,6 +123,19 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
 
     fetchUnitData();
   }, [unitId]);
+
+  useEffect(() => {
+    if (selectedBlock) {
+      setBlockData({
+        ppId: selectedBlock.ppId || "",
+        periodType: selectedBlock.periodType || "",
+        shortDescription: selectedBlock.shortDescription || "",
+        delivery: selectedBlock.delivery || "",
+        manageType: selectedBlock.manageType || "",
+      });
+    }
+  }, [selectedBlock]);
+  
 
 
   const handleChange = (field, value) => {
@@ -153,6 +176,39 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
       setIsSubmitting(false);
     }
   };
+
+
+  const handleSaveBlock = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      if (!blockData || !selectedBlock) return;
+  
+      // Call API to update the block
+      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
+  
+      // Notify parent component
+      // onSave(savedBlock);
+      // console.log("Saved block:", savedBlock);
+      onClose();
+    } catch (err) {
+      console.error("Failed to update unit:", err);
+    
+      // Handle different error shapes
+      const message =
+        err.response?.data?.message || // Axios-like
+        err.data?.message ||           // your fetch API shape
+        err.message ||                 // generic JS error
+        "Failed to update unit";
+    
+      setError(message);
+    }
+  };
+  
+
+  
 
   return (
     <div className="h-full flex flex-col bg-white border border-gray-200">
@@ -266,17 +322,19 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
       )}
 
       {showEditBlockManager && (
-        <div className="flex-1 overflow-auto flex flex-col">
+        <form onSubmit={handleSaveBlock} className="flex-1 overflow-auto flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
-            <form className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
+            <div  className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
               {/* Period Type */}
 
               <label className="col-span-1 flex items-center text-gray-700">
                 Period Type:
               </label>
               <div className="flex items-center gap-2">
-                <select className="w-full border px-2 py-0.5">
+                <select className="w-full border px-2 py-0.5" 
+                  value={blockData?.periodType || ""}
+                  onChange={(e) => setBlockData(prev => ({ ...prev, periodType: e.target.value }))} >
                   {PERIOD_TYPES.map((type, i) => (
                     <option key={`direct-period-${i}`}>{type}</option>
                   ))}
@@ -294,30 +352,33 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
                   type="text"
                   placeholder="Enter short description"
                   name="shortDescription"
-                  value={unit.shortDescription || ""}
-                  onChange={(e) => handleChange("shortDescription", e.target.value)}
+                  value={blockData?.shortDescription || ""}
+                  onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
                   className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>
 
 
               {/* Delivery */}
-              {activeTab === "Direct" && (
+              {/* {activeTab === "Direct" && ( */}
                 <>
                   <label className="col-span-1 flex items-center text-gray-700">
                     Delivery:
                   </label>
                   <div className="flex items-center gap-2">
-                    <select className="w-full border px-2 py-0.5">
-                      {DIRECT_DELIVERY.map((type, i) => (
-                        <option key={`direct-period-${i}`}>{type}</option>
-                      ))}
+                    <select className="w-full border px-2 py-0.5" 
+                      value={blockData?.delivery || ""}
+                      onChange={(e) => setBlockData(prev => ({ ...prev, delivery: e.target.value }))} >
+                      {activeTab === "Direct"
+                          ? DIRECT_DELIVERY.map((type, i) => <option key={i}>{type}</option>)
+                          : INDIRECT_DELIVERY.map((type, i) => <option key={i}>{type}</option>)
+                        }
                     </select>
                   </div>
                 </>
-              )}
+              {/* )} */}
 
-              {activeTab === "Indirect" && (
+              {/* {activeTab === "Indirect" && (
                 <>
                   <label className="col-span-1 flex items-center text-gray-700">
                     Delivery:
@@ -330,23 +391,23 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
                     </select>
                   </div>
                 </>
-              )}
-            </form>
+              )} */}
+            </div>
           </div>
 
           {/* Bottom Actions */}
           <div className="border-t border-gray-200 p-2 bg-gray-50">
             <div className="flex justify-end">
               <button
-                type="button"
-                onClick={onClose}
+                type="submit"
+                // onClick={handleSaveBlock}
                 className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
               >
                 Edit
               </button>
             </div>
           </div>
-        </div>
+        </form>
       )}
 
     </div>

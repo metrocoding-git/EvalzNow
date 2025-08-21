@@ -73,7 +73,8 @@ export default function CurveEditor() {
     { id: 31, name: "Global Percentages of Cumulative Growth - ∆PR", icon: "🥧", type: "pie" },
     { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🥧", type: "pie" },
     { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🥧", type: "pie" },
-    { id: 34, name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" }
+    { id: 34, name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" },
+    { id: 34, name: "Shared Global Analytics Index Table", icon: "🥧", type: "table" }
   ];
   
 
@@ -82,6 +83,96 @@ export default function CurveEditor() {
 
   if (!visible) return null;
 
+
+  const metricRows = [
+    "Global Percentage of Case 1 Profiles",
+    "Global Percentage of Case 2 Profiles",
+    "Global Percentage of Case 3a Profiles",
+    "Global Percentage of Case 3b Profiles",
+    "Global Percentage of CI/CO",
+    "Global Percentage of T&P",
+    "Global Percentage of Third Parameter",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 20",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 20 < CTL ≤ 30",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30",
+    "Global Percentage of Benchmark Counts, BC ≤ 10",
+    "Global Percentage of Benchmark Counts, 10 < BC ≤ 25",
+    "Global Percentage of Benchmark Counts, BC > 25",
+  ];
+
+  // Initialize table state
+  const [tableData, setTableData] = useState(
+    metricRows.map((metric) => ({
+      metricDescription: metric,
+      metricValue: '',
+      assignedWeight: '',
+      metricWeight: '',
+    }))
+  );
+
+
+
+  const renderChartContent = () => {
+    if (!selectedChart) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">Select a plot from the list</p>
+        </div>
+      );
+    }
+
+
+    if (selectedChart.type === "table") {
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+          <table className="table-auto w-full text-sm border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border border-gray-300 px-3 py-2 text-left">Metric Descriptions</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Metric Values</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Assigned Weights</th>
+                <th className="border border-gray-300 px-3 py-2 text-left">Metric Weights</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metricRows.map((row, idx) => (
+                <tr key={idx} className="hover:bg-blue-50">
+                  <td className="border border-gray-300 px-3 py-2">{row}</td>
+                  <td className="border border-gray-300 px-3 py-2"></td>
+                  <td className="border border-gray-300 px-3 py-2"> </td>
+                  <td className="border border-gray-300 px-3 py-2"></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    } else {
+      // Render chart for all other types
+      return (
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              label
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      );
+    }
+  }
+
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
@@ -89,7 +180,7 @@ export default function CurveEditor() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 rounded-md p-1'>
+        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200  p-1'>
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
 
@@ -128,29 +219,12 @@ export default function CurveEditor() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 rounded-md bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
-            <div className="w-full h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label
-                  >
-                    {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.name}</h2>
+            
+            <div className="h-full overflow-auto m-5">
+              {renderChartContent()}
             </div>
           </div>
         </div>

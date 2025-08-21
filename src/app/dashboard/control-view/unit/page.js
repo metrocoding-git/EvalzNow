@@ -59,6 +59,7 @@ export default function UnitControl() {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const [selectedBlock, setSelectedBlock] = useState(null);
+  const [blocks, setBlocks] = useState([]);
 
   // Fetch all units on mount
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function UnitControl() {
       
       try {
         setLoading(true);
-        const data = await getUniRostertByUnitId(selectedUnit.id);
+        const data = await getUniRostertByUnitId(selectedUnit.id) || [];
         setUnitRosterData(Array.isArray(data) ? data : []);
         console.log("Unit Roster Data:", data);
       } catch (err) {
@@ -692,6 +693,7 @@ export default function UnitControl() {
         <div className="h-1/2 my-0.5" ref={formRef}>
           <UnitEditor
             unitId={selectedUnit?.id}
+            selectedBlock={selectedBlock}
             onClose={() => {
               setShowEdit(false);
               setShowEditBlockManager(false);
@@ -710,7 +712,7 @@ export default function UnitControl() {
       <div className="w-1/2 lg:w-9/12 bg-white">
         {showAdd && (
           <div className="h-full flex flex-col w-96">
-            <CreateUnitForm onClose={() => setShowAdd(false)} onSubmit={handleCreate}  />
+            <CreateUnitForm onClose={() => setShowAdd(false)} onSubmit={handleCreate}   />
           </div>
         )}
 
@@ -724,7 +726,8 @@ export default function UnitControl() {
           <div className="h-full overflow-auto">
             <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit}
             unitRosterData={filteredUnitRosterData} // Pass filtered data
-            selectedUnit={selectedUnit}   />
+            selectedUnit={selectedUnit}
+            onBlockSelect={setSelectedBlock}   />
           </div>
         )}
       </div>

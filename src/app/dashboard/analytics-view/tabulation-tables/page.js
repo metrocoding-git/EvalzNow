@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   X,
@@ -43,6 +43,14 @@ export default function TabulationTables() {
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  useEffect(() => {
+    if (activeCandidateId) {
+      setViewerOpen(true); // ✅ show right panel
+      const candidate = data.find((c) => c.id === activeCandidateId);
+      setSelectedCandidate(candidate); // ✅ load candidate data
+    }
+  }, [activeCandidateId]);
 
   const [openMenu, setopenMenu] = useState(true);
 
