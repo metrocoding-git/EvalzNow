@@ -11,7 +11,7 @@ import {
 import SecondaryArea from "../components/SecondaryArea";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ClientEditor from "../components/ClientEditor";
+import ClientEditor from "./components/ClientEditor";
 import RightPanel from "./components/RightPanel";
 import CurveEditor from "./components/CurveEditor";
 

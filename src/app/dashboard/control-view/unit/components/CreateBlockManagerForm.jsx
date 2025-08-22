@@ -90,6 +90,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
     }
   };
 
+  const isFormValid = form.periodType && form.delivery;
 
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -171,8 +172,13 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
         <div className="flex justify-end gap-2">
           <button
             type="submit"
+            disabled={!isFormValid}
             onClick={handleSubmit}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+            className={`px-4 py-1 text-sm transition-colors ${
+              isFormValid
+                ? "bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            }`}
           >
             Close
           </button>

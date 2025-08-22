@@ -1,10 +1,11 @@
 // SearchLookup.js - Create this as a separate component file
 "use client";
 import { getAllCandidates } from "@/services/candidateService";
+import { createUnitRoster } from "@/services/unitRosterService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-export default function SearchLookup({ onClose, onSelect, existingCandidates = [], selectedUnit, unitRosterData = [] }) {
+export default function SearchLookup({ onClose, selectedUnit}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -13,74 +14,8 @@ export default function SearchLookup({ onClose, onSelect, existingCandidates = [
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [candidateData, setCandidateData] = useState([]);
-  // Sample data - replace with your database data later
-  // const candidateData = [
-    // {
-    //   id: "C001",
-    //   lastName: "Perera",
-    //   firstName: "Sadeesha",
-    //   candidateId: "CAND-2024-001",
-    //   specialIdNo: "SP-001-2024",
-    //   dateOfBirth: "1990-05-15"
-    // },
-    // {
-    //   id: "C002",
-    //   lastName: "Silva",
-    //   firstName: "Nadeesha",
-    //   candidateId: "CAND-2024-002",
-    //   specialIdNo: "SP-002-2024",
-    //   dateOfBirth: "1988-08-22"
-    // },
-    // {
-    //   id: "C003",
-    //   lastName: "Fernando",
-    //   firstName: "Kasun",
-    //   candidateId: "CAND-2024-003",
-    //   specialIdNo: "SP-003-2024",
-    //   dateOfBirth: "1992-12-10"
-    // },
-    // {
-    //   id: "C004",
-    //   lastName: "Gunasekara",
-    //   firstName: "Dilani",
-    //   candidateId: "CAND-2024-004",
-    //   specialIdNo: "SP-004-2024",
-    //   dateOfBirth: "1985-03-28"
-    // },
-    // {
-    //   id: "C005",
-    //   lastName: "Jayasinghe",
-    //   firstName: "Tharindu",
-    //   candidateId: "CAND-2024-005",
-    //   specialIdNo: "SP-005-2024",
-    //   dateOfBirth: "1991-07-14"
-    // },
-    // {
-    //   id: "C006",
-    //   lastName: "Wijeratne",
-    //   firstName: "Chamika",
-    //   candidateId: "CAND-2024-006",
-    //   specialIdNo: "SP-006-2024",
-    //   dateOfBirth: "1987-11-05"
-    // },
-    // {
-    //   id: "C007",
-    //   lastName: "Mendis",
-    //   firstName: "Sachini",
-    //   candidateId: "CAND-2024-007",
-    //   specialIdNo: "SP-007-2024",
-    //   dateOfBirth: "1993-01-18"
-    // },
-    // {
-    //   id: "C008",
-    //   lastName: "Rathnayake",
-    //   firstName: "Nuwan",
-    //   candidateId: "CAND-2024-008",
-    //   specialIdNo: "SP-008-2024",
-    //   dateOfBirth: "1989-09-30"
-    // }
-  // ];
-
+  
+  
 // Fetch all candidates on mount
 useEffect(() => {
   const fetchCandidates = async () => {
@@ -100,7 +35,7 @@ useEffect(() => {
 }, []);
 
   // Filter data based on search term
-  const filteredData = existingCandidates.filter(candidate =>
+  const filteredData = candidateData.filter(candidate =>
     candidate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     candidate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     candidate.candidateId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,24 +76,7 @@ useEffect(() => {
   }, []);
 
 
-  // Function to create unit roster data structure
-  const createUnitRosterData = (candidates) => {
-    return candidates.map(candidate => ({
-      unitId: selectedUnit?.id || selectedUnit?.unitId,
-      candidate: candidate,
-      candidateId: candidate.id,
-      // Add default values for attendance fields
-      presentCount: 0,
-      excusedAbsences: 0,
-      unexcusedAbsences: 0,
-      excusedTardies: 0,
-      unexcusedTardies: 0,
-      unitOutcome: "Ongoing",
-      // You can add other unit roster specific fields here
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }));
-  };
+  
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-center z-50">
@@ -289,24 +207,36 @@ useEffect(() => {
           </p>
           <button
             type="button"
-            onClick={() => {
-              // Find selected candidates
-              // Find the selected unit roster entries (real data)
-              const selectedUnitRosterEntries = unitRosterData.filter(ur =>
-                selectedIds.includes(ur.candidate.id)
-              );
-
-              console.log("Selected Unit Roster Entries:", selectedUnitRosterEntries);
-
-              // Pass the real unit roster data back to parent
-              if (onSelect && selectedUnitRosterEntries.length > 0) {
-                onSelect(selectedUnitRosterEntries);
+            onClick={async () => {
+              try {
+                const selectedCandidates = candidateData.filter(c =>
+                  selectedIds.includes(c.id)
+                );
+            
+                for (const candidate of selectedCandidates) {
+                  const payload = {
+                    unitId: selectedUnit?.id || selectedUnit?.unitId,
+                    candidateId: candidate.id,
+                    presentCount: 0,
+                    excusedAbsences: 0,
+                    unexcusedAbsences: 0,
+                    excusedTardies: 0,
+                    unexcusedTardies: 0,
+                    unitOutcome: "Ongoing",
+                  };
+            
+                  await createUnitRoster(payload);
+                }
+            
+                console.log("✅ All candidates added to roster");
+                onClose();
+              } catch (err) {
+                console.error("❌ Error creating roster:", err);
+                alert("Failed to add candidates to roster. Please try again.");
               }
-
-              // Close the modal
-              onClose();
             }}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white  border border-gray-300 hover:bg-gray-200 transition-colors"
+            
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-200 transition-colors"
           >
             Close
           </button>

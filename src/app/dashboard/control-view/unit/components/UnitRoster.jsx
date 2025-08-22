@@ -5,6 +5,7 @@ import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
 import { deleteAssessmentBlock, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { deleteUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
@@ -50,13 +51,35 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     setSelectedRow(index)
   };
 
-  const handleUnitRosterDeleteCurve = () => {
-    // const updated = points.filter((_, index) => !selectedRow.includes(index));
-    // setPoints(updated);
-    setSelectedEntityRows([]); // reset selection
+  const handleUnitRosterDeleteCurve = async () => {
+    if (selectedEntitiyRows.length === 0) return;
+  
+    try {
+      // Get the selected roster items to delete
+      const itemsToDelete = selectedEntitiyRows.map(index => displayRosterData[index]);
+  
+      // Delete each item from the backend
+      for (const item of itemsToDelete) {
+        if (item.id) { // Make sure it has an ID
+          await deleteUnitRoster(item.id);
+        }
+      }
+  
+      // Refresh roster table after deletion
+      await fetchRosterData();
+  
+      // Clear selection
+      setSelectedEntityRows([]);
+  
+      console.log("✅ Selected roster items deleted successfully");
+    } catch (err) {
+      console.error("❌ Failed to delete selected roster items:", err);
+      alert("Failed to delete selected roster items. Please try again.");
+    }
   };
+  
 
-  // Fetch all units on mount
+  // Fetch all unit roster by unit id
   useEffect(() => {
     const fetchBlockByUnitId = async () => {
       try {
@@ -114,15 +137,38 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   };
   
 
-  const handleCandidateSelect = (newUnitRosterEntries) => {
-    console.log("Selected candidate in roster:", newUnitRosterEntries);
-    // Here, handle the selected candidate:
-    // - Add them to the roster
-    // - Fill in the form fields
-    // - Store the selection for further processing
-    setDisplayRosterData(newUnitRosterEntries);
-    setShowSearchLookup(false);
+  // const handleCandidateSelect = (newUnitRosterEntries) => {
+  //   console.log("Selected candidate in roster:", newUnitRosterEntries);
+  //   // Here, handle the selected candidate:
+  //   // - Add them to the roster
+  //   // - Fill in the form fields
+  //   // - Store the selection for further processing
+  //   setDisplayRosterData(newUnitRosterEntries);
+  //   setShowSearchLookup(false);
+  // };
+
+
+
+  const fetchRosterData = async () => {
+    if (!selectedUnit?.id) return;
+    try {
+      setLoading(true);
+      const roster = await getUniRostertByUnitId(selectedUnit.id);
+      setDisplayRosterData(Array.isArray(roster) ? roster : []);
+    } catch (err) {
+      console.error("❌ Failed to fetch roster:", err);
+      setError("Failed to load roster");
+    } finally {
+      setLoading(false);
+    }
   };
+  
+  // call on mount or when unit changes
+  useEffect(() => {
+    fetchRosterData();
+  }, [selectedUnit?.id]);
+  
+
 
   const toggleRowSelectionMulti = (index) => {
     setSelectedEntityRows((prev) =>
@@ -519,7 +565,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       {showSearchLookup && (
         <SearchLookup
           onClose={() => setShowSearchLookup(false)}
-          onSelect={handleCandidateSelect}
+          refreshRoster={fetchRosterData}
           existingCandidates={existingCandidates}
           selectedUnit={selectedUnit}
           unitRosterData={unitRosterData}

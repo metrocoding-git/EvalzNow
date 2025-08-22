@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, ShieldUser } from "lucide-react";
 import SecondaryArea from "../components/SecondaryArea";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ClientEditor from "../components/ClientEditor";
+import ClientEditor from "./components/ClientEditor";
 import CurveEditor from "./components/CurveEditor";
 
 export default function GlobalAnalytics() {

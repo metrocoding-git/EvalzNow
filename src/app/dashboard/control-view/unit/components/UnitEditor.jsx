@@ -208,7 +208,6 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
   };
   
 
-  
 
   return (
     <div className="h-full flex flex-col bg-white border border-gray-200">

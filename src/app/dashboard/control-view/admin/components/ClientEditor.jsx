@@ -17,7 +17,7 @@ const companySizes = [
   "Tier 10 - Mass Network : > 50000 Candidates",
 ];
 
-export default function ClientEditor({ client, onClose, onSave }) {
+export default function ClientEditor({ client, onClose, onSave, showForm }) {
   const [form, setForm] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -117,12 +117,12 @@ export default function ClientEditor({ client, onClose, onSave }) {
     }
   };
 
-  if (!client) {
-    return (
-      <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-      </div>
-    );
-  }
+  // if (!client) {
+  //   return (
+  //     <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-gray-200">
@@ -135,7 +135,13 @@ export default function ClientEditor({ client, onClose, onSave }) {
         
       </div>
 
-      {/* Body */}
+      {!client ? (
+        <div className="flex-1 flex items-center justify-center p-4 text-gray-500 text-sm">
+
+        </div>
+      ) : showForm ? (
+
+     
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-1 text-xs p-2 h-full">
           {[
@@ -210,7 +216,9 @@ export default function ClientEditor({ client, onClose, onSave }) {
 
           </div>
         </div>
-      </div>
+      </div> ) : (
+        <div className="p-4 text-gray-500 text-sm">No form to display.</div>
+      )}
     </div>
   );
 }
