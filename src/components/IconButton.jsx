@@ -6,7 +6,7 @@ export default function IconButton({ icon, label, onClick, active, link }) {
     <Link href={link || '#'}
       onClick={onClick}
       className={
-        `group flex flex-col justify-center items-center h-18 w-28 p-1  mx-1 rounded-md cursor-pointer shadow-md hover:shadow-md hover:bg-gray-200 transition-all duration-200 ease-in-out ` +
+        `group flex flex-col justify-center items-center h-18 w-28 mx-1 rounded-md cursor-pointer shadow-md hover:shadow-md hover:bg-gray-200 transition-all duration-200 ease-in-out ` +
         (active ? "bg-gray-300" : "bg-gray-100")
       }
     >
@@ -14,12 +14,12 @@ export default function IconButton({ icon, label, onClick, active, link }) {
         <img
           src={icon}
           alt={label}
-          className="h-13 w-13 object-contain transition-transform group-hover:scale-108"
+          className="h-8 w-8 object-contain transition-transform group-hover:scale-105"
         />
       </div>
-      {/* <div className="text-xs text-gray-700 group-hover:text-gray-800 text-center hover:font-bold">
+      <div className="text-xs text-gray-700 group-hover:text-gray-800 text-center hover:font-bold">
         {label}
-      </div> */}
+      </div>
     </Link>
   );
 }
