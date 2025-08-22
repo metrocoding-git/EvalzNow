@@ -141,7 +141,7 @@ export default function PreviewPage() {
                   className="flex items-center space-x-1 hover:underline"
                 >
                   <span className="capitalize">
-                    {col === "ppId" ? "ID" : col.replace(/([A-Z])/g, " $1")}
+                    {col === "ppId" ? "Candidate ID" : col.replace(/([A-Z])/g, " $1")}
                   </span>
                 </button>
               ))}

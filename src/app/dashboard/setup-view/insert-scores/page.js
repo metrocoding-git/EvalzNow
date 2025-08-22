@@ -111,7 +111,7 @@ export default function EntitiesManager() {
                   className="flex items-center space-x-1 hover:underline"
                 >
                   <span className="capitalize">
-                    {col === "id" ? "ID" : col.replace(/([A-Z])/g, " $1")}
+                    {col === "id" ? "Candidate ID" : col.replace(/([A-Z])/g, " $1")}
                   </span>
                 </button>
               ))}

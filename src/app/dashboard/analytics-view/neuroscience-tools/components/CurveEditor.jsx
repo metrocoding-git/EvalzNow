@@ -358,6 +358,24 @@ export default function CurveEditor() {
             <div className="h-1/2 flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
+              <button
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
+                    }`}
+                  onClick={() => setActiveAdjustPropertieTab('Property editor')}
+                >
+                  Property Editor
+                </button>
+                <button
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Tables'
+                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
+                    }`}
+                  onClick={() => setActiveAdjustPropertieTab('Tables')}
+                >
+                  Tables
+                </button>
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Indicators'
                     ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
@@ -376,24 +394,7 @@ export default function CurveEditor() {
                 >
                   Loads
                 </button>
-                <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
-                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Property editor')}
-                >
-                  Property Editor
-                </button>
-                <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Tables'
-                    ?  "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Tables')}
-                >
-                  Tables
-                </button>
+                
               </div>
 
               {/* Tab Content */}

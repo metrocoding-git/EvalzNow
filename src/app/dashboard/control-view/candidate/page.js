@@ -81,7 +81,8 @@ export default function CandidateControl() {
       try {
         setLoading(true);
         const data = await getAllEthinicities();
-        setEthnicities(data.map(e => e.name)); // assuming backend returns {id, name}
+        // keep objects instead of just names
+        setEthnicities(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch ethnicities:", err);
       } finally {
@@ -90,6 +91,7 @@ export default function CandidateControl() {
     };
     fetchEthnicity();
   }, []);
+  
   
 
 
