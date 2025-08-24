@@ -20,6 +20,7 @@ export default function AdminControl() {
   const formRef = useRef(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortBy, setSortBy] = useState("id");
+  const [showObjects, setShowObjects] = useState(false);
   const [dataList, setDataList] = useState([
     // {
     //   id: "5678",
@@ -50,6 +51,7 @@ export default function AdminControl() {
   const [clients, setClients] = useState([]); // Renamed from dataList to clients
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showEdit, setShowEdit] = useState(false);
 
 
   
@@ -173,6 +175,35 @@ export default function AdminControl() {
       setError("Failed to delete client. Please try again.");
     }
   };
+
+  const contextRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const isContextMenuClick =
+        contextRef.current && contextRef.current.contains(e.target);
+      const isClientClick = e.target.closest(".staff-item");
+      const isFormClick = formRef.current && formRef.current.contains(e.target);
+
+      // Only deselect if click is outside staff item, context menu, and form
+      if (!isContextMenuClick && !isClientClick && !isFormClick) {
+        setContextMenu({ visible: false, x: 0, y: 0, selectedClient: null });
+        setSelectedClient(null);
+        setShowEdit(false);
+      }
+    };
+
+    if (dataList.length > 0) {
+      setSelectedClient(dataList[0]);
+      setShowEdit(true);
+      setShowAdd(false);
+    } else {
+      setSelectedClient(null);
+      setShowEdit(false);
+    }
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [dataList]);
   
 
 
@@ -265,7 +296,7 @@ export default function AdminControl() {
             {showList && (
               <div className="flex-1">
                 {getSortedDataList().map((item) => {
-                  const isSelected = selectedClient && selectedClient.id === item.id;
+                  const isSelected =  selectedClient?.id === item.id;
                   return (
                     <div
                       key={item.id}
@@ -274,9 +305,15 @@ export default function AdminControl() {
                           ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                           : "hover:bg-gray-50"
                       }`}
-                      onClick={() => setSelectedClient(item)}
+                      onClick={(e) => { 
+                        e.stopPropagation();
+                        setSelectedClient(item)
+                        setShowEdit(true);
+                        setShowAdd(false);
+                      }}
                       onContextMenu={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         setSelectedClient(item);
                         setContextMenu({
                           visible: true,
@@ -313,8 +350,24 @@ export default function AdminControl() {
                 })}
               </div>
             )}
+
+            <div className=" border-gray-200">
+              <div
+                className="flex items-center cursor-pointer select-none text-sm font-medium text-gray-900 px-4 py-2 hover:text-gray-700 transition-colors"
+                onClick={() => setShowObjects((prev) => !prev)}
+              >
+                {showObjects ? (
+                  <ChevronDown className="w-4 h-4 text-gray-500 mr-2" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-500 mr-2" />
+                )}
+                SaaS Service Usage Report
+              </div>
+            </div>
           </div>
         </div>
+
+        
 
         {/* Context Menu */}
         {contextMenu.visible && (
@@ -341,8 +394,19 @@ export default function AdminControl() {
         <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
           <ClientEditor
             client={selectedClient}
-            onClose={() => setSelectedClient(null)}
-            onSave={handleUpdateClient}
+            showForm={!!selectedClient && showEdit} // show only if a client is selected
+            onClose={() => {
+              setSelectedClient(null);  // deselect client
+              setShowEdit(false);
+            }}
+            onSave={(updatedClient) => {
+              setDataList((prev) =>
+                prev.map((item) =>
+                  item.id === updatedClient.id ? updatedClient : item
+                )
+              );
+              setSelectedClient(updatedClient);
+            }}
           />
         </div>
       </div>

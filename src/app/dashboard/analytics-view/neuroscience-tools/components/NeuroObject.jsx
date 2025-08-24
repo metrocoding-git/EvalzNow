@@ -32,6 +32,55 @@ export default function NeuroObject({onClose}) {
   const [companySize, setCompanySize] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [answers, setAnswers] = useState({}); // track selected values per row
+
+  const handleChange = (idx, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [idx]: value,
+    }));
+  };
+
+
+  const rows = [
+    { lobe: "Frontal Lobe - Left", func: "Ability to control/express language", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Ability to produce/form language", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Ability to pronounce target speech sounds/patterns", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Analytical Thinking/Reasoning", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Logical Reasoning", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Reasoning of Concrete/Tangible References", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Pattern Recognition", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Utilizes Kinesthetic Speech", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Exhibits Linear Predictive Speech or Conversational Trajectories", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Critical Thinking", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Symbolic Thinking", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Requires Problem-Solving", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Demonstrates competency through primary motor control", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Discrimination of facial features", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Probabilitic Reasoning", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Deductive Reasoning (content-independent)", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Inductive Reasoning", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Analogical Reasoning (content-independent)", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Causal Reasoning", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Reading fluency & Verbal Reasoning", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Literacy", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Lingual Syntax and Grammatical Construction", value: "No" },
+    { lobe: "Frontal Lobe - Left", func: "Decision-Making", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Casting/exercising judgment", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Executing sequences in body movement", value: "Yes" },
+    { lobe: "Frontal Lobe - Left", func: "Functional Capacity - Frontal Lobe (L)", value: "Yes" },
+
+    // --- Occipital Lobe - Left ---
+    { lobe: "Occipital Lobe - Left", func: "Right Visual Acuity", value: "Yes" },
+    { lobe: "Occipital Lobe - Left", func: "Visuospatial Processing + Color (Right-Hand Side)", value: "Yes" },
+    { lobe: "Occipital Lobe - Left", func: "Visual Recognition (Right-Hand Side)", value: "No" },
+    { lobe: "Occipital Lobe - Left", func: "Visual Attention (Right-Hand Side)", value: "Yes" },
+    { lobe: "Occipital Lobe - Left", func: "Visual Perception (Right-Hand Side)", value: "Yes" },
+    { lobe: "Occipital Lobe - Left", func: "Narrow Visual Span from right to left", value: "No" },
+    { lobe: "Occipital Lobe - Left", func: "Functional Capacity - Occipital Lobe (L)", value: "Yes" },
+
+  ]
+
 
   return (
     <div  className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -65,60 +114,24 @@ export default function NeuroObject({onClose}) {
                 </tr>
             </thead>
             <tbody>
-                {[
-                // --- Frontal Lobe - Left ---
-                { lobe: "Frontal Lobe - Left", func: "Ability to control/express language", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Ability to produce/form language", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Ability to pronounce target speech sounds/patterns", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Analytical Thinking/Reasoning", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Logical Reasoning", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Reasoning of Concrete/Tangible References", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Pattern Recognition", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Utilizes Kinesthetic Speech", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Exhibits Linear Predictive Speech or Conversational Trajectories", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Critical Thinking", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Symbolic Thinking", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Requires Problem-Solving", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Demonstrates competency through primary motor control", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Discrimination of facial features", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Probabilitic Reasoning", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Deductive Reasoning (content-independent)", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Inductive Reasoning", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Analogical Reasoning (content-independent)", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Causal Reasoning", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Reading fluency & Verbal Reasoning", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Literacy", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Lingual Syntax and Grammatical Construction", value: "No" },
-                { lobe: "Frontal Lobe - Left", func: "Decision-Making", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Casting/exercising judgment", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Executing sequences in body movement", value: "Yes" },
-                { lobe: "Frontal Lobe - Left", func: "Functional Capacity - Frontal Lobe (L)", value: "Yes" },
-
-                // --- Occipital Lobe - Left ---
-                { lobe: "Occipital Lobe - Left", func: "Right Visual Acuity", value: "Yes" },
-                { lobe: "Occipital Lobe - Left", func: "Visuospatial Processing + Color (Right-Hand Side)", value: "Yes" },
-                { lobe: "Occipital Lobe - Left", func: "Visual Recognition (Right-Hand Side)", value: "No" },
-                { lobe: "Occipital Lobe - Left", func: "Visual Attention (Right-Hand Side)", value: "Yes" },
-                { lobe: "Occipital Lobe - Left", func: "Visual Perception (Right-Hand Side)", value: "Yes" },
-                { lobe: "Occipital Lobe - Left", func: "Narrow Visual Span from right to left", value: "No" },
-                { lobe: "Occipital Lobe - Left", func: "Functional Capacity - Occipital Lobe (L)", value: "Yes" },
-
-                // ... repeat for Parietal Lobe (L), Temporal Lobe (L),
-                // Frontal Lobe (R), Occipital Lobe (R), Parietal Lobe (R), Temporal Lobe (R)
-                // using Yes/No values
-                ].map((row, idx) => (
+              {rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-blue-50">
-                    
-                    <td className="border border-gray-300 px-3 py-2">{row.func}</td>
-                    <td className="border border-gray-300 px-3 py-2">
-                      <select className="border border-gray-300 px-2 py-1">
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </td>
+                  <td className="border border-gray-300 px-3 py-2">{row.func}</td>
+                  <td className="border border-gray-300 px-3 py-2">
+                    <select
+                      value={answers[idx] || ""}
+                      onChange={(e) => handleChange(idx, e.target.value)}
+                      className="border border-gray-300 px-2 py-1"
+                    >
+                      <option value="" disabled={!!answers[idx]}>
+                        Select
+                      </option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </td>
                 </tr>
-                ))}
+              ))}
             </tbody>
             </table>
             </div>
