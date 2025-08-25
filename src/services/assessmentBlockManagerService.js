@@ -67,3 +67,17 @@ export const getAssessmentBlockByUnitId = async (id) => {
       throw error;
     }
 };
+
+// Get assessment block by Unit ID and Candidate ID
+export const getAssessmentBlockByUnitAndCandidate = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(
+      `${API_ROUTES.ASSESSMENTMANAGER}/unit/${unitId}/candidate/${candidateId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching assessment block by unit and candidate:", error);
+    throw error;
+  }
+};
+

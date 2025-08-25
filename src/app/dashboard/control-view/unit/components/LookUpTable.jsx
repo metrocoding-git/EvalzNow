@@ -5,7 +5,7 @@ import { createUnitRoster } from "@/services/unitRosterService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-export default function SearchLookup({ onClose, selectedUnit}) {
+export default function SearchLookup({ onClose, selectedUnit, refreshRoster}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -229,6 +229,11 @@ useEffect(() => {
                 }
             
                 console.log("✅ All candidates added to roster");
+
+                if (refreshRoster) {
+                  await refreshRoster();
+                }
+
                 onClose();
               } catch (err) {
                 console.error("❌ Error creating roster:", err);

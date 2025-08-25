@@ -62,7 +62,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
+export default function CreateBlockManagerForm({ onClose, activeTab, unitId, candidateId, refreshBlocks }) {
   const [form, setForm] = useState({
     periodType: "",
     shortDescription: "",
@@ -76,7 +76,8 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
   const handleSubmit = async () => {
     try {
       const payload = {
-        unitId: unitId,                 // comes from Unit Roster page
+        unitId: unitId,    
+        candidate_id: candidateId,             // comes from Unit Roster page
         manageType: activeTab,          // "Direct" or "Indirect"
         periodType: form.periodType,
         shortDescription: form.shortDescription,
@@ -84,6 +85,11 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId }) {
       };
 
       await createAssessmentBlock(payload);
+
+      if (refreshBlocks) {
+        await refreshBlocks();
+      }
+
       onClose(); // close form after success
     } catch (error) {
       console.error("Error creating block:", error);

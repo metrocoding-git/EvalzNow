@@ -64,7 +64,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock }) => {
+const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
@@ -152,6 +152,7 @@ const UnitEditor = ({ unitId, onClose, showUnitForm, showEditBlockManager, activ
       const updatedUnit = {
         unitName: unit.unitName,
         unitId: unit.unitId,
+        candidate_id: candidate.id,
         unitStartDate: unit.startDate, // Map form field to API field
         unitEndDate: unit.endDate,     // Map form field to API field
         unitDirector: unit.unitDirector,
