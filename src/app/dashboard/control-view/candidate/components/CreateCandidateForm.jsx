@@ -1,6 +1,8 @@
 "use client";
+import { getAllEthinicities } from "@/services/ethinictyService";
+import { getAllIncomes } from "@/services/incomeService";
 import { ListFilterPlus, Plus, Trash2, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
@@ -21,6 +23,10 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([{ sequenceNumber: 1, type: "", comments: "" }]);
+  const [ethnicities, setEthnicities] = useState([]);
+  const [incomes, setIncomes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
 
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
@@ -60,6 +66,40 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
   };
 
 
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchEthnicity = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllEthinicities();
+        // keep objects instead of just names
+        setEthnicities(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEthnicity();
+  }, []);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchIncome = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllIncomes();
+        // keep objects instead of just names
+        setIncomes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch incomes:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIncome();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +117,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
         nationality: form["Nationality"] || "",
         gender: form["Gender"] || "",
         ethnicity: form["Ethnicity"] || "",
-        income: parseFloat(form["Income"]) || 0,
+        income: form["Income"] || "",
         religion: form["Religion"] || "",
         maritalStatus: form["Marital Status"] || "",
         jobType: form["Job Type"] || "",
@@ -154,8 +194,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
           {[
             { label: "Nationality", options: ["Non-disclosed", "United States", "Canada", "India", "Germany", "Other"] },
             { label: "Gender", options: genderOptions },
-            { label: "Ethnicity", options: ["Non-Disclosed", "Asian", "Black", "Hispanic", "White", "Mixed", "Other"] },
-            { label: "Income", options: ["Non-Disclosed", "< $20k", "$20k-$50k", "$50k-$100k", "> $100k"] },
+            // { label: "Ethnicity", options: ["Non-Disclosed", "Asian", "Black", "Hispanic", "White", "Mixed", "Other"] },
+            // { label: "Income", options: ["Non-Disclosed", "< $20k", "$20k-$50k", "$50k-$100k", "> $100k"] },
             { label: "Religion", options: religionOptions },
             { label: "Marital Status", options: maritalStatusOptions },
             { label: "Job Type", options: jobTypeOptions },
@@ -173,6 +213,35 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
               </select>
             </React.Fragment>
           ))}
+
+          {/* Income handled separately */}
+          <label className="col-span-1 flex items-center text-gray-700">Income:</label>
+          <select
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            onChange={(e) => handleChange("Income", e.target.value)}
+          >
+            <option value="">Select Income</option>
+            {incomes.map((income, i) => (
+              <option key={i} value={income.name}>
+                {income.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Ethnicity handled separately */}
+          <label className="col-span-1 flex items-center text-gray-700">Ethnicity:</label>
+          <select
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            onChange={(e) => handleChange("Ethnicity", e.target.value)}
+          >
+            <option value="">Select Ethnicity</option>
+            {ethnicities.map((eth, i) => (
+              <option key={i} value={eth.name}>
+                {eth.name}
+              </option>
+            ))}
+          </select>
+
 
           {/* Section Header - Irregularities */}
           <h3 className="col-span-2 pt-4 pb-2 font-semibold text-gray-800 border-t border-gray-200 ">

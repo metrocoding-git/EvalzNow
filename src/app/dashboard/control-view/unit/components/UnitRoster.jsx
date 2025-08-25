@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
-import { deleteAssessmentBlock, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
-import { deleteUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
+import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/services/unitRosterService";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit, onBlockSelect  }) {
+  selectedUnit, onBlockSelect, selectedCandidate  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
@@ -30,18 +30,27 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   const [visible, setVisible] = useState(true);
 
   const handlePointChange = (index, field, value) => {
-    // Update the specific roster entry
     setDisplayRosterData(prev => {
       const updated = [...prev];
       if (updated[index]) {
-        updated[index] = {
-          ...updated[index],
-          [field]: value
-        };
+        const item = { ...updated[index] };
+  
+        switch(field) {
+          case "present": item.presentCount = value; break;
+          case "excusedAbs": item.excusedAbsences = value; break;
+          case "unexcusedAbs": item.unexcusedAbsences = value; break;
+          case "excusedTardy": item.excusedTardies = value; break;
+          case "unexcusedTardy": item.unexcusedTardies = value; break;
+          case "unitOutcome": item.unitOutcome = value; break;
+          default: item[field] = value;
+        }
+  
+        updated[index] = item;
       }
       return updated;
     });
   };
+  
 
   
   const toggleRowSelection = (index) => {
@@ -79,25 +88,62 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   };
   
 
-  // Fetch all unit roster by unit id
-  useEffect(() => {
-    const fetchBlockByUnitId = async () => {
-      try {
-        setLoading(true);
-        const blocks = await getAssessmentBlockByUnitId(selectedUnit.id);
-        setAssessmentBlocks(Array.isArray(blocks) ? blocks : []);
-        console.log("Assessment Block", blocks);
-        // ❌ Missing: You're not storing the fetched data anywhere!
-      } catch (err) {
-        console.error("Failed to fetch units:", err);
-        setError("Failed to load units. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Add this near your other state
+  // const fetchBlocks = async () => {
+  //   if (!selectedUnit?.id) return;
+  //   try {
+  //     setLoading(true);
+  //     const blocks = await getAssessmentBlockByUnitId(selectedUnit.id);
+  //     setAssessmentBlocks(Array.isArray(blocks) ? blocks : []);
+  //   } catch (err) {
+  //     console.error("Failed to fetch blocks:", err);
+  //     setError("Failed to load blocks. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // // call it when unit changes
+  // useEffect(() => {
+  //   fetchBlocks();
+  // }, [selectedUnit?.id]);
+
+
   
-    fetchBlockByUnitId();
-  }, [selectedUnit.id]);
+
+  // Add this near your other state
+  const fetchBlocksByUnitAndCandidate = async () => {
+    if (!selectedUnit?.id || !selectedCandidate?.id) return;
+    try {
+      setLoading(true);
+      const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
+      
+      // Handle the response properly - it could be a single object or an array
+      if (Array.isArray(blocks)) {
+        setAssessmentBlocks(blocks);
+      } else if (blocks && typeof blocks === 'object') {
+        // If it's a single object, wrap it in an array
+        setAssessmentBlocks([blocks]);
+      } else {
+        setAssessmentBlocks([]);
+      }
+      
+      console.log("blocks", blocks);
+    } catch (err) {
+      console.error("Failed to fetch blocks:", err);
+      setError("Failed to load blocks. Please try again.");
+      setAssessmentBlocks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log("selected candidate in roster", assessmentBlocks );
+  // call it when unit changes
+  useEffect(() => {
+    fetchBlocksByUnitAndCandidate();
+  }, [selectedUnit?.id, selectedCandidate?.id]);
+
 
   const handleBlockManagerDeleteCurve = () => {
     // const updated = points.filter((_, index) => !selectedRow.includes(index));
@@ -108,33 +154,28 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
 
   const moveRowUp = () => {
     if (selectedRow === null || selectedRow === 0) return;
+    setSelectedRow((prev) => prev - 1);
+    setSelectedBlock(filteredAssessmentBlocks[selectedRow - 1]);
+    setShowEditBlockManager(true);
+    setShowEdit(false);
   
-    // Find the block in full list
-    const blockToMove = filteredAssessmentBlocks[selectedRow];
-    const globalIndex = assessmentBlocks.findIndex(b => b.id === blockToMove.id);
-  
-    if (globalIndex > 0) {
-      const updated = [...assessmentBlocks];
-      [updated[globalIndex - 1], updated[globalIndex]] = [updated[globalIndex], updated[globalIndex - 1]];
-      setAssessmentBlocks(updated);
-      setSelectedRow(selectedRow - 1);
+    if (onBlockSelect) {
+      onBlockSelect(filteredAssessmentBlocks[selectedRow - 1]);
     }
   };
   
   const moveRowDown = () => {
     if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
+    setSelectedRow((prev) => prev + 1);
+    setSelectedBlock(filteredAssessmentBlocks[selectedRow + 1]);
+    setShowEditBlockManager(true);
+    setShowEdit(false);
   
-    // Find the block in full list
-    const blockToMove = filteredAssessmentBlocks[selectedRow];
-    const globalIndex = assessmentBlocks.findIndex(b => b.id === blockToMove.id);
-  
-    if (globalIndex < assessmentBlocks.length - 1) {
-      const updated = [...assessmentBlocks];
-      [updated[globalIndex + 1], updated[globalIndex]] = [updated[globalIndex], updated[globalIndex + 1]];
-      setAssessmentBlocks(updated);
-      setSelectedRow(selectedRow + 1);
+    if (onBlockSelect) {
+      onBlockSelect(filteredAssessmentBlocks[selectedRow + 1]);
     }
   };
+  
   
 
   // const handleCandidateSelect = (newUnitRosterEntries) => {
@@ -177,6 +218,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
         : [...prev, index]
     );
   };
+  
 
 
   const handleRowClick = (block, index) => {
@@ -190,12 +232,12 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     }
   };
 
-   // Extract candidate data from unit roster
-   const existingCandidates = unitRosterData
-   .filter(rosterItem => rosterItem.candidate)
-   .map(rosterItem => rosterItem.candidate);
+  // Extract candidate data from unit roster
+  const existingCandidates = unitRosterData
+  .filter(rosterItem => rosterItem.candidate)
+  .map(rosterItem => rosterItem.candidate);
 
-   const filteredAssessmentBlocks = assessmentBlocks.filter(block => 
+  const filteredAssessmentBlocks = assessmentBlocks.filter(block => 
     block.manageType === activeTab
   );
 
@@ -223,6 +265,57 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       }
     };
   
+
+    // Debounce helper
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // Auto-save changes to backend
+  const saveRosterUpdate = useCallback(
+    debounce(async (id, updatedData) => {
+      try {
+        await updateUnitRoster(id, updatedData);
+        console.log(`✅ Auto-saved roster ID ${id}`);
+      } catch (err) {
+        console.error("❌ Failed to auto-save:", err);
+      }
+    }, 500),
+    []
+  );
+
+  console.log("activeTab:", activeTab);
+  console.log("assessmentBlocks:", assessmentBlocks);
+  console.log("filteredAssessmentBlocks:", filteredAssessmentBlocks);
+
+  // Handle changes in table inputs/dropdowns
+  const handleChange = (index, field, value) => {
+    setDisplayRosterData(prev => {
+      const updated = [...prev];
+      const item = { ...updated[index] };
+
+      switch (field) {
+        case "present": item.presentCount = parseInt(value) || 0; break;
+        case "excusedAbs": item.excusedAbsences = parseInt(value) || 0; break;
+        case "unexcusedAbs": item.unexcusedAbsences = parseInt(value) || 0; break;
+        case "excusedTardy": item.excusedTardies = parseInt(value) || 0; break;
+        case "unexcusedTardy": item.unexcusedTardies = parseInt(value) || 0; break;
+        case "unitOutcome": item.unitOutcome = value; break;
+        default: item[field] = value;
+      }
+
+      updated[index] = item;
+
+      // Auto-save if the item has an ID
+      if (item.id) saveRosterUpdate(item.id, item);
+
+      return updated;
+    });
+  };
    
 
   if (!visible) return null;
@@ -239,7 +332,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
             <CreateBlockManagerForm
               onClose={() => setShowCreateBlockForm(false)}
               unitId={selectedUnit.id}
+              candidate={selectedCandidate}
               activeTab={activeTab}
+              refreshBlocks={fetchBlocksByUnitAndCandidate}
             />
           </div>
         )}
@@ -296,120 +391,82 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
               </thead>
               <tbody>
                 {displayRosterData.map((rosterItem, index) => {
-
-                const candidate = rosterItem.candidate || {};
-                // const isSelected = selectedEntitiyRows.includes(index);
-
-                const present = parseInt(rosterItem.presentCount || 0);
-                const excusedAbs = parseInt(rosterItem.excusedAbsences || 0);
-                const unexcusedAbs = parseInt(rosterItem.unexcusedAbsences || 0);
-                const excusedTardy = parseInt(rosterItem.excusedTardies || 0);
-                const unexcusedTardy = parseInt(rosterItem.unexcusedTardies || 0);
-
-                const total = present + excusedAbs + unexcusedAbs + excusedTardy + unexcusedTardy;
+                  const candidate = rosterItem.candidate || {};
+                  const total = (rosterItem.presentCount || 0) +
+                    (rosterItem.excusedAbsences || 0) +
+                    (rosterItem.unexcusedAbsences || 0) +
+                    (rosterItem.excusedTardies || 0) +
+                    (rosterItem.unexcusedTardies || 0);
 
                   const isSelected = selectedEntitiyRows.includes(index);
+
                   return (
-                    <tr key={index} onClick={() => toggleRowSelectionMulti(index)}
-                      className={`cursor-pointer ${isSelected ? "bg-gray-200" : ""}`}>
-                      <td className="border  text-center">{index + 1}</td>
-                      <td className="border ">
-                        <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {candidate.lastName || "last name"}
-                        </span>
-                      </td>
-                      <td className="border p-1">
-                        <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {candidate.firstName || "first name"}
-                        </span>
-                      </td>
-                      <td className="border p-1">
-                        <span className="block px-2 py-0.5 text-sm text-gray-800">
-                          {candidate.candidateId || "candidate ID"}
-                        </span>
-                      </td>
-                      <td className="border p-1">
-                        <select className="w-full border px-2 py-0.5" value={rosterItem.unitOutcome || "0"}
-                          onChange={(e) =>
-                            handlePointChange(index, "unitOutcome", e.target.value)
-                          }>
+                    <tr
+                      key={index}
+                      className={`cursor-pointer ${selectedEntitiyRows.includes(index) ? "bg-gray-200" : "hover:bg-gray-50"}`}
+                      onClick={() => toggleRowSelectionMulti(index)}
+                    >
+                      <td className="border text-center">{index + 1}</td>
+                      <td className="border px-1">{candidate.lastName || "-"}</td>
+                      <td className="border px-1">{candidate.firstName || "-"}</td>
+                      <td className="border px-1">{candidate.candidateId || "-"}</td>
+                      <td className="border px-1">
+                        <select
+                          className="w-full border px-1 py-0.5 text-xs"
+                          value={rosterItem.unitOutcome || "Ongoing"}
+                          onChange={(e) => handleChange(index, "unitOutcome", e.target.value)}
+                        >
                           <option>Ongoing</option>
                           <option>Pass</option>
                           <option>Fail</option>
                         </select>
                       </td>
-                      <td className="border p-1">
+                      <td className="border px-1">
                         <input
                           type="number"
                           min="0"
-                          value={rosterItem.presentCount || "0"}
-                          onChange={(e) =>
-                            handlePointChange(index, "present", e.target.value)
-                          }
-                          className="w-full border px-2 py-0.5"
+                          value={rosterItem.presentCount || 0}
+                          onChange={(e) => handleChange(index, "present", e.target.value)}
+                          className="w-full border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border p-1">
+                      <td className="border px-1">
                         <input
                           type="number"
                           min="0"
-                          value={rosterItem.excusedAbsences || "0"}
-                          onChange={(e) =>
-                            handlePointChange(
-                              index,
-                              "excusedAbs",
-                              e.target.value
-                            )
-                          }
-                          className="w-full border px-2 py-0.5"
+                          value={rosterItem.excusedAbsences || 0}
+                          onChange={(e) => handleChange(index, "excusedAbs", e.target.value)}
+                          className="w-full border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border p-1">
+                      <td className="border px-1">
                         <input
                           type="number"
                           min="0"
-                          value={rosterItem.unexcusedAbsences || "0"}
-                          onChange={(e) =>
-                            handlePointChange(
-                              index,
-                              "unexcusedAbs",
-                              e.target.value
-                            )
-                          }
-                          className="w-full border px-2 py-0.5"
+                          value={rosterItem.unexcusedAbsences || 0}
+                          onChange={(e) => handleChange(index, "unexcusedAbs", e.target.value)}
+                          className="w-full border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border p-1">
+                      <td className="border px-1">
                         <input
                           type="number"
                           min="0"
-                          value={rosterItem.excusedTardies || "0"}
-                          onChange={(e) =>
-                            handlePointChange(
-                              index,
-                              "excusedTardy",
-                              e.target.value
-                            )
-                          }
-                          className="w-full border px-2 py-0.5"
+                          value={rosterItem.excusedTardies || 0}
+                          onChange={(e) => handleChange(index, "excusedTardy", e.target.value)}
+                          className="w-full border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border p-1">
+                      <td className="border px-1">
                         <input
                           type="number"
                           min="0"
-                          value={rosterItem.unexcusedTardies || "0"}
-                          onChange={(e) =>
-                            handlePointChange(
-                              index,
-                              "unexcusedTardy",
-                              e.target.value
-                            )
-                          }
-                          className="w-full border px-2 py-0.5"
+                          value={rosterItem.unexcusedTardies || 0}
+                          onChange={(e) => handleChange(index, "unexcusedTardy", e.target.value)}
+                          className="w-full border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border p-1 text-center">{total}</td>
+                      <td className="border px-1 text-center font-semibold">{total}</td>
                     </tr>
                   );
                 })}

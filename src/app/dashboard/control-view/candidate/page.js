@@ -19,6 +19,7 @@ import CreateCandidateForm from "./components/CreateCandidateForm";
 import ReviewCandidate from "./components/ReviewCandidate";
 import { createCandidate, deleteCandidate, getAllCandidates } from "@/services/candidateService";
 import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicity } from "@/services/ethinictyService";
+import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/services/incomeService";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -90,6 +91,24 @@ export default function CandidateControl() {
       }
     };
     fetchEthnicity();
+  }, []);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchIncome = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllIncomes();
+        // keep objects instead of just names
+        setIncomes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIncome();
   }, []);
   
   
@@ -225,6 +244,46 @@ export default function CandidateControl() {
   };
   
 
+  const handleIncomeChange = async (idx, value) => {
+    const updated = [...incomes];
+    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
+    setIncomes(updated);
+  
+    try {
+      // If existing (has id) → update
+      if (updated[idx].id) {
+        await updateIncome(updated[idx].id, { name: value });
+      } 
+      // Else → create new
+      else if (value.trim() !== "") {
+        const created = await createIncome({ name: value });
+        updated[idx] = created; // replace with saved object (with ID)
+        setIncomes([...updated]);
+      }
+    } catch (err) {
+      console.error("Failed to save income:", err);
+    }
+  };
+  
+  const handleIncomeDelete = async (idx) => {
+    const income = incomes[idx];
+  
+    try {
+      // Only delete from backend if it has an ID
+      if (income.id) {
+        await deleteIncome(income.id);
+      }
+  
+      // Remove from state
+      setIncomes(incomes.filter((_, i) => i !== idx));
+    } catch (err) {
+      console.error("Failed to delete income:", err);
+    }
+  };
+  
+  const handleAddIncome = () => {
+    setIncomes([...incomes, { name: "" }]); // no id yet
+  };
   
 
   return (
@@ -425,20 +484,14 @@ export default function CandidateControl() {
                           <input
                             type="text"
                             maxLength={25}
-                            value={income}
-                            onChange={(e) => {
-                              const updated = [...incomes];
-                              updated[idx] = e.target.value;
-                              setIncomes(updated);
-                            }}
+                            value={income.name || ""}
+                            onChange={(e) => handleIncomeChange(idx, e.target.value)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Income Ranges ${idx + 1}`}
                           />
                           <button
                             type="button"
-                            onClick={() =>
-                              setIncomes(incomes.filter((_, i) => i !== idx))
-                            }
+                            onClick={() => handleIncomeDelete(idx)}
                             className="text-red-500 text-xs"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -448,7 +501,7 @@ export default function CandidateControl() {
                       {incomes.length < 10 && (
                         <button
                           type="button"
-                          onClick={() => setIncomes([...incomes, ""])}
+                          onClick={handleAddIncome}
                           className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-sm text-gray-800"
                         >
                           + Add Income

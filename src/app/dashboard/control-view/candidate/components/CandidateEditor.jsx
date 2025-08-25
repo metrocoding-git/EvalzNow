@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Edit3, X, Plus, Edit } from "lucide-react";
 import { updateCandidate } from "@/services/candidateService";
+import { getAllEthinicities } from "@/services/ethinictyService";
+import { getAllIncomes } from "@/services/incomeService";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
@@ -98,7 +100,49 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
   ]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
+
+  const [ethnicities, setEthnicities] = useState([]);
+  const [incomes, setIncomes] = useState([]);
+  
+  const [loading, setLoading] = useState(false);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchEthnicity = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllEthinicities();
+        // keep objects instead of just names
+        setEthnicities(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEthnicity();
+  }, []);
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchIncome = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllIncomes();
+        // keep objects instead of just names
+        setIncomes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch incomes:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIncome();
+  }, []);
+
 
   useEffect(() => {
     if (candidate) {
@@ -143,6 +187,7 @@ const [error, setError] = useState(null);
     setRows([...rows, { id: "", type: "", comment: "" }]);
   };
 
+
   if (!showForm || !candidate) {
     return (
       <div className="h-full flex flex-col bg-white">
@@ -156,11 +201,6 @@ const [error, setError] = useState(null);
       </div>
     );
   }
-
-
-
-  
-
 
   const handleSave = () => {
     // Build updated candidate object from form state
@@ -238,7 +278,6 @@ const [error, setError] = useState(null);
     }
   };
   
-  
 
 
   return (
@@ -289,6 +328,33 @@ const [error, setError] = useState(null);
             <label className="col-span-1 flex items-center text-gray-700">
               {label}:
             </label>
+            {label === "Ethnicity" ? (
+            <select
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            >
+              <option value="">Select {label}</option>
+              {ethnicities.map((eth) => (
+                <option key={eth.id || eth.name} value={eth.name}>
+                  {eth.name}
+                </option>
+              ))}
+            </select>
+          ) : label === "Income" ? (
+            <select
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              value={form[label]}
+              onChange={(e) => handleChange(label, e.target.value)}
+            >
+              <option value="">Select {label}</option>
+              {incomes.map((inc) => (
+                <option key={inc.id || inc.name} value={inc.name}>
+                  {inc.name}
+                </option>
+              ))}
+            </select>
+          ) : (
             <select
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
@@ -301,6 +367,8 @@ const [error, setError] = useState(null);
                 </option>
               ))}
             </select>
+          )}
+
           </React.Fragment>
         ))}
 

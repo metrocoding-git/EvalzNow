@@ -57,7 +57,7 @@ export default function UnitControl() {
   const [sortBy, setSortBy] = useState("id");
   const [candidateSortOrder, setCandidateSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-
+  const [isSelected, setIsSelected] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [blocks, setBlocks] = useState([]);
 
@@ -261,6 +261,14 @@ export default function UnitControl() {
     }
   };
 
+  // Select candidate from roster
+  const handleCandidateSelect = (candidate) => {
+    setSelectedCandidate(candidate); // store selected candidate
+    console.log("candidate key", selectedCandidate);
+    // Optional: you can also update UnitRoster state if needed
+  };
+
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       const isContextMenuClick =
@@ -320,6 +328,9 @@ export default function UnitControl() {
     roster.unitId === selectedUnit?.id || 
     roster.unit?.id === selectedUnit?.id
   );
+
+
+
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -456,16 +467,20 @@ export default function UnitControl() {
               <div className="max-h-40 overflow-y-auto">
                 {unitRosterData
                   .filter(roster => roster.unitId === selectedUnit?.id)
-                  .map((rosterItem, index) => (
+                  .map((rosterItem, index) => {
+                    const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
+
+                    return(
                     <div 
                       key={index}
-                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
-                    >
+                      className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pisSelectedointer ${ isSelected ? 'bg-gray-300' : ''}`}
+                      onClick={() => handleCandidateSelect(rosterItem.candidate)}>
                       <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
                       <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
                       <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
                     </div>
-                  ))
+                    )
+                  })
                 }
               </div>
             </div>
@@ -550,7 +565,7 @@ export default function UnitControl() {
 
                     </div>
                   );
-                })}
+              })}
 
                 {/* Header */}
           
@@ -693,6 +708,7 @@ export default function UnitControl() {
         <div className="h-1/2 my-0.5" ref={formRef}>
           <UnitEditor
             unitId={selectedUnit?.id}
+            candidateId={selectedCandidate?.id}
             selectedBlock={selectedBlock}
             onClose={() => {
               setShowEdit(false);
@@ -727,6 +743,7 @@ export default function UnitControl() {
             <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit}
             unitRosterData={filteredUnitRosterData} // Pass filtered data
             selectedUnit={selectedUnit}
+            selectedCandidate={selectedCandidate}
             onBlockSelect={setSelectedBlock}   />
           </div>
         )}
