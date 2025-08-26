@@ -692,7 +692,8 @@ export default function UnitControl() {
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-                router.push(`/dashboard/setup-view/insert-scores?environment=${contextMenu.selectedUnit.environment}&type=${contextMenu.selectedUnit.unitType}`);
+                router.push(`/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(contextMenu.selectedUnit.id
+)}&environment=${encodeURIComponent(contextMenu.selectedUnit.environment)}&type=${encodeURIComponent(contextMenu.selectedUnit.unitType)}`);
               }}
             >
               <span className="flex items-center gap-2">

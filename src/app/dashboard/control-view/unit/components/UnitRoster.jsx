@@ -332,7 +332,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
             <CreateBlockManagerForm
               onClose={() => setShowCreateBlockForm(false)}
               unitId={selectedUnit.id}
-              candidate={selectedCandidate}
+              candidate={selectedCandidate.id}
               activeTab={activeTab}
               refreshBlocks={fetchBlocksByUnitAndCandidate}
             />

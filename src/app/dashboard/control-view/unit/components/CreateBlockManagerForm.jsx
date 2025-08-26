@@ -62,7 +62,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-export default function CreateBlockManagerForm({ onClose, activeTab, unitId, candidateId, refreshBlocks }) {
+export default function CreateBlockManagerForm({ onClose, activeTab, unitId, candidate, refreshBlocks }) {
   const [form, setForm] = useState({
     periodType: "",
     shortDescription: "",
@@ -73,17 +73,20 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
+  
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const payload = {
         unitId: unitId,    
-        candidate_id: candidateId,             // comes from Unit Roster page
+        candidate_id: candidate,             // comes from Unit Roster page
         manageType: activeTab,          // "Direct" or "Indirect"
         periodType: form.periodType,
         shortDescription: form.shortDescription,
         delivery: form.delivery,
       };
-
+      console.log("Sending payload:", payload);
       await createAssessmentBlock(payload);
 
       if (refreshBlocks) {
@@ -99,7 +102,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
   const isFormValid = form.periodType && form.delivery;
 
   return (
-    <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
@@ -191,6 +194,6 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
         </div>
       </div>
 
-    </div>
+    </form>
   );
 }
