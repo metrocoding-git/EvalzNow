@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { updateInsertScore } from "@/services/insertScoreService";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -145,7 +146,7 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
-const engageLevel = ["High", "Medium", "Low"];
+const engageLevel = ["High", "Medium", "Low", "N/A"];
 
 const competencyTypes = {
   communicative: ["Listening", "Reading", "Speaking", "Writing"],
@@ -155,7 +156,7 @@ const competencyTypes = {
 };
 
 
-export default function Editor({ details, performancePoints }) {
+export default function Editor({ details, performancePoints, onClose  }) {
   const [form, setForm] = useState({});
   const searchParams = useSearchParams();
   const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
@@ -167,22 +168,92 @@ export default function Editor({ details, performancePoints }) {
       : performancePoints === "Indirect"
         ? ["-1", "-2"]
         : [];
-
+       
 
   const [formData, setFormData] = useState({
     ppId: "",
-    duration: "",
-    referenceDate: "",
-    task: "",
+    durationHrs: "",
+    criticalRefDate: "",
+    remarks: "",
     workflowStage: "",
-    attainedScore: "",
-    maximumScore: "",
+    assessmentType: "",
+    scheduleImpact: "",
+    engageLevel: "",
+    competency: "",
+    attainedScore: null,
+    maxScore: null,
+    assessmentBlockId: null,
+    unitId: null,
+    candidate_id: null
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleChange = (label, value) => {
-    setForm((prev) => ({ ...prev, [label]: value }));
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
+
+  useEffect(() => {
+    if (details) {
+      setFormData({
+        ppId: details.ppId || "",
+        durationHrs: details.durationHrs || "",
+        criticalRefDate: details.criticalRefDate
+        ? new Date(details.criticalRefDate).toISOString().split("T")[0]
+        : "",
+        remarks: details.remarks || "",
+        workflowStage: details.workflowStage || "",
+        assessmentType: details.assessmentType || "",
+        scheduleImpact: details.scheduleImpact || "",
+        engageLevel: details.engageLevel || "",
+        competency: details.competency || "",
+        attainedScore: details.attainedScore ?? null,
+        maxScore: details.maxScore ?? null,
+        assessmentBlockId: details.assessmentBlockId || null,
+        unitId: details.unitId || null,
+        candidate_id: details.candidate_id || null,
+        task: details.task || "",
+      });
+    }
+  }, [details]);
+
+  const handleSubmit = async () => {
+    if (!formData.assessmentBlockId || !formData.unitId) {
+      setError("Missing unitId or assessmentBlockId.");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+  
+      const payload = {
+        ...formData,
+        unitId: parseInt(formData.unitId), 
+        candidate_id: parseInt(formData.candidate_id), 
+        durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
+        attainedScore: formData.attainedScore ? parseInt(formData.attainedScore) : null,
+        maxScore: formData.maxScore ? parseInt(formData.maxScore) : null,
+        criticalRefDate: formData.criticalRefDate
+          ? new Date(formData.criticalRefDate).toISOString() 
+          : null,
+      };
+  
+      await updateInsertScore(details.id, payload); 
+      console.log("Successfully updated insert score.");
+  
+      onClose?.(); // Close the form if callback provided
+    } catch (err) {
+      console.error("Failed to update insert score:", err);
+      setError("Failed to save insert score.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
 
   return (
@@ -200,7 +271,7 @@ export default function Editor({ details, performancePoints }) {
         <>
           {/* Body */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-4 text-xs space-y-3 bg-white">
+            <form onSubmit={handleSubmit} className="p-4 text-xs space-y-3 bg-white">
               {/* PP ID */}
               <div className="flex items-center">
                 <label className="w-40 pr-2 text-left text-gray-700">
@@ -232,8 +303,8 @@ export default function Editor({ details, performancePoints }) {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.duration}
-                  onChange={(e) => handleChange("duration", e.target.value)}
+                  value={formData.durationHrs || ""}
+                  onChange={(e) => handleChange("durationHrs", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 />
               </div>
@@ -245,8 +316,8 @@ export default function Editor({ details, performancePoints }) {
                 </label>
                 <input
                   type="date"
-                  value={formData.referenceDate}
-                  onChange={(e) => handleChange("referenceDate", e.target.value)}
+                  value={formData.criticalRefDate}
+                  onChange={(e) => handleChange("criticalRefDate", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 />
               </div>
@@ -259,8 +330,8 @@ export default function Editor({ details, performancePoints }) {
                 <input
                   type="text"
                   maxLength={50}
-                  value={formData.task}
-                  onChange={(e) => handleChange("task", e.target.value)}
+                  value={formData.remarks}
+                  onChange={(e) => handleChange("remarks", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 />
               </div>
@@ -404,8 +475,18 @@ export default function Editor({ details, performancePoints }) {
                 </>
               )}
 
-
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+              >
+                Close
+              </button>
             </div>
+            
+
+            </form>
           </div>
         </>
       )}

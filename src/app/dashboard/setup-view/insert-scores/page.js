@@ -14,6 +14,9 @@ import CompetencyAccounting from "./components/CompetencyAccounting";
 import Editor from "./components/Editor";
 import CreateStaffForm from "../../control-view/staff/components/CreateStaffForm";
 import CreateInsertScoresForm from "./components/CreateInsertScoresForm";
+import { useSearchParams } from "next/navigation";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 
 export default function EntitiesManager() {
   // Initial table data in state
@@ -46,6 +49,59 @@ export default function EntitiesManager() {
   const [selectedRow, setSelectedRow] = useState(null);
   const [activeTab, setActiveTab] = useState("Indirect");
   const [scoreAdd, setScoreAdd] = useState(false);
+  const [candidateList, setCandidateList] = useState([]);
+  const [unitData, setUnitData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
+
+  const searchParams = useSearchParams();
+  const unitQuery = searchParams.get("unitId");
+ 
+
+  useEffect(() => {
+    const fetchCandidateByUnitId = async () => {
+      if (!unitQuery) return;
+  
+      try {
+        setLoading(true);
+        const data = await getUniRostertByUnitId(unitQuery) || [];
+  
+        if (!Array.isArray(data) || data.length === 0) {
+          setUnitData(null);
+          setCandidateList([]);
+          return;
+        }
+  
+        // Extract unit data from the first row
+        setUnitData(data[0].unit || null);
+  
+        // Extract candidate data
+        const candidates = data.map(item => item.candidate);
+  
+        // Remove duplicates by candidate id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map(c => [c.id, c])).values()
+        );
+  
+        setCandidateList(uniqueCandidates);
+  
+        console.log("Unit Data:", data[0].unit);
+        console.log("Candidate List:", uniqueCandidates);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCandidateByUnitId();
+  }, [unitQuery]);
+  
+
+  console.log(unitQuery);
 
   useEffect(() => {
     const handleClick = () => {
@@ -54,8 +110,8 @@ export default function EntitiesManager() {
       }
     };
 
-    if (data.length > 0) {
-      setSelectedEntity(data[0]);
+    if (candidateList.length > 0) {
+      setSelectedEntity(candidateList[0]);
       setScoresOpen(true);
       setShowEdit(true);
     } else {
@@ -65,9 +121,9 @@ export default function EntitiesManager() {
     }
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
-  }, [contextMenu.visible, data]);
+  }, [contextMenu.visible, candidateList]);
 
-  const sortedData = [...data].sort((a, b) => {
+  const sortedData = [...candidateList].sort((a, b) => {
     const valA = a[sortColumn];
     const valB = b[sortColumn];
 
@@ -87,6 +143,42 @@ export default function EntitiesManager() {
       setSortDirection("asc");
     }
   };
+
+
+  useEffect(() => {
+    const fetchBlockInfo = async () => {
+      if (!unitQuery || !selectedEntity?.id) return;
+
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitAndCandidate(unitQuery, selectedEntity.id);
+        
+        console.log(blocks);
+        if (Array.isArray(blocks) && blocks.length > 0) {
+          // For simplicity, take the first block
+          const block = blocks[0];
+          setFormParams({
+            unitId: block.unitId,
+            assessmentBlockId: block.id,
+            ppId: block.ppId
+          });
+        } else {
+          setFormParams({ unitId: null, assessmentBlockId: null, ppId: null });
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch block info:", err);
+        setError("Failed to load candidate block data.");
+        setFormParams({ unitId: null, assessmentBlockId: null, ppId: null });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlockInfo();
+  }, [unitQuery, selectedEntity?.id]);
+
+  console.log("params: ", formParams);
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -149,11 +241,17 @@ export default function EntitiesManager() {
                 {/* Session Info */}
                 <div className="px-4">
                   <div className="border border-gray-200 p-2">
-                    <p className="text-sm text-gray-600">Unit Name: Unit 1</p>
-                    <p className="text-sm text-gray-600">Unit ID: UA123</p>
-                    <p className="text-sm text-gray-600">Unit Type: Group</p>
                     <p className="text-sm text-gray-600">
-                      Signature Profile: Signature 1
+                      Unit Name: {unitData?.unitName || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Unit ID: {unitData?.unitId || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Unit Type: {unitData?.unitType || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Signature Profile: {unitData?.signatureProfile || "N/A"} 
                     </p>
                   </div>
                 </div>
@@ -202,6 +300,7 @@ export default function EntitiesManager() {
             <Editor
               details={selectedRow}
               performancePoints={activeTab}
+              onClose={() => setScoreAdd(false)}
             />
           </div>
         </div>
@@ -212,11 +311,11 @@ export default function EntitiesManager() {
         {scoreAdd && (
           <div className="w-1/2 lg:w-9/12 bg-white h-full">
             <div className="h-full flex flex-col w-96">
-              <CreateInsertScoresForm onClose={() => setScoreAdd(false)} />
+              <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity.id} />
             </div>
           </div>
         )}
-        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
+        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
       </div>
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
+import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId } from "@/services/insertScoreService";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -37,7 +38,7 @@ const MAIN_CRITERIA = [
   "Sick/Injury Avoidance",
 ];
 
-export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd }) {
+export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId }) {
 
   const [scores, setScores] = useState([]);
 
@@ -48,6 +49,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
   const searchParams = useSearchParams();
   const environment = searchParams.get('environment') || 'workspace';
+
+  const unitId = searchParams.get('unitId');
+  const [classroomData, setClassroomData] = useState([]);
+  const [workforceData, setWorkforceData] = useState([]);
   const [tableData, setTableData] = useState([
     {
       firstName: "John",
@@ -216,6 +221,9 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     },
   ]);
 
+  const [insertScores, setInsertScores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [points, setPoints] = useState(
     Array.from({ length: 2 }, () => ({ x: "", y: "" }))
@@ -229,6 +237,61 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     setPoints(updated);
   };
 
+  useEffect(() => {
+    const fetchAndSeparateScores = async () => {
+      if (!unitId || !candidateId) return;
+  
+      // Reset previous data
+      setClassroomData([]);
+      setWorkforceData([]);
+      setInsertScores([]);
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const data = await getInsertScoreByUnitAndCandidate(unitId, candidateId);
+        console.log("Fetched insert scores:", data);
+  
+        const classroomRows = [];
+        const workforceRows = [];
+  
+        data.forEach((row) => {
+          const env = row.unit?.environment || "Workforce"; // default Workforce
+          const ppId = row.ppId;
+  
+          if (!ppId) return;
+  
+          const ppNumber = parseInt(ppId, 10);
+          const matchesTab = activeTab === "Indirect" ? ppNumber < 0 : ppNumber > 0;
+
+          if (!matchesTab) return;
+  
+          if (env === "Classroom") classroomRows.push(row);
+          else workforceRows.push(row);
+        });
+  
+        setClassroomData(classroomRows);
+        setWorkforceData(workforceRows);
+        setInsertScores(data);
+  
+      } catch (err) {
+        console.error("Error fetching insert scores:", err);
+        setError("Failed to load insert scores.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAndSeparateScores();
+  }, [unitId, candidateId, activeTab, environment]);
+  
+  
+  useEffect(() => {
+    setSelectedRow(null);
+  }, [candidateId, activeTab]);
+
+  console.log("insert score: ", insertScores);
+
   const handleDeleteCurve = () => {
     if (scores.length > 0) {
       setScores([]);
@@ -236,6 +299,9 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
       alert("No scores to delete.");
     }
   };
+
+  // candidate with insert score
+
 
   if (!visible) return null;
 
@@ -253,6 +319,46 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
     if (selectedRow === null || selectedRow >= filteredRowsCount - 1) return;
     setSelectedRow(selectedRow + 1);
+  };
+
+
+
+  const handleDeleteSelectedScore = async () => {
+    if (selectedRow === null) {
+      alert("Please select a row to delete.");
+      return;
+    }
+  
+    // Determine which dataset we are working with
+    const dataArray = environment === "Classroom" ? classroomData : workforceData;
+    const selectedItem = dataArray[selectedRow];
+  
+    if (!selectedItem || !selectedItem.id) {
+      alert("Cannot delete: invalid item selected.");
+      return;
+    }
+  
+    // if (!confirm("Are you sure you want to delete this insert score?")) return;
+  
+    try {
+      await deleteInsertScore(selectedItem.id);
+  
+      // Remove from state
+      const updatedArray = dataArray.filter((_, idx) => idx !== selectedRow);
+      if (environment === "Classroom") setClassroomData(updatedArray);
+      else setWorkforceData(updatedArray);
+  
+      // Also remove from insertScores
+      setInsertScores(prev => prev.filter(score => score.id !== selectedItem.id));
+  
+      // Reset selected row
+      setSelectedRow(null);
+  
+      // alert("Insert score deleted successfully.");
+    } catch (err) {
+      console.error("Error deleting insert score:", err);
+      alert("Failed to delete insert score.");
+    }
   };
 
   return (
@@ -364,11 +470,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                 {selectedRow && (
                   <button
                     className="p-1 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
-                    onClick={() => {
-                      // handleDelete(contextMenu.selectedUnit.id);
-                      // setContextMenu((prev) => ({ ...prev, visible: false }));
-                      handleBlockManagerDeleteCurve();
-                    }}
+                    onClick={handleDeleteSelectedScore}
                   >
                     <span className="flex items-center gap-2 ">
                       <Trash2 className="w-3.5 h-3.5 " />
@@ -399,317 +501,87 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
           </div>
 
           <div className="flex-1 p-2">
-            {/* bottom table */}
-            {environment == 'Workspace' && (
-              <>
-                {activeTab === "Direct" && (
-                  <div className="h-full overflow-auto border border-gray-200">
-                    <table className="w-full text-left text-xs mb-7">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th>
-                          {Array.from({ length: 20 }, (_, i) => (
-                            <th
-                              key={`mc-${i}`}
-                              className="border-1 border-gray-400 px-2 py-1"
-                            >{`MC${i + 1}`}</th>
-                          ))}
+            <div className="h-full overflow-auto border border-gray-200"> 
+              <table className="w-full text-left text-xs mb-7"> 
+                <thead className="bg-gray-100">
+                  <tr> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th> 
+                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th> 
 
-                          {/* CC21 - CC40 */}
-                          {Array.from({ length: 20 }, (_, i) => (
-                            <th
-                              key={`cc-${i + 21}`}
-                              className="border-1 border-gray-400 px-2 py-1"
-                            >{`CC${i + 21}`}</th>
-                          ))}
+                    {environment === "Classroom" ? (
+                      <>
+                        <th className="border-1 border-gray-400 px-2 py-1">Attained Score</th>
+                        <th className="border-1 border-gray-400 px-2 py-1">Maximum Score</th>
+                      </>
+                    ) : (
+                      <>
+                        {/* MC1 - MC20 */}
+                        {Array.from({ length: 20 }, (_, i) => (
+                          <th key={`mc-${i}`} className="border-1 border-gray-400 px-2 py-1">{`MC${i + 1}`}</th>
+                        ))}
+                        {/* CC21 - CC40 */}
+                        {Array.from({ length: 20 }, (_, i) => (
+                          <th key={`cc-${i + 21}`} className="border-1 border-gray-400 px-2 py-1">{`CC${i + 21}`}</th>
+                        ))}
+                      </>
+                    )}
+                  </tr> 
+                  
+                </thead>
+                <tbody>
+                  {(environment === "Classroom" ? classroomData : workforceData).map(
+                    (row, idx) => (
+                      <tr key={idx} className={`hover:bg-gray-50 cursor-pointer ${
+                        selectedRow === idx ? "bg-gray-200" : ""
+                      }`}  onClick={() => setSelectedRow(row)}>
+                        <td className="border p-1 text-center">{row.candidate?.firstName}</td>
+                        <td className="border p-1 text-center">{row.candidate?.lastName}</td>
+                        <td className="border p-1 text-center">{row.candidate?.candidateId}</td>
+                        <td className="border p-1 text-center">{row.ppId}</td>
+                        <td className="border p-1 text-center">{row.durationHrs}</td>
+                        <td className="border p-1 text-center">{row.criticalRefDate?.slice(0, 10)}</td>
+                        <td className="border p-1 text-center">{row.remarks}</td>
+                        <td className="border p-1 text-center">{row.workflowStage}</td>
+                        <td className="border p-1 text-center">{row.assessmentType}</td>
+                        <td className="border p-1 text-center">{row.scheduleImpact}</td>
+                        <td className="border p-1 text-center">{row.engageLevel}</td>
+                        <td className="border p-1 text-center">{row.competency}</td>
 
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {workspaceTableData.length > 0 ? (
-                          workspaceTableData
-                            .filter((row) =>
-                              activeTab === "Indirect"
-                                ? row.ppId.startsWith("-")
-                                : !row.ppId.startsWith("-")
-                            )
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                onClick={() => setSelectedRow(rowIndex + 1)}
-                                className={`cursor-pointer hover:bg-gray-100 ${selectedRow === rowIndex + 1 ? "bg-gray-200" : ""
-                                  }`}
-                              >
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.firstName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.lastName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.cid}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.duration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.criticalDate}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.taskDeclaration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.workflowStage}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.assessmentType}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.scheduleImpact}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.engageLevel}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.competency}</td>
-                                {row.mc.map((val, i) => (
-                                  <td
-                                    key={`mc-${i}`}
-                                    className="border-1 border-gray-400 px-2 py-1"
-                                  >
-                                    {val}
-                                  </td>
-                                ))}
-                                {row.cc.map((val, i) => (
-                                  <td
-                                    key={`cc-${i}`}
-                                    className="border-1 border-gray-400 px-2 py-1"
-                                  >
-                                    {val}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))
+                        {environment === "Classroom" ? (
+                          <>
+                            <td className="border p-1 text-center">{row.attainedScore || 0}</td>
+                            <td className="border p-1 text-center">{row.maxScore || 0}</td>
+                          </>
                         ) : (
-                          <tr>
-
-                          </tr>
+                          <>
+                            {row.mc?.map((val, i) => (
+                              <td className="border p-1 text-center" key={`mc-${i}`}>{val}</td>
+                            ))}
+                            {row.cc?.map((val, i) => (
+                              <td className="border p-1 text-center" key={`cc-${i}`}>{val}</td>
+                            ))}
+                          </>
                         )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {activeTab === "Indirect" && (
-                  <div className="h-full overflow-auto border border-gray-200">
-                    <table className="w-full text-left text-xs mb-7">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th>
-                          {Array.from({ length: 20 }, (_, i) => (
-                            <th
-                              key={`mc-${i}`}
-                              className="border-1 border-gray-400 px-2 py-1"
-                            >{`MC${i + 1}`}</th>
-                          ))}
-
-                          {/* CC21 - CC40 */}
-                          {Array.from({ length: 20 }, (_, i) => (
-                            <th
-                              key={`cc-${i + 21}`}
-                              className="border-1 border-gray-400 px-2 py-1"
-                            >{`CC${i + 21}`}</th>
-                          ))}
-
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {workspaceTableData.length > 0 ? (
-                          workspaceTableData
-                            .filter((row) =>
-                              activeTab === "Indirect"
-                                ? row.ppId.startsWith("-")
-                                : !row.ppId.startsWith("-")
-                            )
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                onClick={() => setSelectedRow(rowIndex + 1)}
-                                className={`cursor-pointer hover:bg-gray-100 ${selectedRow === rowIndex + 1 ? "bg-gray-200" : ""
-                                  }`}
-                              >
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.firstName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.lastName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.cid}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.duration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.criticalDate}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.taskDeclaration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.workflowStage}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.assessmentType}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.scheduleImpact}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.engageLevel}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.competency}</td>
-                                {row.mc.map((val, i) => (
-                                  <td
-                                    key={`mc-${i}`}
-                                    className="border-1 border-gray-400 px-2 py-1"
-                                  >
-                                    {val}
-                                  </td>
-                                ))}
-                                {row.cc.map((val, i) => (
-                                  <td
-                                    key={`cc-${i}`}
-                                    className="border-1 border-gray-400 px-2 py-1"
-                                  >
-                                    {val}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))
-                        ) : (
-                          <tr>
-
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </>
-            )}
-            {environment == 'Classroom' && (
-              <>
-                {activeTab === "Direct" && (
-                  <div className="h-full overflow-auto border border-gray-200">
-                    <table className="w-full text-left text-xs mb-7">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Attained Score</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Maximum Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.length > 0 ? (
-                          tableData
-                            .filter((row) =>
-                              activeTab === "Indirect"
-                                ? row.ppId.startsWith("-")
-                                : !row.ppId.startsWith("-")
-                            )
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                onClick={() => setSelectedRow(rowIndex + 1)}
-                                className={`cursor-pointer hover:bg-gray-100 ${selectedRow === rowIndex + 1 ? "bg-gray-200" : ""
-                                  }`}
-                              >
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.firstName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.lastName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.cid}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.duration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.criticalDate}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.taskDeclaration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.workflowStage}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.assessmentType}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.scheduleImpact}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.engageLevel}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.competency}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.AttainedScore}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.MaximumScore}</td>
-                              </tr>
-                            ))
-                        ) : (
-                          <tr>
-
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {activeTab === "Indirect" && (
-                  <div className="h-full overflow-auto border border-gray-200">
-                    <table className="w-full text-left text-xs mb-7">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Attained Score</th>
-                          <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Maximum Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.length > 0 ? (
-                          tableData
-                            .filter((row) =>
-                              activeTab === "Indirect"
-                                ? row.ppId.startsWith("-")
-                                : !row.ppId.startsWith("-")
-                            )
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                onClick={() => setSelectedRow(rowIndex + 1)}
-                                className={`cursor-pointer hover:bg-gray-100 ${selectedRow === rowIndex + 1 ? "bg-gray-200" : ""
-                                  }`}
-                              >
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.firstName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.lastName}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.cid}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.duration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.criticalDate}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.taskDeclaration}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.workflowStage}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.assessmentType}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.scheduleImpact}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.engageLevel}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.competency}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.AttainedScore}</td>
-                                <td className="border-1 border-gray-400 px-2 py-1">{row.MaximumScore}</td>
-                              </tr>
-                            ))
-                        ) : (
-                          <tr>
-
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </>
-            )}
-
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+
+
         </div>
       </div>
 

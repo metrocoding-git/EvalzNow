@@ -153,6 +153,7 @@ export default function ScoringCriteria({ onClose, onSubmit }) {
   });
 
   const searchParams = useSearchParams();
+  const unitQuery = searchParams.get("unitId");
   const typeQuery = searchParams.get("type") || "Communicative I/O";
   const environmentQuery = searchParams.get("environment") || "Classroom";
 
