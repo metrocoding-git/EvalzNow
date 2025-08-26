@@ -1,7 +1,9 @@
 "use client";
+import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
+import { createInsertScore } from "@/services/insertScoreService";
 import { ListFilterPlus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const workflowStages = [
   "Analysis",
@@ -144,26 +146,121 @@ const competencyTypes = {
 const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 
-export default function CreateInsertScoresForm({ onClose }) {
+export default function CreateInsertScoresForm({ onClose, candidateId }) {
 
   const [formData, setFormData] = useState({
     ppId: "",
-    duration: "",
-    referenceDate: "",
-    task: "",
+    durationHrs: "",
+    criticalRefDate: "",
+    remarks: "",
     workflowStage: "",
+    assessmentType: "",
+    scheduleImpact: "",
+    engageLevel: "",
+    competency: "",
+    attainedScore: null,
+    maxScore: null,
+    assessmentBlockId: null,
+    unitId: null,
+    candidate_id: null
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [ppIds, setPpIds] = useState([]);
+  const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
 
   const searchParams = useSearchParams();
   const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
   const environment = searchParams.get('environment') || 'workspace';
+  const unitId = searchParams.get('unitId');
 
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
   const handleChange = (label, value) => {
-    setFormData((prev) => ({ ...prev, [label]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [label]: value,
+    }));
+    
+    // When ppId changes, update the assessmentBlockId accordingly
+    if (label === "ppId") {
+      const selectedBlock = assessmentBlocks.find(block => block.ppId === value);
+      if (selectedBlock) {
+        setFormData(prev => ({
+          ...prev,
+          assessmentBlockId: selectedBlock.id
+        }));
+      }
+    }
   };
+
+  const handleSubmit = async () => {
+    if (!formData.assessmentBlockId || !unitId) {
+      setError("Missing unitId or assessmentBlockId.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        ...formData,
+        unitId: parseInt(unitId),
+        candidate_id: parseInt(candidateId),
+        durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
+        attainedScore: formData.attainedScore ? parseInt(formData.attainedScore) : null,
+        maxScore: formData.maxScore ? parseInt(formData.maxScore) : null,
+      };
+
+      await createInsertScore(payload);
+      console.log("successfully submitted.");
+      onClose(); // Close the form after successful submission
+    } catch (err) {
+      console.error("Failed to create insert score:", err);
+      setError("Failed to save insert score.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchBlockInfo = async () => {
+      if (!unitId || !candidateId) return;
+  
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitAndCandidate(unitId, candidateId);
+  
+        if (blocks?.length > 0) {
+          const block = blocks[0]; // pick first block for simplicity
+          setFormData((prev) => ({
+            ...prev,
+            assessmentBlockId: block.id, // set assessment block ID
+            // ppId: block.ppId || "", // default PP ID if available
+          }));
+  
+          // Extract PP IDs for the select dropdown
+          const ppList = blocks
+            .map((b) => b.ppId)
+            .filter((pp) => pp !== undefined && pp !== null && pp !== "");
+          setPpIds(ppList);
+        } else {
+          setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
+          setPpIds([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch block info:", err);
+        setError("Failed to load candidate block data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchBlockInfo();
+  }, [unitId, candidateId]);
+  
 
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -200,7 +297,7 @@ export default function CreateInsertScoresForm({ onClose }) {
             <option value="" disabled>
               Select PP ID
             </option>
-            {mockPpIds.map((pp, i) => (
+            {ppIds.map((pp, i) => (
               <option key={i} value={pp}>
                 {pp}
               </option>
@@ -217,8 +314,8 @@ export default function CreateInsertScoresForm({ onClose }) {
             type="number"
             min="0"
             step="0.01"
-            value={formData.duration}
-            onChange={(e) => handleChange("duration", e.target.value)}
+            value={formData.durationHrs}
+            onChange={(e) => handleChange("durationHrs", e.target.value)}
             className="flex-1 border px-2 py-1"
           />
 
@@ -230,8 +327,8 @@ export default function CreateInsertScoresForm({ onClose }) {
           </label>
           <input
             type="date"
-            value={formData.referenceDate}
-            onChange={(e) => handleChange("referenceDate", e.target.value)}
+            value={formData.criticalRefDate}
+            onChange={(e) => handleChange("criticalRefDate", e.target.value)}
             className="flex-1 border px-2 py-1"
           />
 
@@ -244,8 +341,8 @@ export default function CreateInsertScoresForm({ onClose }) {
           <input
             type="text"
             maxLength={50}
-            value={formData.task}
-            onChange={(e) => handleChange("task", e.target.value)}
+            value={formData.remarks}
+            onChange={(e) => handleChange("remarks", e.target.value)}
             className="flex-1 border px-2 py-1"
           />
 
@@ -349,7 +446,7 @@ export default function CreateInsertScoresForm({ onClose }) {
           </select>
 
 
-          {environment === "classroom" && (
+          {environment === "Classroom" && (
             <>
 
               <label className="w-40 pr-2 text-left text-gray-700">
@@ -398,7 +495,7 @@ export default function CreateInsertScoresForm({ onClose }) {
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleSubmit}
             className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
           >
             Close

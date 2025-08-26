@@ -10,5 +10,6 @@ export const API_ROUTES = {
     ROSTER: "/unit_roster",
     ETHINICITY: "/ethinicity",
     ASSESSMENTMANAGER: "/assessment_block_manager",
-    INCOME: "/income"
+    INCOME: "/income",
+    INSERT_SCORE: "/insert-score"
 };
