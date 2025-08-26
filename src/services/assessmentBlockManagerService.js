@@ -5,6 +5,7 @@ import api from "@/lib/axiosClient";
 export const createAssessmentBlock = async (blockData) => {
   try {
     const response = await api.post(API_ROUTES.ASSESSMENTMANAGER, blockData);
+    console.log("block data: ", blockData);
     return response.data;
   } catch (error) {
     console.error("Error creating assessment block:", error);
