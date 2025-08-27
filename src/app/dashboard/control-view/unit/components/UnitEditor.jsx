@@ -152,7 +152,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       const updatedUnit = {
         unitName: unit.unitName,
         unitId: unit.unitId,
-        candidate_id: candidate.id,
         unitStartDate: unit.startDate, // Map form field to API field
         unitEndDate: unit.endDate,     // Map form field to API field
         unitDirector: unit.unitDirector,

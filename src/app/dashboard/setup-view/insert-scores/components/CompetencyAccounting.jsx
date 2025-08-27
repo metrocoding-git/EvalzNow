@@ -14,6 +14,7 @@ import {
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
 import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId } from "@/services/insertScoreService";
+import { createScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -225,6 +226,8 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [customCriteria, setCustomCriteria] = useState([]);
+
   const [points, setPoints] = useState(
     Array.from({ length: 2 }, () => ({ x: "", y: "" }))
   );
@@ -250,6 +253,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   
       try {
         const data = await getInsertScoreByUnitAndCandidate(unitId, candidateId);
+        if (!Array.isArray(data)) throw new Error("Invalid insert score response");
         console.log("Fetched insert scores:", data);
   
         const classroomRows = [];
@@ -258,10 +262,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         data.forEach((row) => {
           const env = row.unit?.environment || "Workforce"; // default Workforce
           const ppId = row.ppId;
-  
-          if (!ppId) return;
-  
           const ppNumber = parseInt(ppId, 10);
+
+          if (isNaN(ppId)) return;
+
+
           const matchesTab = activeTab === "Indirect" ? ppNumber < 0 : ppNumber > 0;
 
           if (!matchesTab) return;
@@ -279,6 +284,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         setError("Failed to load insert scores.");
       } finally {
         setLoading(false);
+        setSelectedRow(null);
       }
     };
   
@@ -300,7 +306,44 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     }
   };
 
-  // candidate with insert score
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      if (!unitId) return;
+  
+      try {
+        const data = await getScoringCriteriaByUnitId(unitId);
+        if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
+  
+        // Initialize customCriteria array with empty objects
+        const mappedCriteria = Array.from({ length: MAIN_CRITERIA.length }, () => ({
+          id: null,
+          name: "",
+          unitId
+        }));
+  
+        // Place each criteria at index = id - 1
+        data.forEach((item) => {
+          if (!item.id) return;
+          const index = item.id - 1; // API id 1 → index 0
+          if (index >= 0 && index < mappedCriteria.length) {
+            mappedCriteria[index] = {
+              id: item.id,
+              name: item.criteria,
+              unitId: item.unitId
+            };
+          }
+        });
+  
+        setCustomCriteria(mappedCriteria);
+  
+      } catch (err) {
+        console.error("Failed to fetch scoring criteria:", err);
+      }
+    };
+  
+    fetchCriteria();
+  }, [unitId]);
+  
 
 
   if (!visible) return null;
@@ -411,11 +454,48 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                       <td className="border-1 border-gray-400 px-2 py-1">
                         {index + 21}
                       </td>
-                      <td className="border-1 border-gray-400 px-2 py-1"><input
-                        type="text"
-                        className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
-                        placeholder="Enter custom criteria"
-                      /></td>
+                      <td className="border-1 border-gray-400 px-2 py-1">
+  <input
+    type="text"
+    className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
+    placeholder="Enter custom criteria"
+    value={customCriteria[index]?.name || ""}
+    onChange={async (e) => {
+      const value = e.target.value;
+      const updated = [...customCriteria];
+      updated[index] = {
+        ...updated[index],
+        name: value,
+      };
+      setCustomCriteria(updated);
+
+      // Auto-create or update
+      const criteriaItem = updated[index];
+      try {
+        if (criteriaItem.id) {
+          // Existing → update
+          await updateScoringCriteria(criteriaItem.id, {
+            criteria: value,
+            unitId: criteriaItem.unitId,
+          });
+          
+        } else if (value.trim() !== "") {
+          // New → create
+          const created = await createScoringCriteria({
+            criteria: value,
+            unitId: criteriaItem.unitId,
+          });
+          // Store the new id
+          updated[index].id = created.id;
+          setCustomCriteria(updated);
+          console.log(`Created new scoring criteria ID ${created.id}`);
+        }
+      } catch (err) {
+        console.error("Error saving scoring criteria:", err);
+      }
+    }}
+  />
+</td>
                     </tr>
                   ))}
                 </tbody>
