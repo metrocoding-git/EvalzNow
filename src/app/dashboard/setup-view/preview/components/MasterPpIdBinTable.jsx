@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 
 // Define competency types and their corresponding columns
 const competencyTypes = {
@@ -31,11 +32,43 @@ const MasterPpIdBinTable = ({ data }) => {
     return absA - absB;
   });
 
-  const presentUnitTypes = [...new Set(data.map(item => item.unitType))];
-  
-  // Get the first unit type (assuming all rows have same unit type)
-  // If there are multiple unit types, you may need to adjust this logic
-  const currentUnitType = presentUnitTypes[0];
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [assessmentBlocks, setAssessmentBlocks] = useState([]);
+
+  const searchParams = useSearchParams();
+  const unitId = searchParams.get('unitId');
+
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      if (!unitId) return;
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitId(unitId);
+        // Ensure it's always an array
+        setAssessmentBlocks(Array.isArray(blocks) ? blocks : [blocks]);
+      } catch (err) {
+        console.error("Failed to fetch blocks:", err);
+        setError("Failed to load blocks");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlocks();
+  }, [unitId]);
+
+  // Sort by ppId
+  const sortedBlocks = [...assessmentBlocks].sort((a, b) => {
+    const absA = Math.abs(a.ppId);
+    const absB = Math.abs(b.ppId);
+    if (a.ppId < 0 && b.ppId > 0) return -1;
+    if (a.ppId > 0 && b.ppId < 0) return 1;
+    return absA - absB;
+  });
+
+  // Determine current competencies based on unitType
+  const currentUnitType = sortedBlocks[0]?.unit?.unitType || "";
   const currentCompetencies = competencyTypes[currentUnitType] || [];
 
   return (
@@ -59,12 +92,12 @@ const MasterPpIdBinTable = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-        {sortedData.map((row, index) => (
+        {sortedBlocks.map((row, index) => (
             <tr key={index}>
               <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unitName}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unitId}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unitType}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitName}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitId}</td>
+              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitType}</td>
 
               {/* Only render data cells for the current unit type */}
               {currentCompetencies.map((comp, idx) => {

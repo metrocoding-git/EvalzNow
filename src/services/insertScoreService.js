@@ -80,3 +80,18 @@ export const getInsertScoreByUnitAndCandidate = async (unitId, candidateId) => {
       throw error;
     }
   };
+
+
+  // Get insert scores by pp id summary
+export const getPpIdSummary = async (unitId, candidate_id) => {
+  try {
+    const response = await api.get(`${API_ROUTES.INSERT_SCORE}/summary?unitId=${unitId}&candidate_id=${candidate_id}`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error fetching PP summary for unitId=${unitId}, candidate_id=${candidate_id}:`,
+      error
+    );
+    throw error;
+  }
+};

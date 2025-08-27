@@ -9,15 +9,22 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
+import { getPpIdSummary } from "@/services/insertScoreService";
+import { useSearchParams } from "next/navigation";
 
-const CompetencyAccountingTable = ({ data }) => {
+const CompetencyAccountingTable = ({ data, candidateId }) => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [activeTab, setActiveTab] = useState("Indirect");
   const [filteredData, setFilteredData] = useState([]);
+  const [ppSummary, setPpSummary] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const searchParams = useSearchParams();
+  const unitId = searchParams.get('unitId');
 
   // Filter data based on active tab
   useEffect(() => {
-    const filtered = data.filter(row => {
+    const filtered = ppSummary.filter(row => {
       // Ensure ppId is treated as a string
       const ppId = String(row.ppId || "");
       return activeTab === "Indirect"
@@ -28,7 +35,7 @@ const CompetencyAccountingTable = ({ data }) => {
     
     // Reset selection when tab changes
     setSelectedRow(null);
-  }, [data, activeTab]);
+  }, [ppSummary, activeTab]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -45,6 +52,27 @@ const CompetencyAccountingTable = ({ data }) => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedRow, filteredData]);
+
+  useEffect(() => {
+    const fetchPpIdSummary = async () => {
+      if (!unitId || !candidateId) return; // only fetch if both exist
+      try {
+        setLoading(true);
+        const summary = await getPpIdSummary(unitId, candidateId);
+        setPpSummary(Array.isArray(summary) ? summary : [summary]);
+      } catch (err) {
+        console.error("Failed to fetch PP summary:", err);
+        setError("Failed to load PP summary");
+        setPpSummary([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchPpIdSummary();
+  }, [unitId, candidateId]); // ✅ re-fetch every time candidateId changes
+  
+  
 
   const moveRowUp = () => {
     if (selectedRow === null) {
@@ -108,7 +136,7 @@ const CompetencyAccountingTable = ({ data }) => {
           </div>
         </div>
       </div>
-
+   
       <table className="min-w-full table-auto text-sm text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
@@ -124,18 +152,21 @@ const CompetencyAccountingTable = ({ data }) => {
           {filteredData.length > 0 ? (
             filteredData.map((row, index) => (
               <tr
-                key={index}
+                key={row.ppId}
                 className={`border-t border-gray-100 hover:bg-gray-50 transition ${
                   index === selectedRow ? "bg-gray-100" : ""
                 }`}
                 onClick={() => handleRowClick(index)}
               >
                 <td className="px-4 py-2">{row.ppId}</td>
-                <td className="px-4 py-2">{row.shortDescription}</td>
-                <td className="px-4 py-2">{row.duration}</td>
-                <td className="px-4 py-2">{row.criticalRefDate}</td>
-                <td className="px-4 py-2">{row.missingCompetencies}</td>
-                <td className="px-4 py-2">{row.error}</td>
+                <td className="px-4 py-2">{row.shortDescription || "N/A"}</td>
+                <td className="px-4 py-2">{row.totalDuration || "N/A"}</td>
+                <td className="px-4 py-2">{row.latestCriticalRefDate
+                  ? new Date(row.latestCriticalRefDate).toLocaleDateString()
+                  : "-"}
+                </td>
+                <td className="px-4 py-2">{row.missingCompetency || "None"}</td>
+                <td className="px-4 py-2">  {row.missingCompetency ? "Yes" : "No"}</td>
               </tr>
             ))
           ) : (
