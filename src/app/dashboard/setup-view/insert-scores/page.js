@@ -311,11 +311,11 @@ export default function EntitiesManager() {
         {scoreAdd && (
           <div className="w-1/2 lg:w-9/12 bg-white h-full">
             <div className="h-full flex flex-col w-96">
-              <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity.id} />
+              <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} />
             </div>
           </div>
         )}
-        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
+        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity?.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
       </div>
 
 

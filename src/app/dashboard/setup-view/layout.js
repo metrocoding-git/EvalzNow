@@ -14,6 +14,7 @@ export default function SetupViewLayout({ children }) {
 
   const [activeTab, setActiveTab] = useState(currentTab);
   const searchParams = useSearchParams();
+  const unitId = searchParams.get('unitId');
   const environment = searchParams.get('environment') || '';
   const type = searchParams.get('type') || '';
 
@@ -25,7 +26,9 @@ export default function SetupViewLayout({ children }) {
         {/* Tab buttons */}
         <div className="flex space-x-0 px-0 pt-0.5 border-b border-gray-200 bg-gray-100 ">
           {tabs.map((tab, index) => {
-            const href = `${tab.path}?environment=${encodeURIComponent(
+            const href = `${tab.path}?unitId=${encodeURIComponent(
+              unitId
+            )}&environment=${encodeURIComponent(
               environment
             )}&type=${encodeURIComponent(type)}`;
 

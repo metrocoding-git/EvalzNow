@@ -5,6 +5,8 @@ import { ChevronRight, Plus, Search } from "lucide-react";
 import CompetencyAccountingTable from "./components/CompetencyAccountingTable";
 import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
 import ClientEditor from "../../analytics-view/components/ClientEditor";
+import { useSearchParams } from "next/navigation";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
 const masterPPIDData = [
   {
@@ -93,8 +95,15 @@ export default function PreviewPage() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
+  const [candidateList, setCandidateList] = useState([]);
+  const [unitData, setUnitData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const sortedCandidates = [...activatedCandidates].sort((a, b) => {
+  const searchParams = useSearchParams();
+  const unitQuery = searchParams.get("unitId");
+
+  const sortedCandidates = [...candidateList].sort((a, b) => {
     const valA = a[sortKey];
     const valB = b[sortKey];
     if (valA < valB) return sortOrder === "asc" ? -1 : 1;
@@ -110,6 +119,46 @@ export default function PreviewPage() {
       setSortOrder("asc");
     }
   };
+
+  useEffect(() => {
+    const fetchCandidateByUnitId = async () => {
+      if (!unitQuery) return;
+  
+      try {
+        setLoading(true);
+        const data = await getUniRostertByUnitId(unitQuery) || [];
+  
+        if (!Array.isArray(data) || data.length === 0) {
+          setUnitData(null);
+          setCandidateList([]);
+          return;
+        }
+  
+        // Extract unit data from the first row
+        setUnitData(data[0].unit || null);
+  
+        // Extract candidate data
+        const candidates = data.map(item => item.candidate);
+  
+        // Remove duplicates by candidate id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map(c => [c.id, c])).values()
+        );
+  
+        setCandidateList(uniqueCandidates);
+  
+        console.log("Unit Data:", data[0].unit);
+        console.log("Candidate List:", uniqueCandidates);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCandidateByUnitId();
+  }, [unitQuery]);
 
   // Select first candidate on page load
   useEffect(() => {
@@ -134,14 +183,14 @@ export default function PreviewPage() {
               <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
             </div>
             <div className="grid grid-cols-3 gap-1 text-gray-800 font-semibold text-sm w-full">
-              {["firstName", "lastName", "ppId"].map((col) => (
+              {["firstName", "lastName", "id"].map((col) => (
                 <button
                   key={col}
                   onClick={() => handleSort(col)}
                   className="flex items-center space-x-1 hover:underline"
                 >
                   <span className="capitalize">
-                    {col === "ppId" ? "Candidate ID" : col.replace(/([A-Z])/g, " $1")}
+                    {col === "id" ? "Candidate ID" : col.replace(/([A-Z])/g, " $1")}
                   </span>
                 </button>
               ))}
@@ -180,32 +229,37 @@ export default function PreviewPage() {
               {/* Session Info */}
               <div className="px-4 ">
                 <div className="border border-gray-200 p-2 ">
-                  <p className="text-sm text-gray-600">Unit Name: Unit 1</p>
-                  <p className="text-sm text-gray-600">Unit ID: UA123</p>
-                  <p className="text-sm text-gray-600">Unit Type: Group</p>
-                  <p className="text-sm text-gray-600">
-                    Signature Profile: Signature 1
-                  </p>
+                <p className="text-sm text-gray-600">
+                      Unit Name: {unitData?.unitName || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Unit ID: {unitData?.unitId || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Unit Type: {unitData?.unitType || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Signature Profile: {unitData?.signatureProfile || "N/A"} 
+                    </p>
                 </div>
               </div>
 
               {sortedCandidates.length === 0 ? (
-                <p className="text-xs text-gray-500">
-                  No activated candidates.
-                </p>
+                <p className="text-xs text-gray-500">No activated candidates.</p>
               ) : (
-                sortedCandidates.map((candidate, index) => (
+                sortedCandidates.map((candidate) => (
                   <div
-                    key={index}
+                    key={candidate.id} // use unique ppId
                     onClick={() => setSelectedCandidate(candidate)}
-                    className={`grid grid-cols-3 text-sm gap-2 px-3 py-1 cursor-pointer ${selectedCandidate?.ppId === candidate.ppId
-                      ? "bg-blue-100 border-l-4 border-blue-400 font-semibold"
-                      : "hover:bg-gray-50 text-gray-700"
-                      }`}
+                    className={`grid grid-cols-3 text-sm gap-2 px-3 py-1 cursor-pointer transition-colors duration-150 ${
+                      selectedCandidate?.id === candidate.id
+                        ? "bg-blue-100 border-l-4 border-blue-400 font-semibold"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
                   >
                     <div>{candidate.lastName}</div>
                     <div>{candidate.firstName}</div>
-                    <div>{candidate.ppId}</div>
+                    <div>{candidate.id}</div>
                   </div>
                 ))
               )}
@@ -247,7 +301,7 @@ export default function PreviewPage() {
 
             {/* Competency Accounting Table */}
             <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col"> 
-              <CompetencyAccountingTable data={competencyData} />
+              <CompetencyAccountingTable data={competencyData} candidateId={selectedCandidate?.id} />
             </div>
           </>
         )}

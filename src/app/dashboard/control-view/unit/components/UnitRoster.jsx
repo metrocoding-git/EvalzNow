@@ -252,7 +252,8 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
         await deleteAssessmentBlock(blockToDelete.id);
     
         // Remove from local state
-        setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
+        // setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
+        await fetchBlocksByUnitAndCandidate();
     
         // Reset selection
         setSelectedRow(null);
