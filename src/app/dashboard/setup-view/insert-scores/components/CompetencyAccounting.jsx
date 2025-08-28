@@ -314,20 +314,21 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
-        // Initialize customCriteria array with empty objects
+        // Initialize array with empty placeholders
         const mappedCriteria = Array.from({ length: MAIN_CRITERIA.length }, () => ({
-          id: null,
+          id: null,          // primary key for update
+          criteriaId: null,  // per-unit index
           name: "",
           unitId
         }));
   
-        // Place each criteria at index = id - 1
-        data.forEach((item) => {
-          if (!item.id) return;
-          const index = item.id - 1; // API id 1 → index 0
+        data.forEach(item => {
+          if (!item.criteriaId) return;
+          const index = item.criteriaId - 1;  // criteriaId 1 → index 0
           if (index >= 0 && index < mappedCriteria.length) {
             mappedCriteria[index] = {
-              id: item.id,
+              id: item.id,               // backend primary key
+              criteriaId: item.criteriaId,
               name: item.criteria,
               unitId: item.unitId
             };
@@ -343,6 +344,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   
     fetchCriteria();
   }, [unitId]);
+  
   
 
 
@@ -455,47 +457,51 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         {index + 21}
                       </td>
                       <td className="border-1 border-gray-400 px-2 py-1">
-  <input
-    type="text"
-    className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
-    placeholder="Enter custom criteria"
-    value={customCriteria[index]?.name || ""}
-    onChange={async (e) => {
-      const value = e.target.value;
-      const updated = [...customCriteria];
-      updated[index] = {
-        ...updated[index],
-        name: value,
-      };
-      setCustomCriteria(updated);
+                      <input
+  type="text"
+  className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
+  placeholder="Enter custom criteria"
+  value={customCriteria[index]?.name || ""}
+  onChange={async (e) => {
+    const value = e.target.value;
+    const updated = [...customCriteria];
+    updated[index] = {
+      ...updated[index],
+      name: value,
+    };
+    setCustomCriteria(updated);
 
-      // Auto-create or update
-      const criteriaItem = updated[index];
-      try {
-        if (criteriaItem.id) {
-          // Existing → update
-          await updateScoringCriteria(criteriaItem.id, {
-            criteria: value,
-            unitId: criteriaItem.unitId,
-          });
-          
-        } else if (value.trim() !== "") {
-          // New → create
-          const created = await createScoringCriteria({
-            criteria: value,
-            unitId: criteriaItem.unitId,
-          });
-          // Store the new id
-          updated[index].id = created.id;
-          setCustomCriteria(updated);
-          console.log(`Created new scoring criteria ID ${created.id}`);
-        }
-      } catch (err) {
-        console.error("Error saving scoring criteria:", err);
+    const criteriaItem = updated[index];
+    try {
+      if (criteriaItem.id) {
+        // Existing → update using primary key id
+        await updateScoringCriteria(criteriaItem.id, {
+          criteria: value,
+          unitId: criteriaItem.unitId,
+        });
+      } else if (value.trim() !== "") {
+        // New → create, backend assigns criteriaId automatically
+        const created = await createScoringCriteria({
+          criteria: value,
+          unitId: criteriaItem.unitId,
+        });
+
+        // Save the new primary key id and criteriaId
+        updated[index] = {
+          ...updated[index],
+          id: created.id,
+          criteriaId: created.criteriaId,
+          name: created.criteria
+        };
+        setCustomCriteria(updated);
       }
-    }}
-  />
-</td>
+    } catch (err) {
+      console.error("Error saving scoring criteria:", err);
+    }
+  }}
+/>
+
+                      </td>
                     </tr>
                   ))}
                 </tbody>

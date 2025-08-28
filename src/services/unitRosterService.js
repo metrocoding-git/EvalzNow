@@ -38,7 +38,7 @@ export const deleteUnitRoster = async (id) => {
 export const getAllUnitRoster = async () => {
   try {
     const response = await api.get(API_ROUTES.ROSTER);
-    return response.data;
+    return response.data || [];
   } catch (error) {
     console.error("Error fetching units:", error);
     throw error;
@@ -51,7 +51,7 @@ export const getAllUnitRoster = async () => {
 export const getUniRostertByUnitId = async (id) => {
   try {
     const response = await api.get(`${API_ROUTES.ROSTER}/unit/${id}`);
-    return response.data;
+    return response.data || [];
   } catch (error) {
     console.error("Error fetching unit:", error);
     throw error;

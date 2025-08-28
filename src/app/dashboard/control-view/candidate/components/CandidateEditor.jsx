@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Edit3, X, Plus, Edit } from "lucide-react";
+import { Edit3, X, Plus, Edit, Trash2 } from "lucide-react";
 import { updateCandidate } from "@/services/candidateService";
 import { getAllEthinicities } from "@/services/ethinictyService";
 import { getAllIncomes } from "@/services/incomeService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
@@ -107,6 +108,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
   
   const [loading, setLoading] = useState(false);
 
+  const { setFormStatus } = useFormStatus();
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -166,6 +168,16 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
         Other: candidate.other || false,
         Comments: candidate.comments || "",
       });
+
+      setRows(
+        Array.isArray(candidate.irregularities) && candidate.irregularities.length > 0
+          ? candidate.irregularities.map(ir => ({
+              id: ir.id || "",
+              type: ir.type || "",
+              comment: ir.comments || ""
+            }))
+          : [{ id: "", type: "", comment: "" }]
+      );
       
     }
   }, [candidate]);
@@ -234,6 +246,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setFormStatus("Processing");
     setError(null);
   
     try {
@@ -273,6 +286,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
     } catch (err) {
       console.error("Failed to update candidate:", err);
       setError(err.response?.data?.message || "Failed to update candidate");
+      setFormStatus("Ready...");    
     } finally {
       setIsSubmitting(false);
     }
@@ -388,6 +402,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                   <th className="border border-gray-300 px-3 py-2 text-left">
                     Comments
                   </th>
+                  <th className="border border-gray-300 px-3 py-2 text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -431,6 +446,19 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                         className="w-full px-2 py-1 border"
                         placeholder="Max 40 characters"
                       />
+                    </td>
+                    <td className="border border-gray-300 px-1 py-1 text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updatedRows = [...rows];
+                            updatedRows.splice(index, 1);
+                            setRows(updatedRows);
+                          }}
+                          className="px-1 py-1 text-red-600 hover:text-red-800"
+                        >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}

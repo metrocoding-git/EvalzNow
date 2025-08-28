@@ -61,44 +61,71 @@ export default function ViewerSelections({candidate}) {
       dayCount: 12,
       productivityCSD: 95,
       productivityUSD: 88,
-      rrn: 10,
-      prn: 8,
-      arn: 6,
-      xlr: 4,
-      xrr: 5,
-      xsr: 7,
-      xwr: 9,
-      xtr: 6,
-      xpr: 8,
-      xrvsr: 3,
-      xpvsr: 4,
-      xavsr: 2,
-      xep: 6,
-      xcp: 7,
-      xbp: 5,
-      msip: "Yes",
-      stap: "STA1",
-      ic: "IC1",
-      deltaRrn: 1,
-      deltaPrn: -1,
-      deltaArn: 0,
-      geq: "Pass",
-      stag: "G1",
-      rrgt1: 2,
-      prgt1: 3,
-      argt1: 1,
-      rrgt2: 4,
-      prgt2: 2,
-      argt2: 3,
-      rrgt3: 1,
-      prgt3: 2,
-      argt3: 2,
-      rrgt4: 0,
-      prgt4: 1,
-      argt4: 0,
-      rrgt5: 1,
-      prgt5: 1,
-      argt5: 1
+      "∆ARN": 12,
+  "∆PRN": 18,
+  "∆RRN": 25,
+  "AAVS": 87,
+  "ALS": 76,
+  "APS": 91,
+  "APVS": 64,
+  "AR": 55,
+  "ARGT": 32,
+  "ARN": 47,
+  "ARS": 72,
+  "ARVS": 68,
+  "ASP": 81,
+  "ATS": 59,
+  "AWS": 66,
+  "BID": 1001,
+  "CID": 5002,
+  "CSD": 20210101,
+  "DC": 120,
+  "GEQ": 42,
+  "GT": 53,
+  "IC": 3,
+  "IEP": 7,
+  "MAVS": 95,
+  "MGS": 88,
+  "MLS": 91,
+  "MPS": 86,
+  "MPVS": 93,
+  "MRS": 90,
+  "MRVS": 85,
+  "MSIP": 14,
+  "MSS": 89,
+  "MTS": 92,
+  "MWS": 87,
+  "PP": 4,
+  "PR": 61,
+  "PRGT": 39,
+  "PRN": 45,
+  "PTP": 5,
+  "RMS": 27,
+  "RR": 52,
+  "RRGT": 34,
+  "RRN": 41,
+  "SGP": 78,
+  "SLA": 22,
+  "SMART": 9,
+  "STA/G": 11,
+  "STA/P": 13,
+  "TEFL": 2,
+  "TTT": 6,
+  "USD": 20210315,
+  "VAM": 19,
+  "VTM": 21,
+  "XAVSR": 44,
+  "XBP": 56,
+  "XCP": 63,
+  "XEP": 71,
+  "XLR": 54,
+  "XPR": 62,
+  "XPVSR": 48,
+  "XRR": 58,
+  "XRVSR": 49,
+  "XSR": 67,
+  "XTR": 73,
+  "XWR": 69
     },
     {
       ppId: 1,
@@ -106,44 +133,71 @@ export default function ViewerSelections({candidate}) {
       dayCount: 8,
       productivityCSD: 85,
       productivityUSD: 80,
-      rrn: 8,
-      prn: 7,
-      arn: 5,
-      xlr: 3,
-      xrr: 4,
-      xsr: 5,
-      xwr: 6,
-      xtr: 5,
-      xpr: 6,
-      xrvsr: 2,
-      xpvsr: 3,
-      xavsr: 1,
-      xep: 4,
-      xcp: 5,
-      xbp: 4,
-      msip: "No",
-      stap: "STA2",
-      ic: "IC2",
-      deltaRrn: 0,
-      deltaPrn: 1,
-      deltaArn: -1,
-      geq: "Fail",
-      stag: "G2",
-      rrgt1: 1,
-      prgt1: 2,
-      argt1: 1,
-      rrgt2: 2,
-      prgt2: 1,
-      argt2: 2,
-      rrgt3: 0,
-      prgt3: 1,
-      argt3: 1,
-      rrgt4: 1,
-      prgt4: 0,
-      argt4: 1,
-      rrgt5: 0,
-      prgt5: 0,
-      argt5: 0
+      "∆ARN": 12,
+  "∆PRN": 18,
+  "∆RRN": 25,
+  "AAVS": 87,
+  "ALS": 76,
+  "APS": 91,
+  "APVS": 64,
+  "AR": 55,
+  "ARGT": 32,
+  "ARN": 47,
+  "ARS": 72,
+  "ARVS": 68,
+  "ASP": 81,
+  "ATS": 59,
+  "AWS": 66,
+  "BID": 1001,
+  "CID": 5002,
+  "CSD": 20210101,
+  "DC": 120,
+  "GEQ": 42,
+  "GT": 53,
+  "IC": 3,
+  "IEP": 7,
+  "MAVS": 95,
+  "MGS": 88,
+  "MLS": 91,
+  "MPS": 86,
+  "MPVS": 93,
+  "MRS": 90,
+  "MRVS": 85,
+  "MSIP": 14,
+  "MSS": 89,
+  "MTS": 92,
+  "MWS": 87,
+  "PP": 4,
+  "PR": 61,
+  "PRGT": 39,
+  "PRN": 45,
+  "PTP": 5,
+  "RMS": 27,
+  "RR": 52,
+  "RRGT": 34,
+  "RRN": 41,
+  "SGP": 78,
+  "SLA": 22,
+  "SMART": 9,
+  "STA/G": 11,
+  "STA/P": 13,
+  "TEFL": 2,
+  "TTT": 6,
+  "USD": 20210315,
+  "VAM": 19,
+  "VTM": 21,
+  "XAVSR": 44,
+  "XBP": 56,
+  "XCP": 63,
+  "XEP": 71,
+  "XLR": 54,
+  "XPR": 62,
+  "XPVSR": 48,
+  "XRR": 58,
+  "XRVSR": 49,
+  "XSR": 67,
+  "XTR": 73,
+  "XWR": 69
     }];
 
   if (!visible) return null;
@@ -177,26 +231,26 @@ export default function ViewerSelections({candidate}) {
                     {/* Always show candidate details */}
                     <div className="items-center justify-center px-4">
                       <div className="p-1 rounded-lg mt-1 space-y-1">
-                        <div className="flex justify-between text-sm text-gray-400">
+                        <div className="grid grid-cols-3 text-sm text-gray-400">
                           <span>First Name:</span>
                           <span>{candidate.firstName}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-gray-400">
+                        <div className="grid grid-cols-3 text-sm text-gray-400">
                           <span>Last Name:</span>
                           <span>{candidate.lastName}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-gray-400">
+                        <div className="grid grid-cols-3 text-sm text-gray-400">
                           <span>ID:</span>
                           <span>{candidate.id}</span>
                         </div>
                         {candidate.candidateStartDate && (
-                          <div className="flex justify-between text-sm text-gray-400">
+                          <div className="grid grid-cols-3 text-sm text-gray-400">
                             <span>Candidate Start Date:</span>
                             <span>{candidate.candidateStartDate}</span>
                           </div>
                         )}
                         {candidate.unitStartDate && (
-                          <div className="flex justify-between text-sm text-gray-400">
+                          <div className="grid grid-cols-3 text-sm text-gray-400">
                             <span>Unit Start Date:</span>
                             <span>{candidate.unitStartDate}</span>
                           </div>
@@ -255,44 +309,72 @@ export default function ViewerSelections({candidate}) {
                             'Day Count (Days)': 'Number of days in assessment period',
                             'Productivity_CSD': 'Productivity score at candidate start date',
                             'Productivity_USD': 'Productivity score at unit start date',
-                            'RRN': 'Reading Ratio Normalized',
-                            'PRN': 'Productivity Ratio Normalized',
-                            'ARN': 'Assessment Ratio Normalized',
-                            'XLR': 'Listening Ratio Score',
-                            'XRR': 'Reading Ratio Score',
-                            'XSR': 'Speaking Ratio Score',
-                            'XWR': 'Writing Ratio Score',
-                            'XTR': 'Theory-Based Ratio Score',
-                            'XPR': 'Practical Ratio Score',
-                            'XRVSR': 'Receptive Variable Score Ratio',
-                            'XPVSR': 'Productive Variable Score Ratio',
-                            'XAVSR': 'Acuity Variable Score Ratio',
-                            'XEP': 'Equivalent Proficiency Score',
-                            'XCP': 'Composite Proficiency Score',
-                            'XBP': 'Band Proficiency Score',
-                            'MSIP': 'Butler Interaction Proficiency',
-                            'STA/P': 'Stability in Proficiency',
-                            'IC': 'Interaction Coefficient',
-                            'ΔRRN': 'Change in Reading Ratio',
-                            'ΔPRN': 'Change in Productivity Ratio',
-                            'ΔARN': 'Change in Assessment Ratio',
-                            'GEQ': 'General Evaluation Quality',
-                            'STA/G': 'Stability Grade',
-                            'RRGT1': 'Reading Ratio Grade Threshold 1',
-                            'PRGT1': 'Productivity Ratio Grade Threshold 1',
-                            'ARGT1': 'Assessment Ratio Grade Threshold 1',
-                            'RRGT2': 'Reading Ratio Grade Threshold 2',
-                            'PRGT2': 'Productivity Ratio Grade Threshold 2',
-                            'ARGT2': 'Assessment Ratio Grade Threshold 2',
-                            'RRGT3': 'Reading Ratio Grade Threshold 3',
-                            'PRGT3': 'Productivity Ratio Grade Threshold 3',
-                            'ARGT3': 'Assessment Ratio Grade Threshold 3',
-                            'RRGT4': 'Reading Ratio Grade Threshold 4',
-                            'PRGT4': 'Productivity Ratio Grade Threshold 4',
-                            'ARGT4': 'Assessment Ratio Grade Threshold 4',
-                            'RRGT5': 'Reading Ratio Grade Threshold 5',
-                            'PRGT5': 'Productivity Ratio Grade Threshold 5',
-                            'ARGT5': 'Assessment Ratio Grade Threshold 5'
+                            '∆ARN'   : 'Acuity Ratio Growth Differential',
+                            '∆PRN'   : 'Productive Ratio Growth Differential',
+                            '∆RRN'   : 'Receptive Ratio Growth Differential',
+                            'AAVS'   : 'Attained Acuity Variable Scores',
+                            'ALS'    : 'Attained Listening Score',
+                            'APS'    : 'Attained Practical Score',
+                            'APVS'   : 'Attained Productive Variable Scores',
+                            'AR'     : 'Acuity Ratio of Outputs',
+                            'ARGT'   : 'Projected Acuity Ratio Component for Growth Target',
+                            'ARN'    : 'Acuity Ratio of the Performance Point',
+                            'ARS'    : 'Attained Reading Score',
+                            'ARVS'   : 'Attained Receptive Variable Scores',
+                            'ASP'    : 'Attained Speaking Score',
+                            'ATS'    : 'Attained Theory-Based Score',
+                            'AWS'    : 'Attained Writing Score',
+                            'BID'    : 'Benchmark ID',
+                            'CID'    : 'Candidate ID',
+                            'CSD'    : 'Candidate Start Date',
+                            'DC'     : 'Day Count',
+                            'GEQ'    : 'Equivalent Growth',
+                            'GT'     : 'Growth Target of a Performance Point',
+                            'IC'     : 'Interaction Class Based on Performance Point',
+                            'IEP'    : 'Individualized Educational Plan',
+                            'MAVS'   : 'Maximum Acuity Variable Scores',
+                            'MGS'    : 'Maximum Grammar Score',
+                            'MLS'    : 'Maximum Listening Score',
+                            'MPS'    : 'Maximum Practical Score',
+                            'MPVS'   : 'Maximum Productive Variable Scores',
+                            'MRS'    : 'Maximum Reading Score',
+                            'MRVS'   : 'Maximum Receptive Variable Scores',
+                            'MSIP'   : 'Margins of Interaction Proficiency',
+                            'MSS'    : 'Maximum Speaking Score',
+                            'MTS'    : 'Maximum Theory-Based Score',
+                            'MWS'    : 'Maximum Writing Score',
+                            'PP'     : 'Performance Point',
+                            'PR'     : 'Productive Ratio of Outputs',
+                            'PRGT'   : 'Projected Productive Ratio Component for Growth Target',
+                            'PRN'    : 'Productive Ratio of the Performance Point',
+                            'PTP'    : 'Projection Termination Point',
+                            'RMS'    : 'Root Mean Square',
+                            'RR'     : 'Receptive Ratio of Inputs',
+                            'RRGT'   : 'Projected Receptive Ratio Component for Growth Target',
+                            'RRN'    : 'Receptive Ratio of the Performance Point',
+                            'SGP'    : 'Student Growth Percentile',
+                            'SLA'    : 'Student Language Acquisition',
+                            'SMART'  : 'Specific/Measurable/Attainable/Relevancy (Realistic)/Time-Bound',
+                            'STA/G'  : 'Stability in Growth',
+                            'STA/P'  : 'Stability in Proficiency',
+                            'TEFL'   : 'Teaching English as a Foreign Language',
+                            'TTT'    : 'Teacher Talk Time',
+                            'USD'    : 'Unit Start Date',
+                            'VAM'    : 'Value-Added Model',
+                            'VTM'    : 'Value-Table Model',
+                            'XAVSR'  : 'Acuity Variable Scoring Ratio',
+                            'XBP'    : 'Band Proficiency',
+                            'XCP'    : 'Composite Proficiency',
+                            'XEP'    : 'Equivalent Proficiency',
+                            'XLR'    : 'Listening Ratio',
+                            'XPR'    : 'Practical Ratio',
+                            'XPVSR'  : 'Productive Variable Scoring Ratio',
+                            'XRR'    : 'Reading Ratio',
+                            'XRVSR'  : 'Receptive Variable Scoring Ratio',
+                            'XSR'    : 'Speaking Ratio',
+                            'XTR'    : 'Theory-Based Ratio',
+                            'XWR'    : 'Writing Ratio',
+
                           }).map(([header, description]) => (
                             <th 
                               key={header}
@@ -307,63 +389,112 @@ export default function ViewerSelections({candidate}) {
                         </tr>
                       </thead>
                       <tbody>
-                        {workspaceTableData.length > 0 ? (
-                          workspaceTableData.map((row, rowIndex) => (
-                            <tr
-                              key={rowIndex}
-                              
-                              className={`cursor-pointer hover:bg-gray-100 `}
-                            >
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.criticalDate}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.dayCount}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.productivityCSD}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.productivityUSD}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.arn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xlr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xrr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xsr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xwr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xtr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xpr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xrvsr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xpvsr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xavsr}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xep}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xcp}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.xbp}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.msip}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.stap}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.ic}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.deltaRrn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.deltaPrn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.deltaArn}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.geq}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.stag}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrgt1}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prgt1}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.argt1}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrgt2}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prgt2}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.argt2}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrgt3}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prgt3}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.argt3}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrgt4}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prgt4}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.argt4}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.rrgt5}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.prgt5}</td>
-                              <td className="border-1 border-gray-400 px-2 py-1">{row.argt5}</td>
-                            </tr>
+                          {workspaceTableData.length > 0 ? (
+                            workspaceTableData.map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className="cursor-pointer hover:bg-gray-100"
+                              >
+                                {Object.keys({
+                                  'PP ID': 'Performance Profile Identifier',
+                                  'Critical Reference Date': 'The key date for assessment',
+                                  'Day Count (Days)': 'Number of days in assessment period',
+                                  'Productivity_CSD': 'Productivity score at candidate start date',
+                                  'Productivity_USD': 'Productivity score at unit start date',
+                                  '∆ARN': 'Acuity Ratio Growth Differential',
+                                  '∆PRN': 'Productive Ratio Growth Differential',
+                                  '∆RRN': 'Receptive Ratio Growth Differential',
+                                  'AAVS': 'Attained Acuity Variable Scores',
+                                  'ALS': 'Attained Listening Score',
+                                  'APS': 'Attained Practical Score',
+                                  'APVS': 'Attained Productive Variable Scores',
+                                  'AR': 'Acuity Ratio of Outputs',
+                                  'ARGT': 'Projected Acuity Ratio Component for Growth Target',
+                                  'ARN': 'Acuity Ratio of the Performance Point',
+                                  'ARS': 'Attained Reading Score',
+                                  'ARVS': 'Attained Receptive Variable Scores',
+                                  'ASP': 'Attained Speaking Score',
+                                  'ATS': 'Attained Theory-Based Score',
+                                  'AWS': 'Attained Writing Score',
+                                  'BID': 'Benchmark ID',
+                                  'CID': 'Candidate ID',
+                                  'CSD': 'Candidate Start Date',
+                                  'DC': 'Day Count',
+                                  'GEQ': 'Equivalent Growth',
+                                  'GT': 'Growth Target of a Performance Point',
+                                  'IC': 'Interaction Class Based on Performance Point',
+                                  'IEP': 'Individualized Educational Plan',
+                                  'MAVS': 'Maximum Acuity Variable Scores',
+                                  'MGS': 'Maximum Grammar Score',
+                                  'MLS': 'Maximum Listening Score',
+                                  'MPS': 'Maximum Practical Score',
+                                  'MPVS': 'Maximum Productive Variable Scores',
+                                  'MRS': 'Maximum Reading Score',
+                                  'MRVS': 'Maximum Receptive Variable Scores',
+                                  'MSIP': 'Margins of Interaction Proficiency',
+                                  'MSS': 'Maximum Speaking Score',
+                                  'MTS': 'Maximum Theory-Based Score',
+                                  'MWS': 'Maximum Writing Score',
+                                  'PP': 'Performance Point',
+                                  'PR': 'Productive Ratio of Outputs',
+                                  'PRGT': 'Projected Productive Ratio Component for Growth Target',
+                                  'PRN': 'Productive Ratio of the Performance Point',
+                                  'PTP': 'Projection Termination Point',
+                                  'RMS': 'Root Mean Square',
+                                  'RR': 'Receptive Ratio of Inputs',
+                                  'RRGT': 'Projected Receptive Ratio Component for Growth Target',
+                                  'RRN': 'Receptive Ratio of the Performance Point',
+                                  'SGP': 'Student Growth Percentile',
+                                  'SLA': 'Student Language Acquisition',
+                                  'SMART': 'Specific/Measurable/Attainable/Relevancy (Realistic)/Time-Bound',
+                                  'STA/G': 'Stability in Growth',
+                                  'STA/P': 'Stability in Proficiency',
+                                  'TEFL': 'Teaching English as a Foreign Language',
+                                  'TTT': 'Teacher Talk Time',
+                                  'USD': 'Unit Start Date',
+                                  'VAM': 'Value-Added Model',
+                                  'VTM': 'Value-Table Model',
+                                  'XAVSR': 'Acuity Variable Scoring Ratio',
+                                  'XBP': 'Band Proficiency',
+                                  'XCP': 'Composite Proficiency',
+                                  'XEP': 'Equivalent Proficiency',
+                                  'XLR': 'Listening Ratio',
+                                  'XPR': 'Practical Ratio',
+                                  'XPVSR': 'Productive Variable Scoring Ratio',
+                                  'XRR': 'Reading Ratio',
+                                  'XRVSR': 'Receptive Variable Scoring Ratio',
+                                  'XSR': 'Speaking Ratio',
+                                  'XTR': 'Theory-Based Ratio',
+                                  'XWR': 'Writing Ratio',
+                                }).map((header) => {
+                                  // normalize header key to match row keys
+                                  let key = header;
+                                  if (header === 'PP ID') key = 'ppId';
+                                  if (header === 'Critical Reference Date') key = 'criticalDate';
+                                  if (header.startsWith('Day Count')) key = 'dayCount';
+                                  if (header === 'Productivity_CSD') key = 'productivityCSD';
+                                  if (header === 'Productivity_USD') key = 'productivityUSD';
 
-                          ))
-                        ) : (
-                          <tr><td colSpan="44" className="text-center py-4">No data available</td></tr>
-                        )}
-                      </tbody>
+                                  return (
+                                    <td
+                                      key={key}
+                                      className="border border-gray-200 px-2 py-1 whitespace-nowrap"
+                                    >
+                                      {row[key] !== undefined ? row[key] : '-'}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="70" className="text-center py-4">
+                                No data available
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+
                     </table>
                   </div>
                 {/* )} */}

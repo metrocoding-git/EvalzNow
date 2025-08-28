@@ -12,6 +12,7 @@ import { useState, useEffect, useRef } from "react";
 import ClientEditor from "./components/ClientEditor";
 import CreateClientForm from "./components/CreateClientForm";
 import { createClient, deleteClient, getAllClients } from "@/services/clientService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -53,8 +54,8 @@ export default function AdminControl() {
   const [error, setError] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
 
-
-  
+  // const [formStatus, setFormStatus] = useState("Ready");
+  const { setFormStatus } = useFormStatus();
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -190,6 +191,7 @@ export default function AdminControl() {
         setContextMenu({ visible: false, x: 0, y: 0, selectedClient: null });
         setSelectedClient(null);
         setShowEdit(false);
+        setFormStatus("Ready...");
       }
     };
 
@@ -203,7 +205,7 @@ export default function AdminControl() {
     }
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [dataList]);
+  }, [dataList, setFormStatus]);
   
 
 
@@ -310,6 +312,7 @@ export default function AdminControl() {
                         setSelectedClient(item)
                         setShowEdit(true);
                         setShowAdd(false);
+                        setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -398,7 +401,9 @@ export default function AdminControl() {
             onClose={() => {
               setSelectedClient(null);  // deselect client
               setShowEdit(false);
+              setFormStatus("Ready...");
             }}
+            setFormStatus={setFormStatus}
             onSave={(updatedClient) => {
               setDataList((prev) =>
                 prev.map((item) =>
@@ -406,6 +411,10 @@ export default function AdminControl() {
                 )
               );
               setSelectedClient(updatedClient);
+              setFormStatus("Completed");
+
+              // Optional: revert back to Ready after 2s
+              setTimeout(() => setFormStatus("Ready..."), 2000);
             }}
           />
         </div>

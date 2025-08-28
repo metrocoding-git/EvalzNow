@@ -1,8 +1,8 @@
 "use client";
-export default function BottomRibbon({ activeTab, activeButton }) {
+export default function BottomRibbon({ activeTab, activeButton, formStatus }) {
   return (
     <div className="w-full bg-gray-200 shadow-sm text-sm font-medium border-1 border-black mt-1 p-2">
-      <p className="text-sm text-gray-700">Ready...</p>
+      <p className="text-sm text-gray-700">{formStatus || "Ready..."}</p>
 
       {activeTab === "Analytics View" && (
         <div className="w-full mt-1">

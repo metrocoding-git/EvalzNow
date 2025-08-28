@@ -141,67 +141,97 @@ export default function RibbonPanel() {
   const showCategories = activeTab === "Analytics View";
 
   return (
-    <div className="w-full bg-gray-50 border-b border-gray-200 px-2 py-2 flex my-1">
-      {/* Main ribbon items */}
-      {ribbonItems.map((tool, i) => (
-        <IconButton
-          key={i}
-          icon={tool.path}
-          label={tool.label}
-          onClick={() => router.push(tool.link)}
-          active={activeTab === tool.label}
-          link={tool.link}
-        />
-      ))}
+    <div className="w-full bg-gray-50 border-b border-gray-200 px-1 py-2 flex my-1">
+      
+      {/* Main ribbon items with category name below */}
+      <div className="flex w-[30%]">
+        <div className="flex flex-col items-center mx-1">
+          <div className="flex gap-1">
+            {ribbonItems
+              .filter((tool) => tool.label === "Control View" || tool.label === "Setup View")
+              .map((tool, i) => (
+                <IconButton
+                  key={i}
+                  icon={tool.path}
+                  label={tool.label}
+                  onClick={() => router.push(tool.link)}
+                  active={activeTab === tool.label}
+                  link={tool.link}
+                />
+              ))}
+          </div>
+          
+          {/* Common label for both */}
+          <div className="text-xs text-gray-500 font-medium text-center mt-1">
+            Home
+          </div>
+        </div>
+
+        {/* Keep other ribbon items (like Analytics View) outside */}
+        {ribbonItems
+          .filter((tool) => tool.label === "Analytics View")
+          .map((tool, i) => (
+            <IconButton
+              key={i}
+              icon={tool.path}
+              label={tool.label}
+              onClick={() => router.push(tool.link)}
+              active={activeTab === tool.label}
+              link={tool.link}
+            />
+        ))}
+      </div>
+      
 
       {/* Analytics sub-items with categories */}
-      <div className="flex items-start ml-2">
-        {analyticCategories.map((category, categoryIndex) => {
-          // Filter items based on active tab
-          const visibleItems = category.items.filter(item => 
-            activeTab === "Analytics View" || item.type
-          );
-          
-          // Skip rendering if no items are visible in this category
-          if (visibleItems.length === 0) return null;
-          
-          return (
-            <div key={categoryIndex} className="flex items-center">
-              {/* Divider line between categories (except before the first category) */}
-              {categoryIndex > 0 && showCategories && (
-                <div className="h-14 w-[2px] bg-gray-300 mx-2 mb-4"></div>
-              )}
-              
-              {/* Category container */}
-              <div className="flex flex-col items-center mx-2">
-                {/* Category items */}
-                <div className="flex gap-2 mb-1">
-                  {visibleItems.map(
-                    (item, i) => (
-                      <SubIconButton
-                        key={i}
-                        icon={item.path}
-                        label={item.label}
-                        onClick={() => {
-                          if (item.link) router.push(item.link);
-                        }}
-                        active={activeButton === item.label}
-                      />
-                    )
-                  )}
-                </div>
-                
-                {/* Category label - centered below items (only show when Analytics View is active) */}
-                {showCategories && (
-                  <div className="text-xs text-gray-500 font-medium text-center w-full">
-                    {category.name}
-                  </div>
+      <div className="flex items-start ml-1">
+  {analyticCategories.map((category, categoryIndex) => {
+    const visibleItems = category.items.filter(item => 
+      activeTab === "Analytics View" || 
+      (category.name === "Outputs" && item.type) || 
+      (item.label === "Global Analytics") // always show this one
+    );
+
+    if (visibleItems.length === 0) return null;
+
+    return (
+      <div key={categoryIndex} className="flex items-center">
+        {/* Divider between categories except the first */}
+        {categoryIndex > 0 && (
+          <div className="h-14 w-[2px] bg-gray-300 mx-1 mb-4"></div>
+        )}
+
+        {/* Category container */}
+        <div className="flex flex-col items-center mx-2">
+          <div className="flex gap-2 mb-1">
+            {visibleItems.map((item, i) => (
+              <div key={i} className="flex items-center">
+                {/* Extra divider only for the first Outputs item */}
+                {category.name === "Outputs" && i === 0 && (
+                  <div className="h-14 bg-gray-300 mr-1"></div>
                 )}
+
+                <SubIconButton
+                  icon={item.path}
+                  label={item.label}
+                  onClick={() => item.link && router.push(item.link)}
+                  active={activeButton === item.label}
+                />
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+
+          {/* Category label */}
+          <div className="text-xs text-gray-500 font-medium text-center w-full">
+            {category.name}
+          </div>
+        </div>
       </div>
+    );
+  })}
+</div>
+
+
     </div>
   );
 }

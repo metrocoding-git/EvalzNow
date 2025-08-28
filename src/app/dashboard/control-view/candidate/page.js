@@ -20,6 +20,7 @@ import ReviewCandidate from "./components/ReviewCandidate";
 import { createCandidate, deleteCandidate, getAllCandidates } from "@/services/candidateService";
 import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicity } from "@/services/ethinictyService";
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/services/incomeService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -48,6 +49,9 @@ export default function CandidateControl() {
     // { id: "009", firstName: "Morgan", lastName: "Taylor" },
     // { id: "010", firstName: "Casey", lastName: "Anderson" },
   ]);
+
+   // const [formStatus, setFormStatus] = useState("Ready");
+   const { setFormStatus } = useFormStatus();
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -167,6 +171,7 @@ export default function CandidateControl() {
         setContextMenu({ visible: false, x: 0, y: 0, selectedCandidate: null });
         setSelectedCandidate(null);
         setShowEdit(false);
+        setFormStatus("Ready...");
       }
     };
 
@@ -382,6 +387,7 @@ export default function CandidateControl() {
                       setShowEdit(true);
                       setShowAdd(false);
                       setShowReview(false);
+                      setFormStatus("Editing...");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -565,6 +571,10 @@ export default function CandidateControl() {
               )
             );
             setSelectedCandidate(updatedCandidate);
+            setFormStatus("Completed");
+
+              // Optional: revert back to Ready after 2s
+              setTimeout(() => setFormStatus("Ready..."), 2000);
           }}
         />
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { updateClient } from "@/services/clientService";
 import { getCompanySize } from "@/services/companyService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -23,7 +24,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
   const [error, setError] = useState(null);
   const [companySize, setCompanySize] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { setFormStatus } = useFormStatus();
 
   useEffect(() => {
     if (client) {
@@ -86,6 +87,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setFormStatus("Processing");
     setError(null);
 
     try {
@@ -112,6 +114,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
     } catch (error) {
       console.error("Update error:", error);
       setError(error.response?.data?.message || "Failed to update client");
+      setFormStatus("Ready...");    
     } finally {
       setIsSubmitting(false);
     }
