@@ -25,6 +25,7 @@ import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
 import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unitService";
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -60,6 +61,9 @@ export default function UnitControl() {
   const [isSelected, setIsSelected] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [blocks, setBlocks] = useState([]);
+
+  // const [formStatus, setFormStatus] = useState("Ready");
+  const { setFormStatus } = useFormStatus();
 
   // Fetch all units on mount
   useEffect(() => {
@@ -132,6 +136,22 @@ export default function UnitControl() {
     fetchUnitRoster();
   }, []);
 
+  const handleRosterUpdate = (updatedRoster) => {
+    // Update unitRosterData
+    setUnitRosterData(prev => {
+      // Remove old roster item if exists
+      const filtered = prev.filter(r => r.id !== updatedRoster.id);
+      return [...filtered, updatedRoster];
+    });
+  
+    // Update candidateList immediately
+    setCandidateList(prev => {
+      const candidate = updatedRoster.candidate;
+      // Remove old candidate if exists
+      const filtered = prev.filter(c => c.id !== candidate.id);
+      return [...filtered, candidate];
+    });
+  };
 
   // Fetch all candidates on mount
   // Fetch unit roster by unit ID when selectedUnit changes
@@ -284,6 +304,7 @@ export default function UnitControl() {
         setContextMenu({ visible: false, x: 0, y: 0, selectedUnit: null });
         setSelectedUnit(null);
         setShowEdit(false);
+        setFormStatus("Ready...");
       }
     };
 
@@ -306,6 +327,7 @@ export default function UnitControl() {
   const handleUnitSave = async (updatedUnit) => {
     try {
       setLoading(true);
+      setFormStatus("Processing...");
       // Call the update API
       const result = await updateUnit(updatedUnit.id, updatedUnit);
       
@@ -316,10 +338,15 @@ export default function UnitControl() {
       );
       setSelectedUnit(result);
       setShowEdit(false);
+      
+      setFormStatus("Completed");
+      setTimeout(() => setFormStatus("Ready..."), 2000);
+
       return result;
     } catch (err) {
       console.error("Failed to update unit:", err);
       setError("Failed to update unit. Please try again.");
+      setFormStatus("Ready...");
       throw err;
     } finally {
       setLoading(false);
@@ -338,7 +365,7 @@ export default function UnitControl() {
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
+        <div className="flex flex-col border-1 border-gray-200 overflow-auto h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
@@ -398,15 +425,58 @@ export default function UnitControl() {
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
+
             </div>
 
-            {/* Conditional Column Headers */}
-            {showUnitRoster ? (
-              <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
-                <div className="cursor-pointer select-none">Last Name</div>
-                <div className="cursor-pointer select-none">First Name</div>
-                <div className="cursor-pointer select-none">Candidate ID</div>
+            {/* <div className=""> */}
+            {!showAdd && showUnitRoster && selectedUnit && (
+              <div className="pb-1 flex-1 overflow-auto flex flex-col">
+                
+                {/* Unit Details */}
+                <div className="border border-gray-200 p-2 mb-2">
+                  <span className="text-sm text-gray-600">Unit Name: {selectedUnit.unitName || "N/A"}</span><br/>
+                  <span className="text-sm text-gray-600">Unit ID: {selectedUnit.unitId || "N/A"}</span><br/>
+                  <span className="text-sm text-gray-600">Unit Type: {selectedUnit.unitType || "N/A"}</span><br/>
+                  <span className="text-sm text-gray-600">Signature Profile: {selectedUnit.signatureProfile || "N/A"}</span>
+                </div>
+
+                {/* Candidate List Header */}
+                <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black mb-1">
+                  <div>Last Name</div>
+                  <div>First Name</div>
+                  <div>Candidate ID</div>
+                </div>
+
+                {/* Candidate List */}
+                <div className="overflow-y-auto flex-1 bg-white">
+                  {unitRosterData
+                    .filter(roster => roster.unitId === selectedUnit.id)
+                    .map((rosterItem, index) => {
+                      const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
+                      return (
+                        <div
+                          key={index}
+                          className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pointer ${isSelected ? 'bg-gray-300' : ''}`}
+                          onClick={() => handleCandidateSelect(rosterItem.candidate)}
+                        >
+                          <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                          <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                          <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
+            )}
+            
+
+            {/* Conditional Column Headers */}
+            {showUnitRoster ? (<></>
+              // <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
+              //   <div className="cursor-pointer select-none">Last Name</div>
+              //   <div className="cursor-pointer select-none">First Name</div>
+              //   <div className="cursor-pointer select-none">Candidate ID</div>
+              // </div>
             ) : (
               <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
                 <div
@@ -443,7 +513,26 @@ export default function UnitControl() {
           {/* <div className=""> */}
           {!showAdd && showUnitRoster && (
             <div className=" pb-1 flex-1 overflow-auto">
-              
+              {/* Candidate List */}
+              <div className="max-h-40 overflow-y-auto">
+                {unitRosterData
+                  .filter(roster => roster.unitId === selectedUnit?.id)
+                  .map((rosterItem, index) => {
+                    const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
+
+                    return(
+                    <div 
+                      key={index}
+                      className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pisSelectedointer ${ isSelected ? 'bg-gray-300' : ''}`}
+                      onClick={() => handleCandidateSelect(rosterItem.candidate)}>
+                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                    </div>
+                    )
+                  })
+                }
+              </div>
 
               {/* Unit Details (smaller and less prominent) */}
               <div className="items-center justify-center px-4 mt-1">
@@ -465,27 +554,7 @@ export default function UnitControl() {
                   </span>
                 </div>
               </div>
-
-              {/* Candidate List */}
-              <div className="max-h-40 overflow-y-auto">
-                {unitRosterData
-                  .filter(roster => roster.unitId === selectedUnit?.id)
-                  .map((rosterItem, index) => {
-                    const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
-
-                    return(
-                    <div 
-                      key={index}
-                      className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pisSelectedointer ${ isSelected ? 'bg-gray-300' : ''}`}
-                      onClick={() => handleCandidateSelect(rosterItem.candidate)}>
-                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
-                    </div>
-                    )
-                  })
-                }
-              </div>
+              
             </div>
           )}
           {/* </div> */}
@@ -540,6 +609,7 @@ export default function UnitControl() {
                         setSelectedUnit(item);
                         setShowEdit(true);
                         setShowAdd(false);
+                        setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -747,7 +817,8 @@ export default function UnitControl() {
             unitRosterData={filteredUnitRosterData} // Pass filtered data
             selectedUnit={selectedUnit}
             selectedCandidate={selectedCandidate}
-            onBlockSelect={setSelectedBlock}   />
+            onBlockSelect={setSelectedBlock}
+            onRosterUpdate={handleRosterUpdate}   />
           </div>
         )}
       </div>

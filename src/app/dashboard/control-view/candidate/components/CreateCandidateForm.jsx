@@ -252,10 +252,11 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
             <table className="w-full text-sm border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
-                     <th className="border border-gray-300 px-3 py-2 text-center">ID</th>
+                    <th className="border border-gray-300 px-3 py-2 text-center">ID</th>
                   <th className="border border-gray-300 px-3 py-2 text-center ">Irregularities</th>
                
                   <th className="border border-gray-300 px-3 py-2 text-center">Comments</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center"></th>
                 </tr>
               </thead>
               <tbody>

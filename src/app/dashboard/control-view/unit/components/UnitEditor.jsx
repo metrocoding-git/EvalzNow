@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Edit } from "lucide-react";
 import { getUnitById, updateUnit } from "@/services/unitService";
 import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 
 
@@ -91,6 +92,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+   // const [formStatus, setFormStatus] = useState("Ready");
+   const { setFormStatus } = useFormStatus();
+
    // Fetch unit data when unitId changes
    useEffect(() => {
     const fetchUnitData = async () => {
@@ -145,6 +149,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setFormStatus("Processing..."); 
     setError(null);
 
     try {
@@ -172,6 +177,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     } catch (err) {
       console.error("Failed to update unit:", err);
       setError(err.response?.data?.message || "Failed to update unit");
+      setFormStatus("Ready..."); 
     } finally {
       setIsSubmitting(false);
     }
@@ -264,6 +270,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               <label className="text-gray-700 font-medium text-xs">Signature Profile:</label>
               <select
                 name="signatureProfile"
+                disabled
                 value={unit.signatureProfile || ""}
                 onChange={(e) => handleChange("signatureProfile", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"

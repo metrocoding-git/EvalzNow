@@ -102,12 +102,12 @@ export default function PlotSelections() {
   const chart = [
     {
       name: "Main Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs)",
-      icon: "📊",
+      icon: "📉",
       id: '1'
     },
     {
       name: "Extra Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs, criteria must match the unit)",
-      icon: "📈",
+      icon: "📉",
       id: '1'
     },
     {
@@ -117,7 +117,7 @@ export default function PlotSelections() {
     },
     {
       name: "Maximum Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)",
-      icon: "📈",
+      icon: "📉",
       id: '1'
     },
     {
@@ -147,7 +147,7 @@ export default function PlotSelections() {
     },
     {
       name: "Insert Score Count by Units (Pie Chart)",
-      icon: "🥧",
+      icon: "📈",
       id: '1'
     },
     {
@@ -390,7 +390,7 @@ export default function PlotSelections() {
                           <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                             <div className="flex items-center">
                               
-                              <span className="truncate">{item.name}</span>
+                              <span className="truncate">📉 {item.name}</span>
                             </div>
                           </div>
                           <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">

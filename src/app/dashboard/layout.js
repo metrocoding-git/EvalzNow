@@ -2,13 +2,14 @@
 import BottomRibbon from '@/components/BottomRibbon';
 import Loading from '@/components/Loading';
 import RibbonPanel from '@/components/RibbonPanel';
+import { FormStatusContext } from '@/context/FormStatusContext';
 import { useEffect, useState } from 'react';
 
 
 export default function DashboardLayout({ children }) {
   const [activeTab, setActiveTab] = useState('');
   const [activeButton, setActiveButton] = useState('');
-
+  const [formStatus, setFormStatus] = useState("Ready...");
   const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
@@ -25,19 +26,21 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-     <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
-      <RibbonPanel
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activeButton={activeButton}
-        setActiveButton={setActiveButton}
-      />
+    <FormStatusContext.Provider value={{ formStatus, setFormStatus }}>
+      <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
+        <RibbonPanel
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeButton={activeButton}
+          setActiveButton={setActiveButton}
+        />
 
-      <div className="flex flex-1 overflow-hidden">
-        {children}
+        <div className="flex flex-1 overflow-hidden">
+          {children}
+        </div>
+
+        <BottomRibbon activeTab={activeTab} activeButton={activeButton} formStatus={formStatus}  />
       </div>
-
-      <BottomRibbon activeTab={activeTab} activeButton={activeButton} />
-    </div>
+    </FormStatusContext.Provider>
   );
 }

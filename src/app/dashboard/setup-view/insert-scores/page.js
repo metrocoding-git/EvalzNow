@@ -14,7 +14,7 @@ import CompetencyAccounting from "./components/CompetencyAccounting";
 import Editor from "./components/Editor";
 import CreateStaffForm from "../../control-view/staff/components/CreateStaffForm";
 import CreateInsertScoresForm from "./components/CreateInsertScoresForm";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 
@@ -56,9 +56,15 @@ export default function EntitiesManager() {
   
   const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
 
+  const router = useRouter();
   const searchParams = useSearchParams();
   const unitQuery = searchParams.get("unitId");
  
+  useEffect(() => {
+    if (!unitQuery) {
+      router.replace("/dashboard/control-view/unit");
+    }
+  }, [unitQuery, router]);
 
   useEffect(() => {
     const fetchCandidateByUnitId = async () => {

@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react";
 import StaffEditor from "./components/StaffEditor";
 import CreateStaffForm from "./components/CreateStaffForm";
 import { createStaff, deleteStaff, getAllStaffs } from "@/services/staffService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -48,6 +49,8 @@ export default function StaffControl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // const [formStatus, setFormStatus] = useState("Ready");
+  const { setFormStatus } = useFormStatus();
 
   // Fetch staff data
   useEffect(() => {
@@ -117,6 +120,7 @@ export default function StaffControl() {
         setContextMenu({ visible: false, x: 0, y: 0, selectedStaff: null });
         setSelectedStaff(null);
         setShowEdit(false);
+        setFormStatus("Ready...");
       }
     };
 
@@ -245,6 +249,7 @@ export default function StaffControl() {
                       setSelectedStaff(item);
                       setShowEdit(true);
                       setShowAdd(false);
+                      setFormStatus("Editing...");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -319,6 +324,10 @@ export default function StaffControl() {
               )
             );
             setSelectedStaff(updatedStaff);
+            setFormStatus("Completed");
+
+              // Optional: revert back to Ready after 2s
+              setTimeout(() => setFormStatus("Ready..."), 2000);
           }}
         />
         </div>

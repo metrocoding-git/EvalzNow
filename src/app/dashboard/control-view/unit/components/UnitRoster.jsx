@@ -9,7 +9,7 @@ import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/ser
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit, onBlockSelect, selectedCandidate  }) {
+  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);

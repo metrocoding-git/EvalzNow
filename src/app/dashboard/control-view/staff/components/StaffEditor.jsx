@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { updateStaff } from "@/services/staffService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const accessLevels = ["Full Access", "Leaders Access"];
 const accountStatuses = ["Enabled", "Disabled"];
@@ -10,6 +11,9 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
   const [form, setForm] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  // const [formStatus, setFormStatus] = useState("Ready");
+  const { setFormStatus } = useFormStatus();
 
   useEffect(() => {
     if (staff) {
@@ -35,6 +39,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setFormStatus("Processing");
     setError(null);
 
     try {
@@ -59,6 +64,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
     } catch (err) {
       console.error("Failed to update staff:", err);
       setError(err.response?.data?.message || "Failed to update staff");
+      setFormStatus("Ready..."); 
     } finally {
       setIsSubmitting(false);
     }
