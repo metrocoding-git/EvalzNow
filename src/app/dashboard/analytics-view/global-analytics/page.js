@@ -96,9 +96,9 @@ export default function GlobalAnalytics() {
         <div className="flex-1 overflow-auto bg-white ">
           <div className="flex h-full overflow-hidden w-full">
             {/* Sidebar */}
-            <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200 ">
+            {/* <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200 ">
               <div className="flex-grow  flex flex-col h-1/3">
-                  {/* Header */}
+                  
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
                       onClick={() => handleSort("lastName")}
@@ -162,7 +162,7 @@ export default function GlobalAnalytics() {
                               </span>
                             </div>
                           </div>
-                          {/* Candidate Data */}
+                          
                           <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
                             {sortedData.map((item) => (
                               <div
@@ -196,18 +196,18 @@ export default function GlobalAnalytics() {
                       )}
                     </div>
 
-                    {/* Dropdown Content */}
+                 
                   </div>
                 </div>
 
-              {/* Secondary Area */}
+              
               {showSecondary && (
                 <div className="h-1/3 overflow-auto ">
                   <SecondaryArea onClose={() => setShowSecondary(false)} />
                 </div>
               )}
 
-              {/* Editor */}
+            
               <div className="h-1/3 overflow-auto ">
                 <ClientEditor
                   onClose={() => setShowEdit(false)}
@@ -215,10 +215,10 @@ export default function GlobalAnalytics() {
                   showForm={showEdit}
                 />
               </div>
-            </div>
+            </div>  */}
 
             {/* Right Panel */}
-            <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200  p-1 ml-1">
+            <div className="w-full bg-white flex flex-col border-1 h-full border-gray-200  p-1 ml-1">
               {ScoresOpen && <CurveEditor />}
             </div>
           </div>

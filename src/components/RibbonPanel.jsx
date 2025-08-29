@@ -26,7 +26,7 @@ const ribbonItems = [
 // Categorized analytics items
 const analyticCategories = [
   {
-    name: "Preliminary",
+    name: "Preliminaries",
     items: [
       {
         path: "/icons/Scoring_Trends.png",
@@ -162,7 +162,7 @@ export default function RibbonPanel() {
           </div>
           
           {/* Common label for both */}
-          <div className="text-xs text-gray-500 font-medium text-center mt-1">
+          <div className="text-xs text-gray-500 font-medium text-center pt-3">
             Home
           </div>
         </div>
@@ -184,52 +184,60 @@ export default function RibbonPanel() {
       
 
       {/* Analytics sub-items with categories */}
-      <div className="flex items-start ml-1">
-  {analyticCategories.map((category, categoryIndex) => {
-    const visibleItems = category.items.filter(item => 
-      activeTab === "Analytics View" || 
-      (category.name === "Outputs" && item.type) || 
-      (item.label === "Global Analytics") // always show this one
-    );
+            {/* Analytics sub-items with categories */}
+            <div className="flex items-start ml-1">
+        {analyticCategories.map((category, categoryIndex) => {
+          const visibleItems = category.items.filter(
+            (item) =>
+              activeTab === "Analytics View" ||
+              (category.name === "Outputs" && item.type) ||
+              item.label === "Global Analytics" // always show this one
+          );
 
-    if (visibleItems.length === 0) return null;
+          if (visibleItems.length === 0) return null;
 
-    return (
-      <div key={categoryIndex} className="flex items-center">
-        {/* Divider between categories except the first */}
-        {categoryIndex > 0 && (
-          <div className="h-14 w-[2px] bg-gray-300 mx-1 mb-4"></div>
-        )}
+          return (
+            <div key={categoryIndex} className="flex items-center">
+              {/* Divider between Analytics View and the first category (Scoring Trends) */}
+              {categoryIndex === 0 && activeTab === "Analytics View" && (
+                <div className="h-14 w-[2px] bg-gray-300 mx-2 mb-4"></div>
+              )}
 
-        {/* Category container */}
-        <div className="flex flex-col items-center mx-2">
-          <div className="flex gap-2 mb-1">
-            {visibleItems.map((item, i) => (
-              <div key={i} className="flex items-center">
-                {/* Extra divider only for the first Outputs item */}
-                {category.name === "Outputs" && i === 0 && (
-                  <div className="h-14 bg-gray-300 mr-1"></div>
-                )}
+              {/* Divider between subsequent categories */}
+              {categoryIndex > 0 && (
+                <div className="h-14 w-[2px] bg-gray-300 mx-1 mb-4"></div>
+              )}
 
-                <SubIconButton
-                  icon={item.path}
-                  label={item.label}
-                  onClick={() => item.link && router.push(item.link)}
-                  active={activeButton === item.label}
-                />
+              {/* Category container */}
+              <div className="flex flex-col items-center mx-2">
+                <div className="flex gap-2 mb-1">
+                  {visibleItems.map((item, i) => (
+                    <div key={i} className="flex items-center">
+                      {/* Extra divider only for the first Outputs item */}
+                      {category.name === "Outputs" && i === 0 && (
+                        <div className="h-14 bg-gray-300 mr-1"></div>
+                      )}
+
+                      <SubIconButton
+                        icon={item.path}
+                        label={item.label}
+                        onClick={() => item.link && router.push(item.link)}
+                        active={activeButton === item.label}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Category label */}
+                <div className="text-xs text-gray-500 font-medium text-center w-full pt-2">
+                  {category.name}
+                </div>
               </div>
-            ))}
-          </div>
-
-          {/* Category label */}
-          <div className="text-xs text-gray-500 font-medium text-center w-full">
-            {category.name}
-          </div>
-        </div>
+            </div>
+          );
+        })}
       </div>
-    );
-  })}
-</div>
+
 
 
     </div>

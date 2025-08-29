@@ -106,7 +106,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
-          <ListFilterPlus className="w-4 h-4" /> Create Assessment BlockManager
+          <ListFilterPlus className="w-4 h-4" /> Create Assessment Block
         </div>
 
         {/* Close icon */}
@@ -149,7 +149,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
                 placeholder="Enter short description"
                 value={form.shortDescription}
                 onChange={(e) => handleChange("shortDescription", e.target.value)}
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
           </div>

@@ -21,8 +21,9 @@ import {
   Label,
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
+import CandidateSelectionTable from "./CandidateSelection";
 
-export default function PlotSelections() {
+export default function PlotSelections({ onCandidatesSelected }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
     { id: 2, name: "curve2" },
@@ -148,6 +149,8 @@ export default function PlotSelections() {
   
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
+  
+
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
 
@@ -157,6 +160,21 @@ export default function PlotSelections() {
         new ClipboardItem({ [blob.type]: blob }),
       ]);
       alert("Chart copied to clipboard!");
+    }
+  };
+
+  const [showCandidateTable, setShowCandidateTable] = useState(false);
+  const handlePlusClick = () => {
+    setShowCandidateTable(true);
+  };
+
+  const handleCandidateSubmit = (candidates) => {
+    setShowCandidateTable(false); // close modal
+    console.log("Selected candidates:", candidates);
+
+    // Pass selected data to parent
+    if (onCandidatesSelected) {
+      onCandidatesSelected(candidates);
     }
   };
 
@@ -183,6 +201,9 @@ export default function PlotSelections() {
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
+              <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-red-600 hover:text-red-800 cursor-pointer'>
+                    <Plus className="w-4 h-4 hover:text-blue-600" />
+                </button>
               <button
                 onClick={() => {}}
                 title="Reset"
@@ -223,7 +244,7 @@ export default function PlotSelections() {
                         >
                           <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                             <div className="flex items-center">
-                              <span className="truncate">{item.name}</span>
+                              <span className="truncate">📉{item.name}</span>
                             </div>
                           </div>
                           <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
@@ -375,6 +396,19 @@ export default function PlotSelections() {
           </div>
         </div>
       </div>
+
+      {showCandidateTable && (
+        <CandidateSelectionTable
+          onClose={(selectedCandidates) => {
+            setShowCandidateTable(false); // close modal
+            console.log("Selected candidates:", selectedCandidates);
+            if (onCandidatesSelected) {
+              onCandidatesSelected(selectedCandidates); // pass to parent
+            }
+          }}
+        />
+      )}
+
     </>
   );
 }

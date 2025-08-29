@@ -457,56 +457,55 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         {index + 21}
                       </td>
                       <td className="border-1 border-gray-400 px-2 py-1">
-                      <input
-  type="text"
-  className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
-  placeholder="Enter custom criteria"
-  value={customCriteria[index]?.name || ""}
-  onChange={async (e) => {
-    const value = e.target.value;
-    const updated = [...customCriteria];
-    updated[index] = {
-      ...updated[index],
-      name: value,
-    };
-    setCustomCriteria(updated);
+                        <input
+                          type="text"
+                          className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
+                          placeholder="Enter custom criteria"
+                          value={customCriteria[index]?.name || ""}
+                          onChange={async (e) => {
+                            const value = e.target.value;
+                            const updated = [...customCriteria];
+                            updated[index] = {
+                              ...updated[index],
+                              name: value,
+                            };
+                            setCustomCriteria(updated);
 
-    const criteriaItem = updated[index];
-    try {
-      if (criteriaItem.id) {
-        // Existing → update using primary key id
-        await updateScoringCriteria(criteriaItem.id, {
-          criteria: value,
-          unitId: criteriaItem.unitId,
-        });
-      } else if (value.trim() !== "") {
-        // New → create, backend assigns criteriaId automatically
-        const created = await createScoringCriteria({
-          criteria: value,
-          unitId: criteriaItem.unitId,
-        });
+                            const criteriaItem = updated[index];
+                            try {
+                              if (criteriaItem.id) {
+                                // Existing → update using primary key id
+                                await updateScoringCriteria(criteriaItem.id, {
+                                  criteria: value,
+                                  unitId: criteriaItem.unitId,
+                                });
+                              } else if (value.trim() !== "") {
+                                // New → create, backend assigns criteriaId automatically
+                                const created = await createScoringCriteria({
+                                  criteria: value,
+                                  unitId: criteriaItem.unitId,
+                                });
 
-        // Save the new primary key id and criteriaId
-        updated[index] = {
-          ...updated[index],
-          id: created.id,
-          criteriaId: created.criteriaId,
-          name: created.criteria
-        };
-        setCustomCriteria(updated);
-      }
-    } catch (err) {
-      console.error("Error saving scoring criteria:", err);
-    }
-  }}
-/>
+                                // Save the new primary key id and criteriaId
+                                updated[index] = {
+                                  ...updated[index],
+                                  id: created.id,
+                                  criteriaId: created.criteriaId,
+                                  name: created.criteria
+                                };
+                                setCustomCriteria(updated);
+                              }
+                            } catch (err) {
+                              console.error("Error saving scoring criteria:", err);
+                            }
+                          }}
+                        />
 
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-
             </div>
           </div>
         </div>
@@ -516,8 +515,12 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         <div className=" flex flex-col h-full p-1">
           {/* Tab Buttons */}
           <div className="flex flex-col">
+            <div>
+              <h2 className="text-sm font-semibold mx-1">Competency Accounting</h2>
+            </div>
 
             <div className="flex items-center justify-between border-b p-1 bg-gray-100">
+              
               {/* Tab Buttons */}
               <div className="flex space-x-2">
                 <button
@@ -628,7 +631,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                   {(environment === "Classroom" ? classroomData : workforceData).map(
                     (row, idx) => (
                       <tr key={idx} className={`hover:bg-gray-50 cursor-pointer ${
-                        selectedRow === idx ? "bg-gray-200" : ""
+                        selectedRow === row ? "bg-gray-200" : ""
                       }`}  onClick={() => setSelectedRow(row)}>
                         <td className="border p-1 text-center">{row.candidate?.firstName}</td>
                         <td className="border p-1 text-center">{row.candidate?.lastName}</td>

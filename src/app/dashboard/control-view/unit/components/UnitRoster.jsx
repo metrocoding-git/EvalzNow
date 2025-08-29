@@ -378,16 +378,16 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
               <thead className="bg-gray-100">
                 <tr>
                   <th className="border p-1 w-8 text-center">#</th>
-                  <th className="border p-1 w-[90px]">Last Name</th>
-                  <th className="border p-1 w-[90px]">First Name</th>
-                  <th className="border p-1 w-[90px]">Candidate ID</th>
-                  <th className="border p-1 w-[90px]">Unit Outcome</th>
-                  <th className="border p-1 w-[90px]">Present Count</th>
-                  <th className="border p-1 w-24">Excused Absences</th>
-                  <th className="border p-1 w-24">Unexcused Absences</th>
-                  <th className="border p-1 w-24">Excused Tardies</th>
-                  <th className="border p-1 w-24">Unexcused Tardies</th>
-                  <th className="border p-1 w-16">Total Tally</th>
+                  <th className="border p-1 w-[90px] text-center">Last <br/> Name</th>
+                  <th className="border p-1 w-[90px] text-center">First <br/> Name</th>
+                  <th className="border p-1 w-[90px] text-center">Candidate <br/> ID</th>
+                  <th className="border p-1 w-[90px] text-center">Unit <br/> Outcome</th>
+                  <th className="border p-1 w-[90px] text-center">Present <br/> Count</th>
+                  <th className="border p-1 w-24 text-center">Excused <br/> Absences</th>
+                  <th className="border p-1 w-24 text-center">Unexcused <br/> Absences</th>
+                  <th className="border p-1 w-24 text-center">Excused <br/> Tardies</th>
+                  <th className="border p-1 w-24 text-center">Unexcused <br/> Tardies</th>
+                  <th className="border p-1 w-16 text-center">Total <br/> Tally</th>
                 </tr>
               </thead>
               <tbody>

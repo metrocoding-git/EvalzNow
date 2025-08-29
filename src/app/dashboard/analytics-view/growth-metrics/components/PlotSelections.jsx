@@ -169,7 +169,7 @@ export default function PlotSelections({ selectedSort }) {
                           setSelectedChart(chart);
                         }}
                       > 
-                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -183,7 +183,7 @@ export default function PlotSelections({ selectedSort }) {
                           setSelectedChart(chart); 
                         }}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))

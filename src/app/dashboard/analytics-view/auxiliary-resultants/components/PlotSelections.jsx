@@ -374,7 +374,7 @@ export default function PlotSelections({ selectedSort }) {
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
                         onClick={() => setSelectedChart(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -385,7 +385,7 @@ export default function PlotSelections({ selectedSort }) {
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
                         onClick={() => setSelectedChart(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))

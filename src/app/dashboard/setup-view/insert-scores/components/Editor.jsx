@@ -435,7 +435,7 @@ export default function Editor({ details, performancePoints, onClose  }) {
                 </select>
               </div>
 
-              {environment === "classroom" && (
+              {environment === "Classroom" && (
                 <>
                   <div className="flex items-center">
                     <label className="w-40 pr-2 text-left text-gray-700">

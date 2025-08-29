@@ -34,6 +34,8 @@ export default function UnitDistributions() {
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
 
+  const [selectedCandidates, setSelectedCandidates] = useState([]);
+
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
     { id: 2, firstName: "Jane", lastName: "Smith" },
@@ -50,6 +52,11 @@ export default function UnitDistributions() {
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  const handleSelectedCandidates = (candidates) => {
+    setSelectedCandidates(candidates);
+    setShowEdit(true); // open ClientEditor when candidates are selected
+  };
 
   useEffect(() => {
     if (activeCandidateId) {
@@ -109,7 +116,7 @@ export default function UnitDistributions() {
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
-                <div className="flex-grow  flex flex-col h-1/3">
+                <div className="flex-grow  flex flex-col h-1/2">
                   {/* Header */}
                   <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                     <div
@@ -212,26 +219,22 @@ export default function UnitDistributions() {
                   </div>
                 </div>
 
-                {/* Secondary Input Area */}
-                {showSecondary && (
-                  <div className="h-1/3 overflow-auto ">
-                    <SecondaryArea onClose={() => setShowSecondary(false)} />
-                  </div>
-                )}
+                
 
                 {/* Editor */}
-                <div className="h-1/3 overflow-auto ">
+                <div className="h-1/2 overflow-auto ">
                   <ClientEditor
                     onClose={() => setShowEdit(false)}
                     client={true}
                     showForm={showEdit}
+                    selectedCandidates={selectedCandidates}
                   />
                 </div>
               </div>
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
-                {ScoresOpen && <PlotSelections />}
+                {ScoresOpen && <PlotSelections onCandidatesSelected={handleSelectedCandidates} />}
               </div>
             </div>
             {/* ------- */}

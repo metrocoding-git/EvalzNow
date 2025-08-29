@@ -490,7 +490,7 @@ export default function UnitControl() {
                     }
                   }}
                 >
-                  Name
+                  Unit Name
                 </div>
                 <div
                   className="flex items-center cursor-pointer select-none"
@@ -736,9 +736,21 @@ export default function UnitControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
-                setSelectedUnit(contextMenu.selectedUnit);
+                const unit = contextMenu.selectedUnit;
+                setSelectedUnit(unit);
                 setUnitRoster(true);
-                 setShowAdd(false);
+                setShowAdd(false);
+
+                // auto-select first candidate in roster
+                const rosterForUnit = unitRosterData.filter(
+                  r => r.unitId === unit.id || r.unit?.id === unit.id
+                );
+                if (rosterForUnit.length > 0) {
+                  setSelectedCandidate(rosterForUnit[0].candidate);
+                } else {
+                  setSelectedCandidate(null);
+                }
+
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
             >
@@ -747,6 +759,7 @@ export default function UnitControl() {
               </span>
               <span className="text-gray-400 text-xs ml-4">Ctrl + C</span>
             </button>
+
 
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"

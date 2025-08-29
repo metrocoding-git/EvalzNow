@@ -285,6 +285,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               <label className="text-gray-700 font-medium text-xs">Environment:</label>
               <select
                 name="environment"
+                disabled
                 value={unit.environment || ""}
                 onChange={(e) => handleChange("environment", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
