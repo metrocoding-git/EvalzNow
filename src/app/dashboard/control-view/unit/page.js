@@ -61,6 +61,7 @@ export default function UnitControl() {
   const [isSelected, setIsSelected] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [blocks, setBlocks] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
@@ -215,7 +216,7 @@ export default function UnitControl() {
     }
   };
 
-    
+
 
   const sortedDataList = [...dataList].sort((a, b) => {
     const getValue = (item) => {
@@ -236,6 +237,10 @@ export default function UnitControl() {
       ? valA.localeCompare(valB)
       : valB.localeCompare(valA);
   });
+
+  const filteredUnits = sortedDataList.filter(unit =>
+    unit.unitName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Handle sorting
   const getSortedData = () => {
@@ -355,9 +360,10 @@ export default function UnitControl() {
 
   // Add this computed value to get filtered roster data
   const filteredUnitRosterData = unitRosterData.filter(roster => 
-    roster.unitId === selectedUnit?.id || 
-    roster.unit?.id === selectedUnit?.id
-  );
+    (roster.unitId === selectedUnit?.id || roster.unit?.id === selectedUnit?.id) &&
+    (!selectedCandidate || roster.candidate?.id === selectedCandidate.id)
+);
+
 
 
 
@@ -365,7 +371,7 @@ export default function UnitControl() {
   return (
     <div className="flex h-full overflow-hidden">
       <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-        <div className="flex flex-col border-1 border-gray-200 overflow-auto h-1/2 ">
+      <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
@@ -425,58 +431,15 @@ export default function UnitControl() {
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
-
             </div>
 
-            {/* <div className=""> */}
-            {!showAdd && showUnitRoster && selectedUnit && (
-              <div className="pb-1 flex-1 overflow-auto flex flex-col">
-                
-                {/* Unit Details */}
-                <div className="border border-gray-200 p-2 mb-2">
-                  <span className="text-sm text-gray-600">Unit Name: {selectedUnit.unitName || "N/A"}</span><br/>
-                  <span className="text-sm text-gray-600">Unit ID: {selectedUnit.unitId || "N/A"}</span><br/>
-                  <span className="text-sm text-gray-600">Unit Type: {selectedUnit.unitType || "N/A"}</span><br/>
-                  <span className="text-sm text-gray-600">Signature Profile: {selectedUnit.signatureProfile || "N/A"}</span>
-                </div>
-
-                {/* Candidate List Header */}
-                <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black mb-1">
-                  <div>Last Name</div>
-                  <div>First Name</div>
-                  <div>Candidate ID</div>
-                </div>
-
-                {/* Candidate List */}
-                <div className="overflow-y-auto flex-1 bg-white">
-                  {unitRosterData
-                    .filter(roster => roster.unitId === selectedUnit.id)
-                    .map((rosterItem, index) => {
-                      const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
-                      return (
-                        <div
-                          key={index}
-                          className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pointer ${isSelected ? 'bg-gray-300' : ''}`}
-                          onClick={() => handleCandidateSelect(rosterItem.candidate)}
-                        >
-                          <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
-                          <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
-                          <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
-            
-
             {/* Conditional Column Headers */}
-            {showUnitRoster ? (<></>
-              // <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
-              //   <div className="cursor-pointer select-none">Last Name</div>
-              //   <div className="cursor-pointer select-none">First Name</div>
-              //   <div className="cursor-pointer select-none">Candidate ID</div>
-              // </div>
+            {showUnitRoster ? (
+              <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
+                <div className="cursor-pointer select-none">Last Name</div>
+                <div className="cursor-pointer select-none">First Name</div>
+                <div className="cursor-pointer select-none">Candidate ID</div>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
                 <div
@@ -490,7 +453,7 @@ export default function UnitControl() {
                     }
                   }}
                 >
-                  Unit Name
+                  Name
                 </div>
                 <div
                   className="flex items-center cursor-pointer select-none"
@@ -513,26 +476,7 @@ export default function UnitControl() {
           {/* <div className=""> */}
           {!showAdd && showUnitRoster && (
             <div className=" pb-1 flex-1 overflow-auto">
-              {/* Candidate List */}
-              <div className="max-h-40 overflow-y-auto">
-                {unitRosterData
-                  .filter(roster => roster.unitId === selectedUnit?.id)
-                  .map((rosterItem, index) => {
-                    const isSelected = selectedCandidate?.id === rosterItem.candidate?.id;
-
-                    return(
-                    <div 
-                      key={index}
-                      className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50 cursor-pisSelectedointer ${ isSelected ? 'bg-gray-300' : ''}`}
-                      onClick={() => handleCandidateSelect(rosterItem.candidate)}>
-                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
-                    </div>
-                    )
-                  })
-                }
-              </div>
+              
 
               {/* Unit Details (smaller and less prominent) */}
               <div className="items-center justify-center px-4 mt-1">
@@ -554,7 +498,23 @@ export default function UnitControl() {
                   </span>
                 </div>
               </div>
-              
+
+              {/* Candidate List */}
+              <div className="max-h-40 overflow-y-auto">
+                {unitRosterData
+                  .filter(roster => roster.unitId === selectedUnit?.id)
+                  .map((rosterItem, index) => (
+                    <div 
+                      key={index}
+                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
+                    >
+                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                    </div>
+                  ))
+                }
+              </div>
             </div>
           )}
           {/* </div> */}
@@ -609,7 +569,6 @@ export default function UnitControl() {
                         setSelectedUnit(item);
                         setShowEdit(true);
                         setShowAdd(false);
-                        setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -633,12 +592,12 @@ export default function UnitControl() {
                         className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
                           }`}
                       >
-                        {item.id}
+                        {item.unitId}
                       </p>
 
                     </div>
                   );
-              })}
+                })}
 
                 {/* Header */}
           

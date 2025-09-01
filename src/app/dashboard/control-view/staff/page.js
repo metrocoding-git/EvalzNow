@@ -24,7 +24,7 @@ export default function StaffControl() {
   const [sortBy, setSortBy] = useState("id");
   const [selectedStaff, setSelectedStaff] = useState(null);
   const formRef = useRef(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -81,6 +81,37 @@ export default function StaffControl() {
     } catch (err) {
       console.error("Failed to create staff:", err);
     }
+  };
+
+  const getFilteredData = () => {
+    const sorted = [...dataList].sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+
+      if (sortBy === "id") {
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        valA = (valA || "").toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    // ✅ Filter by search term
+    if (!searchTerm.trim()) return sorted;
+
+    return sorted.filter((item) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        item.firstName?.toLowerCase().includes(term) ||
+        item.lastName?.toLowerCase().includes(term) ||
+        String(item.candidateId || item.id).toLowerCase().includes(term)
+      );
+    });
   };
 
   const getSortedDataList = () => {
@@ -188,8 +219,10 @@ export default function StaffControl() {
               <div className="relative w-full mt-1">
                 <input
                   type="text"
-                  className="border w-full pl-2 pr-8 py-1 text-sm"
+                  className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
+                  value={searchTerm}                 // ✅ Controlled input
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
@@ -236,7 +269,7 @@ export default function StaffControl() {
             </div>
 
             {showList &&
-              getSortedDataList().map((item, index) => {
+              getFilteredData().map((item, index) => {
                 const isSelected = selectedStaff?.id === item.id;
                 return (
                   <div
@@ -279,7 +312,7 @@ export default function StaffControl() {
                       className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
                         }`}
                     >
-                      {item.id}
+                      {item.staffId}
                     </p>
                   </div>
                 );
