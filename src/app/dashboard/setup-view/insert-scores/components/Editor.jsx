@@ -297,7 +297,7 @@ export default function Editor({ details, performancePoints, onClose  }) {
               {/* Duration */}
               <div className="flex items-center">
                 <label className="w-40 pr-2 text-left text-gray-700">
-                  Duration (hrs):
+                  Duration (Days):
                 </label>
                 <input
                   type="number"

@@ -257,6 +257,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               <label className="text-gray-700 font-medium text-xs">Unit Type:</label>
               <select
                 name="unitType"
+                disabled
                 value={unit.unitType || ""}
                 onChange={(e) => handleChange("unitType", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -300,6 +301,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   <label className="text-gray-700 font-medium text-xs">Scoring System:</label>
                   <select
                     name="scoringSystem"
+                    disabled
                     value={unit.scoringSystem || ""}
                     onChange={(e) => handleChange("scoringSystem", e.target.value)}
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -361,7 +363,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   name="shortDescription"
                   value={blockData?.shortDescription || ""}
                   onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
-                  className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>
 
