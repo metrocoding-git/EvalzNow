@@ -57,3 +57,15 @@ export const getUniRostertByUnitId = async (id) => {
     throw error;
   }
 };
+
+
+// Get unit by CandidateID
+export const getUnitByCandidateId = async (id) => {
+  try {
+    const response = await api.get(`${API_ROUTES.ROSTER}/candidate/${id}`);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching unit:", error);
+    throw error;
+  }
+};

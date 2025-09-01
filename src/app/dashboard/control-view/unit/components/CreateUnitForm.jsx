@@ -68,42 +68,65 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
 
   const showThresholds = form.unitType !== "";
 
+  // Map of abbreviations to expanded names
+const THRESHOLD_NAMES = {
+  XEP: "Equivalent Proficiency",
+  XRR: "Unilateral Proficiency",
+  XLR: "Listening Proficiency",
+  XSR: "Speaking Proficiency",
+  XWR: "Writing Proficiency",
+  XCP: "Composite Proficiency",
+  XBP: "Band Proficiency",
+  MSIP: "Butler Interaction Proficiency",
+  ΔRRN: "Receptive Growth Differential",
+  ΔPRN: "Productive Growth Differential",
+  ΔARN: "Acuity Growth Differential",
+  ΔGEQ: "Equivalent Growth Differential",
+  IC: "Interaction Class",
+  XTR: "Theory & Practice Proficiency",
+  XPR: "Productive Proficiency",
+  XRVSR: "Receptive Value Score Ratio",
+  XPVSR: "Productive Value Score Ratio",
+  XAVSR: "Acuity Value Score Ratio"
+};
+
+
   const [unitDirectors, setUnitDirectors] = useState([]);
   const defaultThresholds = {
     "Communicative I/O": {
-      XEP: 0.7,
-      XRR: 0.7,
-      XLR: 0.7,
-      XSR: 0.7,
-      XWR: 0.7,
-      XCP: 0.7,
-      XBP: 0.7,
-      MSIP: 0.45,
+      XEP: 0.700,
+      XRR: 0.700,
+      XLR: 0.700,
+      XSR: 0.700,
+      XWR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
       ΔRRN: 0.0,
       ΔPRN: 0.0,
       ΔGEQ: 0.0,
       IC: 2,
     },
     "Theory & Practice": {
-      XEP: 0.7,
-      XTR: 0.7,
-      XPR: 0.7,
-      XCP: 0.7,
-      XBP: 0.7,
-      MSIP: 0.45,
+      XEP: 0.700,
+      XTR: 0.700,
+      XPR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
       ΔRRN: 0.0,
       ΔPRN: 0.0,
       ΔGEQ: 0.0,
       IC: 2,
     },
     "Third Parameter": {
-      XEP: 0.7,
-      XRVSR: 0.7,
-      XPVSR: 0.7,
-      XAVSR: 0.7,
-      XCP: 0.7,
-      XBP: 0.7,
-      MSIP: 0.45,
+      XEP: 0.700,
+      XRVSR: 0.700,
+      XPVSR: 0.700,
+      XAVSR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
       ΔRRN: 0.0,
       ΔPRN: 0.0,
       ΔARN: 0.0,
@@ -111,6 +134,30 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
       IC: 2,
     },
   };
+
+  // Dynamic signature profiles
+  const getSignatureProfiles = (unitType) => {
+    if (unitType === "Communicative I/O" || unitType === "Theory & Practice") {
+      return [
+        "Case 1: Solid Balanced",
+        "Case 2: Rigorous Balanced",
+        "Case 3a: Productive-Weighted",
+        "Case 3b: Receptive-Weighed",
+      ];
+    }
+    if (unitType === "Third Parameter") {
+      return ["Case 1: Solid Balanced"];
+    }
+    return [];
+  };
+
+  // Reset signatureProfile whenever unitType changes
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      signatureProfile: "", // reset selection
+    }));
+  }, [form.unitType]);
 
   const handleStaffSelect = (selectedStaff) => {
     if (lookupFor === "leaders") {
@@ -359,7 +406,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
               {
                 label: "Signature Profile",
                 key: "signatureProfile",
-                options: SIGNATURE_PROFILES,
+                options: getSignatureProfiles(form.unitType),
               },
               { label: "Environment", key: "environment", options: ENVIRONMENTS },
             ].map(({ label, key, options }) => (
@@ -414,14 +461,19 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(form.passThresholds).map(([k, v]) => (
-                  <div key={k} className="space-y-1">
+                  <div key={k} className="space-y-1 relative group">
+                    {/* Tooltip */}
+                    <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
+                      {THRESHOLD_NAMES[k] || k}
+                    </div>
+
                     <label className="block text-gray-700 font-medium text-xs">
                       {k}:
                     </label>
                     <input
                       type="number"
                       step="0.001"
-                      value={v}
+                      value={typeof v === "number" ? v.toFixed(3) : ""}
                       disabled={k === "IC"}
                       onChange={(e) =>
                         handleChange("passThresholds", {
@@ -429,12 +481,15 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
                           [k]: parseFloat(e.target.value),
                         })
                       }
-                      className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${k === "IC" ? "bg-gray-100" : "bg-white"
-                        }`}
+                      className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${
+                        k === "IC" ? "bg-gray-100" : "bg-white"
+                      }`}
                     />
                   </div>
                 ))}
               </div>
+
+
             </div>
           )}
 
@@ -445,10 +500,10 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
             </h3>
             <div className="space-y-2">
               {(form.benchmarks || []).map((bm, idx) => (
-                <div key={idx} className="grid grid-cols-3 gap-2">
+                <div key={idx} className="flex items-end gap-3 overflow-x-auto p-2">
                   {/* Benchmark ID */}
-                  <div className="space-y-1">
-                    <label className="block text-gray-700 font-medium text-xs">
+                  <div className="flex flex-col min-w-[120px]">
+                    <label className="text-gray-700 font-medium text-xs">
                       Benchmark ID:
                     </label>
                     <input
@@ -457,19 +512,16 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
                       maxLength={20}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                       value={bm.id || ""}
-                      onChange={(e) => {
-                        const updated = [...form.benchmarks];
-                        updated[idx].id = e.target.value;
-                        setForm((f) => ({ ...f, benchmarks: updated }));
-                      }}
+                      readOnly
+                      
                     />
                   </div>
 
 
 
                   {/* Benchmark Type */}
-                  <div className="space-y-1">
-                    <label className="block text-gray-700 font-medium text-xs">
+                  <div className="flex flex-col min-w-[160px]">
+                    <label className="text-gray-700 font-medium text-xs">
                       Benchmark Type:
                     </label>
                     <select
@@ -491,8 +543,8 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
                   </div>
 
                   {/* Benchmark Ref */}
-                  <div className="space-y-1">
-                    <label className="block text-gray-700 font-medium text-xs">
+                  <div className="flex flex-col min-w-[160px]">
+                    <label className="text-gray-700 font-medium text-xs">
                       Benchmark Ref:
                     </label>
                     <input
@@ -511,19 +563,19 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
 
 
                   {/* Benchmark Ref */}
-                  <div className="space-y-1">
-                    <label className="block text-gray-700 font-medium text-xs">
+                  <div className="flex flex-col min-w-[160px]">
+                    <label className="text-gray-700 font-medium text-xs">
                       Benchmark Description:
                     </label>
                     <input
                       type="text"
-                      placeholder="≤40 chars"
+                      placeholder=""
                       maxLength={40}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                      value={bm.ref || ""}
+                      value={bm.description || ""}
                       onChange={(e) => {
                         const updated = [...form.benchmarks];
-                        updated[idx].ref = e.target.value;
+                        updated[idx].description = e.target.value;
                         setForm((f) => ({ ...f, benchmarks: updated }));
                       }}
                     />
@@ -550,13 +602,17 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
               <button
                 type="button"
                 onClick={() =>
-                  setForm((f) => ({
-                    ...f,
-                    benchmarks: [
-                      ...(f.benchmarks || []),
-                      { id: "", ref: "", type: "" },
-                    ],
-                  }))
+                  setForm((f) => {
+                    const nextId =
+                      (f.benchmarks?.length || 0) + 1; // auto-increment
+                    return {
+                      ...f,
+                      benchmarks: [
+                        ...(f.benchmarks || []),
+                        { id: String(nextId), ref: "", type: "", description: "" },
+                      ],
+                    };
+                  })
                 }
                 className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm transition-colors"
               >

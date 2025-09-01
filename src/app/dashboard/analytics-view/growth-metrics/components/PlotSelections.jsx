@@ -7,6 +7,7 @@ import {
   Label
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
+import ProjectionTable from './ProjectionTable';
 
 export default function PlotSelections({ selectedSort }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -60,6 +61,7 @@ export default function PlotSelections({ selectedSort }) {
   const [visible, setVisible] = useState(true);
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
 
+  const [showProjectionTable, setShowProjectionTable] = useState(false);
 
   const canvasRef = useRef(null);
 
@@ -214,12 +216,16 @@ export default function PlotSelections({ selectedSort }) {
                 >
                   Table
                 </button>
+
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'projections'
                     ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
-                  onClick={() => setActiveAdjustPropertieTab('projections')}
+                    onClick={() => {
+                      setActiveAdjustPropertieTab('projections');
+                      setShowProjectionTable(true); // ✅ Show modal
+                    }}
                 >
                   Projections
                 </button>
@@ -262,70 +268,7 @@ export default function PlotSelections({ selectedSort }) {
 
                 )}
 
-                {activeAdjustPropertieTab === 'projections' && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                  <table className="table-auto w-full text-sm border border-gray-300">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-left">Callout</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">PP ID</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">RRN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">PRN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">ARN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">IC</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">ΔRRN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">ΔPRN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">ΔARN</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">Day Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        "First PP Selection",
-                        "Second PP Selection",
-                        "Third PP Selection",
-                        "Projection Termination Point",
-                        "Overshoot",
-                        "Undershoot",
-                        "Average",
-                        "Overshoot",
-                        "Undershoot",
-                        "Average",
-                      ].map((callout, idx) => (
-                        <tr key={idx} className="hover:bg-blue-50">
-                          {/* Callout column */}
-                          <td className="border border-gray-300 px-3 py-2">{callout}</td>
                 
-                          {/* PP ID column - dropdown for first 3 rows */}
-                          <td className="border border-gray-300 px-3 py-2">
-                            {idx < 3 ? (
-                              <select className="border rounded px-2 py-1 w-full">
-                                <option value="">Select</option>
-                                <option value="PP1">PP1</option>
-                                <option value="PP2">PP2</option>
-                                <option value="PP3">PP3</option>
-                              </select>
-                            ) : (
-                              "0"
-                            )}
-                          </td>
-                
-                          {/* Other columns with default 0 */}
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                          <td className="border border-gray-300 px-3 py-2">0</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                )}
               </div>
             </div>
           </div>
@@ -389,6 +332,10 @@ export default function PlotSelections({ selectedSort }) {
 
 
 
+      <ProjectionTable
+        visible={showProjectionTable}
+        onClose={() => setShowProjectionTable(false)}
+      />
 
 
 

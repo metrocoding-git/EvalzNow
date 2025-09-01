@@ -308,7 +308,7 @@ export default function CreateInsertScoresForm({ onClose, candidateId }) {
           {/* Duration */}
 
           <label className="w-40 pr-2 text-left text-gray-700">
-            Duration (hrs):
+            Duration (Days):
           </label>
           <input
             type="number"

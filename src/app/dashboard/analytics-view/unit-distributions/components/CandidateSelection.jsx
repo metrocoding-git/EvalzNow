@@ -14,19 +14,23 @@ export default function CandidateSelectionTable({ onClose }) {
 
   const handleValueChange = (id, newValue) => {
     setRows((prev) =>
-      prev.map((row) =>
-        row.id === id
-          ? { ...row, value: newValue, ppListings: newValue === "Candidate Average" ? "" : "", isSelected: false }
-          : row
-      )
+      prev.map((row) => {
+        if (row.id === id) {
+          if (newValue === "Candidate Average") {
+            // Automatically populate sample numbers
+            return { ...row, value: newValue, ppListings: "75" , isSelected: false};
+          } else {
+            return { ...row, value: newValue, ppListings: "", isSelected: false };
+          }
+        }
+        return row;
+      })
     );
   };
 
   const handlePPChange = (id, value) => {
     setRows((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, ppListings: value } : row
-      )
+      prev.map((row) => (row.id === id ? { ...row, ppListings: value } : row))
     );
   };
 
@@ -50,7 +54,7 @@ export default function CandidateSelectionTable({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl  w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
+      <div className="bg-white shadow-xl w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
         {/* Header */}
         <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">Distribution Form</h2>
@@ -66,7 +70,7 @@ export default function CandidateSelectionTable({ onClose }) {
                 <th className="px-4 py-2 border">First Name</th>
                 <th className="px-4 py-2 border">Candidate ID</th>
                 <th className="px-4 py-2 border">Value</th>
-                <th className="px-4 py-2 border"> </th>
+                <th className="px-4 py-2 border">PP Listings</th>
               </tr>
             </thead>
             <tbody>
@@ -74,7 +78,7 @@ export default function CandidateSelectionTable({ onClose }) {
                 <tr
                   key={row.id}
                   onClick={() => handleRowClick(row.id)}
-                  className={`cursor-pointer ${row.isSelected ? "bg-gray-100 border-l-4 border-blue-400" : ""} ${row.value === "Omit" ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`cursor-pointer ${row.isSelected ? "bg-gray-100 " : ""} ${row.value === "Omit" ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <td className="px-4 py-2 border">{row.lastName}</td>
                   <td className="px-4 py-2 border">{row.firstName}</td>
@@ -91,15 +95,6 @@ export default function CandidateSelectionTable({ onClose }) {
                     </select>
                   </td>
                   <td className="px-4 py-2 border">
-                    {row.value === "Candidate Average" && (
-                      <input
-                        type="text"
-                        className="border rounded p-1 w-full"
-                        value={row.ppListings}
-                        onChange={(e) => handlePPChange(row.id, e.target.value)}
-                        placeholder="Enter average value"
-                      />
-                    )}
                     {row.value === "Available + PP ID Listings" && (
                       <select
                         className="border rounded p-1 w-full"
@@ -111,6 +106,9 @@ export default function CandidateSelectionTable({ onClose }) {
                           <option key={pp} value={pp}>{pp}</option>
                         ))}
                       </select>
+                    )}
+                    {row.value === "Candidate Average" && (
+                      <span className="block text-center">{row.ppListings}</span>
                     )}
                   </td>
                 </tr>

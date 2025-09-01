@@ -224,7 +224,7 @@ export default function ViewerSelections({candidate}) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-1">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className=" flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {candidate && (
                   <div className="px-3 py-1">
@@ -263,7 +263,7 @@ export default function ViewerSelections({candidate}) {
               </div>
             </div>
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className=" flex flex-col flex-1 min-h-0 border border-gray-200 ">
               <h2 className="text-sm font-semibold mx-1 p-2 text-gray-600">Candidate </h2>
               {/* <div className="flex space-x-2 border-b p-2">
                 <button
@@ -287,7 +287,7 @@ export default function ViewerSelections({candidate}) {
               </div> */}
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="flex-1 flex flex-col min-h-0">
                 {/* {activeAdjustPropertieTab === 'Property editor' && (
                   <PropertyEditor
                     properties={chartProperties}
@@ -296,8 +296,8 @@ export default function ViewerSelections({candidate}) {
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && ( */}
-
-                  <div className="text-sm text-gray-800 w-full overflow-auto">
+                
+                  <div className="flex-1 overflow-auto">
 
                     {/* table */}
                     <table className="w-full text-left text-xs mb-7">

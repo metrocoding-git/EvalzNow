@@ -53,6 +53,7 @@ export default function AdminControl() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
@@ -92,6 +93,37 @@ export default function AdminControl() {
       console.error("Failed to create client:", err);
       // You might want to set an error state here to show in the UI
     }
+  };
+
+  const getFilteredData = () => {
+    const sorted = [...dataList].sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
+
+      if (sortBy === "id") {
+        valA = Number(valA);
+        valB = Number(valB);
+      } else {
+        valA = (valA || "").toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    // ✅ Filter by search term
+    if (!searchTerm.trim()) return sorted;
+
+    return sorted.filter((item) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        item.firstName?.toLowerCase().includes(term) ||
+        item.lastName?.toLowerCase().includes(term) ||
+        String(item.candidateId || item.id).toLowerCase().includes(term)
+      );
+    });
   };
   
   const [contextMenu, setContextMenu] = useState({
@@ -245,8 +277,10 @@ export default function AdminControl() {
                 <div className="relative w-full mt-1">
                   <input
                     type="text"
-                    className="border w-full pl-2 pr-8 py-1 text-sm"
+                    className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                     placeholder="Search"
+                    value={searchTerm}                 // ✅ Controlled input
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
                 </div>
@@ -297,7 +331,7 @@ export default function AdminControl() {
             {/* Client items */}
             {showList && (
               <div className="flex-1">
-                {getSortedDataList().map((item) => {
+                {getFilteredData().map((item) => {
                   const isSelected =  selectedClient?.id === item.id;
                   return (
                     <div
