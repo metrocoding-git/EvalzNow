@@ -208,7 +208,7 @@ export default function CurveEditor() {
                       }}
                     >
                      
-                      <div className="col-span-10 text-xs text-gray-700 truncate">🧭{item.name}</div>
+                      <div className="col-span-10 text-xs text-gray-700 truncate">🧭 {item.name}</div>
                     
                       <div className="col-span-2 pl-3 text-xs text-gray-400">{item.id}</div>
                     </div>
