@@ -4,7 +4,7 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose }) => {
+const SecondaryInputForm = ({ onClose, selectedSort }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDate, setCriticalDate] = useState("");
@@ -57,55 +57,58 @@ const SecondaryInputForm = ({ onClose }) => {
         </div>
 
         {/* Critical Reference Date */}
-        <div className=" gap-1 text-xs p-2">
+        <div className="w-full gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
           </label>          
 
-          <div className="flex gap-2 w-full items-center">
-            <span>From: </span>
-            <input
-              type="date"
-              value={criticalDate}
-              onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
-          </div>
-          
-          <div className="flex gap-2 w-full items-center mt-2">
-            <span>To: </span>
-            <input
-              type="date"
-              value={criticalDate}
-              onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
+          <div className="flex gap-2 w-full">
+            <div className=" w-1/2 ">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
+            
+            <div className="w-1/2">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
           </div>
         </div>
 
-        {/* Effort Fields */}
-        <div className="gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            Effort - CSD
-          </label>
-          <input
-            type="text"
-            value={csdEffort}
-            disabled
-            className="border px-2 py-1 w-full  text-gray-600"
-          />
-        </div>
+        {/* Effort Fields – only show if candidate level */}
+{selectedSort === "activateCandidateLevel" && (
+  <div className="flex gap-2 w-full">
+    <div className="gap-1 text-xs p-2 w-1/2">
+      <label className="block font-medium text-gray-700 mb-1">
+        Effort - CSD
+      </label>
+      <input
+        type="text"
+        value={csdEffort}
+        disabled
+        className="border px-2 py-1 w-full text-gray-600"
+      />
+    </div>
 
-        <div className="gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            Effort - USD
-          </label>
-          <input
-            type="text"
-            value={usdEffort}
-            disabled
-            className="border px-2 py-1 w-full text-gray-600"
-          />
-        </div>
-        
+    <div className="gap-1 text-xs p-2 w-1/2">
+      <label className="block font-medium text-gray-700 mb-1">
+        Effort - USD
+      </label>
+      <input
+        type="text"
+        value={usdEffort}
+        disabled
+        className="border px-2 py-1 w-full text-gray-600"
+      />
+    </div>
+  </div>
+)}
 
         {/* Threshold Toggle */}
         {/* <div className="flex items-center justify-between p-2">

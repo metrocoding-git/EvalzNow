@@ -3,112 +3,16 @@ import { X } from "lucide-react";
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllStaffs } from "@/services/staffService";
 
-const SAMPLE_STAFFS = [
-  {
-    id: "S001",
-    lastName: "Doe",
-    firstName: "John",
-    jobTitle: "Software Engineer",
-    department: "Engineering",
-    email: "john.doe@company.com",
-  },
-  {
-    id: "S002",
-    lastName: "Smith",
-    firstName: "Jane",
-    jobTitle: "Project Manager",
-    department: "Operations",
-    email: "jane.smith@company.com",
-  },
-  {
-    id: "S003",
-    lastName: "Johnson",
-    firstName: "Alice",
-    jobTitle: "UX Designer",
-    department: "Design",
-    email: "alice.johnson@company.com",
-  },
-  {
-    id: "S004",
-    lastName: "Brown",
-    firstName: "Michael",
-    jobTitle: "Data Analyst",
-    department: "Data Science",
-    email: "michael.brown@company.com",
-  },
-  {
-    id: "S005",
-    lastName: "Taylor",
-    firstName: "Olivia",
-    jobTitle: "HR Specialist",
-    department: "Human Resources",
-    email: "olivia.taylor@company.com",
-  },
-  {
-    id: "S006",
-    lastName: "Lee",
-    firstName: "Daniel",
-    jobTitle: "Frontend Developer",
-    department: "Engineering",
-    email: "daniel.lee@company.com",
-  },
-  {
-    id: "S007",
-    lastName: "Martinez",
-    firstName: "Sophia",
-    jobTitle: "Marketing Executive",
-    department: "Marketing",
-    email: "sophia.martinez@company.com",
-  },
-  {
-    id: "S008",
-    lastName: "Harris",
-    firstName: "William",
-    jobTitle: "Finance Officer",
-    department: "Finance",
-    email: "william.harris@company.com",
-  },
-  {
-    id: "S009",
-    lastName: "Clark",
-    firstName: "Emily",
-    jobTitle: "QA Engineer",
-    department: "Quality Assurance",
-    email: "emily.clark@company.com",
-  },
-  {
-    id: "S010",
-    lastName: "Lewis",
-    firstName: "Benjamin",
-    jobTitle: "Backend Developer",
-    department: "Engineering",
-    email: "benjamin.lewis@company.com",
-  },
-  {
-    id: "S011",
-    lastName: "Walker",
-    firstName: "Ava",
-    jobTitle: "Business Analyst",
-    department: "Operations",
-    email: "ava.walker@company.com",
-  },
-  {
-    id: "S012",
-    lastName: "Young",
-    firstName: "James",
-    jobTitle: "UI Designer",
-    department: "Design",
-    email: "james.young@company.com",
-  },
-];
 
 
-export default function StaffLookup({ onClose, onSelect }) {
+
+export default function StaffLookup({ onClose, onSelect, selectedIds: initialSelectedIds = []  }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(initialSelectedIds);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [staffs, setStaffs] = useState([]);
+  
 
   const filteredStaffs = staffs.filter((staff) =>
     `${staff.firstName} ${staff.lastName} ${staff.jobTitle} ${staff.email} ${staff.department}`
@@ -134,6 +38,10 @@ export default function StaffLookup({ onClose, onSelect }) {
 
     fetchStaffs();
   }, []);
+
+  // useEffect(() => {
+  //   setSelectedIds(initialSelectedIds); // sync whenever modal opens
+  // }, [initialSelectedIds]);
 
 
   const handleRowClick = (id) => {
