@@ -227,7 +227,11 @@ export default function AuxiliaryResultants() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryArea onClose={() => setShowSecondary(false)} />
+                    <SecondaryArea 
+                      onClose={() => setShowSecondary(false)} 
+                      selectedSort={selectedSort}
+                    />
+
                   </div>
                 )}
               </div>

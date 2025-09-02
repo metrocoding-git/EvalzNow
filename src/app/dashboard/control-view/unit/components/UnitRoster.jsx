@@ -9,7 +9,7 @@ import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/ser
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate  }) {
+  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate, onBlockUpdate  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
@@ -49,6 +49,18 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       }
       return updated;
     });
+  };
+
+  const handleBlockUpdate = (updatedBlock) => {
+    // Update the assessment blocks state
+    setAssessmentBlocks(prev => 
+      prev.map(block => block.id === updatedBlock.id ? updatedBlock : block)
+    );
+    
+    // Notify parent component if needed
+    if (onBlockUpdate) {
+      onBlockUpdate(updatedBlock);
+    }
   };
   
 

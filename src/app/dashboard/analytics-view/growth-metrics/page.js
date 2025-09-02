@@ -8,7 +8,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import SecondaryArea from "../components/SecondaryArea";
+import SecondaryArea from "./components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -227,7 +227,8 @@ export default function GrowthMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryArea onClose={() => setShowSecondary(false)} />
+                    <SecondaryArea onClose={() => setShowSecondary(false)} 
+                    selectedSort={selectedSort} />
                   </div>
                 )}
               </div>

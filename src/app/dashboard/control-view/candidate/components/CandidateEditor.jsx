@@ -151,7 +151,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
       setForm({
         "Last Name": candidate.lastName || "",
         "First Name": candidate.firstName || "",
-        "Candidate ID": candidate.id || "",
+        "Candidate ID": candidate.candidateId || "",
         
         "Special ID No.": candidate.specialIdNo || "",
         "Date of Birth": candidate.dateOfBirth || "",
@@ -251,7 +251,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
   
     try {
       const updatedData = {
-        id: form["Candidate ID"],
+        candidateId: form["Candidate ID"],
         lastName: form["Last Name"],
         firstName: form["First Name"],
         specialIdNo: form["Special ID No."],
@@ -260,7 +260,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
         nationality: form.Nationality,
         gender: form.Gender,
         ethnicity: form.Ethnicity,
-        income: parseFloat(form.Income) || 0,
+        income: form.Income,
         religion: form.Religion,
         maritalStatus: form["Marital Status"],
         jobType: form["Job Type"],

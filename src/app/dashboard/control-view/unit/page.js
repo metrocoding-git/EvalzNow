@@ -138,21 +138,25 @@ export default function UnitControl() {
   }, []);
 
   const handleRosterUpdate = (updatedRoster) => {
-    // Update unitRosterData
     setUnitRosterData(prev => {
       // Remove old roster item if exists
       const filtered = prev.filter(r => r.id !== updatedRoster.id);
-      return [...filtered, updatedRoster];
-    });
+      const newRosterData = [...filtered, updatedRoster];
   
-    // Update candidateList immediately
-    setCandidateList(prev => {
-      const candidate = updatedRoster.candidate;
-      // Remove old candidate if exists
-      const filtered = prev.filter(c => c.id !== candidate.id);
-      return [...filtered, candidate];
+      // Rebuild candidate list from updated roster
+      const uniqueCandidates = newRosterData.reduce((acc, rosterItem) => {
+        const candidate = rosterItem.candidate;
+        if (candidate && !acc.some(c => c.id === candidate.id)) {
+          acc.push(candidate);
+        }
+        return acc;
+      }, []);
+      setCandidateList(uniqueCandidates);
+  
+      return newRosterData;
     });
   };
+  
 
   // Fetch all candidates on mount
   // Fetch unit roster by unit ID when selectedUnit changes
@@ -328,6 +332,13 @@ export default function UnitControl() {
   }, [dataList, showUnitRoster]);
 
 
+  const handleBlockUpdate = (updatedBlock) => {
+    // Update the assessment blocks in state if needed
+    console.log("Block updated:", updatedBlock);
+    // You might want to refresh the blocks data here
+    fetchBlocksByUnitAndCandidate(); // Refresh the blocks
+  };
+
   // Modify the handleUnitSave function in UnitControl
   const handleUnitSave = async (updatedUnit) => {
     try {
@@ -426,8 +437,10 @@ export default function UnitControl() {
               <div className="relative w-full mt-1">
                 <input
                   type="text"
-                  className="border w-full pl-2 pr-8 py-1 text-sm"
+                  className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
+                  value={searchTerm}                 // ✅ Controlled input
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
@@ -505,8 +518,10 @@ export default function UnitControl() {
                   .filter(roster => roster.unitId === selectedUnit?.id)
                   .map((rosterItem, index) => (
                     <div 
-                      key={index}
-                      className="grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 hover:bg-gray-50"
+                    key={index}
+                    className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 cursor-pointer 
+                      ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-gray-100 " : "hover:bg-gray-50"}`}
+                    onClick={() => handleCandidateSelect(rosterItem.candidate)}
                     >
                       <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
                       <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
@@ -556,7 +571,7 @@ export default function UnitControl() {
               </div> */}
 
               {showList &&
-                sortedDataList.map((item, index) => {
+                filteredUnits.map((item, index) => {
                   const isSelected = selectedUnit && selectedUnit.id === item.id;
                   return (
                     <div
@@ -790,7 +805,8 @@ export default function UnitControl() {
             selectedUnit={selectedUnit}
             selectedCandidate={selectedCandidate}
             onBlockSelect={setSelectedBlock}
-            onRosterUpdate={handleRosterUpdate}   />
+            onRosterUpdate={handleRosterUpdate}
+               />
           </div>
         )}
       </div>

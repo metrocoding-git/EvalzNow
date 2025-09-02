@@ -159,34 +159,26 @@ const THRESHOLD_NAMES = {
     }));
   }, [form.unitType]);
 
-  const handleStaffSelect = (selectedStaff) => {
+  const handleStaffSelect = (selectedStaffArray) => {
     if (lookupFor === "leaders") {
-      const current = form.assignedLeaders || [];
-      if (current.includes(selectedStaff.id)) return; // prevent duplicate
-
-      if (current.length >= 3) {
-        alert("You can select a maximum of 3 leaders.");
-        return;
-      }
-
-      handleChange("assignedLeaders", [...current, selectedStaff.id]);
+      const leaderIds = selectedStaffArray.map((s) => s.id);
+      handleChange("assignedLeaders", leaderIds);
+  
+      // Update unitDirectors dropdown to match selected leaders
+      setUnitDirectors(selectedStaffArray);
     } else if (lookupFor === "assessors") {
-      const current = form.assignedAssessors || [];
-      if (current.includes(selectedStaff.id)) return; // prevent duplicate
-
-      if (current.length >= 3) {
-        alert("You can select a maximum of 3 assessors.");
-        return;
-      }
-
-      handleChange("assignedAssessors", [...current, selectedStaff.id]);
+      handleChange(
+        "assignedAssessors",
+        selectedStaffArray.map((s) => s.id)
+      );
     } else if (lookupFor === "director") {
-      handleChange("unitDirector", selectedStaff.id);
+      handleChange("unitDirector", selectedStaffArray[0]?.id || "");
     }
-
+  
     setShowLookup(false);
     setLookupFor(null);
   };
+  
 
   useEffect(() => {
     if (form.unitType && defaultThresholds[form.unitType]) {
@@ -380,7 +372,9 @@ const THRESHOLD_NAMES = {
               <label className="col-span-1 flex items-center text-gray-700">
                 Unit Director:
               </label>
-              <select required value={form.unitDirector || ""}
+              <select
+                required
+                value={form.unitDirector || ""}
                 onChange={(e) => handleChange("unitDirector", e.target.value)}
                 className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
@@ -391,9 +385,7 @@ const THRESHOLD_NAMES = {
                   </option>
                 ))}
               </select>
-
             </div>
-
           </div>
 
           {/* Fixed Fields */}
@@ -648,9 +640,18 @@ const THRESHOLD_NAMES = {
               setShowLookup(false);
               setLookupFor(null);
             }}
-            onSelect={(staffArray) => {
-              setUnitDirectors(staffArray); // store selected staff here
-            }}
+            onSelect={handleStaffSelect} // reuse handleStaffSelect
+            selectedIds={
+              lookupFor === "leaders"
+                ? form.assignedLeaders || []
+                : lookupFor === "assessors"
+                ? form.assignedAssessors || []
+                : lookupFor === "director"
+                ? form.unitDirector
+                  ? [form.unitDirector]
+                  : []
+                : []
+            }
           />
         )
       }

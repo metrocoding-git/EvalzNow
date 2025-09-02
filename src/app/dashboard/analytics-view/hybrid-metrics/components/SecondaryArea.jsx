@@ -1,22 +1,30 @@
 "use client";
-import { Edit, X } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose }) => {
+const SecondaryInputForm = ({ onClose, selectedSort }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDate, setCriticalDate] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
+  const [showGrowthTarget, setShowGrowthTarget] = useState(false);
+  const [selectedPpId, setSelectedPpId] = useState(null);
+  const [unitMode, setUnitMode] = useState("averages"); // "averages" or "target"
 
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  // sample PP IDs
+  const ppIds = [-3, -2, -1, 0, 1, 2, 3];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
-    // You can add fetch or state update logic here
+    console.log("Submitted:", { 
+      ppIdFrom, 
+      ppIdTo, 
+      criticalDate, 
+      thresholdEnabled, 
+      showGrowthTarget, 
+      selectedPpId,
+      unitMode
+    });
   };
 
   return (
@@ -53,62 +61,42 @@ const SecondaryInputForm = ({ onClose }) => {
         </div>
 
         {/* Critical Reference Date */}
-        <div className=" gap-1 text-xs p-2">
+        <div className=" gap-1  p-2">
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
           </label>
-
-          
-          {/* <DatePicker className="border px-2 py-1 w-full"
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              setStartDate(start);
-              setEndDate(end);
-            }}
-            isClearable
-            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
-            /> */}
-          
-
           <div className="flex gap-2 w-full items-center">
             <span>From: </span>
             <input
               type="date"
               value={criticalDate}
               onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
+              className="border px-2 py-1 w-full"
+            />
           </div>
-          
           <div className="flex gap-2 w-full items-center mt-2">
             <span>To: </span>
             <input
               type="date"
               value={criticalDate}
               onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
+              className="border px-2 py-1 w-full"
+            />
           </div>
         </div>
 
         {/* Threshold Toggle */}
         <div className="flex items-center justify-between p-2">
           <label className="font-medium text-gray-800">Enable Thresholds</label>
-
-          {/* Toggle */}
           <div
             onClick={() => setThresholdEnabled(!thresholdEnabled)}
             className="relative w-12 h-6 cursor-pointer"
           >
-            {/* Background track */}
             <div
               className={`absolute inset-0 rounded-full transition-colors duration-300 ${
                 thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
               }`}
             />
-
-            {/* Toggle knob */}
             <div
               className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
                 thresholdEnabled ? "translate-x-6" : "translate-x-0"
@@ -116,35 +104,106 @@ const SecondaryInputForm = ({ onClose }) => {
             />
           </div>
         </div>
-      {/* </div> */}
 
-        
+        {/* Candidate Level Options */}
+        {selectedSort === "activateCandidateLevel" && (
+          <>
+            {/* Growth Target Toggle */}
+            <div className="flex items-center justify-between p-2">
+              <label className="font-medium text-gray-800">
+                Show Growth Target
+              </label>
+              <div
+                onClick={() => setShowGrowthTarget(!showGrowthTarget)}
+                className="relative w-12 h-6 cursor-pointer"
+              >
+                <div
+                  className={`absolute inset-0 rounded-full transition-colors duration-300 ${
+                    showGrowthTarget ? "bg-gray-600" : "bg-gray-300"
+                  }`}
+                />
+                <div
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                    showGrowthTarget ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </div>
 
-        {/* Threshold Toggle */}
-        {/* <div className="flex items-center justify-between p-2">
-          <label className="font-medium text-gray-800">Enable Thresholds</label>
+            {/* PP ID select */}
+            <div className="p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Select PP ID
+              </label>
+              <select
+                value={selectedPpId ?? ""}
+                onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+              >
+                <option value="" disabled>
+                  -- Select a PP ID --
+                </option>
+                {ppIds.map((id) => (
+                  <option key={id} value={id}>
+                    {id}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          Toggle Wrapper
-          <div
-            onClick={() => setThresholdEnabled(!thresholdEnabled)}
-            className="relative w-12 h-6 cursor-pointer"
-          >
-            Background track
-            <div
-              className={`absolute inset-0 rounded-full transition-colors duration-300 ${
-                thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
-              }`}
-            />
+            {/* Scoring points */}
+            <div className="p-2">
+              <p className="block font-medium text-gray-700 mb-1">
+                Scoring points: <span>3 points</span>
+              </p>
+            </div>
+          </>
+        )}
 
-            Toggle knob
-            <div
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                thresholdEnabled ? "translate-x-6" : "translate-x-0"
-              }`}
-            />
-          </div>
-        </div> */}
+        {/* Unit Level Options */}
+        {selectedSort === "activateUnitLevel" && (
+          <>
+            {/* Mode Switch */}
+            <div className="p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Select Mode
+              </label>
+              <select
+                value={unitMode}
+                onChange={(e) => setUnitMode(e.target.value)}
+                className="border px-2 py-1 w-full"
+              >
+                <option value="averages">Individual PP ID Averages</option>
+                <option value="target">PP ID Target</option>
+              </select>
+            </div>
+
+            {unitMode === "averages" && (
+              <div className="p-2">
+                <p className="text-gray-700 text-sm">
+                  Averages will pull RR, PR, and AR values from Tabulation Tables.
+                </p>
+              </div>
+            )}
+
+            {unitMode === "target" && (
+              <div className="p-2">
+                <label className="block font-medium text-gray-700 mb-1">
+                  Enter Target PP ID
+                </label>
+                <input
+                  type="number"
+                  value={selectedPpId ?? ""}
+                  onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
+                  className="border px-2 py-1 w-full"
+                  placeholder="Enter -/+ PP ID"
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
+
       {/* Submit Button */}
       <div className="border-t border-gray-200 p-2 bg-gray-50">
         <div className="flex justify-end">
@@ -157,7 +216,6 @@ const SecondaryInputForm = ({ onClose }) => {
           </button>
         </div>
       </div>
-
     </div>
   );
 };
