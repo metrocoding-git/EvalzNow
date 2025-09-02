@@ -75,8 +75,10 @@ export default function EntitiesManager() {
         const data = await getUniRostertByUnitId(unitQuery) || [];
   
         if (!Array.isArray(data) || data.length === 0) {
+          
           setUnitData(null);
           setCandidateList([]);
+          router.replace("/dashboard/control-view/unit");
           return;
         }
   
@@ -105,6 +107,13 @@ export default function EntitiesManager() {
   
     fetchCandidateByUnitId();
   }, [unitQuery]);
+
+    // Redirect if unitData is null
+  // useEffect(() => {
+  //   if (unitData === null) {
+  //     router.replace("/dashboard/control-view/unit");
+  //   }
+  // }, [unitData, router]);
   
 
   console.log(unitQuery);
