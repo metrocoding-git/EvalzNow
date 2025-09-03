@@ -65,7 +65,7 @@ const DIRECT_DELIVERY = [
 ];
 
 
-const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock }) => {
+const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock, onBlockUpdate, onBlockSubmitStatus }) => {
   const [unit, setUnit] = useState({
     unitName: "",
     unitId: "",
@@ -198,6 +198,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       // Notify parent component
       // onSave(savedBlock);
       // console.log("Saved block:", savedBlock);
+
+      if (onBlockSubmitStatus) {
+        onBlockSubmitStatus(true); // success
+      }
+
+      
       onClose();
     } catch (err) {
       console.error("Failed to update unit:", err);
@@ -210,6 +216,10 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         "Failed to update unit";
     
       setError(message);
+
+      if (onBlockSubmitStatus) {
+        onBlockSubmitStatus(false); // failure
+      }
     }
   };
   

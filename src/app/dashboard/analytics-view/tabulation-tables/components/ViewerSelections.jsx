@@ -231,26 +231,26 @@ export default function ViewerSelections({candidate}) {
                     {/* Always show candidate details */}
                     <div className="items-center justify-center px-4">
                       <div className="p-1 rounded-lg mt-1 space-y-1">
-                        <div className="grid grid-cols-3 text-sm text-gray-400">
+                        <div className="grid grid-cols-5 text-sm text-gray-400">
                           <span>First Name:</span>
                           <span>{candidate.firstName}</span>
                         </div>
-                        <div className="grid grid-cols-3 text-sm text-gray-400">
+                        <div className="grid grid-cols-5 text-sm text-gray-400">
                           <span>Last Name:</span>
                           <span>{candidate.lastName}</span>
                         </div>
-                        <div className="grid grid-cols-3 text-sm text-gray-400">
+                        <div className="grid grid-cols-5 text-sm text-gray-400">
                           <span>ID:</span>
                           <span>{candidate.id}</span>
                         </div>
                         {candidate.candidateStartDate && (
-                          <div className="grid grid-cols-3 text-sm text-gray-400">
+                          <div className="grid grid-cols-5 text-sm text-gray-400">
                             <span>Candidate Start Date:</span>
                             <span>{candidate.candidateStartDate}</span>
                           </div>
                         )}
                         {candidate.unitStartDate && (
-                          <div className="grid grid-cols-3 text-sm text-gray-400">
+                          <div className="grid grid-cols-5 text-sm text-gray-400">
                             <span>Unit Start Date:</span>
                             <span>{candidate.unitStartDate}</span>
                           </div>

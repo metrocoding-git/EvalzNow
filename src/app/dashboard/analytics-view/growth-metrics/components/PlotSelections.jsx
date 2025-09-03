@@ -334,7 +334,9 @@ export default function PlotSelections({ selectedSort }) {
 
       <ProjectionTable
         visible={showProjectionTable}
-        onClose={() => setShowProjectionTable(false)}
+        onClose={() => {
+          setShowProjectionTable(false) 
+          setActiveAdjustPropertieTab('Table') }}
       />
 
 

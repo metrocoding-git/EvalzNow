@@ -74,12 +74,13 @@ export default function CurveEditor() {
     { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🥧", type: "pie" },
     { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🥧", type: "pie" },
     { id: 34, name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" },
-    { id: 34, name: "Shared Global Analytics Index Table", icon: "🥧", type: "table" }
+    { id: 35, name: "Shared Global Analytics Index Table", icon: "🥧", type: "table" }
   ];
   
 
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
+  const [selectedRow, setSelectedRow] = useState(null);
 
   if (!visible) return null;
 
@@ -202,9 +203,10 @@ export default function CurveEditor() {
                   {chart.map((item) => (
                     <div
                       key={item.id}
-                      className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                      className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 ${selectedRow === item.id ? "bg-blue-100 font-medium" : ""} cursor-pointer`}
                       onClick={() => {
                         setSelectedChart(item);
+                        setSelectedRow(item.id);
                       }}
                     >
                      

@@ -228,7 +228,7 @@ export default function HybridMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryInputForm onClose={() => setShowSecondary(false)} />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}    />
                   </div>
                 )}
               </div>
