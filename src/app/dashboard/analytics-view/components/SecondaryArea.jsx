@@ -53,7 +53,7 @@ const SecondaryInputForm = ({ onClose }) => {
         </div>
 
         {/* Critical Reference Date */}
-        <div className=" gap-1 text-xs p-2">
+        <div className="w-full gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
           </label>
@@ -72,23 +72,22 @@ const SecondaryInputForm = ({ onClose }) => {
             placeholderText="MM/DD/YYYY - MM/DD/YYYY"
             /> */}
           
-
-          <div className="flex gap-2 w-full items-center">
-            <span>From: </span>
-            <input
-              type="date"
-              value={criticalDate}
-              onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
-          </div>
+          <div className="flex gap-2 w-full">
+            <div className=" w-1/2 ">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
           
-          <div className="flex gap-2 w-full items-center mt-2">
-            <span>To: </span>
-            <input
-              type="date"
-              value={criticalDate}
-              onChange={(e) => setCriticalDate(e.target.value)}
-              className="border px-2 py-1 w-full" />
+            <div className="w-1/2">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
           </div>
         </div>
 

@@ -148,7 +148,7 @@ export default function RibbonPanel() {
         <div className="flex flex-col items-center mx-1">
           <div className="flex gap-1">
             {ribbonItems
-              .filter((tool) => tool.label === "Control View" || tool.label === "Setup View")
+              .filter((tool) => tool.label === "Control View" || tool.label === "Setup View" || tool.label === "Analytics View")
               .map((tool, i) => (
                 <IconButton
                   key={i}
@@ -168,7 +168,7 @@ export default function RibbonPanel() {
         </div>
 
         {/* Keep other ribbon items (like Analytics View) outside */}
-        {ribbonItems
+        {/* {ribbonItems
           .filter((tool) => tool.label === "Analytics View")
           .map((tool, i) => (
             <IconButton
@@ -179,7 +179,7 @@ export default function RibbonPanel() {
               active={activeTab === tool.label}
               link={tool.link}
             />
-        ))}
+        ))} */}
       </div>
       
 

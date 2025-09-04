@@ -58,24 +58,43 @@ const SecondaryInputForm = ({ onClose }) => {
       </div>
 
       {/* Critical Reference Date */}
-      <div className=" gap-1 text-xs p-2">
-        <label className="block font-medium text-gray-700 mb-1">
-          Critical Reference Date
-        </label>
-        <label className="block text-red-600 font-sm mb-1">
-          View the plot by continuous master PP ID date range, this includes
-          negative and positive PP IDs.
-        </label>
+      <div className="w-full gap-1 text-xs p-2">
+          <label className="block font-medium text-gray-700 mb-1">
+            Critical Reference Date
+          </label>
 
-
-        <input
-          type="date"
-          value={criticalDate}
-          onChange={(e) => setCriticalDate(e.target.value)}
-          className="border rounded px-2 py-1 w-full"
-        />
-
-      </div>
+          
+          {/* <DatePicker className="border px-2 py-1 w-full"
+            selectsRange
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(dates) => {
+              const [start, end] = dates;
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            isClearable
+            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
+            /> */}
+          
+          <div className="flex gap-2 w-full">
+            <div className=" w-1/2 ">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
+          
+            <div className="w-1/2">
+                <input
+                type="date"
+                value={criticalDate}
+                onChange={(e) => setCriticalDate(e.target.value)}
+                className="border px-2 py-1 w-full" />
+            </div>
+          </div>
+        </div>
 
       {/* Threshold Toggle */}
       <div className="flex items-center justify-between  p-2 rounded">
