@@ -87,7 +87,7 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                 onChange={(e) => setCriticalDate(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
-            
+          
             <div className="w-1/2">
                 <input
                 type="date"
@@ -95,7 +95,7 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                 onChange={(e) => setCriticalDate(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
-            </div>
+          </div>
         </div>
 
 
@@ -129,22 +129,130 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
         
         <div className="mt-2 flex flex-col gap-3">
             <div>
-                <strong>Cumulative Growth For Receptive Ratio:</strong> {growthMetrics.receptive.cumulative.toFixed(3)}
+                <strong>Cumulative Growth For Receptive Ratio:</strong> {/* PP ID Range */}
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
+              </div>
+            <div>
+                <strong>Average Growth For Receptive Ratio:</strong> 
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
             </div>
             <div>
-                <strong>Average Growth For Receptive Ratio:</strong> {growthMetrics.receptive.average.toFixed(3)}
+                <strong>Cumulative Growth For Productive Ratio:</strong>
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
             </div>
             <div>
-                <strong>Cumulative Growth For Productive Ratio:</strong> {growthMetrics.productive.cumulative.toFixed(3)}
+                <strong>Average Growth For Productive Ratio:</strong> 
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
             </div>
             <div>
-                <strong>Average Growth For Productive Ratio:</strong> {growthMetrics.productive.average.toFixed(3)}
+                <strong>Cumulative Growth For Acuity Ratio:</strong>
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
             </div>
             <div>
-                <strong>Cumulative Growth For Acuity Ratio:</strong> {growthMetrics.acuity.cumulative.toFixed(3)}
-            </div>
-            <div>
-                <strong>Average Growth For Acuity Ratio:</strong> {growthMetrics.acuity.average.toFixed(3)}
+                <strong>Average Growth For Acuity Ratio:</strong> 
+                <div className="gap-1 text-xs p-2">
+                  <input
+                    type="number"
+                    readOnly
+                    value={ppIdFrom}
+                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                    className=" border px-2 py-1 w-1/2"
+                    placeholder="From (e.g., -3)"
+                  />
+                  <input
+                    readOnly
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                    className="border px-2 py-1 w-1/2"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
             </div>
         </div>
 
