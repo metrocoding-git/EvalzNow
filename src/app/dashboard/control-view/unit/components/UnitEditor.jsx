@@ -373,7 +373,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   name="shortDescription"
                   value={blockData?.shortDescription || ""}
                   onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
-                  className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 w-full"
                 />
               </div>
 

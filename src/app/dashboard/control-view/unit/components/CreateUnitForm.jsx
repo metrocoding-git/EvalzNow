@@ -541,7 +541,6 @@ const THRESHOLD_NAMES = {
                     </label>
                     <input
                       type="text"
-                      placeholder="40 chars"
                       maxLength={40}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                       value={bm.ref || ""}

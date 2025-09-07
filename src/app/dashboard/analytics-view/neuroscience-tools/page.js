@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import ClientEditor from "./components/ClientEditor";
 import RightPanel from "./components/RightPanel";
 import CurveEditor from "./components/CurveEditor";
+import PlotSelections from "./components/PlotSelections";
 
 export default function NeuroscienceTools() {
   const tabs = [
@@ -36,6 +37,8 @@ export default function NeuroscienceTools() {
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('');
+  const [activeChart, setActiveChart] = useState(false);
+
 
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -113,141 +116,137 @@ export default function NeuroscienceTools() {
             <div className="flex h-full overflow-hidden w-full">
               {!(activeAdjustPropertieTab === 'Indicators' || activeAdjustPropertieTab === 'Loads') && (
                 <>
-                {/* Sidebar */}
-                <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200  ">
-                  <div className="flex-grow flex flex-col h-1/3">
-                    {/* Header */}
-                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
-                      <div
-                        onClick={() => handleSort("lastName")}
-                        className="cursor-pointer"
-                      >
-                        Last Name
-                      </div>
-                      <div
-                        onClick={() => handleSort("firstName")}
-                        className="cursor-pointer"
-                      >
-                        First Name
-                      </div>
-                      <div
-                        onClick={() => handleSort("id")}
-                        className="cursor-pointer"
-                      >
-                        Candidate ID
-                      </div>
-                    </div>
-                    <div className="flex-1 overflow-auto">
-                      <div className=" px-3 py-1">
+                  {/* Sidebar */}
+                  <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200  ">
+                    <div className="flex-grow flex flex-col h-1/3">
+                      {/* Header */}
+                      <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
                         <div
-                          className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-2 py-1"
-                          onClick={() => setopenMenu(!openMenu)}
+                          onClick={() => handleSort("lastName")}
+                          className="cursor-pointer"
                         >
-                          <span
-                            className={`transition-transform duration-200 text-gray-600 mr-1 ${
-                              openMenu ? "rotate-90" : "rotate-0"
-                            }`}
+                          Last Name
+                        </div>
+                        <div
+                          onClick={() => handleSort("firstName")}
+                          className="cursor-pointer"
+                        >
+                          First Name
+                        </div>
+                        <div
+                          onClick={() => handleSort("id")}
+                          className="cursor-pointer"
+                        >
+                          Candidate ID
+                        </div>
+                      </div>
+                      <div className="flex-1 overflow-auto">
+                        <div className=" px-3 py-1">
+                          <div
+                            className="flex items-center cursor-pointer select-none hover:bg-gray-50 px-2 py-1"
+                            onClick={() => setopenMenu(!openMenu)}
                           >
-                            ▶
-                          </span>
-                          <span
-                            className={`text-md text-gray-600 ml-2 ${
-                              openMenu ? "font-bold" : ""
-                            }`}
-                          >
-                            Details
-                          </span>
+                            <span
+                              className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
+                                }`}
+                            >
+                              ▶
+                            </span>
+                            <span
+                              className={`text-md text-gray-600 ml-2 ${openMenu ? "font-bold" : ""
+                                }`}
+                            >
+                              Details
+                            </span>
+                          </div>
+
+                          {openMenu && (
+                            <>
+                              <div className=" items-center justify-center  px-4 ">
+                                <div className="border border-gray-200 p-1">
+                                  <span className="text-sm text-gray-400">
+                                    Unit Name: Unit 1
+                                  </span>
+                                  <br />
+                                  <span className="text-sm text-gray-400">
+                                    Unit ID: UA123
+                                  </span>
+                                  <br />
+                                  <span className="text-sm text-gray-400">
+                                    Unit Type: Group
+                                  </span>
+                                  <br />
+                                  <span className="text-sm text-gray-400">
+                                    Signature Profile: Signature 1
+                                  </span>
+                                </div>
+                              </div>
+                              {/* Candidate Data */}
+                              <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
+                                {sortedData.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
+                                  ${activeCandidateId === item.id
+                                        ? "bg-blue-100 border-l-4 border-blue-400"
+                                        : "hover:bg-gray-100"
+                                      }`}
+                                    onClick={() => {
+                                      setShowEdit(true);
+                                      setShowSecondary(true);
+                                    }}
+                                    onDoubleClick={() => {
+                                      setScoresOpen(true);
+                                      setActiveCandidateId(item.id);
+                                    }}
+                                  >
+                                    <span className="text-gray-800">
+                                      {item.lastName}
+                                    </span>
+                                    <span className="text-gray-800">
+                                      {item.firstName}
+                                    </span>
+                                    <span className="text-gray-600">{item.id}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
 
-                        {openMenu && (
-                          <>
-                            <div className=" items-center justify-center  px-4 ">
-                              <div className="border border-gray-200 p-1">
-                                <span className="text-sm text-gray-400">
-                                  Unit Name: Unit 1
-                                </span>
-                                <br />
-                                <span className="text-sm text-gray-400">
-                                  Unit ID: UA123
-                                </span>
-                                <br />
-                                <span className="text-sm text-gray-400">
-                                  Unit Type: Group
-                                </span>
-                                <br />
-                                <span className="text-sm text-gray-400">
-                                  Signature Profile: Signature 1
-                                </span>
-                              </div>
-                            </div>
-                            {/* Candidate Data */}
-                            <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
-                              {sortedData.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
-                                  ${
-                                    activeCandidateId === item.id
-                                      ? "bg-blue-100 border-l-4 border-blue-400"
-                                      : "hover:bg-gray-100"
-                                  }`}
-                                  onClick={() => {
-                                    setShowEdit(true);
-                                    setShowSecondary(true);
-                                  }}
-                                  onDoubleClick={() => {
-                                    setScoresOpen(true);
-                                    setActiveCandidateId(item.id);
-                                  }}
-                                >
-                                  <span className="text-gray-800">
-                                    {item.lastName}
-                                  </span>
-                                  <span className="text-gray-800">
-                                    {item.firstName}
-                                  </span>
-                                  <span className="text-gray-600">{item.id}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
+                        {/* Dropdown Content */}
                       </div>
-
-                      {/* Dropdown Content */}
                     </div>
-                  </div>
 
-                  {/* Secondary Input Area */}
-                  {showSecondary && (
+                    {/* Secondary Input Area */}
+                    {showSecondary && (
+                      <div className="h-1/3 overflow-auto ">
+                        <SecondaryArea onClose={() => setShowSecondary(false)} />
+                      </div>
+                    )}
+
+                    {/* Editor */}
                     <div className="h-1/3 overflow-auto ">
-                      <SecondaryArea onClose={() => setShowSecondary(false)} />
+                      <ClientEditor
+                        onClose={() => setShowEdit(false)}
+                        client={true}
+                        showForm={showEdit}
+                      />
                     </div>
-                  )}
-
-                  {/* Editor */}
-                  <div className="h-1/3 overflow-auto ">
-                    <ClientEditor
-                      onClose={() => setShowEdit(false)}
-                      client={true}
-                      showForm={showEdit}
-                    />
                   </div>
-                </div>
                 </>
               )}
 
               {/* Right Panel */}
-              <div className={`${ activeAdjustPropertieTab === 'Indicators' || activeAdjustPropertieTab === 'Loads'  ? "w-full"  // full width
-                    : "w-6/12 lg:w-9/12" // normal width
-                } bg-white flex flex-col border-1 h-full border-gray-200 p-1 ml-1`}
-              >
-                {ScoresOpen && <CurveEditor activeAdjustPropertieTab={activeAdjustPropertieTab}
-                                  setActiveAdjustPropertieTab={setActiveAdjustPropertieTab}  />}
+              <div className=" w-9/12 bg-white flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
+                {/* {ScoresOpen && <CurveEditor />} */}
 
-                
+                <PlotSelections activeChart={activeChart}
+                  setActiveChart={setActiveChart} />
+
 
               </div>
+
             </div>
             {/* ------- */}
           </div>

@@ -60,19 +60,19 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
         <div className="w-full gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
             Critical Reference Date
-          </label>          
+          </label>
 
           <div className="flex gap-2 w-full">
             <div className=" w-1/2 ">
-                <input
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
-            
+
             <div className="w-1/2">
-                <input
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}
@@ -82,33 +82,42 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
         </div>
 
         {/* Effort Fields – only show if candidate level */}
-{selectedSort === "activateCandidateLevel" && (
-  <div className="flex gap-2 w-full">
-    <div className="gap-1 text-xs p-2 w-1/2">
-      <label className="block font-medium text-gray-700 mb-1">
-        Effort - CSD
-      </label>
-      <input
-        type="text"
-        value={csdEffort}
-        disabled
-        className="border px-2 py-1 w-full text-gray-600"
-      />
-    </div>
+        {selectedSort === "activateCandidateLevel" && (
+          <>
 
-    <div className="gap-1 text-xs p-2 w-1/2">
-      <label className="block font-medium text-gray-700 mb-1">
-        Effort - USD
-      </label>
-      <input
-        type="text"
-        value={usdEffort}
-        disabled
-        className="border px-2 py-1 w-full text-gray-600"
-      />
-    </div>
-  </div>
-)}
+
+            <div className="gap-1 text-xs p-2 w-full">
+              <label className="block font-medium text-gray-700 mb-1">
+                Effort - CSD
+              </label>
+              <input
+                type="text"
+                value={csdEffort}
+                disabled
+                className="border px-2 py-1 w-full text-gray-600"
+              />
+            </div>
+
+
+
+
+
+            <div className="gap-1 text-xs p-2 w-full">
+              <label className="block font-medium text-gray-700 mb-1">
+                Effort - USD
+              </label>
+              <input
+                type="text"
+                value={usdEffort}
+                disabled
+                className="border px-2 py-1 w-full text-gray-600"
+              />
+            </div>
+
+
+
+          </>
+        )}
 
         {/* Threshold Toggle */}
         {/* <div className="flex items-center justify-between p-2">

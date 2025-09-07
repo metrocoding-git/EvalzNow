@@ -136,17 +136,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
               </div>
             <div>
@@ -157,17 +157,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
             </div>
             <div>
@@ -178,17 +178,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
             </div>
             <div>
@@ -199,17 +199,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
             </div>
             <div>
@@ -220,17 +220,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
             </div>
             <div>
@@ -241,17 +241,17 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
                     readOnly
                     value={ppIdFrom}
                     onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-1/2"
+                    className=" border px-2 py-1 w-full"
                     placeholder="From (e.g., -3)"
                   />
-                  <input
+                  {/* <input
                     readOnly
                     type="number"
                     value={ppIdTo}
                     onChange={(e) => setPpIdTo(parseInt(e.target.value))}
                     className="border px-2 py-1 w-1/2"
                     placeholder="To (e.g., 3)"
-                  />
+                  /> */}
                 </div>
             </div>
         </div>

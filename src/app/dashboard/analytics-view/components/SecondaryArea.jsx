@@ -36,21 +36,28 @@ const SecondaryInputForm = ({ onClose }) => {
             PP ID Range
           </label>
 
-          <input
-            type="number"
-            value={ppIdFrom}
-            onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-            className=" border px-2 py-1 w-1/2"
-            placeholder="From (e.g., -3)"
-          />
-          <input
-            type="number"
-            value={ppIdTo}
-            onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-            className="border px-2 py-1 w-1/2"
-            placeholder="To (e.g., 3)"
-          />
+          <div className="grid grid-cols-2">
+            <label className="font-medium text-gray-700">From</label>
+            <label className="font-medium text-gray-700">To</label>
+
+            <input
+              type="number"
+              value={ppIdFrom}
+              onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+              className="border px-2 py-1"
+              placeholder="From (e.g., -3)"
+            />
+
+            <input
+              type="number"
+              value={ppIdTo}
+              onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+              className="border px-2 py-1"
+              placeholder="To (e.g., 3)"
+            />
+          </div>
         </div>
+
 
         {/* Critical Reference Date */}
         <div className="w-full gap-1 text-xs p-2">
@@ -58,7 +65,7 @@ const SecondaryInputForm = ({ onClose }) => {
             Critical Reference Date
           </label>
 
-          
+
           {/* <DatePicker className="border px-2 py-1 w-full"
             selectsRange
             startDate={startDate}
@@ -71,18 +78,18 @@ const SecondaryInputForm = ({ onClose }) => {
             isClearable
             placeholderText="MM/DD/YYYY - MM/DD/YYYY"
             /> */}
-          
+
           <div className="flex gap-2 w-full">
             <div className=" w-1/2 ">
-                <input
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
-          
+
             <div className="w-1/2">
-                <input
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}
@@ -91,7 +98,7 @@ const SecondaryInputForm = ({ onClose }) => {
           </div>
         </div>
 
-        
+
 
         {/* Threshold Toggle */}
         {/* <div className="flex items-center justify-between p-2">

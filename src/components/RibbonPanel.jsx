@@ -144,7 +144,7 @@ export default function RibbonPanel() {
     <div className="w-full bg-gray-50 border-b border-gray-200 px-1 py-2 flex my-1">
       
       {/* Main ribbon items with category name below */}
-      <div className="flex w-[30%]">
+      <div className="flex ">
         <div className="flex flex-col items-center mx-1">
           <div className="flex gap-1">
             {ribbonItems
