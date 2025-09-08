@@ -36,25 +36,29 @@ const SecondaryInputForm = ({ onClose }) => {
             PP ID Range
           </label>
 
-          <div className="grid grid-cols-2">
-            <label className="font-medium text-gray-700">From</label>
-            <label className="font-medium text-gray-700">To</label>
-
-            <input
-              type="number"
-              value={ppIdFrom}
-              onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-              className="border px-2 py-1"
-              placeholder="From (e.g., -3)"
-            />
-
-            <input
-              type="number"
-              value={ppIdTo}
-              onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-              className="border px-2 py-1"
-              placeholder="To (e.g., 3)"
-            />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">From:</label>
+              <input
+                type="number"
+                value={ppIdFrom}
+                onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+                placeholder="From (e.g., -3)"
+              />
+            </div>
+            
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">To:</label>
+              <input
+                type="number"
+                value={ppIdTo}
+                onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+                placeholder="To (e.g., 3)"
+              />
+            </div>
+            
           </div>
         </div>
 
@@ -65,22 +69,9 @@ const SecondaryInputForm = ({ onClose }) => {
             Critical Reference Date
           </label>
 
-
-          {/* <DatePicker className="border px-2 py-1 w-full"
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              setStartDate(start);
-              setEndDate(end);
-            }}
-            isClearable
-            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
-            /> */}
-
-          <div className="flex gap-2 w-full">
-            <div className=" w-1/2 ">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">From:</label>
               <input
                 type="date"
                 value={criticalDate}
@@ -88,7 +79,8 @@ const SecondaryInputForm = ({ onClose }) => {
                 className="border px-2 py-1 w-full" />
             </div>
 
-            <div className="w-1/2">
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">To:</label>
               <input
                 type="date"
                 value={criticalDate}

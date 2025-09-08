@@ -94,10 +94,10 @@ const MasterPpIdBinTable = ({ data }) => {
         <tbody>
         {sortedBlocks.map((row, index) => (
             <tr key={index}>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitName}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitId}</td>
-              <td className="border-1 border-gray-400 px-2 py-1">{row.unit.unitType}</td>
+              <td className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
+              <td className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row.unit.unitName}</td>
+              <td className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row.unit.unitId}</td>
+              <td className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row.unit.unitType}</td>
 
               {/* Only render data cells for the current unit type */}
               {currentCompetencies.map((comp, idx) => {
@@ -105,8 +105,8 @@ const MasterPpIdBinTable = ({ data }) => {
                 const maxKey = `max${comp.dataKey.charAt(0).toUpperCase() + comp.dataKey.slice(1)}`;
                 return (
                   <React.Fragment key={idx}>
-                    <td className="border-1 border-gray-400 px-2 py-1">{row[attainedKey]}</td>
-                    <td className="border-1 border-gray-400 px-2 py-1">{row[maxKey]}</td>
+                    <td className=" whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row[attainedKey]}</td>
+                    <td className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">{row[maxKey]}</td>
                   </React.Fragment>
                 );
               })}

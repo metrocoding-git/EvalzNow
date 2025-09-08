@@ -43,21 +43,32 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
             PP ID Range
           </label>
 
-          <input
-            type="number"
-            value={ppIdFrom}
-            onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-            className=" border px-2 py-1 w-1/2"
-            placeholder="From (e.g., -3)"
-          />
-          <input
-            type="number"
-            value={ppIdTo}
-            onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-            className="border px-2 py-1 w-1/2"
-            placeholder="To (e.g., 3)"
-          />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">From:</label>
+              <input
+                type="number"
+                value={ppIdFrom}
+                onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+                placeholder="From (e.g., -3)"
+              />
+            </div>
+            
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">To:</label>
+              <input
+                type="number"
+                value={ppIdTo}
+                onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+                placeholder="To (e.g., 3)"
+              />
+            </div>
+            
+          </div>
         </div>
+
 
         {/* Critical Reference Date */}
         <div className="w-full gap-1 text-xs p-2">
@@ -65,31 +76,19 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
             Critical Reference Date
           </label>
 
-          
-          {/* <DatePicker className="border px-2 py-1 w-full"
-            selectsRange
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              setStartDate(start);
-              setEndDate(end);
-            }}
-            isClearable
-            placeholderText="MM/DD/YYYY - MM/DD/YYYY"
-            /> */}
-          
-          <div className="flex gap-2 w-full">
-            <div className=" w-1/2 ">
-                <input
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">From:</label>
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
-          
-            <div className="w-1/2">
-                <input
+
+            <div className="flex items-center ">
+              <label htmlFor="" className="w-1/2">To:</label>
+              <input
                 type="date"
                 value={criticalDate}
                 onChange={(e) => setCriticalDate(e.target.value)}

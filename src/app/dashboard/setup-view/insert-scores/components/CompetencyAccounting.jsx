@@ -225,6 +225,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const [insertScores, setInsertScores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteSelectedRow, setDeleteSelectedRow] = useState(null);
 
   const [customCriteria, setCustomCriteria] = useState([]);
 
@@ -270,9 +271,14 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
           const matchesTab = activeTab === "Indirect" ? ppNumber < 0 : ppNumber > 0;
 
           if (!matchesTab) return;
-  
-          if (env === "Classroom") classroomRows.push(row);
-          else workforceRows.push(row);
+
+          const mc = Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? "");  // MC1–MC20
+          const cc = Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? "");  // CC1–CC20
+          const normalizedRow = { ...row, mc, cc };
+
+
+          if (env === "Classroom") classroomRows.push(normalizedRow);
+          else workforceRows.push(normalizedRow);
         });
   
         setClassroomData(classroomRows);
@@ -369,42 +375,46 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
 
   const handleDeleteSelectedScore = async () => {
-    if (selectedRow === null) {
+    if (deleteSelectedRow === null) {
       alert("Please select a row to delete.");
       return;
     }
   
     // Determine which dataset we are working with
     const dataArray = environment === "Classroom" ? classroomData : workforceData;
-    const selectedItem = dataArray[selectedRow];
+    const selectedItem = dataArray[deleteSelectedRow];
   
     if (!selectedItem || !selectedItem.id) {
       alert("Cannot delete: invalid item selected.");
       return;
     }
   
-    // if (!confirm("Are you sure you want to delete this insert score?")) return;
-  
     try {
-      await deleteInsertScore(selectedItem.id);
+      // Delete from backend if id exists
+      if (selectedItem.id) {
+        await deleteInsertScore(selectedItem.id);
+      }
   
-      // Remove from state
-      const updatedArray = dataArray.filter((_, idx) => idx !== selectedRow);
+      // Remove from state array
+      const updatedArray = dataArray.filter((_, idx) => idx !== deleteSelectedRow);
       if (environment === "Classroom") setClassroomData(updatedArray);
       else setWorkforceData(updatedArray);
   
-      // Also remove from insertScores
+      // Remove from insertScores as well
       setInsertScores(prev => prev.filter(score => score.id !== selectedItem.id));
   
-      // Reset selected row
+      // Reset selection
       setSelectedRow(null);
+      setDeleteSelectedRow(null);
   
-      // alert("Insert score deleted successfully.");
+      // Optional success message
+      // alert("Row deleted successfully.");
     } catch (err) {
       console.error("Error deleting insert score:", err);
       alert("Failed to delete insert score.");
     }
   };
+  
 
   return (
     <>
@@ -430,16 +440,16 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
               <table className="w-full mx-auto my-1 text-left text-sm">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
-                      ID
+                    <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
+                      MC
                     </th>
-                    <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
+                    <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
                       Main Criteria
                     </th>
-                    <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
-                      ID
+                    <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
+                      CC
                     </th>
-                    <th className="border-1 border-gray-400 px-2 py-1 font-semibold">
+                    <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
                       Custom Criteria
                     </th>
                   </tr>
@@ -447,19 +457,19 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                 <tbody>
                   {MAIN_CRITERIA.map((criterion, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="border-1 border-gray-400 px-2 py-1">
+                      <td className="border-1 text-center border-gray-400 px-2 py-1">
                         {index + 1}
                       </td>
-                      <td className="border-1 border-gray-400 px-2 py-1">
+                      <td className="border-1 text-center border-gray-400 px-2 py-1">
                         {criterion}
                       </td>
-                      <td className="border-1 border-gray-400 px-2 py-1">
+                      <td className="border-1 text-center border-gray-400 px-2 py-1">
                         {index + 21}
                       </td>
-                      <td className="border-1 border-gray-400 px-2 py-1">
+                      <td className="border-1 text-center border-gray-400 px-2 py-1">
                         <input
                           type="text"
-                          className="w-full border border-gray-200 focus:outline-gray-200 px-1 py-0.5 text-sm"
+                          className="w-full border border-gray-200 text-center focus:outline-gray-200 px-1 py-0.5 text-sm"
                           placeholder="Enter custom criteria"
                           value={customCriteria[index]?.name || ""}
                           onChange={async (e) => {
@@ -511,8 +521,8 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         </div>
       )}
 
-      <div className={` ${environment === 'Classroom' ? ' h-full' : 'h-1/2'} border border-gray-300 flex flex-col m-1`}>
-        <div className=" flex flex-col h-full p-1">
+      <div className={` ${environment === 'Classroom' ? 'h-full' : 'h-1/2'} border border-gray-300 flex flex-col m-1`}>
+        <div className="flex flex-col flex-1 p-1 overflow-hidden">
           {/* Tab Buttons */}
           <div className="flex flex-col">
             <div>
@@ -589,28 +599,28 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
             </div>
           </div>
 
-          <div className="flex-1 p-2">
-            <div className="h-full overflow-auto border border-gray-200"> 
+          <div className="flex-1 p-2 overflow-auto">
+            <div className="min-w-full overflow-auto">
               <table className="w-full text-left text-xs mb-7"> 
                 <thead className="bg-gray-100">
                   <tr> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">First Name</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Last Name</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">CID</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">PP ID</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Task Declaration</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Workflow Stage</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Assessment Type</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Schedule Impact</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Engage Level</th> 
-                    <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Competency</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">First Name</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Last Name</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">CID</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">PP ID</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Duration</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Critical Reference Date</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Task Declaration</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Workflow Stage</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Assessment Type</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Schedule Impact</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Engage Level</th> 
+                    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Competency</th> 
 
                     {environment === "Classroom" ? (
                       <>
-                        <th className="border-1 border-gray-400 px-2 py-1">Attained Score</th>
-                        <th className="border-1 border-gray-400 px-2 py-1">Maximum Score</th>
+                        <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Attained Score</th>
+                        <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Maximum Score</th>
                       </>
                     ) : (
                       <>
@@ -631,25 +641,28 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                   {(environment === "Classroom" ? classroomData : workforceData).map(
                     (row, idx) => (
                       <tr key={idx} className={`hover:bg-gray-50 cursor-pointer ${
-                        selectedRow === row ? "bg-gray-200" : ""
-                      }`}  onClick={() => setSelectedRow(row)}>
-                        <td className="border p-1 text-center">{row.candidate?.firstName}</td>
-                        <td className="border p-1 text-center">{row.candidate?.lastName}</td>
-                        <td className="border p-1 text-center">{row.candidate?.candidateId}</td>
-                        <td className="border p-1 text-center">{row.ppId}</td>
-                        <td className="border p-1 text-center">{row.durationHrs}</td>
-                        <td className="border p-1 text-center">{row.criticalRefDate?.slice(0, 10)}</td>
-                        <td className="border p-1 text-center">{row.remarks}</td>
-                        <td className="border p-1 text-center">{row.workflowStage}</td>
-                        <td className="border p-1 text-center">{row.assessmentType}</td>
-                        <td className="border p-1 text-center">{row.scheduleImpact}</td>
-                        <td className="border p-1 text-center">{row.engageLevel}</td>
-                        <td className="border p-1 text-center">{row.competency}</td>
+                        selectedRow === idx ? "bg-gray-200" : ""
+                      }`}  onClick={() => {
+                        setSelectedRow(row);
+                        setDeleteSelectedRow(idx);
+                      }}>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.firstName}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.lastName}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.candidateId}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.ppId}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.durationHrs}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.criticalRefDate?.slice(0, 10)}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.remarks}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.workflowStage}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.assessmentType}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.scheduleImpact}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.engageLevel}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{row.competency}</td>
 
                         {environment === "Classroom" ? (
                           <>
-                            <td className="border p-1 text-center">{row.attainedScore || 0}</td>
-                            <td className="border p-1 text-center">{row.maxScore || 0}</td>
+                            <td className="whitespace-nowrap border p-1 text-center">{row.attainedScore || 0}</td>
+                            <td className="whitespace-nowrap border p-1 text-center">{row.maxScore || 0}</td>
                           </>
                         ) : (
                           <>
@@ -659,6 +672,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                             {row.cc?.map((val, i) => (
                               <td className="border p-1 text-center" key={`cc-${i}`}>{val}</td>
                             ))}
+
                           </>
                         )}
                       </tr>

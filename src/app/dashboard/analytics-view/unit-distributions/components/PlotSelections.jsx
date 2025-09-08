@@ -296,16 +296,16 @@ export default function PlotSelections({ onCandidatesSelected }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             Month
                           </th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             X Axis Value
                           </th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             Y Axis Value
                           </th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             Z Axis Value
                           </th>
                         </tr>
@@ -313,16 +313,16 @@ export default function PlotSelections({ onCandidatesSelected }) {
                       <tbody>
                         {floatChartData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                               {row.name}
                             </td>
-                            <td className="border border-gray-300 px-3 py-2">
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                               {row.xValue}
                             </td>
-                            <td className="border border-gray-300 px-3 py-2">
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                               {row.yValue}
                             </td>
-                            <td className="border border-gray-300 px-3 py-2">
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                               {row.zValue}
                             </td>
                           </tr>
