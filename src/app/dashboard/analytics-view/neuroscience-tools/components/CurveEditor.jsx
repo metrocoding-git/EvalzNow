@@ -242,19 +242,19 @@ export default function CurveEditor({activeAdjustPropertieTab, setActiveAdjustPr
                 <table className="table-auto w-full text-sm border border-gray-300">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border border-gray-300 px-3 py-2">Month</th>
-                      <th className="border border-gray-300 px-3 py-2">X Axis Value</th>
-                      <th className="border border-gray-300 px-3 py-2">Y Axis Value</th>
-                      <th className="border border-gray-300 px-3 py-2">Z Axis Value</th>
+                      <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Month</th>
+                      <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">X Axis Value</th>
+                      <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Y Axis Value</th>
+                      <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Z Axis Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {floatChartData.map((row, idx) => (
                       <tr key={idx} className="hover:bg-blue-50">
-                        <td className="border border-gray-300 px-3 py-2">{row.name}</td>
-                        <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
-                        <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
-                        <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
                       </tr>
                     ))}
                   </tbody>

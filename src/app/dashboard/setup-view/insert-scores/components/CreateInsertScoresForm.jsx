@@ -1,6 +1,7 @@
 "use client";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import { createInsertScore } from "@/services/insertScoreService";
+import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { ListFilterPlus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -134,6 +135,31 @@ const scheduleImpacts = [
   "Terminated",
 ];
 
+const MAIN_CRITERIA = [
+  { name: "Communication", label: "MC1" },
+  { name: "Intelligence", label: "MC2" },
+  { name: "Responsiveness", label: "MC3" },
+  { name: "Efficiency", label: "MC4" },
+  { name: "Adaptation", label: "MC5" },
+  { name: "Accuracy", label: "MC6" },
+  { name: "Verbal Reasoning", label: "MC7" },
+  { name: "Spatial Reasoning", label: "MC8" },
+  { name: "Numerical Reasoning", label: "MC9" },
+  { name: "Problem Solving", label: "MC10" },
+  { name: "Memory", label: "MC11" },
+  { name: "Data Checking", label: "MC12" },
+  { name: "Work Sampling", label: "MC13" },
+  { name: "Quality of Work", label: "MC14" },
+  { name: "Resourcefulness", label: "MC15" },
+  { name: "Following Instructions", label: "MC16" },
+  { name: "Working in Teams", label: "MC17" },
+  { name: "Working Alone", label: "MC18" },
+  { name: "Initiative", label: "MC19" },
+  { name: "Sick/Injury Avoidance", label: "MC20" },
+];
+
+
+
 const engageLevel = ["High", "Medium", "Low", "N/A"];
 
 const competencyTypes = {
@@ -148,28 +174,71 @@ const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 export default function CreateInsertScoresForm({ onClose, candidateId }) {
 
-  const [formData, setFormData] = useState({
-    ppId: "",
-    durationHrs: "",
-    criticalRefDate: "",
-    remarks: "",
-    workflowStage: "",
-    assessmentType: "",
-    scheduleImpact: "",
-    engageLevel: "",
-    competency: "",
-    attainedScore: null,
-    maxScore: null,
-    assessmentBlockId: null,
-    unitId: null,
-    candidate_id: null
-  });
+const [formData, setFormData] = useState({
+  ppId: "",
+  durationHrs: "",
+  criticalRefDate: "",
+  remarks: "",
+  workflowStage: "",
+  assessmentType: "",
+  scheduleImpact: "",
+  engageLevel: "",
+  competency: "",
+  attainedScore: null,
+  maxScore: null,
+  assessmentBlockId: null,
+  unitId: null,
+  candidate_id: null,
+  // Main criteria mc1 - mc20
+  mc1: "",
+  mc2: "",
+  mc3: "",
+  mc4: "",
+  mc5: "",
+  mc6: "",
+  mc7: "",
+  mc8: "",
+  mc9: "",
+  mc10: "",
+  mc11: "",
+  mc12: "",
+  mc13: "",
+  mc14: "",
+  mc15: "",
+  mc16: "",
+  mc17: "",
+  mc18: "",
+  mc19: "",
+  mc20: "",
+  // Custom criteria cc1 - cc20
+  cc1: "",
+  cc2: "",
+  cc3: "",
+  cc4: "",
+  cc5: "",
+  cc6: "",
+  cc7: "",
+  cc8: "",
+  cc9: "",
+  cc10: "",
+  cc11: "",
+  cc12: "",
+  cc13: "",
+  cc14: "",
+  cc15: "",
+  cc16: "",
+  cc17: "",
+  cc18: "",
+  cc19: "",
+  cc20: "",
+});
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [ppIds, setPpIds] = useState([]);
   const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
-
+  const [customCriteria, setCustomCriteria] = useState([]);
   const searchParams = useSearchParams();
   const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
   const environment = searchParams.get('environment') || 'workspace';
@@ -224,6 +293,26 @@ export default function CreateInsertScoresForm({ onClose, candidateId }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      if (!unitId) return;
+  
+      try {
+        const data = await getScoringCriteriaByUnitId(unitId);
+        if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
+  
+        setCustomCriteria(data);
+  
+      } catch (err) {
+        console.error("Failed to fetch scoring criteria:", err);
+      }
+    };
+  
+    fetchCriteria();
+  }, [unitId]);
+
+  console.log("custom criteria:", customCriteria);
 
   useEffect(() => {
     const fetchBlockInfo = async () => {
@@ -282,10 +371,9 @@ export default function CreateInsertScoresForm({ onClose, candidateId }) {
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
+        <div className="grid grid-cols-2 gap-1 space-y-3  max-w-xl">
 
           {/* PP ID */}
-
           <label className="w-40 pr-2 text-left text-gray-700">
             PP ID Callout:
           </label>
@@ -426,7 +514,6 @@ export default function CreateInsertScoresForm({ onClose, candidateId }) {
 
 
           {/* Competency */}
-
           <label className="w-40 pr-2 text-left text-gray-700">
             Competency:
           </label>
@@ -445,10 +532,56 @@ export default function CreateInsertScoresForm({ onClose, candidateId }) {
             ))}
           </select>
 
+          
+          {environment === "Workforce" && (
+            <div className="col-span-2 space-y-4 w-full ">
+              {MAIN_CRITERIA.map((criteria, index) => {
+                const fieldKey = `mc${index + 1}`;
+
+                return (
+                  <div key={fieldKey} className="flex items-center gap-2 w-full">
+                    {/* Left side label */}
+                    <label className="w-40 pr-2 text-left text-gray-700">
+                      {criteria.label} ({criteria.name}):
+                    </label>
+
+                    {/* Right side input */}
+                    <input
+                      type="text"
+                      placeholder={criteria.name}
+                      value={formData[fieldKey] || ""}
+                      onChange={(e) => handleChange(fieldKey, e.target.value)}
+                      className="flex-1 border px-2 py-1 w-42"
+                    />
+                  </div>
+                );
+              })}
+
+              {/* Custom Criteria from Database */}
+              {customCriteria.map((criteria, index) => {
+                const fieldKey = `cc${index + 1}`;
+                return (
+                  <div key={fieldKey} className="flex items-center gap-2 w-full">
+                    <label className="w-40 pr-2 text-left text-gray-700">
+                      {criteria.label || `CC${index + 1}`}:
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={criteria.criteria || `custom criteria ${index + 1}`}
+                      value={formData[fieldKey] || criteria.criteria || ""}
+                      onChange={(e) => handleChange(fieldKey, e.target.value)}
+                      className="border px-2 py-1 w-42"
+                    />
+                  </div>
+                );
+              })}
+
+            </div>
+          )}
+
 
           {environment === "Classroom" && (
             <>
-
               <label className="w-40 pr-2 text-left text-gray-700">
                 Attained Score:
               </label>

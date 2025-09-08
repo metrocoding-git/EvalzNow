@@ -258,23 +258,23 @@ export default function PlotSelections({ selectedSort }) {
           <table className="table-auto w-full text-sm border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-300 px-3 py-2 text-left">Entry</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Impact Type</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Concern Identified</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Identity Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Concern Resolved</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Resolution Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Identified</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Identity Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Resolved</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Resolution Date</th>
               </tr>
             </thead>
             <tbody>
               {[1, 2, 3, 4, 5].map((num) => (
                 <tr key={num} className="hover:bg-blue-50">
-                  <td className="border border-gray-300 px-3 py-2">{num}</td>
-                  <td className="border border-gray-300 px-3 py-2">Type {num}</td>
-                  <td className="border border-gray-300 px-3 py-2">Concern {num}</td>
-                  <td className="border border-gray-300 px-3 py-2">2025-08-0{num}</td>
-                  <td className="border border-gray-300 px-3 py-2">{num % 2 === 0 ? "Yes" : "No"}</td>
-                  <td className="border border-gray-300 px-3 py-2">
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Type {num}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern {num}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">2025-08-0{num}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num % 2 === 0 ? "Yes" : "No"}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                     {num % 2 === 0 ? `2025-08-1${num}` : "-"}
                   </td>
                 </tr>
@@ -397,7 +397,7 @@ export default function PlotSelections({ selectedSort }) {
                 </div>
               </div>
             </div>
-
+         
 
             <div className="h-1/2 flex flex-col border border-gray-200">
               {/* Tab Buttons */}
@@ -438,19 +438,19 @@ export default function PlotSelections({ selectedSort }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Month</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">X Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Y Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Z Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Month</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">X Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Y Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Z Axis Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {floatChartData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
                           </tr>
                         ))}
                       </tbody>

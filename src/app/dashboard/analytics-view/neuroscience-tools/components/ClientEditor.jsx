@@ -173,11 +173,46 @@ export default function ClientEditor({ client, onClose }) {
         </div>
       </div>
 
+      {/* <div className="text-sm text-gray-600 mt-2 w-full flex gap-2 pl-3 pr-4 items-center">
+        <label className="pr-2 text-left text-gray-700 ">
+          PP ID Callout:
+        </label>
+        <select disabled
+          value={formData.ppId}
+          onChange={(e) => handleChange("ppId", e.target.value)}
+          className="flex-1 border px-2 py-1 w-full"
+        >
+          <option value="" >
+            Select PP ID
+          </option>
+          {mockPpIds.map((pp, i) => (
+            <option key={i} value={pp}>
+              {pp}
+            </option>
+          ))}
+        </select>
+      </div> */}
+
       {!client ? (
         <div className="flex-1 p-4 text-gray-500 text-sm flex items-center justify-center">
         </div>
       ) : (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+          {/* pp id call out */}
+           <div className="flex gap-2 items-center mb-3 px-2">
+            <label className="text-gray-700 whitespace-nowrap">
+              PP ID Callout:
+            </label>
+            <select
+              disabled
+              className="flex-1 border px-2 py-1 w-full"
+            >
+              <option value="">
+                Select PP ID
+              </option>
+            </select>
+          </div>
+
           {Object.keys(grouped).map((lobe) => (
             <div key={lobe} className="border border-gray-300 mb-2 rounded">
               {/* Lobe Header */}
@@ -234,8 +269,25 @@ export default function ClientEditor({ client, onClose }) {
               )}
             </div>
           ))}
+
+          
         </div>
+        
       )}
+
+<div className="border-t border-gray-300 p-1 pr-2 bg-gray-50 flex-shrink-0">
+        <div className="flex justify-end gap-2">
+          <button
+            type="submit"
+            onClick={onClose}
+            // disabled={!isFormValid() || isSubmitting}
+            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors 
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

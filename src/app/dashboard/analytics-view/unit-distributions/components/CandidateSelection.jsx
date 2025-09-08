@@ -69,8 +69,8 @@ export default function CandidateSelectionTable({ onClose }) {
                 <th className="px-4 py-2 border">Last Name</th>
                 <th className="px-4 py-2 border">First Name</th>
                 <th className="px-4 py-2 border">Candidate ID</th>
+                <th className="px-4 py-2 border">Selection</th>
                 <th className="px-4 py-2 border">Value</th>
-                <th className="px-4 py-2 border">PP Listings</th>
               </tr>
             </thead>
             <tbody>
@@ -80,10 +80,10 @@ export default function CandidateSelectionTable({ onClose }) {
                   onClick={() => handleRowClick(row.id)}
                   className={`cursor-pointer ${row.isSelected ? "bg-gray-100 " : ""} ${row.value === "Omit" ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <td className="px-4 py-2 border">{row.lastName}</td>
-                  <td className="px-4 py-2 border">{row.firstName}</td>
-                  <td className="px-4 py-2 border">{row.candidateId}</td>
-                  <td className="px-4 py-2 border">
+                  <td className="px-4 py-2 border text-center">{row.lastName}</td>
+                  <td className="px-4 py-2 border text-center">{row.firstName}</td>
+                  <td className="px-4 py-2 border text-center">{row.candidateId}</td>
+                  <td className="px-4 py-2 border text-center">
                     <select
                       className="border rounded p-1"
                       value={row.value}
@@ -91,17 +91,17 @@ export default function CandidateSelectionTable({ onClose }) {
                     >
                       <option value="Omit">Omit Candidate</option>
                       <option value="Candidate Average">Candidate Average</option>
-                      <option value="Available + PP ID Listings">Available + PP ID Listings</option>
+                      <option value="Available + PP ID Listings">Available by PP ID</option>
                     </select>
                   </td>
-                  <td className="px-4 py-2 border">
+                  <td className="px-4 py-2 border text-center">
                     {row.value === "Available + PP ID Listings" && (
                       <select
                         className="border rounded p-1 w-full"
                         value={row.ppListings}
                         onChange={(e) => handlePPChange(row.id, e.target.value)}
                       >
-                        <option value="">-- Select PP ID --</option>
+                        <option value="">Select PP ID</option>
                         {ppIdOptions.map((pp) => (
                           <option key={pp} value={pp}>{pp}</option>
                         ))}

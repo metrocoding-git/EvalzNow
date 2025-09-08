@@ -160,6 +160,8 @@ export default function NeuroObject({ onClose }) {
     { lobe: "Temporal Lobe - Right", func: "Functional Capacity - Temporal Lobe (R)", value: "Yes" },
   ];
 
+  const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
+
 
 
   // Group rows by lobe
@@ -180,6 +182,8 @@ export default function NeuroObject({ onClose }) {
           Neuro Object
         </div>
 
+
+
         {/* Close icon */}
         <button
           onClick={onClose}
@@ -189,7 +193,27 @@ export default function NeuroObject({ onClose }) {
         </button>
       </div>
 
+      <div className="text-sm text-gray-600 mt-2 w-full flex gap-2 pl-3 pr-4 items-center">
+        <label className="pr-2 text-left text-gray-700 whitespace-nowrap">
+          PP ID Callout:
+        </label>
+        <select
+          // value={formData.ppId}
+          // onChange={(e) => handleChange("ppId", e.target.value)}
+          className="flex-1 border px-2 py-1 w-full"
+        >
+          <option value="" >
+            Select PP ID
+          </option>
+          {mockPpIds.map((pp, i) => (
+            <option key={i} value={pp}>
+              {pp}
+            </option>
+          ))}
+        </select>
+      </div>
 
+          
 
       <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
         {Object.keys(grouped).map((lobe) => (
@@ -246,13 +270,31 @@ export default function NeuroObject({ onClose }) {
                 </tbody>
               </table>
             )}
+
+            
           </div>
+
+          
         ))}
+
+
       </div>
 
 
-
-
+      {/* Fixed footer */}
+      <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
+        <div className="flex justify-end gap-2">
+          <button
+            type="submit"
+            onClick={onClose}
+            // disabled={!isFormValid() || isSubmitting}
+            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors 
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -240,19 +240,19 @@ export default function PlotSelections({ selectedSort }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Month</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">X Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Y Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Z Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Month</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">X Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Y Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Z Axis Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {floatChartData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
                           </tr>
                         ))}
                       </tbody>

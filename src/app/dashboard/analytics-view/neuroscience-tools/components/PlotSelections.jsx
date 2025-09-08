@@ -255,8 +255,8 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  <div className="col-span-9 px-1 py-1 text-left">Entities</div>
-                  <div className="col-span-3  py-1 text-left">ID</div>
+                  <div className="col-span-10 px-1 py-1 text-left">Entities</div>
+                  <div className="col-span-2  py-1 text-left">ID</div>
                 </div>
 
                 {/* Scrollable Content */}
@@ -379,24 +379,24 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && (
-
+                  
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Month</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">X Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Y Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Z Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Month</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">X Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Y Axis Value</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Z Axis Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {floatChartData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -412,8 +412,8 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">PP ID</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Form Submitted</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">PP ID</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Form Submitted</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -424,8 +424,8 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
                               }`}
                             onClick={() => setSelectedNeuroTools(row.index)}
                           >
-                            <td className="border border-gray-300 px-3 py-2">{row.ppId}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.value}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.value}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -441,31 +441,31 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">PP ID Callout</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Target</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Frontal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Occipital Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Parietal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Temporal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Frontal Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Occipital Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Parietal Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">RMS - Temporal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">PP ID Callout</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Target</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe ®</th>
                         </tr>
                       </thead>
                       <tbody>
                         {indicatorsData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.ppId}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.target}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS1}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS2}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS3}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS4}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS5}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS6}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS7}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.RMS8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS1}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS2}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS3}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS4}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS5}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS6}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS7}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS8}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -479,31 +479,31 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">PP ID Callout</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Target</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Frontal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Occipital Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Parietal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Temporal Lobe (L)</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Frontal Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Occipital Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Parietal Lobe ®</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Cognitive Load - Temporal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">PP ID Callout</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Target</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe ®</th>
                         </tr>
                       </thead>
                       <tbody>
                         {indicatorsData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.ppId}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.target}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive1}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive2}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive3}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive4}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive5}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive6}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive7}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.Cognitive8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive1}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive2}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive3}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive4}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive5}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive6}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive7}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive8}</td>
                           </tr>
                         ))}
                       </tbody>

@@ -378,7 +378,7 @@ export default function ViewerSelections({candidate}) {
                           }).map(([header, description]) => (
                             <th 
                               key={header}
-                              className="whitespace-nowrap border-1 border-gray-400 px-2 py-1 group relative"
+                              className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 group relative"
                             >
                               {header}
                               <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
@@ -478,7 +478,7 @@ export default function ViewerSelections({candidate}) {
                                   return (
                                     <td
                                       key={key}
-                                      className="border border-gray-200 px-2 py-1 whitespace-nowrap"
+                                      className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
                                     >
                                       {row[key] !== undefined ? row[key] : '-'}
                                     </td>

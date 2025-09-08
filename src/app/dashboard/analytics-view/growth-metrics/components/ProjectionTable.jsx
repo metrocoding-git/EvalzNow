@@ -40,9 +40,9 @@ export default function ProjectionTable({ visible, onClose }) {
             X
           </button>
         </div>
-
+       
         <div className="w-full overflow-auto border border-gray-200 rounded-lg">
-          <table className="w-full text-left text-xs divide-y divide-gray-200">
+          <table className="w-full whitespace-nowrap  text-center text-xs divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 {columns.map((col) => (
@@ -58,11 +58,11 @@ export default function ProjectionTable({ visible, onClose }) {
                   <td className="px-2 py-1 border border-gray-300">{row.Callout}</td>
                   <td className="px-2 py-1 border border-gray-300">
                     <select
-                      className="border rounded px-1 py-0.5 w-full text-xs"
+                      className="border rounded px-1 py-0.5 w-full text-xs text-center"
                       value={row.PP_ID}
                       onChange={(e) => handlePPChange(idx, Number(e.target.value))}
                     >
-                      <option value={0}>--Select--</option>
+                      <option value={0}>Select</option>
                       {samplePPIds.map((id) => (
                         <option key={id} value={id}>{id}</option>
                       ))}

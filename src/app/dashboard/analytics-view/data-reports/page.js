@@ -113,7 +113,7 @@ export default function DataReports() {
                     <div className="relative w-full ">
                       <input
                         type="text"
-                        className="border w-full pl-2 pr-8 py-1 text-sm"
+                        className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                         placeholder="Search"
                       />
                       <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />

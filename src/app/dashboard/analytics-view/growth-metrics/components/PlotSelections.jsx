@@ -193,13 +193,13 @@ export default function PlotSelections({ selectedSort }) {
                 </div>
               </div>
             </div>
-
+        
 
             <div className="h-1/2 flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
+                  className={`px-3 py-1 text-sm whitespace-nowrap cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
                     ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
@@ -246,19 +246,19 @@ export default function PlotSelections({ selectedSort }) {
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Month</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">X Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Y Axis Value</th>
-                          <th className="border border-gray-300 px-3 py-2 text-left">Z Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Month</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">X Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Y Axis Value</th>
+                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Z Axis Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         {floatChartData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="border border-gray-300 px-3 py-2">{row.zValue}</td>
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.name}</td>
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.xValue}</td>
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.yValue}</td>
+                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.zValue}</td>
                           </tr>
                         ))}
                       </tbody>
