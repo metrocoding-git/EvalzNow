@@ -195,33 +195,35 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       // Call API to update the block
       const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
   
-      // Notify parent component
-      // onSave(savedBlock);
-      // console.log("Saved block:", savedBlock);
-
+      // Notify parent about the updated block
+      if (onBlockUpdate) {
+        onBlockUpdate(savedBlock); // <-- pass updated block to parent
+      }
+  
       if (onBlockSubmitStatus) {
         onBlockSubmitStatus(true); // success
       }
-
-      
+  
       onClose();
     } catch (err) {
       console.error("Failed to update unit:", err);
-    
-      // Handle different error shapes
+  
       const message =
-        err.response?.data?.message || // Axios-like
-        err.data?.message ||           // your fetch API shape
-        err.message ||                 // generic JS error
+        err.response?.data?.message ||
+        err.data?.message ||
+        err.message ||
         "Failed to update unit";
-    
+  
       setError(message);
-
+  
       if (onBlockSubmitStatus) {
         onBlockSubmitStatus(false); // failure
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
   
 
 
@@ -250,7 +252,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 { label: "Unit Name", key: "unitName" },
                 { label: "Unit ID", key: "unitId" },
                 { label: "Start Date", key: "startDate", type: "date" },
-                { label: "End Date", key: "endDate" },
+                { label: "End Date", key: "endDate", type: "date" },
               ].map(({ label, key, type }) => (
                 <React.Fragment key={key}>
                   <label className="text-gray-700 font-medium text-xs">{label}:</label>

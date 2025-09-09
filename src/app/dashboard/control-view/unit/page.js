@@ -156,6 +156,30 @@ export default function UnitControl() {
       return newRosterData;
     });
   };
+
+  // Add this function to refresh candidate data
+  const refreshCandidateData = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllUnitRoster();
+      setUnitRosterData(Array.isArray(data) ? data : []);
+      
+      // Extract unique candidates from roster data
+      const uniqueCandidates = data.reduce((acc, rosterItem) => {
+        if (rosterItem.candidate && !acc.some(c => c.id === rosterItem.candidate.id)) {
+          acc.push(rosterItem.candidate);
+        }
+        return acc;
+      }, []);
+      
+      setCandidateList(uniqueCandidates);
+    } catch (err) {
+      console.error("Failed to fetch candidates:", err);
+      setError("Failed to load candidates. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   
 
   // Fetch all candidates on mount
@@ -332,11 +356,10 @@ export default function UnitControl() {
   }, [dataList, showUnitRoster]);
 
 
+  // Remove or simplify the handleBlockUpdate function since UnitRoster handles it
   const handleBlockUpdate = (updatedBlock) => {
-    // Update the assessment blocks in state if needed
     console.log("Block updated:", updatedBlock);
-    // You might want to refresh the blocks data here
-    fetchBlocksByUnitAndCandidate(); // Refresh the blocks
+    // UnitRoster will handle the refresh internally
   };
 
   // Modify the handleUnitSave function in UnitControl
@@ -369,11 +392,18 @@ export default function UnitControl() {
     }
   };
 
+
+  const refreshAssessmentBlocks = async () => {
+    // This would need to be implemented to fetch blocks from UnitRoster
+    // But this approach is more complex since UnitRoster manages the blocks state
+    console.log("Refresh assessment blocks");
+  };
+
   // Add this computed value to get filtered roster data
   const filteredUnitRosterData = unitRosterData.filter(roster => 
     (roster.unitId === selectedUnit?.id || roster.unit?.id === selectedUnit?.id) &&
     (!selectedCandidate || roster.candidate?.id === selectedCandidate.id)
-);
+  );
 
 
 
@@ -520,7 +550,7 @@ export default function UnitControl() {
                     <div 
                     key={index}
                     className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 cursor-pointer 
-                      ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-gray-100 " : "hover:bg-gray-50"}`}
+                      ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-gray-200 " : "hover:bg-gray-50"}`}
                     onClick={() => handleCandidateSelect(rosterItem.candidate)}
                     >
                       <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
@@ -584,6 +614,7 @@ export default function UnitControl() {
                         setSelectedUnit(item);
                         setShowEdit(true);
                         setShowAdd(false);
+                        setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -779,6 +810,8 @@ export default function UnitControl() {
             activeTab={activeTab}
             onSave={handleUnitSave} 
             updateUnit={updateUnit} 
+            onBlockUpdate={handleBlockUpdate}
+            refreshAssessmentBlocks={refreshAssessmentBlocks} 
           />
 
         </div>
@@ -806,6 +839,9 @@ export default function UnitControl() {
             selectedCandidate={selectedCandidate}
             onBlockSelect={setSelectedBlock}
             onRosterUpdate={handleRosterUpdate}
+            refreshCandidateData={refreshCandidateData} 
+            // refreshAssessmentBlocks={fetchBlocksByUnitAndCandidate}
+            showEditBlockManager={showEditBlockManager}
                />
           </div>
         )}
