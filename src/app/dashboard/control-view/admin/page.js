@@ -415,9 +415,10 @@ export default function AdminControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-red-200 w-full text-left border-t border-gray-200"
               onClick={() => {
-                handleDelete(contextMenu.selectedStaff.id);
+                handleDelete(contextMenu.selectedClient.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
+              
             >
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete

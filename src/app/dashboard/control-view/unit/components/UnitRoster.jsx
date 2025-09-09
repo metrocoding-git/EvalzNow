@@ -9,7 +9,7 @@ import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/ser
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate, onBlockUpdate  }) {
+  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate, onBlockUpdate, refreshCandidateData, refreshAssessmentBlocks, showEditBlockManager  }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
@@ -51,17 +51,17 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     });
   };
 
-  const handleBlockUpdate = (updatedBlock) => {
-    // Update the assessment blocks state
-    setAssessmentBlocks(prev => 
-      prev.map(block => block.id === updatedBlock.id ? updatedBlock : block)
-    );
-    
-    // Notify parent component if needed
-    if (onBlockUpdate) {
-      onBlockUpdate(updatedBlock);
-    }
-  };
+// Refresh blocks when edit panel closes
+useEffect(() => {
+  if (!showCreateBlockForm && !setShowEditBlockManager) return;
+
+  if (!showEditBlockManager) {
+    fetchBlocksByUnitAndCandidate();
+  }
+}, [showEditBlockManager]);
+
+
+  
   
 
   
@@ -155,6 +155,12 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
   }, [selectedUnit?.id, selectedCandidate?.id]);
+
+  // useEffect(() => {
+  //   if (!showEditBlockManager) {
+  //     refreshAssessmentBlocks();
+  //   }
+  // }, [showEditBlockManager, refreshAssessmentBlocks]);
 
 
   const handleBlockManagerDeleteCurve = () => {
@@ -330,6 +336,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     });
   };
    
+  
 
   if (!visible) return null;
 
@@ -639,6 +646,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
           existingCandidates={existingCandidates}
           selectedUnit={selectedUnit}
           unitRosterData={unitRosterData}
+          refreshCandidateData={refreshCandidateData} 
         />
       )}
 

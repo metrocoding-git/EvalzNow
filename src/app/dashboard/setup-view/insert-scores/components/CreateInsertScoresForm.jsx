@@ -303,6 +303,13 @@ const [formData, setFormData] = useState({
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
         setCustomCriteria(data);
+
+        const ccData = {};
+        data.forEach((criteria, index) => {
+          ccData[`cc${index + 1}`] = criteria.criteria || "";
+        });
+
+        setFormData((prev) => ({ ...prev, ...ccData }));
   
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
@@ -547,8 +554,11 @@ const [formData, setFormData] = useState({
 
                     {/* Right side input */}
                     <input
-                      type="text"
-                      placeholder={criteria.name}
+                      step="0.01"
+                      type="number"
+                      onBlur={(e) =>
+                        handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
+                      }
                       value={formData[fieldKey] || ""}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
                       className="flex-1 border px-2 py-1 w-42"
@@ -562,19 +572,26 @@ const [formData, setFormData] = useState({
                 const fieldKey = `cc${index + 1}`;
                 return (
                   <div key={fieldKey} className="flex items-center gap-2 w-full">
-                    <label className="w-40 pr-2 text-left text-gray-700">
-                      {criteria.label || `CC${index + 1}`}:
+                    {/* Show the custom criteria text */}
+                    <label className="w-60 pr-2 text-left text-gray-700">
+                      CC{index + 1} ({criteria.criteria}):
                     </label>
+
+                    {/* User input only for the score/value */}
                     <input
-                      type="text"
-                      placeholder={criteria.criteria || `custom criteria ${index + 1}`}
-                      value={formData[fieldKey] || criteria.criteria || ""}
+                      type="number"
+                      step="0.01"
+                      value={formData[fieldKey] || ""}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
-                      className="border px-2 py-1 w-42"
+                      onBlur={(e) =>
+                        handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
+                      }
+                      className="border px-2 py-1 flex-1 w-42"
                     />
                   </div>
                 );
               })}
+
 
             </div>
           )}

@@ -156,7 +156,7 @@ const competencyTypes = {
 };
 
 
-export default function Editor({ details, performancePoints, onClose  }) {
+export default function Editor({ details, performancePoints, onClose, onUpdate  }) {
   const [form, setForm] = useState({});
   const searchParams = useSearchParams();
   const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
@@ -242,9 +242,10 @@ export default function Editor({ details, performancePoints, onClose  }) {
           : null,
       };
   
-      await updateInsertScore(details.id, payload); 
+      const response = await updateInsertScore(details.id, payload); 
       console.log("Successfully updated insert score.");
   
+      if (onUpdate) onUpdate(response);
       onClose?.(); // Close the form if callback provided
     } catch (err) {
       console.error("Failed to update insert score:", err);

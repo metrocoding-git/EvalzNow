@@ -39,7 +39,7 @@ const MAIN_CRITERIA = [
   "Sick/Injury Avoidance",
 ];
 
-export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId }) {
+export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId, refreshTrigger }) {
 
   const [scores, setScores] = useState([]);
 
@@ -241,6 +241,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     setPoints(updated);
   };
 
+  const refreshData = () => {
+    if (onRefresh) onRefresh();
+  };
+
   useEffect(() => {
     const fetchAndSeparateScores = async () => {
       if (!unitId || !candidateId) return;
@@ -295,7 +299,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     };
   
     fetchAndSeparateScores();
-  }, [unitId, candidateId, activeTab, environment]);
+  }, [unitId, candidateId, activeTab, environment, refreshTrigger]);
   
   
   useEffect(() => {
@@ -357,20 +361,29 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   if (!visible) return null;
 
   const moveRowUp = () => {
-    if (selectedRow === null || selectedRow <= 0) return;
-    setSelectedRow(selectedRow - 1);
+    if (deleteSelectedRow === null || deleteSelectedRow <= 0) return;
+  
+    const dataArray = environment === "Classroom" ? classroomData : workforceData;
+    const newIndex = deleteSelectedRow - 1;
+  
+    setDeleteSelectedRow(newIndex);
+    setSelectedRow(dataArray[newIndex]);
   };
-
+  
   const moveRowDown = () => {
-    const filteredRowsCount = tableData.filter(row =>
-      activeTab === "Indirect"
-        ? row.ppId.startsWith("-")
-        : !row.ppId.startsWith("-")
-    ).length;
-
-    if (selectedRow === null || selectedRow >= filteredRowsCount - 1) return;
-    setSelectedRow(selectedRow + 1);
+    const dataArray = environment === "Classroom" ? classroomData : workforceData;
+  
+    if (
+      deleteSelectedRow === null ||
+      deleteSelectedRow >= dataArray.length - 1
+    ) return;
+  
+    const newIndex = deleteSelectedRow + 1;
+  
+    setDeleteSelectedRow(newIndex);
+    setSelectedRow(dataArray[newIndex]);
   };
+  
 
 
 
@@ -525,7 +538,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         <div className="flex flex-col flex-1 p-1 overflow-hidden">
           {/* Tab Buttons */}
           <div className="flex flex-col">
-            <div>
+            <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1  text-gray-700">
               <h2 className="text-sm font-semibold mx-1">Competency Accounting</h2>
             </div>
 
@@ -599,8 +612,8 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
             </div>
           </div>
 
-          <div className="flex-1 p-2 overflow-auto">
-            <div className="min-w-full overflow-auto">
+          <div className="flex-1 p-2  overflow-auto h-full">
+            <div className="min-w-full overflow-auto h-full">
               <table className="w-full text-left text-xs mb-7"> 
                 <thead className="bg-gray-100">
                   <tr> 
@@ -641,7 +654,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                   {(environment === "Classroom" ? classroomData : workforceData).map(
                     (row, idx) => (
                       <tr key={idx} className={`hover:bg-gray-50 cursor-pointer ${
-                        selectedRow === idx ? "bg-gray-200" : ""
+                        selectedRow?.id === row.id ? "bg-gray-200" : ""
                       }`}  onClick={() => {
                         setSelectedRow(row);
                         setDeleteSelectedRow(idx);
@@ -667,10 +680,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         ) : (
                           <>
                             {row.mc?.map((val, i) => (
-                              <td className="border p-1 text-center" key={`mc-${i}`}>{val}</td>
+                              <td className="whitespace-nowrap border p-1 text-center" key={`mc-${i}`}>{val}</td>
                             ))}
                             {row.cc?.map((val, i) => (
-                              <td className="border p-1 text-center" key={`cc-${i}`}>{val}</td>
+                              <td className="whitespace-nowrap border p-1 text-center" key={`cc-${i}`}>{val}</td>
                             ))}
 
                           </>

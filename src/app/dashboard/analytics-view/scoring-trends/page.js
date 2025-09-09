@@ -13,6 +13,7 @@ import SecondaryArea from "../components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getAllCandidates } from "@/services/candidateService";
 
 export default function ScoringTrends() {
   const tabs = [
@@ -32,20 +33,21 @@ export default function ScoringTrends() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+  const [data, setData] = useState([
+    // { id: 1, firstName: "John", lastName: "Doe" },
+    // { id: 2, firstName: "Jane", lastName: "Smith" },
+    // { id: 3, firstName: "Bob", lastName: "Johnson" },
+    // { id: 4, firstName: "Alice", lastName: "Williams" },
+    // { id: 5, firstName: "Charlie", lastName: "Brown" },
+    // { id: 6, firstName: "David", lastName: "Jones" },
+    // { id: 7, firstName: "Eva", lastName: "Miller" },
+    // { id: 8, firstName: "Frank", lastName: "Davis" },
+    // { id: 9, firstName: "Grace", lastName: "Wilson" },
+    // { id: 10, firstName: "Henry", lastName: "Moore" },
+  ]);
 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
@@ -78,6 +80,37 @@ export default function ScoringTrends() {
         : valB.localeCompare(valA);
     }
   });
+
+
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidates();
+  
+        const sortedData = Array.isArray(data)
+          ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
+          : [];
+  
+        // ✅ set the fetched data into state
+        setData(sortedData);
+  
+        if (sortedData.length > 0) {
+          setActiveCandidateId(sortedData[0].id);  // ✅ set first candidate active
+          setShowEdit(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCandidates();
+  }, []);
+  
 
   return (
     <div className="w-full flex flex-col">

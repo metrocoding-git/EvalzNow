@@ -102,6 +102,7 @@ export default function PreviewPage() {
 
   const searchParams = useSearchParams();
   const unitQuery = searchParams.get("unitId");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const sortedCandidates = [...candidateList].sort((a, b) => {
     const valA = a[sortKey];
@@ -160,12 +161,24 @@ export default function PreviewPage() {
     fetchCandidateByUnitId();
   }, [unitQuery]);
 
+
+
+
   // Select first candidate on page load
   useEffect(() => {
     if (sortedCandidates.length > 0 && !selectedCandidate) {
       setSelectedCandidate(sortedCandidates[0]);
     }
   }, [sortedCandidates, selectedCandidate]);
+
+  const filteredData = sortedCandidates.filter((item) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      item.firstName?.toLowerCase().includes(term) ||
+      item.lastName?.toLowerCase().includes(term) ||
+      String(item.id).includes(term) // ✅ match numeric ID
+    );
+  });
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -179,6 +192,8 @@ export default function PreviewPage() {
                 type="text"
                 className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                 placeholder="Search"
+                value={searchTerm}                 // ✅ Controlled input
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
             </div>
@@ -244,10 +259,10 @@ export default function PreviewPage() {
                 </div>
               </div>
 
-              {sortedCandidates.length === 0 ? (
+              {filteredData.length === 0 ? (
                 <p className="text-xs text-gray-500">No activated candidates.</p>
               ) : (
-                sortedCandidates.map((candidate) => (
+                filteredData.map((candidate) => (
                   <div
                     key={candidate.id} // use unique ppId
                     onClick={() => setSelectedCandidate(candidate)}

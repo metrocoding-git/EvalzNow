@@ -53,12 +53,14 @@ export default function EntitiesManager() {
   const [unitData, setUnitData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const unitQuery = searchParams.get("unitId");
+  const [searchTerm, setSearchTerm] = useState("");
  
   useEffect(() => {
     if (!unitQuery) {
@@ -148,7 +150,20 @@ export default function EntitiesManager() {
         : valB.localeCompare(valA);
     }
     return sortDirection === "asc" ? valA - valB : valB - valA;
+
+
+    
   });
+
+  const filteredData = sortedData.filter((item) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      item.firstName?.toLowerCase().includes(term) ||
+      item.lastName?.toLowerCase().includes(term) ||
+      String(item.id).includes(term) // ✅ match numeric ID
+    );
+  });
+  
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -207,6 +222,8 @@ export default function EntitiesManager() {
                 type="text"
                 className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                 placeholder="Search"
+                value={searchTerm}                 // ✅ Controlled input
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
             </div>
@@ -273,7 +290,7 @@ export default function EntitiesManager() {
 
                 {/* Candidate Rows */}
                 <div className="mt-2">
-                  {sortedData.map((item) => (
+                  {filteredData.map((item) => (
                     <div
                       key={item.id}
                       className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${selectedEntity?.id === item.id
@@ -316,6 +333,10 @@ export default function EntitiesManager() {
               details={selectedRow}
               performancePoints={activeTab}
               onClose={() => setScoreAdd(false)}
+              onUpdate={() => {
+                // Trigger refresh when editor updates data
+                setRefreshTrigger(prev => prev + 1); 
+              }}
             />
           </div>
         </div>
@@ -330,7 +351,9 @@ export default function EntitiesManager() {
             </div>
           </div>
         )}
-        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity?.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd} />}
+        {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity?.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd}
+         refreshTrigger={refreshTrigger}
+          />}
       </div>
 
 

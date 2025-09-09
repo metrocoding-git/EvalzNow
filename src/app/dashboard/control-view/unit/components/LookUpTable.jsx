@@ -5,7 +5,7 @@ import { createUnitRoster } from "@/services/unitRosterService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-export default function SearchLookup({ onClose, selectedUnit, refreshRoster}) {
+export default function SearchLookup({ onClose, selectedUnit, refreshRoster, refreshCandidateData}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -232,6 +232,10 @@ useEffect(() => {
 
                 if (refreshRoster) {
                   await refreshRoster();
+                }
+                
+                if (refreshCandidateData) {
+                  await refreshCandidateData();
                 }
 
                 onClose();
