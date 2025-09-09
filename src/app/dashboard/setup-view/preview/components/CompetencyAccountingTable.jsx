@@ -140,12 +140,12 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
       <table className="min-w-full table-auto text-sm text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Short Description</th>
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Duration</th>
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Missing Competencies</th>
-            <th className="whitespace-nowrap border-1 border-gray-400 px-2 py-1">Error</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Short Description</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Duration</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Critical Reference Date</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Missing Competencies</th>
+            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Error</th>
           </tr>
         </thead>
         <tbody className="text-gray-700">
@@ -158,15 +158,15 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
                 }`}
                 onClick={() => handleRowClick(index)}
               >
-                <td className="px-4 py-2">{row.ppId}</td>
-                <td className="px-4 py-2">{row.shortDescription || "N/A"}</td>
-                <td className="px-4 py-2">{row.totalDuration || "N/A"}</td>
-                <td className="px-4 py-2">{row.latestCriticalRefDate
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.shortDescription || "N/A"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.totalDuration || "N/A"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.latestCriticalRefDate
                   ? new Date(row.latestCriticalRefDate).toLocaleDateString()
                   : "-"}
                 </td>
-                <td className="px-4 py-2">{row.missingCompetency || "None"}</td>
-                <td className="px-4 py-2">  {row.missingCompetency ? "Yes" : "No"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.missingCompetency || "None"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">  {row.missingCompetency ? "Yes" : "No"}</td>
               </tr>
             ))
           ) : (

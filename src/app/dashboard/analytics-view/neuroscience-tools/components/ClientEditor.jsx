@@ -275,7 +275,7 @@ export default function ClientEditor({ client, onClose }) {
         
       )}
 
-<div className="border-t border-gray-300 p-1 pr-2 bg-gray-50 flex-shrink-0">
+      <div className="border-t border-gray-300 p-1 pr-2 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
             type="submit"
