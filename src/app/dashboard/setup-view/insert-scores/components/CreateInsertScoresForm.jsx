@@ -164,7 +164,7 @@ const engageLevel = ["High", "Medium", "Low", "N/A"];
 
 const competencyTypes = {
   communicative: ["Listening", "Reading", "Speaking", "Writing"],
-  'theory practical': ["Practice", "Theory"],
+  'theory & practice': ["Practice", "Theory"],
   'third parameter': ["Receptive", "Productive", "Acuity"],
   // Add more types if needed
 };
@@ -240,9 +240,12 @@ const [formData, setFormData] = useState({
   const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
   const [customCriteria, setCustomCriteria] = useState([]);
   const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
+  
   const environment = searchParams.get('environment') || 'workspace';
   const unitId = searchParams.get('unitId');
+
+  const rawType = searchParams.get("type") || "communicative";
+  const type = rawType.toLowerCase(); // normalize
 
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
@@ -252,6 +255,7 @@ const [formData, setFormData] = useState({
       ...prev,
       [label]: value,
     }));
+
     
     // When ppId changes, update the assessmentBlockId accordingly
     if (label === "ppId") {
@@ -265,11 +269,84 @@ const [formData, setFormData] = useState({
     }
   };
 
+  
+
   const handleSubmit = async () => {
     if (!formData.assessmentBlockId || !unitId) {
       setError("Missing unitId or assessmentBlockId.");
       return;
     }
+
+    let attained = null;
+
+    // Validation for Classroom environment
+    if (environment === "Classroom") {
+      attained = parseFloat(formData.attainedScore || 0);
+      const max = parseFloat(formData.maxScore || 0);
+
+      if (attained > max) {
+        setError("Attained score cannot be greater than maximum score.");
+        return; // stop submission
+      }
+    }
+
+    if (formData.attainedScore !== null && parseFloat(formData.attainedScore) < 0) {
+      setError("Attained Score cannot be negative.");
+      return;
+    }
+  
+    if (formData.maxScore !== null && parseFloat(formData.maxScore) < 0) {
+      setError("Maximum Score cannot be negative.");
+      return;
+    }
+
+    if (environment === "Workforce") {
+
+        // Calculate Max Score
+        let highest = 0;
+        let filledCount = 0;
+
+      // Sum up all mc + cc values
+      let total = 0;
+  
+      for (let i = 1; i <= 20; i++) {
+        const mcVal = parseFloat(formData[`mc${i}`] || 0);
+        if (mcVal < 0) {
+          setError(`Negative value found in MC${i}. Please enter only positive values.`);
+          return;
+        }
+
+        if (!isNaN(mcVal)) total += mcVal;
+  
+        const ccVal = parseFloat(formData[`cc${i}`] || 0);
+        if (ccVal < 0) {
+          setError(`Negative value found in CC${i}. Please enter only positive values.`);
+          return;
+        }
+
+        if (!isNaN(ccVal)) total += ccVal;
+      }
+  
+      attained = total;
+
+
+      for (let i = 1; i <= 20; i++) {
+        const mcVal = parseFloat(formData[`mc${i}`] || 0);
+        if (mcVal > 0) {
+          filledCount++;
+          if (mcVal > highest) highest = mcVal;
+        }
+    
+        const ccVal = parseFloat(formData[`cc${i}`] || 0);
+        if (ccVal > 0) {
+          filledCount++;
+          if (ccVal > highest) highest = ccVal;
+        }
+      }
+    
+      formData.maxScore = highest * filledCount;
+    }
+  
 
     try {
       setLoading(true);
@@ -279,7 +356,7 @@ const [formData, setFormData] = useState({
         unitId: parseInt(unitId),
         candidate_id: parseInt(candidateId),
         durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
-        attainedScore: formData.attainedScore ? parseInt(formData.attainedScore) : null,
+        attainedScore: attained !== null ? attained : null,
         maxScore: formData.maxScore ? parseInt(formData.maxScore) : null,
       };
 
@@ -293,6 +370,16 @@ const [formData, setFormData] = useState({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (currentCompetencies.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        competency: prev.competency || "",
+      }));
+    }
+  }, [type]);
+  
 
   useEffect(() => {
     const fetchCriteria = async () => {
@@ -529,7 +616,7 @@ const [formData, setFormData] = useState({
             onChange={(e) => handleChange("competency", e.target.value)}
             className="flex-1 border px-2 py-1"
           >
-            <option value="" disabled>
+            <option value="" >
               Select Competency
             </option>
             {currentCompetencies.map((comp, i) => (
@@ -555,6 +642,7 @@ const [formData, setFormData] = useState({
                     {/* Right side input */}
                     <input
                       step="0.01"
+                       min="0"
                       type="number"
                       onBlur={(e) =>
                         handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
@@ -581,6 +669,7 @@ const [formData, setFormData] = useState({
                     <input
                       type="number"
                       step="0.01"
+                      min="0"
                       value={formData[fieldKey] || ""}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
                       onBlur={(e) =>
@@ -637,6 +726,8 @@ const [formData, setFormData] = useState({
 
 
         </div>
+
+          {/* <div className="text-xs"><p><i>{error}</i></p></div> */}
       </div>
 
 
