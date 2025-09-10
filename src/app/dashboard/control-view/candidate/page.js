@@ -202,7 +202,7 @@ export default function CandidateControl() {
       // Only deselect if click is outside candidate item, context menu, and form
       if (!isContextMenuClick && !isCandidateClick && !isFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedCandidate: null });
-        // setSelectedCandidate(null);
+        setSelectedCandidate(null);
         setShowEdit(false);
         setFormStatus("Ready...");
       }

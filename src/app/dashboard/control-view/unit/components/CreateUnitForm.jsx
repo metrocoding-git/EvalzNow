@@ -509,8 +509,6 @@ const THRESHOLD_NAMES = {
                     />
                   </div>
 
-
-
                   {/* Benchmark Type */}
                   <div className="flex flex-col min-w-[160px]">
                     <label className="text-gray-700 font-medium text-xs">

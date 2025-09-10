@@ -53,7 +53,6 @@ export default function CreateClientForm({ onClose, onCreate }) {
       "Business Registration No.",
       "Country",
       "Company Size",
-      "Status"
     ];
 
     return requiredFields.every((field) => form[field] && form[field].trim() !== "");
@@ -200,7 +199,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
               Status:
             </label>
             <select
-               required
+              defaultValue="Activate"
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onChange={(e) => handleChange("Status", e.target.value)}
             >

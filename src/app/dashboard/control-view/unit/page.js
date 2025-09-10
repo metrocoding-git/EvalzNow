@@ -726,10 +726,70 @@ export default function UnitControl() {
           >
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left"
-              onClick={(e) => {
-                setSelectedUnit(contextMenu.selectedUnit);
+              onClick={async (e) => {
                 e.stopPropagation();
-                setContextMenu((prev) => ({ ...prev, visible: false }));
+                const unitToDuplicate = contextMenu.selectedUnit;
+                if (!unitToDuplicate) return;
+            
+                try {
+                  setLoading(true);
+                  setFormStatus("Processing...");
+            
+                  const generateNewUnitId = (existingUnits) => {
+                    const baseId = unitToDuplicate.unitId.replace(/\D/g, ""); // extract numbers
+                    let newIdNumber = Number(baseId || 0) + 1;
+                    
+                    // Ensure the new unitId is unique
+                    while (existingUnits.some(u => u.unitId === `U${newIdNumber.toString().padStart(3, '0')}`)) {
+                      newIdNumber++;
+                    }
+                  
+                    return `U${newIdNumber.toString().padStart(3, '0')}`;
+                  };
+
+                  // const duplicatedBenchmarks = originalBenchmarks.map(b => ({
+                  //   unitId: newUnit.id,         
+                  //   benchmarkType: b.benchmarkType,
+                  //   benchmarkRef: b.benchmarkRef,
+                  //   benchmarkDescription: b.benchmarkDescription,
+                  //   createdAt: new Date(),
+                  //   updatedAt: new Date(),
+                    
+                  // }));
+                  // await BenchmarkModel.bulkCreate(duplicatedBenchmarks);
+
+                  // Prepare new unit data, excluding unitId
+                  const newUnitData = {
+                    unitName: `${unitToDuplicate.unitName} Copy`,
+                    unitId: generateNewUnitId(dataList),
+                    unitStartDate: unitToDuplicate.unitStartDate,
+                    unitEndDate: unitToDuplicate.unitEndDate,
+                    unitDirector: unitToDuplicate.unitDirector,
+                    unitType: unitToDuplicate.unitType,
+                    signatureProfile: unitToDuplicate.signatureProfile,
+                    environment: unitToDuplicate.environment,
+                    benchmarks: undefined
+                  };
+            
+                  // Call API to create new unit
+                  const createdUnit = await createUnit(newUnitData);
+            
+                  // Update local state
+                  setDataList(prev => [...prev, createdUnit]);
+                  setSelectedUnit(createdUnit);
+                  setShowEdit(true);
+            
+                  setFormStatus("Completed");
+                  setTimeout(() => setFormStatus("Ready..."), 2000);
+            
+                } catch (err) {
+                  console.error("Failed to duplicate unit:", err);
+                  setError("Failed to duplicate unit. Please try again.");
+                  setFormStatus("Ready...");
+                } finally {
+                  setLoading(false);
+                  setContextMenu(prev => ({ ...prev, visible: false }));
+                }
               }}
             >
               <span className="flex items-center gap-2">

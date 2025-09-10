@@ -448,17 +448,25 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                       />
                     </td>
                     <td className="border border-gray-300 px-1 py-1 text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updatedRows = [...rows];
-                            updatedRows.splice(index, 1);
-                            setRows(updatedRows);
-                          }}
-                          className="px-1 py-1 text-red-600 hover:text-red-800"
-                        >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (rows.length > 1) {
+                          // remove normally if more than one row
+                          const updatedRows = [...rows];
+                          updatedRows.splice(index, 1);
+                          setRows(updatedRows);
+                        } else {
+                          // reset to a blank row instead of empty array
+                          setRows([{ id: "", type: "", comment: "" }]);
+                        }
+                      }}
+                      className="px-1 py-1 text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+
                     </td>
                   </tr>
                 ))}
