@@ -53,6 +53,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
         dateOfEmployment: form["Date of Employment"],
         contactNumber: form["Contact Number"],
         emailAddress: form["Company E-mail Address"],
+        staffId: form["Staff ID"],   
         accessLevel: form["Access Level"] || "Leaders Access",
         accountStatus: form["Account Status"] || "Enabled",
       };

@@ -95,3 +95,19 @@ export const getPpIdSummary = async (unitId, candidate_id) => {
     throw error;
   }
 };
+
+
+
+  // Get insert scores by pp id summary
+  export const getScoreByUnitGroup = async (unitId) => {
+    try {
+      const response = await api.get(`${API_ROUTES.INSERT_SCORE}/insert/unit/${unitId}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching master pp id bun totals for unitId=${unitId}:`,
+        error
+      );
+      throw error;
+    }
+  };

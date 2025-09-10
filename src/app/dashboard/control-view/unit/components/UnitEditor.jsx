@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Edit } from "lucide-react";
+import { Edit, Trash2, Trash } from "lucide-react";
 import { getUnitById, updateUnit } from "@/services/unitService";
 import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { useFormStatus } from "@/context/FormStatusContext";
@@ -64,6 +64,34 @@ const DIRECT_DELIVERY = [
   "During Unit Operations (training)",
 ];
 
+const BENCHMARK_TYPES = [
+  "Academic",
+  "Audit Requirement",
+  "Baseline",
+  "Company Standard",
+  "Direct Job Function",
+  "District Standard",
+  "Experimental",
+  "External",
+  "Governmental",
+  "Human Capital",
+  "Innovation",
+  "Internal",
+  "Investment",
+  "KPI",
+  "Market Disruption",
+  "Other",
+  "Performance",
+  "Regulatory",
+  "Safety",
+  "SARPs",
+  "SLO",
+  "Standard",
+  "Strategic",
+  "Team Building",
+  "Trial & Error",
+];
+
 
 const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock, onBlockUpdate, onBlockSubmitStatus }) => {
   const [unit, setUnit] = useState({
@@ -86,17 +114,15 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     delivery: "",
     manageType: "",
   });
-  
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-   // const [formStatus, setFormStatus] = useState("Ready");
-   const { setFormStatus } = useFormStatus();
+  const { setFormStatus } = useFormStatus();
 
-   // Fetch unit data when unitId changes
-   useEffect(() => {
+  // Fetch unit data when unitId changes
+  useEffect(() => {
     const fetchUnitData = async () => {
       if (!unitId) return;
       
@@ -108,14 +134,19 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         setUnit({
           unitName: unitData.unitName,
           unitId: unitData.unitId,
-          startDate: unitData.unitStartDate, // Map API field to form field
-          endDate: unitData.unitEndDate,     // Map API field to form field
+          startDate: unitData.unitStartDate,
+          endDate: unitData.unitEndDate,
           unitDirector: unitData.unitDirector,
           unitType: unitData.unitType,
           signatureProfile: unitData.signatureProfile,
           environment: unitData.environment,
           scoringSystem: unitData.scoringSystem || "",
-          benchmarks: unitData.benchmarks || []
+          benchmarks: (unitData.benchmarks || []).map(bm => ({
+            id: bm.id,
+            benchmarkType: bm.benchmarkType || "",
+            benchmarkRef: bm.benchmarkRef || "",
+            benchmarkDescription: bm.benchmarkDescription || ""
+          }))
         });
       } catch (err) {
         console.error("Failed to fetch unit data:", err);
@@ -139,12 +170,46 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       });
     }
   }, [selectedBlock]);
-  
-
 
   const handleChange = (field, value) => {
     setUnit((prev) => ({ ...prev, [field]: value }));
   };
+
+ 
+// Handle benchmark field change
+const handleBenchmarkChange = (index, field, value) => {
+  setUnit(prevUnit => {
+    const updated = [...prevUnit.benchmarks];
+    updated[index][field] = value;
+    return { ...prevUnit, benchmarks: updated };
+  });
+};
+
+  const addBenchmark = () => {
+    setUnit(prev => ({
+      ...prev,
+      benchmarks: [
+        ...(prev.benchmarks || []),
+        { id: null, benchmarkType: "", benchmarkRef: "", benchmarkDescription: "" }
+      ]
+    }));
+  };
+
+  // Delete a benchmark at a specific index
+const deleteBenchmark = (index) => {
+  setUnit(prevUnit => {
+    const updated = prevUnit.benchmarks.filter((_, i) => i !== index);
+
+    // Always keep at least one empty benchmark row
+    return {
+      ...prevUnit,
+      benchmarks: updated.length > 0
+        ? updated
+        : [{ id: null, benchmarkType: "", benchmarkRef: "", benchmarkDescription: "" }]
+    };
+  });
+};
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,8 +222,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       const updatedUnit = {
         unitName: unit.unitName,
         unitId: unit.unitId,
-        unitStartDate: unit.startDate, // Map form field to API field
-        unitEndDate: unit.endDate,     // Map form field to API field
+        unitStartDate: unit.startDate,
+        unitEndDate: unit.endDate,
         unitDirector: unit.unitDirector,
         unitType: unit.unitType,
         signatureProfile: unit.signatureProfile,
@@ -183,7 +248,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     }
   };
 
-
   const handleSaveBlock = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -197,11 +261,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   
       // Notify parent about the updated block
       if (onBlockUpdate) {
-        onBlockUpdate(savedBlock); // <-- pass updated block to parent
+        onBlockUpdate(savedBlock);
       }
   
       if (onBlockSubmitStatus) {
-        onBlockSubmitStatus(true); // success
+        onBlockSubmitStatus(true);
       }
   
       onClose();
@@ -217,7 +281,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       setError(message);
   
       if (onBlockSubmitStatus) {
-        onBlockSubmitStatus(false); // failure
+        onBlockSubmitStatus(false);
       }
     } finally {
       setIsSubmitting(false);
@@ -325,14 +389,81 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 </>
               )}
             </div>
+
+            {/* Benchmarks Section - Now using table format like irregularities */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h3 className="pb-2 font-semibold text-gray-800 text-base">Unit Benchmarks</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border border-gray-300">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border border-gray-300 px-2 py-1 text-left">Benchmark Type</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left">Benchmark Ref</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unit.benchmarks.map((bm, index) => (
+                      <tr key={index} className="even:bg-gray-50">
+                        <td className="border border-gray-300 px-2 py-1">
+                          <select
+                            value={bm.benchmarkType}
+                            onChange={(e) => handleBenchmarkChange(index, "benchmarkType", e.target.value)}
+                            className="w-full px-2 py-1 border"
+                          >
+                            <option value="">Select Type</option>
+                            {BENCHMARK_TYPES.map((t) => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <input
+                            type="text"
+                            value={bm.benchmarkRef}
+                            onChange={(e) => handleBenchmarkChange(index, "benchmarkRef", e.target.value)}
+                            className="w-full px-2 py-1 border"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <input
+                            type="text"
+                            value={bm.benchmarkDescription}
+                            onChange={(e) => handleBenchmarkChange(index, "benchmarkDescription", e.target.value)}
+                            className="w-full px-2 py-1 border"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1 text-center">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); deleteBenchmark(index)}}
+                            className="px-1 py-1 text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button
+                type="button"
+                onClick={addBenchmark}
+                className="flex items-center gap-2 mt-3 px-3 py-2 bg-gray-200 text-black hover:bg-gray-300 text-sm"
+              >
+                + Add Benchmark
+              </button>
+            </div>
           </div>
 
           {/* Bottom Actions */}
-          <div className="border-t border-gray-200 p-2 bg-gray-50">
+          <div className=" p-2 ">
             <div className="flex justify-end">
               <button
                 type="submit"
-                // onClick={onClose}
                 className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
               >
                 Edit
