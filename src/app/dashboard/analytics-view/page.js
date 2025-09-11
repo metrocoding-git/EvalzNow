@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation';
 
 
-export default function AnalyticsView() {
-   redirect('/dashboard/analytics-view/scoring-trends');
+export default function AnalyticsView({ searchParams }) {
+  const unitId = searchParams?.unitId || '';
+  redirect(`/dashboard/analytics-view/scoring-trends?unitId=${encodeURIComponent(unitId)}`);
+  //  redirect('/dashboard/analytics-view/scoring-trends');
   // const tabs = [{ label: "Session", path: "/dashboard/analytics-view" }];
 
   // const pathname = usePathname();
