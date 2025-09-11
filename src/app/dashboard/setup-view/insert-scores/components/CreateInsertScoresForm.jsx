@@ -240,6 +240,7 @@ const [formData, setFormData] = useState({
   const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
   const [customCriteria, setCustomCriteria] = useState([]);
   const searchParams = useSearchParams();
+  const [scoringSystem, setScoringSystem] = useState();
   
   const environment = searchParams.get('environment') || 'workspace';
   const unitId = searchParams.get('unitId');
@@ -302,9 +303,13 @@ const [formData, setFormData] = useState({
 
     if (environment === "Workforce") {
 
-        // Calculate Max Score
-        let highest = 0;
-        let filledCount = 0;
+      let maxAllowed = null;
+      if (scoringSystem === "3-Point") maxAllowed = 3;
+      if (scoringSystem === "5-Point") maxAllowed = 5;
+
+      // Calculate Max Score
+      let highest = 0;
+      let filledCount = 0;
 
       // Sum up all mc + cc values
       let total = 0;
@@ -315,12 +320,20 @@ const [formData, setFormData] = useState({
           setError(`Negative value found in MC${i}. Please enter only positive values.`);
           return;
         }
+        if (maxAllowed !== null && mcVal > maxAllowed) {
+          setError(`MC${i} exceeds allowed maximum (${maxAllowed}).`);
+          return;
+        }
 
         if (!isNaN(mcVal)) total += mcVal;
   
         const ccVal = parseFloat(formData[`cc${i}`] || 0);
         if (ccVal < 0) {
           setError(`Negative value found in CC${i}. Please enter only positive values.`);
+          return;
+        }
+        if (maxAllowed !== null && ccVal > maxAllowed) {
+          setError(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
           return;
         }
 
@@ -344,7 +357,7 @@ const [formData, setFormData] = useState({
         }
       }
     
-      formData.maxScore = highest * filledCount;
+      formData.maxScore = maxAllowed * filledCount;
     }
   
 
@@ -423,6 +436,12 @@ const [formData, setFormData] = useState({
             assessmentBlockId: block.id, // set assessment block ID
             // ppId: block.ppId || "", // default PP ID if available
           }));
+
+          if (environment === "Workforce" && block.unit?.scoringSystem) {
+            setScoringSystem(block.unit.scoringSystem);
+            console.log("scoring Points: ", block.unit.scoringSystem);
+          }
+          
   
           // Extract PP IDs for the select dropdown
           const ppList = blocks
