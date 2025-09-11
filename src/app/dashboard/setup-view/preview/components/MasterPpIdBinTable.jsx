@@ -67,6 +67,7 @@ const MasterPpIdBinTable = ({ data }) => {
     if (a.ppId > 0 && b.ppId < 0) return 1;
     return absA - absB;
   });
+  
 
   // Determine current competencies based on unitType
   const currentUnitType = sortedBlocks[0]?.unitType || "";
@@ -154,16 +155,16 @@ const transformedBlocks = sortedBlocks.map((row) => {
               <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.unitId}</td>
               <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.unitType}</td>
 
-              {currentCompetencies.map((comp, idx) => {
-                const attainedKey = `attained${comp.dataKey}`;
-                const maxKey = `max${comp.dataKey}`;
-                return (
-                  <React.Fragment key={idx}>
-                    <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row[attainedKey] || ""}</td>
-                    <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row[maxKey] || ""}</td>
-                  </React.Fragment>
-                );
-              })}
+              {currentCompetencies.map((comp, index) => (
+                <React.Fragment key={index}>
+                  <td className="border px-2 py-1 text-center">
+                    {row[comp.attained] !== undefined ? row[comp.attained] : ""}
+                  </td>
+                  <td className="border px-2 py-1 text-center">
+                    {row[comp.max] !== undefined ? row[comp.max] : ""}
+                  </td>
+                </React.Fragment>
+              ))}
             </tr>
           ))}
         </tbody>
