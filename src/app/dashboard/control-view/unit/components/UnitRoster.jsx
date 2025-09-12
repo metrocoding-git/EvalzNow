@@ -427,12 +427,12 @@ useEffect(() => {
                       onClick={() => toggleRowSelectionMulti(index)}
                     >
                       <td className="border text-center">{index + 1}</td>
-                      <td className="border px-1">{candidate.lastName || "-"}</td>
-                      <td className="border px-1">{candidate.firstName || "-"}</td>
-                      <td className="border px-1">{candidate.candidateId || "-"}</td>
-                      <td className="border px-1">
+                      <td className="border text-center px-1">{candidate.lastName || "-"}</td>
+                      <td className="border text-center px-1">{candidate.firstName || "-"}</td>
+                      <td className="border text-center px-1">{candidate.candidateId || "-"}</td>
+                      <td className="border text-center px-1">
                         <select
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full border px-1 py-0.5 text-xs text-center"
                           value={rosterItem.unitOutcome || "Ongoing"}
                           onChange={(e) => handleChange(index, "unitOutcome", e.target.value)}
                         >
@@ -447,7 +447,7 @@ useEffect(() => {
                           min="0"
                           value={rosterItem.presentCount || 0}
                           onChange={(e) => handleChange(index, "present", e.target.value)}
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
                       <td className="border px-1">
@@ -456,7 +456,7 @@ useEffect(() => {
                           min="0"
                           value={rosterItem.excusedAbsences || 0}
                           onChange={(e) => handleChange(index, "excusedAbs", e.target.value)}
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
                       <td className="border px-1">
@@ -465,7 +465,7 @@ useEffect(() => {
                           min="0"
                           value={rosterItem.unexcusedAbsences || 0}
                           onChange={(e) => handleChange(index, "unexcusedAbs", e.target.value)}
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
                       <td className="border px-1">
@@ -474,7 +474,7 @@ useEffect(() => {
                           min="0"
                           value={rosterItem.excusedTardies || 0}
                           onChange={(e) => handleChange(index, "excusedTardy", e.target.value)}
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
                       <td className="border px-1">
@@ -483,10 +483,10 @@ useEffect(() => {
                           min="0"
                           value={rosterItem.unexcusedTardies || 0}
                           onChange={(e) => handleChange(index, "unexcusedTardy", e.target.value)}
-                          className="w-full border px-1 py-0.5 text-xs"
+                          className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border px-1 text-center font-semibold">{total}</td>
+                      <td className="border text-center px-1 text-center font-semibold">{total}</td>
                     </tr>
                   );
                 })}
@@ -597,9 +597,9 @@ useEffect(() => {
                           +{index + 1}
                         </td> */}
                         <td className="border p-1 text-center">{block.ppId}</td>
-                        <td className="border p-1">{block.periodType}</td>
-                        <td className="border p-1">{block.shortDescription}</td>
-                        <td className="border p-1">{block.delivery}</td>
+                        <td className="border p-1 text-center">{block.periodType}</td>
+                        <td className="border p-1 text-center">{block.shortDescription}</td>
+                        <td className="border p-1 text-center">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -625,9 +625,9 @@ useEffect(() => {
                         onClick={() => handleRowClick(block, index)}>
 
                         <td className="border p-1 text-center">{block.ppId}</td>
-                        <td className="border p-1">{block.periodType}</td>
-                        <td className="border p-1">{block.shortDescription}</td>
-                        <td className="border p-1">{block.delivery}</td>
+                        <td className="border p-1 text-center">{block.periodType}</td>
+                        <td className="border p-1 text-center">{block.shortDescription}</td>
+                        <td className="border p-1 text-center">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>

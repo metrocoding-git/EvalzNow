@@ -166,7 +166,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
                   : "-"}
                 </td>
                 <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.missingCompetency || "None"}</td>
-                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">  {row.missingCompetency ? "Yes" : "No"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">  {row.error}</td>
               </tr>
             ))
           ) : (

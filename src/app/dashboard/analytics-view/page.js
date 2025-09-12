@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 
-export default function AnalyticsView() {
+export default function AnalyticsView({ searchParams }) {
    redirect('/dashboard/analytics-view/scoring-trends');
   // const tabs = [{ label: "Session", path: "/dashboard/analytics-view" }];
 

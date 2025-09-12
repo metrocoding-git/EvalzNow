@@ -5,6 +5,7 @@ import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { ListFilterPlus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 const workflowStages = [
   "Analysis",
@@ -240,6 +241,7 @@ const [formData, setFormData] = useState({
   const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
   const [customCriteria, setCustomCriteria] = useState([]);
   const searchParams = useSearchParams();
+  const [scoringSystem, setScoringSystem] = useState();
   
   const environment = searchParams.get('environment') || 'workspace';
   const unitId = searchParams.get('unitId');
@@ -269,12 +271,55 @@ const [formData, setFormData] = useState({
     }
   };
 
+  const requiredFields = [
+    "ppId",
+    "durationHrs",
+    "criticalRefDate",
+    "remarks",
+    "workflowStage",
+    "assessmentType",
+    "scheduleImpact",
+    "engageLevel",
+    "competency",
+  ];
+  
+  // Check if any required field is empty
+  const isSubmitDisabled = requiredFields.some(
+    (field) => !formData[field] || formData[field].toString().trim() === ""
+  ) || (environment === "Classroom" && (
+        formData.attainedScore === null ||
+        formData.attainedScore === "" ||
+        formData.maxScore === null ||
+        formData.maxScore === ""
+      ));
+  
   
 
   const handleSubmit = async () => {
     if (!formData.assessmentBlockId || !unitId) {
       setError("Missing unitId or assessmentBlockId.");
       return;
+    }
+
+    // const requiredFields = [
+    //   "ppId",
+    //   "durationHrs",
+    //   "criticalRefDate",
+    //   "remarks",
+    //   "workflowStage",
+    //   "assessmentType",
+    //   "scheduleImpact",
+    //   "engageLevel",
+    //   "competency",
+    // ];
+
+    
+
+    for (let field of requiredFields) {
+      if (!formData[field] || formData[field].toString().trim() === "") {
+        toast.error(`Field "${field}" is required.`);
+        return; // stop submission
+      }
     }
 
     let attained = null;
@@ -285,26 +330,30 @@ const [formData, setFormData] = useState({
       const max = parseFloat(formData.maxScore || 0);
 
       if (attained > max) {
-        setError("Attained score cannot be greater than maximum score.");
+        toast.error("Attained score cannot be greater than maximum score.");
         return; // stop submission
       }
     }
 
     if (formData.attainedScore !== null && parseFloat(formData.attainedScore) < 0) {
-      setError("Attained Score cannot be negative.");
+      toast.error("Attained Score cannot be negative.");
       return;
     }
   
     if (formData.maxScore !== null && parseFloat(formData.maxScore) < 0) {
-      setError("Maximum Score cannot be negative.");
+      toast.error("Maximum Score cannot be negative.");
       return;
     }
 
     if (environment === "Workforce") {
 
-        // Calculate Max Score
-        let highest = 0;
-        let filledCount = 0;
+      let maxAllowed = null;
+      if (scoringSystem === "3-Point") maxAllowed = 3;
+      if (scoringSystem === "5-Point") maxAllowed = 5;
+
+      // Calculate Max Score
+      let highest = 0;
+      let filledCount = 0;
 
       // Sum up all mc + cc values
       let total = 0;
@@ -312,7 +361,11 @@ const [formData, setFormData] = useState({
       for (let i = 1; i <= 20; i++) {
         const mcVal = parseFloat(formData[`mc${i}`] || 0);
         if (mcVal < 0) {
-          setError(`Negative value found in MC${i}. Please enter only positive values.`);
+          toast.error(`Negative value found in MC${i}. Please enter only positive values.`);
+          return;
+        }
+        if (maxAllowed !== null && mcVal > maxAllowed) {
+          toast.error(`MC${i} exceeds allowed maximum (${maxAllowed}).`);
           return;
         }
 
@@ -320,7 +373,11 @@ const [formData, setFormData] = useState({
   
         const ccVal = parseFloat(formData[`cc${i}`] || 0);
         if (ccVal < 0) {
-          setError(`Negative value found in CC${i}. Please enter only positive values.`);
+          toast.error(`Negative value found in CC${i}. Please enter only positive values.`);
+          return;
+        }
+        if (maxAllowed !== null && ccVal > maxAllowed) {
+          toast.error(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
           return;
         }
 
@@ -344,7 +401,7 @@ const [formData, setFormData] = useState({
         }
       }
     
-      formData.maxScore = highest * filledCount;
+      formData.maxScore = maxAllowed * filledCount;
     }
   
 
@@ -365,7 +422,7 @@ const [formData, setFormData] = useState({
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
-      setError("Failed to save insert score.");
+      toast.error("Failed to save insert score.");
     } finally {
       setLoading(false);
     }
@@ -389,7 +446,8 @@ const [formData, setFormData] = useState({
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
-        setCustomCriteria(data);
+        setCustomCriteria(data.filter(c => c.criteria && c.criteria.trim() !== ""));
+
 
         const ccData = {};
         data.forEach((criteria, index) => {
@@ -423,19 +481,35 @@ const [formData, setFormData] = useState({
             assessmentBlockId: block.id, // set assessment block ID
             // ppId: block.ppId || "", // default PP ID if available
           }));
+
+          if (environment === "Workforce" && block.unit?.scoringSystem) {
+            setScoringSystem(block.unit.scoringSystem);
+            console.log("scoring Points: ", block.unit.scoringSystem);
+          }
+          
   
-          // Extract PP IDs for the select dropdown
+          // Extract PP IDs and sort ascending (numeric or string)
           const ppList = blocks
-            .map((b) => b.ppId)
-            .filter((pp) => pp !== undefined && pp !== null && pp !== "");
+          .map((b) => b.ppId)
+          .filter((pp) => pp !== undefined && pp !== null && pp !== "")
+          .sort((a, b) => {
+            // Try numeric comparison first
+            const numA = parseInt(a, 10);
+            const numB = parseInt(b, 10);
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB; // ascending
+            // fallback to string compare
+            return a.localeCompare(b);
+          });
+
           setPpIds(ppList);
+
         } else {
           setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
           setPpIds([]);
         }
       } catch (err) {
         console.error("Failed to fetch block info:", err);
-        setError("Failed to load candidate block data.");
+        toast.error("Failed to load candidate block data.");
       } finally {
         setLoading(false);
       }
@@ -655,17 +729,13 @@ const [formData, setFormData] = useState({
                 );
               })}
 
-              {/* Custom Criteria from Database */}
-              {customCriteria.map((criteria, index) => {
+              {customCriteria.length > 0 && customCriteria.map((criteria, index) => {
                 const fieldKey = `cc${index + 1}`;
                 return (
                   <div key={fieldKey} className="flex items-center gap-2 w-full">
-                    {/* Show the custom criteria text */}
                     <label className="w-60 pr-2 text-left text-gray-700">
                       CC{index + 1} ({criteria.criteria}):
                     </label>
-
-                    {/* User input only for the score/value */}
                     <input
                       type="number"
                       step="0.01"
@@ -680,8 +750,6 @@ const [formData, setFormData] = useState({
                   </div>
                 );
               })}
-
-
             </div>
           )}
 
@@ -723,8 +791,6 @@ const [formData, setFormData] = useState({
 
             </>
           )}
-
-
         </div>
 
           {/* <div className="text-xs"><p><i>{error}</i></p></div> */}
@@ -736,13 +802,21 @@ const [formData, setFormData] = useState({
         <div className="flex justify-end gap-2">
           <button
             type="button"
+            disabled={isSubmitDisabled || loading}
             onClick={handleSubmit}
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+            className={`px-4 py-1 text-sm transition-colors ${
+              isSubmitDisabled || loading
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
           >
             Close
           </button>
         </div>
       </div>
+
+      <Toaster position="top-right" reverseOrder={false} />
+
     </div >
   );
 }
