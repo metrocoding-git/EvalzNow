@@ -14,7 +14,7 @@ import {
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
 import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId } from "@/services/insertScoreService";
-import { createScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
+import { createScoringCriteria, deleteScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -324,29 +324,23 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
-        // Initialize array with empty placeholders
-        const mappedCriteria = Array.from({ length: MAIN_CRITERIA.length }, () => ({
-          id: null,          // primary key for update
-          criteriaId: null,  // per-unit index
-          name: "",
-          unitId
+        // Sort by criteriaId to keep correct order
+        const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
+  
+        // Reassign them continuously starting from 1
+        const compressed = sorted.map((item, index) => ({
+          id: item.id,
+          criteriaId: index + 1, // <-- shift to continuous
+          name: item.criteria,
+          unitId: item.unitId,
         }));
   
-        data.forEach(item => {
-          if (!item.criteriaId) return;
-          const index = item.criteriaId - 1;  // criteriaId 1 → index 0
-          if (index >= 0 && index < mappedCriteria.length) {
-            mappedCriteria[index] = {
-              id: item.id,               // backend primary key
-              criteriaId: item.criteriaId,
-              name: item.criteria,
-              unitId: item.unitId
-            };
-          }
+        // Fill into full table length
+        const mappedCriteria = Array.from({ length: MAIN_CRITERIA.length }, (_, i) => {
+          return compressed[i] || { id: null, criteriaId: i + 1, name: "", unitId };
         });
   
         setCustomCriteria(mappedCriteria);
-  
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
       }
@@ -356,8 +350,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   }, [unitId]);
   
   
-
-
+  
   if (!visible) return null;
 
   const moveRowUp = () => {
@@ -496,25 +489,29 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
                             const criteriaItem = updated[index];
                             try {
-                              if (criteriaItem.id) {
+                              if (value.trim() === "" && criteriaItem.id) {
+                                // DELETE from backend if existing and now empty
+                                const res = await deleteScoringCriteria(criteriaItem.id);
+                                updated[index] = { ...updated[index], id: null, criteriaId: null }; // reset local state
+                                setCustomCriteria(updated);
+                                console.log("deleted: ", res);
+                              } else if (criteriaItem.id) {
                                 // Existing → update using primary key id
                                 await updateScoringCriteria(criteriaItem.id, {
                                   criteria: value,
                                   unitId: criteriaItem.unitId,
                                 });
                               } else if (value.trim() !== "") {
-                                // New → create, backend assigns criteriaId automatically
+                                // New → create
                                 const created = await createScoringCriteria({
                                   criteria: value,
                                   unitId: criteriaItem.unitId,
                                 });
-
-                                // Save the new primary key id and criteriaId
                                 updated[index] = {
                                   ...updated[index],
                                   id: created.id,
                                   criteriaId: created.criteriaId,
-                                  name: created.criteria
+                                  name: created.criteria,
                                 };
                                 setCustomCriteria(updated);
                               }
