@@ -163,9 +163,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     if (selectedBlock) {
       setBlockData({
         ppId: selectedBlock.ppId || "",
-        periodType: selectedBlock.periodType || "",
+        periodType: selectedBlock.periodType || PERIOD_TYPES[0],
         shortDescription: selectedBlock.shortDescription || "",
-        delivery: selectedBlock.delivery || "",
+        delivery: selectedBlock.delivery || (activeTab === "Direct" ? DIRECT_DELIVERY[0] : INDIRECT_DELIVERY[0]),
         manageType: selectedBlock.manageType || "",
       });
     }
@@ -196,19 +196,16 @@ const handleBenchmarkChange = (index, field, value) => {
   };
 
   // Delete a benchmark at a specific index
-const deleteBenchmark = (index) => {
-  setUnit(prevUnit => {
-    const updated = prevUnit.benchmarks.filter((_, i) => i !== index);
-
-    // Always keep at least one empty benchmark row
-    return {
-      ...prevUnit,
-      benchmarks: updated.length > 0
-        ? updated
-        : [{ id: null, benchmarkType: "", benchmarkRef: "", benchmarkDescription: "" }]
-    };
-  });
-};
+  const deleteBenchmark = (index) => {
+    setUnit(prevUnit => {
+      const updated = prevUnit.benchmarks.filter((_, i) => i !== index);
+      return {
+        ...prevUnit,
+        benchmarks: updated // no auto re-add
+      };
+    });
+  };
+  
   
 
   const handleSubmit = async (e) => {
@@ -485,7 +482,7 @@ const deleteBenchmark = (index) => {
               </label>
               <div className="flex items-center gap-2">
                 <select className="w-full border px-2 py-0.5" 
-                  value={blockData?.periodType || ""}
+                  value={blockData?.periodType}
                   onChange={(e) => setBlockData(prev => ({ ...prev, periodType: e.target.value }))} >
                   {PERIOD_TYPES.map((type, i) => (
                     <option key={`direct-period-${i}`}>{type}</option>
@@ -504,7 +501,7 @@ const deleteBenchmark = (index) => {
                   type="text"
                   placeholder="Enter short description"
                   name="shortDescription"
-                  value={blockData?.shortDescription || ""}
+                  value={blockData?.shortDescription}
                   onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
                   className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 w-full"
                 />
@@ -519,7 +516,7 @@ const deleteBenchmark = (index) => {
                   </label>
                   <div className="flex items-center gap-2">
                     <select className="w-full border px-2 py-0.5" 
-                      value={blockData?.delivery || ""}
+                      value={blockData?.delivery}
                       onChange={(e) => setBlockData(prev => ({ ...prev, delivery: e.target.value }))} >
                       {activeTab === "Direct"
                           ? DIRECT_DELIVERY.map((type, i) => <option key={i}>{type}</option>)

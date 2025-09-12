@@ -60,13 +60,7 @@ const MasterPpIdBinTable = ({ data }) => {
   }, [unitId]);
 
   // Sort by ppId
-  const sortedBlocks = [...assessmentBlocks].sort((a, b) => {
-    const absA = Math.abs(a.ppId);
-    const absB = Math.abs(b.ppId);
-    if (a.ppId < 0 && b.ppId > 0) return -1;
-    if (a.ppId > 0 && b.ppId < 0) return 1;
-    return absA - absB;
-  });
+  const sortedBlocks = [...assessmentBlocks].sort((a, b) => a.ppId - b.ppId);
   
 
   // Determine current competencies based on unitType
@@ -157,10 +151,10 @@ const transformedBlocks = sortedBlocks.map((row) => {
 
               {currentCompetencies.map((comp, index) => (
                 <React.Fragment key={index}>
-                  <td className="border px-2 py-1 text-center">
+                  <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
                     {row[comp.attained] !== undefined ? row[comp.attained] : ""}
                   </td>
-                  <td className="border px-2 py-1 text-center">
+                  <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
                     {row[comp.max] !== undefined ? row[comp.max] : ""}
                   </td>
                 </React.Fragment>

@@ -176,7 +176,7 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
               type: ir.type || "",
               comment: ir.comments || ""
             }))
-          : [{ id: "", type: "", comment: "" }]
+          : []
       );
       
     }
@@ -452,15 +452,9 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (rows.length > 1) {
-                          // remove normally if more than one row
-                          const updatedRows = [...rows];
-                          updatedRows.splice(index, 1);
-                          setRows(updatedRows);
-                        } else {
-                          // reset to a blank row instead of empty array
-                          setRows([{ id: "", type: "", comment: "" }]);
-                        }
+                        const updatedRows = [...rows];
+                        updatedRows.splice(index, 1);
+                        setRows(updatedRows); // allow empty
                       }}
                       className="px-1 py-1 text-red-600 hover:text-red-800"
                     >
