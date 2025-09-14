@@ -54,6 +54,8 @@ export default function CandidateControl() {
    // const [formStatus, setFormStatus] = useState("Ready");
    const { setFormStatus } = useFormStatus();
 
+   const reviewRef = useRef(null);
+
   // Fetch all candidates on mount
   useEffect(() => {
     const fetchCandidates = async () => {
@@ -198,9 +200,10 @@ export default function CandidateControl() {
         contextRef.current && contextRef.current.contains(e.target);
       const isCandidateClick = e.target.closest(".candidate-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
+      const isReviewClick = reviewRef.current && reviewRef.current.contains(e.target);
 
       // Only deselect if click is outside candidate item, context menu, and form
-      if (!isContextMenuClick && !isCandidateClick && !isFormClick) {
+      if (!isContextMenuClick && !isCandidateClick && !isFormClick && !isReviewClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedCandidate: null });
         setSelectedCandidate(null);
         setShowEdit(false);
@@ -567,7 +570,8 @@ export default function CandidateControl() {
           >
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
-              onClick={(item) => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setContextMenu((prev) => ({ ...prev, visible: false }));
                 setSelectedCandidate(contextMenu.selectedCandidate);
                 setShowReview(true);
@@ -626,11 +630,13 @@ export default function CandidateControl() {
               <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
             </div>
           )}
+
           {showReview && (
-            <div className="h-full overflow-auto">
+            <div className="h-full overflow-auto" ref={reviewRef}>
               <ReviewCandidate candidate={selectedCandidate} />
             </div>
           )}
+
        
       </div>
     </div>

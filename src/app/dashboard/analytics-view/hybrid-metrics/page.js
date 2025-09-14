@@ -37,6 +37,8 @@ export default function HybridMetrics() {
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
 
+  const [isSelectedInteractionClass, setIsSelectedInteractionClass] = useState(false);
+
   const data = [
     { id: 1, firstName: "John", lastName: "Doe" },
     { id: 2, firstName: "Jane", lastName: "Smith" },
@@ -96,7 +98,14 @@ export default function HybridMetrics() {
               <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
                 <div className="flex-grow  flex flex-col h-1/2">
                   {/* Header */}
-                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
+                  <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${
+      selectedSort === "activateUnitLevel"
+        ? "grid-cols-4 px-4"
+        : "grid-cols-3 px-4"
+    } text-gray-800 font-semibold text-sm`}>
+
+      {/* 👇 Header for checkbox column (blank) */}
+    {selectedSort === "activateUnitLevel" && <div></div>}
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
@@ -195,8 +204,13 @@ export default function HybridMetrics() {
                             {sortedData.map((item) => (
                               <div
                                 key={item.id}
-                                className={`grid grid-cols-3 gap-2 items-center text-sm  px-2 py-1 cursor-pointer
-                                ${activeCandidateId === item.id ? "bg-blue-100 border-l-4 border-blue-400"
+                                className={`grid ${
+                                  selectedSort === "activateUnitLevel"
+                                    ? "grid-cols-4" // extra column for checkbox
+                                    : "grid-cols-3 px-2"
+                                } gap-2 items-center text-sm  py-1 cursor-pointer
+                                  ${activeCandidateId === item.id && selectedSort === "activateCandidateLevel"
+                                    ? "bg-blue-100 border-l-4 border-blue-400"
                                     : "hover:bg-gray-100"}`}
                                 onClick={() => {
                                   setShowEdit(true);
@@ -207,6 +221,13 @@ export default function HybridMetrics() {
                                   setActiveCandidateId(item.id);
                                 }}
                               >
+                                {selectedSort === "activateUnitLevel" && (
+        <input
+          type="checkbox"
+          className="h-4 w-4"
+          onClick={(e) => e.stopPropagation()}
+        />
+      )}
                                 <span className="text-gray-800">
                                   {item.lastName}
                                 </span>
@@ -228,7 +249,7 @@ export default function HybridMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}    />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}  isSelectedInteractionClass={isSelectedInteractionClass}   />
                   </div>
                 )}
               </div>
@@ -256,7 +277,7 @@ export default function HybridMetrics() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections selectedSort={selectedSort} />}
+                {ScoresOpen && <PlotSelections selectedSort={selectedSort} onInteractionClassSelect={setIsSelectedInteractionClass} />}
               </div>
             </div>
             {/* ------- */}

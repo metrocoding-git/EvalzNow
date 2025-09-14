@@ -8,12 +8,13 @@ import {
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 
-export default function PlotSelections({ selectedSort }) {
+export default function PlotSelections({ selectedSort, onInteractionClassSelect }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
+  const [isSelectedInteractionClass, setIsSelectedInteractionClass] = useState(false);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -153,6 +154,17 @@ export default function PlotSelections({ selectedSort }) {
     }
   };
 
+  const handleChartSelect = (chart) => {
+    setSelectedChart(chart);
+
+    if (chart.name === "Interaction Class (IC) vs. PP ID") {
+      setIsSelectedInteractionClass(true);
+      onInteractionClassSelect?.(true); // ✅ notify parent
+    } else {
+      setIsSelectedInteractionClass(false);
+      onInteractionClassSelect?.(false);
+    }
+  };
 
 
   const handleDeleteCurve = () => {
@@ -189,7 +201,7 @@ export default function PlotSelections({ selectedSort }) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-          <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -204,7 +216,7 @@ export default function PlotSelections({ selectedSort }) {
                       <div
                         key={chart.id} // Use id instead of index
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
-                        onClick={() => setSelectedChart(chart)}
+                        onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
@@ -215,7 +227,7 @@ export default function PlotSelections({ selectedSort }) {
                       <div
                         key={chart.id} // Use id instead of index
                         className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
-                        onClick={() => setSelectedChart(chart)}
+                        onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>

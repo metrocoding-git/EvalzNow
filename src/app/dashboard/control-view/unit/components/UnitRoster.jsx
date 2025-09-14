@@ -341,7 +341,7 @@ useEffect(() => {
   if (!visible) return null;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full ">
      
       <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200 relative">
         <span className="pl-2 text-md text-gray-800">Unit Config</span>
@@ -362,7 +362,7 @@ useEffect(() => {
       </h2>
 
        {/* Unit Roster */}
-      <div className="h-1/2 overflow-hidden border border-gray-300 flex flex-col m-1">
+      <div className="h-1/2 border border-gray-300 flex flex-col m-1">
 
         <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
           <h2 className="text-sm font-semibold mx-1">Unit Roster</h2>
@@ -497,7 +497,7 @@ useEffect(() => {
       </div>
 
       {/* Assessment Block Manager */}
-      <div className=" h-1/2 overflow-hidden flex flex-col m-1 ">
+      <div className="h-1/2 flex flex-col m-1 ">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
             <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
@@ -573,8 +573,8 @@ useEffect(() => {
           {/* Tab Content */}
           <div className="flex-1 p-2">
             {activeTab === "Direct" && (
-              <div className="max-h-60 flex-1 overflow-y-auto border border-gray-200">
-                <table className="w-full text-left text-xs mb-7 border-collapse">
+              <div className=" flex-1 overflow-y-auto h-full border border-gray-200">
+                <table className="w-full text-left text-xs border-collapse h-full">
                   <thead className="bg-gray-100 sticky top-0 z-10">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
@@ -585,7 +585,7 @@ useEffect(() => {
                   </thead>
                   <tbody>
                     {filteredAssessmentBlocks.map((block, index) => (
-                      <tr className={`hover:bg-gray-50 cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `} key={`direct-${block.id}`}
+                      <tr className={`hover:bg-gray-50 overflow-auto cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `} key={`direct-${block.id}`}
                         onClick={() => handleRowClick(block, index)}>
                         {/* <td className="border flex justify-between p-1 text-center">
                           <input
@@ -608,9 +608,9 @@ useEffect(() => {
             )}
 
             {activeTab === "Indirect" && (
-              <div className="max-h-60 flex-1 overflow-y-auto border border-gray-200">
-                <table className="w-full text-left text-xs mb-7 border-collapse">
-                  <thead className="bg-gray-50 sticky top-0 z-10">
+              <div className="flex-1 overflow-auto h-full border border-gray-200">
+                <table className="w-full text-left text-xs border-collapse ">
+                  <thead className="bg-gray-100">
                     <tr>
                       <th className="border p-1 w-10 text-center">PP ID</th>
                       <th className="border p-1 text-center">Period Type</th>

@@ -189,7 +189,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
               </option>
               {companySize.map((size, i) => (
                 <option key={i} value={size.id}> {/* Use size.id as value if needed */}
-                  {size.tier} - {size.size} {/* Access the properties you want to display */}
+                  {size.tier} - {size.size}: {size.candidate}{/* Access the properties you want to display */}
                 </option>
               ))}
             </select>

@@ -2,7 +2,7 @@
 import { Edit } from "lucide-react";
 import { useState } from "react";
 
-const SecondaryInputForm = ({ onClose, selectedSort }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDate, setCriticalDate] = useState("");
@@ -12,7 +12,7 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
   const [unitMode, setUnitMode] = useState("averages"); // "averages" or "target"
 
   // sample PP IDs
-  const ppIds = [-3, -2, -1, 0, 1, 2, 3];
+  const ppIds = [-3, -2, -1, 1, 2, 3];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -98,25 +98,28 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
           </div>
         </div>
 
-        {/* Threshold Toggle */}
-        <div className="flex items-center justify-between p-2">
-          <label className="font-medium text-gray-800">Enable Thresholds</label>
-          <div
-            onClick={() => setThresholdEnabled(!thresholdEnabled)}
-            className="relative w-12 h-6 cursor-pointer"
-          >
+        {/* Threshold Toggle (only show if isSelectedInteractionClass is true) */}
+        {isSelectedInteractionClass && (
+          <div className="flex items-center justify-between p-2">
+            <label className="font-medium text-gray-800">Enable Thresholds</label>
             <div
-              className={`absolute inset-0 rounded-full transition-colors duration-300 ${
-                thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
-              }`}
-            />
-            <div
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                thresholdEnabled ? "translate-x-6" : "translate-x-0"
-              }`}
-            />
+              onClick={() => setThresholdEnabled(!thresholdEnabled)}
+              className="relative w-12 h-6 cursor-pointer"
+            >
+              <div
+                className={`absolute inset-0 rounded-full transition-colors duration-300 ${
+                  thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
+                }`}
+              />
+              <div
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                  thresholdEnabled ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </div>
           </div>
-        </div>
+        )}
+
 
         {/* Candidate Level Options */}
         {selectedSort === "activateCandidateLevel" && (
