@@ -1,8 +1,18 @@
+"use client"
+import { useUnit } from '@/context/UnitContext';
 import { redirect } from 'next/navigation';
 
 
 export default function AnalyticsView({ searchParams }) {
-   redirect('/dashboard/analytics-view/scoring-trends');
+
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  if(selectedUnitId) {
+    redirect('/dashboard/analytics-view/scoring-trends');
+  }
+  else {
+    redirect('/dashboard/setup-view');    
+  }
+   
   // const tabs = [{ label: "Session", path: "/dashboard/analytics-view" }];
 
   // const pathname = usePathname();
