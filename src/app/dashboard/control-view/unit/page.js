@@ -26,6 +26,7 @@ import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unit
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { useUnit } from "@/context/UnitContext";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -61,10 +62,12 @@ export default function UnitControl() {
   const [isSelected, setIsSelected] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [blocks, setBlocks] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
+
+  const { setSelectedUnitId } = useUnit(); 
 
   // Fetch all units on mount
   useEffect(() => {
@@ -842,6 +845,10 @@ export default function UnitControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
+                if (contextMenu.selectedUnit) {
+                  setSelectedUnitId(contextMenu.selectedUnit.id);
+                  console.log("Global Unit Id: ", contextMenu.selectedUnit.id);
+                }
                 setContextMenu((prev) => ({ ...prev, visible: false }));
                 router.push(`/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(contextMenu.selectedUnit.id)}&environment=${encodeURIComponent(contextMenu.selectedUnit.environment)}&type=${encodeURIComponent(contextMenu.selectedUnit.unitType)}`);
               }}

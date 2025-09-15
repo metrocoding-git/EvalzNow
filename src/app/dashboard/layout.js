@@ -3,6 +3,7 @@ import BottomRibbon from '@/components/BottomRibbon';
 import Loading from '@/components/Loading';
 import RibbonPanel from '@/components/RibbonPanel';
 import { FormStatusContext } from '@/context/FormStatusContext';
+import { UnitProvider } from '@/context/UnitContext';
 import { useEffect, useState } from 'react';
 
 
@@ -27,20 +28,22 @@ export default function DashboardLayout({ children }) {
 
   return (
     <FormStatusContext.Provider value={{ formStatus, setFormStatus }}>
-      <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
-        <RibbonPanel
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          activeButton={activeButton}
-          setActiveButton={setActiveButton}
-        />
+      <UnitProvider>
+        <div className="h-screen bg-white w-screen flex flex-col overflow-hidden">
+          <RibbonPanel
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            activeButton={activeButton}
+            setActiveButton={setActiveButton}
+          />
 
-        <div className="flex flex-1 overflow-hidden">
-          {children}
+          <div className="flex flex-1 overflow-hidden">
+            {children}
+          </div>
+
+          <BottomRibbon activeTab={activeTab} activeButton={activeButton} formStatus={formStatus}  />
         </div>
-
-        <BottomRibbon activeTab={activeTab} activeButton={activeButton} formStatus={formStatus}  />
-      </div>
+      </UnitProvider>
     </FormStatusContext.Provider>
   );
 }
