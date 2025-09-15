@@ -677,10 +677,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         ) : (
                           <>
                             {row.mc?.map((val, i) => (
-                              <td className="whitespace-nowrap border p-1 text-center" key={`mc-${i}`}>{val && parseFloat(val) !== 0 ? val : "-"}</td>
+                              <td className="whitespace-nowrap border p-1 text-center" key={`mc-${i}`}>{val ? val : "-"}</td>
                             ))}
                             {row.cc?.map((val, i) => (
-                              <td className="whitespace-nowrap border p-1 text-center" key={`cc-${i}`}>{val && parseFloat(val) !== 0 ? val : "-"}</td>
+                              <td className="whitespace-nowrap border p-1 text-center" key={`cc-${i}`}>{val ? val : "-"}</td>
                             ))}
 
                           </>

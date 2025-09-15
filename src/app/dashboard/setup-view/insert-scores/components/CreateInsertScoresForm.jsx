@@ -300,41 +300,28 @@ const [formData, setFormData] = useState({
       setError("Missing unitId or assessmentBlockId.");
       return;
     }
-
-    // const requiredFields = [
-    //   "ppId",
-    //   "durationHrs",
-    //   "criticalRefDate",
-    //   "remarks",
-    //   "workflowStage",
-    //   "assessmentType",
-    //   "scheduleImpact",
-    //   "engageLevel",
-    //   "competency",
-    // ];
-
-    
-
+  
     for (let field of requiredFields) {
       if (!formData[field] || formData[field].toString().trim() === "") {
         toast.error(`Field "${field}" is required.`);
         return; // stop submission
       }
     }
-
+  
     let attained = null;
-
+    let maxScoreCalculated = null;
+  
     // Validation for Classroom environment
     if (environment === "Classroom") {
       attained = parseFloat(formData.attainedScore || 0);
       const max = parseFloat(formData.maxScore || 0);
-
+  
       if (attained > max) {
         toast.error("Attained score cannot be greater than maximum score.");
         return; // stop submission
       }
     }
-
+  
     if (formData.attainedScore !== null && parseFloat(formData.attainedScore) < 0) {
       toast.error("Attained Score cannot be negative.");
       return;
@@ -344,81 +331,81 @@ const [formData, setFormData] = useState({
       toast.error("Maximum Score cannot be negative.");
       return;
     }
-
+  
     if (environment === "Workforce") {
-
       let maxAllowed = null;
       if (scoringSystem === "3-Point") maxAllowed = 3;
       if (scoringSystem === "5-Point") maxAllowed = 5;
-
+  
       // Calculate Max Score
-      let highest = 0;
       let filledCount = 0;
-
-      // Sum up all mc + cc values
       let total = 0;
   
       for (let i = 1; i <= 20; i++) {
-        const mcVal = parseFloat(formData[`mc${i}`] || 0);
-        if (mcVal < 0) {
-          toast.error(`Negative value found in MC${i}. Please enter only positive values.`);
-          return;
+        const rawMc = formData[`mc${i}`];
+        // Only process if not empty string
+        if (rawMc !== "" && rawMc !== null) {
+          const mcVal = parseFloat(rawMc);
+          if (isNaN(mcVal)) {
+            toast.error(`Invalid value found in MC${i}. Please enter a valid number.`);
+            return;
+          }
+          if (mcVal < 0) {
+            toast.error(`Negative value found in MC${i}. Please enter only positive values.`);
+            return;
+          }
+          if (maxAllowed !== null && mcVal > maxAllowed) {
+            toast.error(`MC${i} exceeds allowed maximum (${maxAllowed}).`);
+            return;
+          }
+          total += mcVal;
+          filledCount++;
         }
-        if (maxAllowed !== null && mcVal > maxAllowed) {
-          toast.error(`MC${i} exceeds allowed maximum (${maxAllowed}).`);
-          return;
-        }
-
-        if (!isNaN(mcVal)) total += mcVal;
   
-        const ccVal = parseFloat(formData[`cc${i}`] || 0);
-        if (ccVal < 0) {
-          toast.error(`Negative value found in CC${i}. Please enter only positive values.`);
-          return;
+        const rawCc = formData[`cc${i}`];
+        // Only process if not empty string
+        if (rawCc !== "" && rawCc !== null) {
+          const ccVal = parseFloat(rawCc);
+          
+          if (ccVal < 0) {
+            toast.error(`Negative value found in CC${i}. Please enter only positive values.`);
+            return;
+          }
+          if (maxAllowed !== null && ccVal > maxAllowed) {
+            toast.error(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
+            return;
+          }
+          total += ccVal;
+          filledCount++
         }
-        if (maxAllowed !== null && ccVal > maxAllowed) {
-          toast.error(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
-          return;
-        }
-
-        if (!isNaN(ccVal)) total += ccVal;
       }
   
       attained = total;
-
-
-      for (let i = 1; i <= 20; i++) {
-        const mcVal = parseFloat(formData[`mc${i}`] || 0);
-        if (mcVal > 0) {
-          filledCount++;
-          if (mcVal > highest) highest = mcVal;
-        }
+      maxScoreCalculated = maxAllowed * filledCount;
     
-        const ccVal = parseFloat(formData[`cc${i}`] || 0);
-        if (ccVal > 0) {
-          filledCount++;
-          if (ccVal > highest) highest = ccVal;
-        }
-      }
-    
-      formData.maxScore = maxAllowed * filledCount;
     }
   
-
     try {
       setLoading(true);
-
+  
+      // Prepare payload with proper null handling for empty values
       const payload = {
         ...formData,
         unitId: parseInt(unitId),
         candidate_id: parseInt(candidateId),
         durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
-        attainedScore: attained !== null ? attained : null,
-        maxScore: formData.maxScore ? parseInt(formData.maxScore) : null,
+        // attainedScore: attained !== null ? parseFloat(attained.toFixed(2)) : null,
+        // maxScore: maxScoreCalculated !== undefined ? parseFloat(maxScoreCalculated.toFixed(2)) : null,
       };
-
+  
+      // Convert empty strings to null for MC and CC fields
+      for (let i = 1; i <= 20; i++) {
+        payload[`mc${i}`] = formData[`mc${i}`] === "" ? null : parseFloat(formData[`mc${i}`]);
+        payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
+      }
+  
       await createInsertScore(payload);
-      console.log("successfully submitted.");
+      console.log("successfully submitted.", payload);
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
@@ -718,10 +705,10 @@ const [formData, setFormData] = useState({
                       step="0.01"
                        min="0"
                       type="number"
-                      onBlur={(e) =>
-                        handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
-                      }
-                      value={formData[fieldKey] || ""}
+                      // onBlur={(e) =>
+                      //   handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
+                      // }
+                      value={formData[fieldKey]}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
                       className="flex-1 border px-2 py-1 w-42"
                     />
@@ -740,11 +727,11 @@ const [formData, setFormData] = useState({
                       type="number"
                       step="0.01"
                       min="0"
-                      value={formData[fieldKey] || ""}
+                      value={formData[fieldKey]}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
-                      onBlur={(e) =>
-                        handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
-                      }
+                      // onBlur={(e) =>
+                      //   handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
+                      // }
                       className="border px-2 py-1 flex-1 w-42"
                     />
                   </div>
