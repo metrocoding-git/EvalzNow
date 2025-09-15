@@ -14,6 +14,8 @@ import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getAllCandidates } from "@/services/candidateService";
+import { useUnit } from "@/context/UnitContext";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
 export default function ScoringTrends() {
   const tabs = [
@@ -36,18 +38,9 @@ export default function ScoringTrends() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [data, setData] = useState([
-    // { id: 1, firstName: "John", lastName: "Doe" },
-    // { id: 2, firstName: "Jane", lastName: "Smith" },
-    // { id: 3, firstName: "Bob", lastName: "Johnson" },
-    // { id: 4, firstName: "Alice", lastName: "Williams" },
-    // { id: 5, firstName: "Charlie", lastName: "Brown" },
-    // { id: 6, firstName: "David", lastName: "Jones" },
-    // { id: 7, firstName: "Eva", lastName: "Miller" },
-    // { id: 8, firstName: "Frank", lastName: "Davis" },
-    // { id: 9, firstName: "Grace", lastName: "Wilson" },
-    // { id: 10, firstName: "Henry", lastName: "Moore" },
-  ]);
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [unitData, setUnitData] = useState(null);      // store unit details
+  const [data, setData] = useState([]);  
 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
@@ -68,6 +61,7 @@ export default function ScoringTrends() {
     }
   };
   
+  console.log("unit Id in scoring trends:", selectedUnitId);
 
   const sortedData = [...data].sort((a, b) => {
     if (sortKey === "id") {
@@ -83,33 +77,77 @@ export default function ScoringTrends() {
 
 
   // Fetch all candidates on mount
-  useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllCandidates();
+  // useEffect(() => {
+  //   const fetchCandidates = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getAllCandidates();
   
-        const sortedData = Array.isArray(data)
-          ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
-          : [];
+  //       const sortedData = Array.isArray(data)
+  //         ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
+  //         : [];
   
         // ✅ set the fetched data into state
-        setData(sortedData);
+  //       setData(sortedData);
   
-        if (sortedData.length > 0) {
-          setActiveCandidateId(sortedData[0].id);  // ✅ set first candidate active
-          setShowEdit(true);
+  //       if (sortedData.length > 0) {
+  //         setActiveCandidateId(sortedData[0].id);  // ✅ set first candidate active
+  //         setShowEdit(true);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch candidates:", err);
+  //       setError("Failed to load candidates. Please try again.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  
+  //   fetchCandidates();
+  // }, []);
+
+
+    // Fetch candidates + unit details by selectedUnitId
+    useEffect(() => {
+      if (!selectedUnitId) return;
+  
+      const fetchRoster = async () => {
+        try {
+          setLoading(true);
+          const roster = await getUniRostertByUnitId(selectedUnitId);
+  
+          if (!Array.isArray(roster) || roster.length === 0) {
+            setUnitData(null);
+            setData([]);
+            // router.replace("/dashboard/control-view/unit");
+            return;
+          }
+  
+          // Extract unit (all rows share same unit)
+          setUnitData(roster[0].unit);
+  
+          // Extract candidates
+          const candidates = roster.map((r) => r.candidate);
+  
+          // Remove duplicates by candidate.id
+          const uniqueCandidates = Array.from(
+            new Map(candidates.map((c) => [c.id, c])).values()
+          );
+  
+          // Sort by id ascending initially
+          const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+  
+          setData(sorted);
+          setActiveCandidateId(sorted.length > 0 ? sorted[0].id : null);
+        } catch (err) {
+          console.error("Failed to fetch unit roster:", err);
+          setError("Failed to load unit roster. Please try again.");
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Failed to fetch candidates:", err);
-        setError("Failed to load candidates. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
   
-    fetchCandidates();
-  }, []);
+      fetchRoster();
+    }, [selectedUnitId]);
   
 
   return (
@@ -167,25 +205,28 @@ export default function ScoringTrends() {
 
                       {openMenu && (
                         <>
+                          {unitData && (
                           <div className=" items-center justify-center  px-4 ">
                             <div className="border border-gray-200 p-1">
                               <span className="text-sm text-gray-400">
-                                Unit Name: Unit 1
+                                Unit Name: {unitData.unitName}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Unit ID: UA123
+                                Unit ID: {unitData.unitId}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Unit Type: Group
+                                Unit Type: {unitData.unitType}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Signature Profile: Signature 1
+                                Signature Profile: {unitData.signatureProfile}
                               </span>
                             </div>
                           </div>
+                          )}
+
                           {/* Candidate Data */}
                           <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
                             {sortedData.map((item) => (
