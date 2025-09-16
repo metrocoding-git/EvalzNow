@@ -14,11 +14,14 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   const [staffs, setStaffs] = useState([]);
   
 
-  const filteredStaffs = staffs.filter((staff) =>
-    `${staff.firstName} ${staff.lastName} ${staff.jobTitle} ${staff.email} ${staff.department}`
+  const filteredStaffs = staffs
+  .filter((staff) => staff.accountStatus === "Enabled") // ✅ only enabled
+  .filter((staff) =>
+    `${staff.firstName} ${staff.lastName} ${staff.jobTitle} ${staff.emailAddress} ${staff.department}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -106,7 +109,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
                 <td className="border p-1">{c.firstName}</td>
                 <td className="border p-1">{c.jobTitle}</td>
                 <td className="border p-1">{c.department}</td>
-                <td className="border p-1">{c.email}</td>
+                <td className="border p-1">{c.emailAddress}</td>
               </tr>
             ))}
             {filteredStaffs.length === 0 && (

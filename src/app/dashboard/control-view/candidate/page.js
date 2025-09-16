@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import CandidateEditor from "./components/CandidateEditor";
 import CreateCandidateForm from "./components/CreateCandidateForm";
 import ReviewCandidate from "./components/ReviewCandidate";
-import { createCandidate, deleteCandidate, getAllCandidates } from "@/services/candidateService";
+import { createCandidate, deleteCandidate, getAllCandidateEthinicities, getAllCandidateIncomes, getAllCandidates } from "@/services/candidateService";
 import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicity } from "@/services/ethinictyService";
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/services/incomeService";
 import { useFormStatus } from "@/context/FormStatusContext";
@@ -52,6 +52,9 @@ export default function CandidateControl() {
   ]);
 
    // const [formStatus, setFormStatus] = useState("Ready");
+
+   const [candidateIncome, setCandidateIncome] = useState("");
+   const [candidateEthnicity, setCandidateEthnicity] = useState("");
    const { setFormStatus } = useFormStatus();
 
    const reviewRef = useRef(null);
@@ -117,7 +120,42 @@ export default function CandidateControl() {
     };
     fetchIncome();
   }, []);
+
+
+   // Fetch all candidates on mount
+   useEffect(() => {
+    const fetchIncomeFromCandidate = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidateIncomes();
+        // keep objects instead of just names
+        setCandidateIncome(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIncomeFromCandidate();
+  }, []);
   
+
+   // Fetch all candidates on mount
+   useEffect(() => {
+    const fetchEthnicitiesFromCandidate = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidateEthinicities();
+        // keep objects instead of just names
+        setCandidateEthnicity(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch ethnicities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEthnicitiesFromCandidate();
+  }, []);
   
 
 
@@ -287,9 +325,27 @@ export default function CandidateControl() {
 
   const handleIncomeChange = async (idx, value) => {
     const updated = [...incomes];
-    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
+    updated[idx] = { ...updated[idx], name: value }; // keep id if exists
     setIncomes(updated);
   
+    // try {
+    //   if (updated[idx].id) {
+    //     if (value.trim() === "") {
+    //       // ✅ Delete when cleared (same as ethnicity)
+    //       await deleteIncome(updated[idx].id);
+    //       setIncomes(incomes.filter((_, i) => i !== idx));
+    //     } else {
+    //       // ✅ Update if value is not empty
+    //       await updateIncome(updated[idx].id, { name: value });
+    //     }
+    //   } else if (value.trim() !== "") {
+    //     // ✅ Create new when non-empty
+    //     const created = await createIncome({ name: value });
+    //     updated[idx] = created;
+    //     setIncomes([...updated]);
+    //   }
+    // }
+
     try {
       // If existing (has id) → update
       if (updated[idx].id) {
@@ -301,10 +357,13 @@ export default function CandidateControl() {
         updated[idx] = created; // replace with saved object (with ID)
         setIncomes([...updated]);
       }
-    } catch (err) {
+    } 
+    
+    catch (err) {
       console.error("Failed to save income:", err);
     }
-  };
+  };  
+  
   
   const handleIncomeDelete = async (idx) => {
     const income = incomes[idx];
@@ -327,6 +386,17 @@ export default function CandidateControl() {
   };
 
   console.log("selected Candiate", selectedCandidate);
+
+
+  // ✅ Check if ethnicity is used by any candidate
+  const isEthnicityUsed = (eth) => {
+    return candidateEthnicity.includes(eth.name);
+  };
+
+  // ✅ Check if income is used by any candidate
+  const isIncomeUsed = (inc) => {
+    return candidateIncome.includes(inc.name);
+  };
   
 
   return (
@@ -494,6 +564,7 @@ export default function CandidateControl() {
                             type="text"
                             maxLength={25}
                             value={eth.name || ""}
+                            disabled={isEthnicityUsed(eth)} 
                             onChange={(e) => handleEthnicityChange(idx, e.target.value)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Ethnicity ${idx + 1}`}
@@ -501,7 +572,12 @@ export default function CandidateControl() {
                           <button
                             type="button"
                             onClick={() => handleEthnicityDelete(idx)}
-                            className="text-red-500 text-xs"
+                            disabled={isEthnicityUsed(eth)}  // ✅ disable if in use
+                            className={`px-2 py-1 text-xs rounded ${
+                              isEthnicityUsed(eth)
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-red-500  "
+                            }`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -531,6 +607,7 @@ export default function CandidateControl() {
                             type="text"
                             maxLength={25}
                             value={income.name || ""}
+                            disabled={isIncomeUsed(income)} 
                             onChange={(e) => handleIncomeChange(idx, e.target.value)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Income Ranges ${idx + 1}`}
@@ -538,7 +615,12 @@ export default function CandidateControl() {
                           <button
                             type="button"
                             onClick={() => handleIncomeDelete(idx)}
-                            className="text-red-500 text-xs"
+                            disabled={isIncomeUsed(income)} // ✅ disable if in use
+                            className={`px-2 py-1 text-xs rounded ${
+                              isIncomeUsed(income)
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-red-500 "
+                            }`} 
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
