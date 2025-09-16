@@ -221,7 +221,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Income", e.target.value)}
           >
             <option value="">Select Income</option>
-            {incomes.map((income, i) => (
+            {incomes
+            .filter((inc) => inc?.name && inc.name.trim() !== "").map((income, i) => (
               <option key={i} value={income.name}>
                 {income.name}
               </option>
@@ -235,7 +236,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Ethnicity", e.target.value)}
           >
             <option value="">Select Ethnicity</option>
-            {ethnicities.map((eth, i) => (
+            {ethnicities
+            .filter((ethinicity) => ethinicity?.name && ethinicity.name.trim() !== "").map((eth, i) => (
               <option key={i} value={eth.name}>
                 {eth.name}
               </option>

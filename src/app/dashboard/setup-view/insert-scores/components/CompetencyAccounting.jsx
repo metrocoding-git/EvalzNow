@@ -281,9 +281,16 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
           const normalizedRow = { ...row, mc, cc };
 
 
+
+
           if (env === "Classroom") classroomRows.push(normalizedRow);
           else workforceRows.push(normalizedRow);
         });
+
+
+        // ✅ sort by ppId ascending before setting state
+        classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+        workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
   
         setClassroomData(classroomRows);
         setWorkforceData(workforceRows);
@@ -356,23 +363,44 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const moveRowUp = () => {
     if (deleteSelectedRow === null || deleteSelectedRow <= 0) return;
   
-    const dataArray = environment === "Classroom" ? classroomData : workforceData;
+    const dataArray = environment === "Classroom" ? [...classroomData] : [...workforceData];
     const newIndex = deleteSelectedRow - 1;
-  
+    
+    // Swap rows
+    [dataArray[deleteSelectedRow], dataArray[newIndex]] = 
+    [dataArray[newIndex], dataArray[deleteSelectedRow]];
+    
+    // Update state
+    if (environment === "Classroom") {
+      setClassroomData(dataArray);
+    } else {
+      setWorkforceData(dataArray);
+    }
+    
+    // Update selected row
     setDeleteSelectedRow(newIndex);
     setSelectedRow(dataArray[newIndex]);
   };
   
   const moveRowDown = () => {
-    const dataArray = environment === "Classroom" ? classroomData : workforceData;
-  
-    if (
-      deleteSelectedRow === null ||
-      deleteSelectedRow >= dataArray.length - 1
-    ) return;
-  
+    const dataArray = environment === "Classroom" ? [...classroomData] : [...workforceData];
+    
+    if (deleteSelectedRow === null || deleteSelectedRow >= dataArray.length - 1) return;
+    
     const newIndex = deleteSelectedRow + 1;
-  
+    
+    // Swap rows
+    [dataArray[deleteSelectedRow], dataArray[newIndex]] = 
+    [dataArray[newIndex], dataArray[deleteSelectedRow]];
+    
+    // Update state
+    if (environment === "Classroom") {
+      setClassroomData(dataArray);
+    } else {
+      setWorkforceData(dataArray);
+    }
+    
+    // Update selected row
     setDeleteSelectedRow(newIndex);
     setSelectedRow(dataArray[newIndex]);
   };
@@ -660,7 +688,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.lastName}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.candidateId}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.ppId}</td>
-                        <td className="whitespace-nowrap border p-1 text-center">{row.durationHrs}</td>
+                        <td className="whitespace-nowrap border p-1 text-center"> {row.durationHrs !== null && row.durationHrs !== undefined ? Number(row.durationHrs).toFixed(2) : "-"}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.criticalRefDate?.slice(0, 10)}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.remarks}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.workflowStage}</td>

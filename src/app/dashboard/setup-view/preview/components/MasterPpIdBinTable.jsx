@@ -152,13 +152,18 @@ const transformedBlocks = sortedBlocks.map((row) => {
               {currentCompetencies.map((comp, index) => (
                 <React.Fragment key={index}>
                   <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
-                    {row[comp.attained] !== undefined ? row[comp.attained] : ""}
+                    {row[comp.attained] !== undefined && row[comp.attained] !== null
+                      ? Number(row[comp.attained]).toFixed(2)
+                      : ""}
                   </td>
                   <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
-                    {row[comp.max] !== undefined ? row[comp.max] : ""}
+                    {row[comp.max] !== undefined && row[comp.max] !== null
+                      ? Number(row[comp.max]).toFixed(2)
+                      : ""}
                   </td>
                 </React.Fragment>
               ))}
+
             </tr>
           ))}
         </tbody>

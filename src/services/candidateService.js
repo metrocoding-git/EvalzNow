@@ -45,6 +45,29 @@ export const getAllCandidates = async () => {
   }
 };
 
+// Get all ethnicities
+export const getAllCandidateEthinicities = async () => {
+  try {
+    const response = await api.get(`${API_ROUTES.CANDIDATE}/ethnicities`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching candidates:", error);
+    throw error;
+  }
+};
+
+
+// Get all incomes
+export const getAllCandidateIncomes = async () => {
+  try {
+    const response = await api.get(`${API_ROUTES.CANDIDATE}/incomes`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching candidates:", error);
+    throw error;
+  }
+};
+
 // Get candidate by ID
 export const getCandidateById = async (id) => {
   try {

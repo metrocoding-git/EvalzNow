@@ -70,7 +70,7 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
         {/* Critical Reference Date */}
         <div className="w-full gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
-            Critical Reference Date
+            Critical Reference Range
           </label>
 
           <div className="flex flex-col gap-2">

@@ -24,9 +24,12 @@ import UnitRoster from "./components/UnitRoster";
 import CreateBlockManagerForm from "./components/CreateBlockManagerForm";
 import { createUnit, deleteUnit, getAllUnits, updateUnit } from "@/services/unitService";
 import { getAllCandidates } from "@/services/candidateService";
-import { getAllUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
+import { createUnitRoster, getAllUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useFormStatus } from "@/context/FormStatusContext";
 import { useUnit } from "@/context/UnitContext";
+import { createAssessmentBlock, createDuplicateAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { createScoringCriteria, getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
+import { createInsertScore, getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -43,7 +46,9 @@ export default function UnitControl() {
   const formRef = useRef(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [showUnitRoster, setUnitRoster] = useState(false);
+  const [displayRosterData, setDisplayRosterData] = useState([]);
 
+  const [assessmentBlocks, setAssessmentBlocks] = useState([]);
   // unit tabs
   const [activeTab, setActiveTab] = useState("Indirect");
   const [loading, setLoading] = useState(false);
@@ -63,6 +68,12 @@ export default function UnitControl() {
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [blocks, setBlocks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [customCriteria, setCustomCriteria] = useState([]);
+
+  const [classroomData, setClassroomData] = useState([]);
+  const [workforceData, setWorkforceData] = useState([]);
+  const [insertScores, setInsertScores] = useState([]);
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
@@ -92,6 +103,39 @@ export default function UnitControl() {
     fetchUnits();
   }, []);
 
+  const fetchRosterData = async () => {
+    if (!selectedUnit?.id) return;
+    try {
+      setLoading(true);
+      const roster = await getUniRostertByUnitId(selectedUnit.id);
+      setDisplayRosterData(Array.isArray(roster) ? roster : []);
+    } catch (err) {
+      console.error("❌ Failed to fetch roster:", err);
+      setError("Failed to load roster");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      if (!selectedUnit?.id) return;
+  
+      try {
+        const data = await getScoringCriteriaByUnitId(selectedUnit?.id);
+        if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
+  
+        // Sort by criteriaId to keep correct order
+        const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
+  
+        setCustomCriteria(data);
+      } catch (err) {
+        console.error("Failed to fetch scoring criteria:", err);
+      }
+    };
+  
+    fetchCriteria();
+  }, [selectedUnit?.id]);
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -328,6 +372,40 @@ export default function UnitControl() {
   };
 
 
+  // Add this near your other state
+  const fetchBlocksByUnitAndCandidate = async () => {
+    if (!selectedUnit?.id || !selectedCandidate?.id) return;
+    try {
+      setLoading(true);
+      const blocks = await getAssessmentBlockByUnitId(selectedUnit.id);
+      
+      // Handle the response properly - it could be a single object or an array
+      if (Array.isArray(blocks)) {
+        setAssessmentBlocks(blocks);
+      } else if (blocks && typeof blocks === 'object') {
+        // If it's a single object, wrap it in an array
+        setAssessmentBlocks([blocks]);
+      } else {
+        setAssessmentBlocks([]);
+      }
+      
+      console.log("blocks", blocks);
+    } catch (err) {
+      console.error("Failed to fetch blocks:", err);
+      setError("Failed to load blocks. Please try again.");
+      setAssessmentBlocks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log("selected candidate in roster", assessmentBlocks );
+  // call it when unit changes
+  useEffect(() => {
+    fetchBlocksByUnitAndCandidate();
+  }, [selectedUnit?.id, selectedCandidate?.id]);
+
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       const isContextMenuClick =
@@ -394,6 +472,69 @@ export default function UnitControl() {
       setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+    const fetchAndSeparateScores = async () => {
+    if (!selectedUnit?.id || !selectedCandidate?.id) return;
+  
+      // Reset previous data
+      setClassroomData([]);
+      setWorkforceData([]);
+      setInsertScores([]);
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const data = await getInsertScoreByUnitAndCandidate(selectedUnit?.id, selectedCandidate?.id);
+        if (!Array.isArray(data)) throw new Error("Invalid insert score response");
+        console.log("Fetched insert scores:", data);
+  
+        const classroomRows = [];
+        const workforceRows = [];
+  
+        data.forEach((row) => {
+          const env = row.unit?.environment || "Workforce"; // default Workforce
+          const ppId = row.ppId;
+          const ppNumber = parseInt(ppId, 10);
+
+          if (isNaN(ppId)) return;
+
+
+          const matchesTab = activeTab === "Indirect" ? ppNumber < 0 : ppNumber > 0;
+
+          if (!matchesTab) return;
+
+          const mc = Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? "");  // MC1–MC20
+          const cc = Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? "");  // CC1–CC20
+          const normalizedRow = { ...row, mc, cc };
+
+
+
+
+          if (env === "Classroom") classroomRows.push(normalizedRow);
+          else workforceRows.push(normalizedRow);
+        });
+
+
+        // ✅ sort by ppId ascending before setting state
+        classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+        workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+  
+        setClassroomData(classroomRows);
+        setWorkforceData(workforceRows);
+        setInsertScores(data);
+  
+      } catch (err) {
+        console.error("Error fetching insert scores:", err);
+        setError("Failed to load insert scores.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAndSeparateScores();
+  }, [selectedUnit?.id, selectedCandidate?.id]);
 
 
   const refreshAssessmentBlocks = async () => {
@@ -733,35 +874,22 @@ export default function UnitControl() {
                 e.stopPropagation();
                 const unitToDuplicate = contextMenu.selectedUnit;
                 if (!unitToDuplicate) return;
-            
+
                 try {
                   setLoading(true);
                   setFormStatus("Processing...");
-            
+
+                  // Generate new unitId
                   const generateNewUnitId = (existingUnits) => {
-                    const baseId = unitToDuplicate.unitId.replace(/\D/g, ""); // extract numbers
+                    const baseId = unitToDuplicate.unitId.replace(/\D/g, "");
                     let newIdNumber = Number(baseId || 0) + 1;
-                    
-                    // Ensure the new unitId is unique
                     while (existingUnits.some(u => u.unitId === `U${newIdNumber.toString().padStart(3, '0')}`)) {
                       newIdNumber++;
                     }
-                  
                     return `U${newIdNumber.toString().padStart(3, '0')}`;
                   };
 
-                  // const duplicatedBenchmarks = originalBenchmarks.map(b => ({
-                  //   unitId: newUnit.id,         
-                  //   benchmarkType: b.benchmarkType,
-                  //   benchmarkRef: b.benchmarkRef,
-                  //   benchmarkDescription: b.benchmarkDescription,
-                  //   createdAt: new Date(),
-                  //   updatedAt: new Date(),
-                    
-                  // }));
-                  // await BenchmarkModel.bulkCreate(duplicatedBenchmarks);
-
-                  // Prepare new unit data, excluding unitId
+                  // Prepare new unit data
                   const newUnitData = {
                     unitName: `${unitToDuplicate.unitName} Copy`,
                     unitId: generateNewUnitId(dataList),
@@ -773,20 +901,89 @@ export default function UnitControl() {
                     environment: unitToDuplicate.environment,
                     benchmarks: undefined
                   };
-            
-                  // Call API to create new unit
+
+                  // Create the new unit
                   const createdUnit = await createUnit(newUnitData);
-            
-                  // Update local state
                   setDataList(prev => [...prev, createdUnit]);
                   setSelectedUnit(createdUnit);
                   setShowEdit(true);
-            
-                  setFormStatus("Completed");
-                  setTimeout(() => setFormStatus("Ready..."), 2000);
-            
+
+                  // --- DUPLICATE ROSTER ---
+                  const originalRoster = unitRosterData.filter(r => r.unitId === unitToDuplicate.id || r.unit?.id === unitToDuplicate.id);
+                  if (originalRoster.length > 0) {
+                    const duplicatedRosterPromises = originalRoster.map(entry => {
+                      const newEntry = {
+                        ...entry,
+                        id: undefined, // remove id so backend can create a new entry
+                        unitId: createdUnit.id, // assign new unitId
+                        unit: undefined
+                      };
+                      return createUnitRoster(newEntry);
+                    });
+                    const duplicatedRoster = await Promise.all(duplicatedRosterPromises);
+                    setUnitRosterData(prev => [...prev, ...duplicatedRoster]);
+                  }
+
+                 // --- DUPLICATE ASSESSMENT BLOCKS USING THE NEW ENDPOINT ---
+                const originalBlocks = assessmentBlocks.filter(b => b.unitId === unitToDuplicate.id);
+                
+                if (originalBlocks.length > 0) {
+                  // Use the dedicated duplicate endpoint
+                  const duplicatedBlocks = await createDuplicateAssessmentBlock({
+                    originalUnitId: unitToDuplicate.id,
+                    newUnitId: createdUnit.id
+                  });
+                  
+                  setAssessmentBlocks(prev => [...prev, ...duplicatedBlocks]);
+                }
+
+                // --- DUPLICATE CUSTOM CRITERIA ---
+                const originalCriteria = customCriteria.filter(c => c.unitId === unitToDuplicate.id);
+
+                if (originalCriteria.length > 0) {
+                  const duplicatedCriteriaPromises = originalCriteria.map(c => {
+                    const newCriteria = {
+                      criteria: c.criteria,
+                      unitId: createdUnit.id, // link to the new unit
+                    };
+                    return createScoringCriteria(newCriteria);
+                  });
+
+                  const duplicatedCriteria = await Promise.all(duplicatedCriteriaPromises);
+
+                  setCustomCriteria(prev => [...prev, ...duplicatedCriteria]);
+                }
+
+                // --- DUPLICATE INSERT SCORES ---
+                const originalInsertScores = insertScores.filter(
+                  (s) => s.unitId === unitToDuplicate.id
+                );
+
+                if (originalInsertScores.length > 0) {
+                  const duplicatedInsertScoresPromises = originalInsertScores.map((s) => {
+                    const newScore = {
+                      ...s,
+                      id: undefined, // let backend generate new ID
+                      unitId: createdUnit.id, // link to new unit
+                      unit: undefined,
+                      candidateId: s.candidateId, // keep same candidate
+                      assessmentBlockId: s.assessmentBlockId, // keep same block reference if still valid
+                    };
+                    return createInsertScore(newScore);
+                  });
+
+                  const duplicatedInsertScores = await Promise.all(
+                    duplicatedInsertScoresPromises
+                  );
+
+                  setInsertScores((prev) => [...prev, ...duplicatedInsertScores]);
+                }
+
+                setFormStatus("Completed");
+                setTimeout(() => setFormStatus("Ready..."), 2000);
+
                 } catch (err) {
-                  console.error("Failed to duplicate unit:", err);
+                  console.error("Failed to duplicate unit, roster, or blocks:", err);
                   setError("Failed to duplicate unit. Please try again.");
                   setFormStatus("Ready...");
                 } finally {
@@ -800,6 +997,7 @@ export default function UnitControl() {
               </span>
               <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
             </button>
+
 
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"

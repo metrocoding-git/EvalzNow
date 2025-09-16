@@ -60,7 +60,7 @@ const SecondaryInputForm = ({ onClose }) => {
       {/* Critical Reference Date */}
       <div className=" gap-1 text-xs p-2">
         <label className="block font-medium text-gray-700 mb-1">
-          Critical Reference Date
+          Critical Reference Range
         </label>
         <label className="block text-red-600 font-sm mb-1">
           View the plot by continuous master PP ID date range, this includes
