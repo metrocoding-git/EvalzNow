@@ -13,6 +13,18 @@ export const createAssessmentBlock = async (blockData) => {
   }
 };
 
+// Create new assessment block
+export const createDuplicateAssessmentBlock = async (blockData) => {
+  try {
+    const response = await api.post(`${API_ROUTES.ASSESSMENTMANAGER}/duplicate`, blockData);
+    console.log("block data: ", blockData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating assessment block:", error);
+    throw error;
+  }
+};
+
 // Update assessment block
 export const updateAssessmentBlock = async (id, blockData) => {
   try {

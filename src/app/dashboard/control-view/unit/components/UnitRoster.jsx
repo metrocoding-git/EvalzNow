@@ -170,28 +170,62 @@ useEffect(() => {
     setShowEditBlockManager(false);
   };
 
+  // Function to swap assessment block positions
+  const swapAssessmentBlocks = async (index1, index2) => {
+    if (index1 < 0 || index2 < 0 || index1 >= filteredAssessmentBlocks.length || index2 >= filteredAssessmentBlocks.length) {
+      return;
+    }
+    
+    try {
+      // Create a copy of the assessment blocks array
+      const updatedBlocks = [...assessmentBlocks];
+      
+      // Get the blocks to swap
+      const block1 = filteredAssessmentBlocks[index1];
+      const block2 = filteredAssessmentBlocks[index2];
+      
+      // Find the indices of these blocks in the main assessmentBlocks array
+      const mainIndex1 = updatedBlocks.findIndex(b => b.id === block1.id);
+      const mainIndex2 = updatedBlocks.findIndex(b => b.id === block2.id);
+      
+      if (mainIndex1 === -1 || mainIndex2 === -1) return;
+      
+      // Swap the positions
+      [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [updatedBlocks[mainIndex2], updatedBlocks[mainIndex1]];
+      
+      // Update state
+      setAssessmentBlocks(updatedBlocks);
+      
+      // Update the selected row
+      setSelectedRow(index2);
+      setSelectedBlock(filteredAssessmentBlocks[index2]);
+      
+      // If there's a callback to update blocks in parent component
+      if (onBlockUpdate) {
+        onBlockUpdate(updatedBlocks);
+      }
+      
+      // Optionally, update the order in the backend
+      // You might need to add an API endpoint for this
+      // await updateAssessmentBlockOrder(updatedBlocks);
+      
+    } catch (err) {
+      console.error("Failed to swap blocks:", err);
+    }
+  };
+
   const moveRowUp = () => {
     if (selectedRow === null || selectedRow === 0) return;
-    setSelectedRow((prev) => prev - 1);
-    setSelectedBlock(filteredAssessmentBlocks[selectedRow - 1]);
-    setShowEditBlockManager(true);
-    setShowEdit(false);
-  
-    if (onBlockSelect) {
-      onBlockSelect(filteredAssessmentBlocks[selectedRow - 1]);
-    }
+    
+    // Swap the selected row with the row above it
+    swapAssessmentBlocks(selectedRow, selectedRow - 1);
   };
   
   const moveRowDown = () => {
     if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
-    setSelectedRow((prev) => prev + 1);
-    setSelectedBlock(filteredAssessmentBlocks[selectedRow + 1]);
-    setShowEditBlockManager(true);
-    setShowEdit(false);
-  
-    if (onBlockSelect) {
-      onBlockSelect(filteredAssessmentBlocks[selectedRow + 1]);
-    }
+    
+    // Swap the selected row with the row below it
+    swapAssessmentBlocks(selectedRow, selectedRow + 1);
   };
   
   

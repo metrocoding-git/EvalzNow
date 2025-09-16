@@ -160,7 +160,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
               >
                 <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.ppId}</td>
                 <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.shortDescription || "N/A"}</td>
-                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.totalDuration || "N/A"}</td>
+                <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.totalDuration !== null && row.totalDuration !== undefined ? Number(row.totalDuration).toFixed(2) : "N/A"}</td>
                 <td className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{row.latestCriticalRefDate
                   ? new Date(row.latestCriticalRefDate).toLocaleDateString()
                   : "-"}
