@@ -12,5 +12,6 @@ export const API_ROUTES = {
     ASSESSMENTMANAGER: "/assessment_block_manager",
     INCOME: "/income",
     INSERT_SCORE: "/insert-score",
-    SCORING_CRITERIA: "/scoring-criteria"
+    SCORING_CRITERIA: "/scoring-criteria",
+    SCORING_TRENDS: "/scoring-trends"
 };

@@ -12,7 +12,7 @@ import {
 import SecondaryArea from "../components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { getAllCandidates } from "@/services/candidateService";
 import { useUnit } from "@/context/UnitContext";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
@@ -41,10 +41,15 @@ export default function ScoringTrends() {
   const { selectedUnitId, setSelectedUnitId } = useUnit();
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]);  
+  const [secondaryValues, setSecondaryValues] = useState(null);
 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  if(!selectedUnitId) {
+    redirect('/dashboard/analytics-view');
+  }
 
   useEffect(() => {
     if (activeCandidateId) {
@@ -149,6 +154,7 @@ export default function ScoringTrends() {
       fetchRoster();
     }, [selectedUnitId]);
   
+    console.log("selected unit:", unitData);
 
   return (
     <div className="w-full flex flex-col">
@@ -269,14 +275,16 @@ export default function ScoringTrends() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto my-2">
-                    <SecondaryArea onClose={() => setShowSecondary(false)} />
+                    <SecondaryArea onClose={() => setShowSecondary(false)} 
+                    onSubmit={(values) => { setSecondaryValues(values); }} />
                   </div>
                 )}
               </div>
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200  ml-1">
-                {ScoresOpen && <PlotSelections />}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} unitId={selectedUnitId} candidateId={activeCandidateId}
+                 />}
               </div>
             </div>
     
