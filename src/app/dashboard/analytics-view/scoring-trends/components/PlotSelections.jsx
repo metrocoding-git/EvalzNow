@@ -22,8 +22,10 @@ import {
   Label,
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
+import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
+import { getAttainedScoreSummary, getMaxScoresSummary, getScoringTrendsSummary } from "@/services/scoringTrendsService";
 
-export default function PlotSelections() {
+export default function PlotSelections({ filters, unitId, candidateId }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
     { id: 2, name: "curve2" },
@@ -99,220 +101,39 @@ export default function PlotSelections() {
     { name: "C", uv: 200, pv: 980 },
   ];
 
-  const chart = [
-    {
-      name: "Main Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Extra Criteria vs. Insert Score Row Counter (Workforce Only, 20 plots total - Line Graphs, criteria must match the unit)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Attained Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Maximum Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Main Criteria Percentage by Units (Workforce Only - Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Extra Criteria Percentage by Units (Workforce Only - Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Attained Score Average by Units (Classroom + Workforce - Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Maximum Score Average by Units (Classroom + Workforce - Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Criteria Type (Pie Chart)",
-      icon: "🥧",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Units (Pie Chart)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Month (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Day (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Average Attained Score per Month (Line Graph)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Average Attained Score per Day (Line Graph)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Average Maximum Score per Month (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Average Maximum Score per Day (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Main Criteria Completion Rate (Donut Chart)",
-      icon: "🍩",
-      id: '1'
-    },
-    {
-      name: "Extra Criteria Completion Rate (Donut Chart)",
-      icon: "🍩",
-      id: '1'
-    },
-    {
-      name: "Unit-wise Criteria Completion Comparison (Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Criteria Type Distribution (Stacked Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Insert Score Trend (Last 30 Days - Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Insert Score Trend (Last 12 Months - Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Classroom vs. Workforce Score Comparison (Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Instructor (Bar Chart)",
-      icon: "👨‍🏫",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count by Student (Bar Chart)",
-      icon: "🧑‍🎓",
-      id: '1'
-    },
-    {
-      name: "Score Deviation from Maximum (Line Graph)",
-      icon: "📉",
-      id: '1'
-    },
-    {
-      name: "Unit Performance vs. Overall Average (Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Monthly Performance Comparison by Unit (Grouped Bar Chart)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Main Criteria Distribution Over Time (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Extra Criteria Distribution Over Time (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Cumulative Insert Score Over Time (Area Chart)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Criteria Type by Course Category (Pie Chart)",
-      icon: "🥧",
-      id: '1'
-    },
-    {
-      name: "Insert Score Range Distribution (Histogram)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Monthly Insert Activity (Calendar Heatmap)",
-      icon: "📅",
-      id: '1'
-    },
-    {
-      name: "Unit-wise Attained Score Progress (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Unit-wise Maximum Score Progress (Line Graph)",
-      icon: "📈",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count per Day of Week (Bar Chart)",
-      icon: "📆",
-      id: '1'
-    },
-    {
-      name: "Insert Score Count per Hour of Day (Bar Chart)",
-      icon: "🕒",
-      id: '1'
-    },
-    {
-      name: "Score Type Proportion per Unit (Stacked Bar)",
-      icon: "📊",
-      id: '1'
-    },
-    {
-      name: "Insert Score vs. Time Spent (Scatter Plot)",
-      icon: "🔘",
-      id: '1'
-    },
-    {
-      name: "Criteria Fulfillment Rate by Category (Donut Chart)",
-      icon: "🍩",
-      id: '1'
-    },
-    {
-      name: "Insert Score Median vs. Mean by Unit (Box Plot)",
-      icon: "📦",
-      id: '1'
-    },
-  ];
+  const [chart, setChart] = useState([
+    { name: "Communication (MC1) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc1", icon: "📉", id: "1" },
+    { name: "Intelligence (MC2) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc2", icon: "📉", id: "2" },
+    { name: "Responsiveness (MC3) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc3", icon: "📉", id: "3" },
+    { name: "Efficiency (MC4) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc4", icon: "📉", id: "4" },
+    { name: "Adaptation (MC5) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc5", icon: "📉", id: "5" },
+    { name: "Accuracy (MC6) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc6", icon: "📉", id: "6" },
+    { name: "Verbal Reasoning (MC7) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc7", icon: "📉", id: "7" },
+    { name: "Spatial Reasoning (MC8) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc8", icon: "📉", id: "8" },
+    { name: "Numerical Reasoning (MC9) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc9", icon: "📉", id: "9" },
+    { name: "Problem Solving (MC10) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc10", icon: "📉", id: "10" },
+    { name: "Memory (MC11) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc11", icon: "📉", id: "11" },
+    { name: "Data Checking (MC12) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc12", icon: "📉", id: "12" },
+    { name: "Work Sampling (MC13) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc13", icon: "📉", id: "13" },
+    { name: "Quality of Work (MC14) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc14", icon: "📉", id: "14" },
+    { name: "Resourcefulness (MC15) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc15", icon: "📉", id: "15" },
+    { name: "Following Instructions (MC16) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc16", icon: "📉", id: "16" },
+    { name: "Working in Teams (MC17) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc17", icon: "📉", id: "17" },
+    { name: "Working Alone (MC18) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc18", icon: "📉", id: "18" },
+    { name: "Initiative (MC19) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc19", icon: "📉", id: "19" },
+    { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc20", icon: "📉", id: "20" },
+    { name: "Attained Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)", key: "attained", icon: "📉", id: "21" },
+    { name: "Maximum Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)", key: "max", icon: "📉", id: "22" }
+  ]
+  );
+  
 
   const [selectedChart, setSelectedChart] = useState(chart[0]);
+  const [customCriteria, setCustomCriteria] = useState([]);
+
+  const [scoringData, setScoringData] = useState(null);
+  const [attainedScoreData, setAttainedScoreData] = useState(null);
+  const [maxScoreData, setMaxScoreData] = useState(null);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -335,6 +156,168 @@ export default function PlotSelections() {
       setSelectedCurveId(null);
     }
   };
+
+
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      if (!unitId) return;
+  
+      try {
+        const data = await getScoringCriteriaByUnitId(unitId);
+        if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
+  
+        // Sort by criteriaId
+        const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
+  
+        setChart((prev) => {
+          // Find the max current numeric ID in chart (or just start from 22)
+          const startId = 23;
+        
+          // Map new criteria with sequential IDs starting from 23 and keys starting from cc1
+          const mappedCharts = sorted.map((c, index) => ({
+            name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter (Workforce Only - Line Graph)`,
+            key: `cc${index + 1}`, // cc1, cc2, ...
+            icon: "📉",
+            id: (startId + index).toString(),
+          }));
+        
+          return [...chart.slice(0, 22), ...mappedCharts]; // append to existing chart array
+        });
+        
+  
+        setCustomCriteria(data);
+      } catch (err) {
+        console.error("Failed to fetch scoring criteria:", err);
+      }
+    };
+  
+    fetchCriteria();
+  }, [unitId]);
+
+  
+  useEffect(() => {
+    const fetchScoringData = async () => {
+      if (!unitId || !candidateId) return;
+
+      try {
+        const data = await getScoringTrendsSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+        setScoringData(data);
+      } catch (err) {
+        console.error("Failed to fetch scoring trends:", err);
+      }
+    };
+
+    fetchScoringData();
+  }, [unitId, filters, candidateId]);
+
+
+  useEffect(() => {
+    const fetchAttainedScoreData = async () => {
+      if (!unitId || !candidateId) return;
+
+      try {
+        const data = await getAttainedScoreSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+        setAttainedScoreData(data);
+      } catch (err) {
+        console.error("Failed to fetch scoring trends:", err);
+      }
+    };
+
+    fetchAttainedScoreData();
+  }, [unitId, filters, candidateId]);
+
+
+  useEffect(() => {
+    const fetchMaxScoreData = async () => {
+      if (!unitId || !candidateId) return;
+
+      try {
+        const data = await getMaxScoresSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+        setMaxScoreData(data);
+      } catch (err) {
+        console.error("Failed to fetch scoring trends:", err);
+      }
+    };
+
+    fetchMaxScoreData();
+  }, [unitId, filters, candidateId]);
+
+  const buildXYChartData = (scoringData, attainedScoreData, maxScoreData, selectedChart) => {
+    if (!selectedChart) return [];
+  
+    const key = selectedChart.key;
+  
+    // Handle Attained Score chart
+    if (key === "attained") {
+      if (!attainedScoreData) return [];
+      return attainedScoreData.map((row) => ({
+        x: Number(row.attainedScore ?? 0),
+        y: Number(row.totalRows ?? 0),
+      })).sort((a, b) => a.x - b.x);
+    }
+  
+    // Handle Max Score chart
+    if (key === "max") {
+      if (!maxScoreData) return [];
+      return maxScoreData.map((row) => ({
+        x: Number(row.maxScore ?? 0),
+        y: Number(row.totalRows ?? 0),
+      })).sort((a, b) => a.x - b.x);
+    }
+  
+    // Handle MC/CC charts (existing logic)
+    if (!scoringData || !key) return [];
+  
+    const points = scoringData.map((row) => {
+      let val = 0;
+      if (key.startsWith("mc")) {
+        val = row.mcCounts?.[key] ?? 0;
+      } else if (key.startsWith("cc")) {
+        val = row.ccCounts?.[key] ?? 0;
+      }
+      return {
+        x: Number(val),
+        y: Number(row.totalRows ?? 0),
+        ppId: row.ppId,
+        label: `PP ${row.ppId}`,
+      };
+    });
+  
+    points.sort((a, b) => a.x - b.x);
+    return points;
+  };
+  
+  
+  const xyData = buildXYChartData(
+    scoringData,
+    attainedScoreData,
+    maxScoreData,
+    selectedChart
+  );
+  
+  
+  console.log("Scoring Trends Data: ", scoringData);
 
   if (!visible) return null;
 
@@ -486,55 +469,47 @@ export default function PlotSelections() {
 
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
-                data={floatChartData}
-                margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                data={xyData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
 
-                <XAxis dataKey="name">
-                  <Label
-                    value="Time Period (X)"
-                    offset={-10}
-                    position="insideBottom"
-                  />
+                <XAxis
+                  dataKey="x"
+                  type="number"
+                  domain={[0, "dataMax"]}
+                  allowDecimals={false}
+                >
+                  <Label value={`${selectedChart.key} (X)`} offset={-10} position="insideBottom" />
                 </XAxis>
 
-                <YAxis>
-                  <Label
-                    value="Score / Value (Y/Z)"
-                    angle={-90}
-                    position="insideLeft"
-                    offset={10}
-                  />
+                <YAxis type="number" dataKey="y">
+                  <Label value="Total Rows (Y)" angle={-90} position="insideLeft" offset={10} />
                 </YAxis>
 
-                <Tooltip />
-                <Legend verticalAlign="top" />
+                <Tooltip
+                  formatter={(value, name) => {
+                    // Recharts Tooltip passes y-value as value because our Line uses dataKey="y"
+                    return [value, name === "y" ? "Total Rows" : name];
+                  }}
+                  labelFormatter={(label) => `MC/CC value: ${label}`}
+                  // show ppId in tooltip payload
+                  contentStyle={{ fontSize: 12 }}
+                />
+
+                {/* <Legend verticalAlign="top" /> */}
 
                 <Line
                   type="monotone"
-                  dataKey="xValue"
-                  name="X Axis Value"
+                  dataKey="y"
+                  name={selectedChart.name}
                   stroke="#3b82f6"
                   strokeWidth={2}
-                  dot
+                  dot={{ r: 4 }}
+                  isAnimationActive={false}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="yValue"
-                  name="Y Axis Value"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="zValue"
-                  name="Z Axis Value"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot
-                />
+
+
               </LineChart>
             </ResponsiveContainer>
           </div>
