@@ -9,8 +9,10 @@ import {
   ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import ViewerSelections from "./components/ViewerSelections";
+import { useUnit } from "@/context/UnitContext";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
 export default function TabulationTables() {
   const tabs = [
@@ -23,23 +25,35 @@ export default function TabulationTables() {
   const [ViewerOpen, setViewerOpen] = useState(false);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
-  
+  const [data, setData] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe", candidateStartDate: "2023-01-10", unitStartDate: "2023-01-15" },
-    { id: 2, firstName: "Jane", lastName: "Smith", candidateStartDate: "2023-02-05", unitStartDate: "2023-02-10" },
-    { id: 3, firstName: "Bob", lastName: "Johnson", candidateStartDate: "2023-03-12", unitStartDate: "2023-03-17" },
-    { id: 4, firstName: "Alice", lastName: "Williams", candidateStartDate: "2023-04-01", unitStartDate: "2023-04-06" },
-    { id: 5, firstName: "Charlie", lastName: "Brown", candidateStartDate: "2023-05-20", unitStartDate: "2023-05-25" },
-    { id: 6, firstName: "David", lastName: "Jones", candidateStartDate: "2023-06-14", unitStartDate: "2023-06-19" },
-    { id: 7, firstName: "Eva", lastName: "Miller", candidateStartDate: "2023-07-08", unitStartDate: "2023-07-13" },
-    { id: 8, firstName: "Frank", lastName: "Davis", candidateStartDate: "2023-08-03", unitStartDate: "2023-08-08" },
-    { id: 9, firstName: "Grace", lastName: "Wilson", candidateStartDate: "2023-09-11", unitStartDate: "2023-09-16" },
-    { id: 10, firstName: "Henry", lastName: "Moore", candidateStartDate: "2023-10-27", unitStartDate: "2023-11-01" },
-  ];
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+
+  // const data = [
+  //   { id: 1, firstName: "John", lastName: "Doe", candidateStartDate: "2023-01-10", unitStartDate: "2023-01-15" },
+  //   { id: 2, firstName: "Jane", lastName: "Smith", candidateStartDate: "2023-02-05", unitStartDate: "2023-02-10" },
+  //   { id: 3, firstName: "Bob", lastName: "Johnson", candidateStartDate: "2023-03-12", unitStartDate: "2023-03-17" },
+  //   { id: 4, firstName: "Alice", lastName: "Williams", candidateStartDate: "2023-04-01", unitStartDate: "2023-04-06" },
+  //   { id: 5, firstName: "Charlie", lastName: "Brown", candidateStartDate: "2023-05-20", unitStartDate: "2023-05-25" },
+  //   { id: 6, firstName: "David", lastName: "Jones", candidateStartDate: "2023-06-14", unitStartDate: "2023-06-19" },
+  //   { id: 7, firstName: "Eva", lastName: "Miller", candidateStartDate: "2023-07-08", unitStartDate: "2023-07-13" },
+  //   { id: 8, firstName: "Frank", lastName: "Davis", candidateStartDate: "2023-08-03", unitStartDate: "2023-08-08" },
+  //   { id: 9, firstName: "Grace", lastName: "Wilson", candidateStartDate: "2023-09-11", unitStartDate: "2023-09-16" },
+  //   { id: 10, firstName: "Henry", lastName: "Moore", candidateStartDate: "2023-10-27", unitStartDate: "2023-11-01" },
+  // ];
   
+
+  if(!selectedUnitId) {
+    redirect('/dashboard/analytics-view'); 
+  }
+
+
+  const [unitData, setUnitData] = useState(null); 
+
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
@@ -62,6 +76,50 @@ export default function TabulationTables() {
       setSortOrder("asc");
     }
   };
+
+
+  // Fetch candidates + unit details by selectedUnitId
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted.length > 0 ? sorted[0].id : null);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
 
   const sortedData = [...data].sort((a, b) => {
     if (sortKey === "id") {
@@ -187,19 +245,19 @@ export default function TabulationTables() {
                           <div className=" items-center justify-center  px-4 ">
                             <div className="border border-gray-200 p-1 ">
                               <span className="text-sm text-gray-400">
-                                Unit Name: Unit 1
+                                Unit Name: {unitData?.unitName}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Unit ID: UA123
+                                Unit ID: {unitData?.unitId}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Unit Type: Group
+                                Unit Type: {unitData?.unitType}
                               </span>
                               <br />
                               <span className="text-sm text-gray-400">
-                                Signature Profile: Signature 1
+                                Signature Profile: {unitData?.signatureProfile}
                               </span>
                             </div>
                           </div>
