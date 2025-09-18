@@ -298,7 +298,7 @@ export default function TabulationTables() {
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 ml-1 ">
-                {ViewerOpen && <ViewerSelections candidate={selectedCandidate} />}
+                {ViewerOpen && <ViewerSelections candidate={selectedCandidate}  unitId={unitData?.id} />}
               </div>
             </div>
             {/* ------- */}

@@ -270,18 +270,21 @@ export default function UnitControl() {
         signatureProfile: newUnit.signatureProfile,
         environment: newUnit.environment,
         environment: newUnit.environment,
-        benchmarks: newUnit.benchmarks
+        benchmarks: newUnit.benchmarks,
+        ...newUnit.passThresholds, 
       };
 
-      const createdUnit = await createUnit(unitData);
+      // const createdUnit = await createUnit(unitData);
       
+      console.log("Unit Submitted success:", unitData);
+
       // Update state
-      setDataList(prev => [...prev, createdUnit]);
-      setSelectedUnit(createdUnit);
+      setDataList(prev => [...prev, unitData]);
+      setSelectedUnit(unitData);
       setShowAdd(false);
       setShowEdit(true);
       
-      return createdUnit;
+      return unitData;
     } catch (err) {
       console.error("Failed to create unit:", err);
       setError("Failed to create unit. Please try again.");

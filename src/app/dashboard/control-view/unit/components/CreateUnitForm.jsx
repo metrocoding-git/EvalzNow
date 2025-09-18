@@ -3,6 +3,7 @@ import { ListFilterPlus, Trash2, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import StaffLookup from "./StaffLookUp";
 import { getAllCandidates } from "@/services/candidateService";
+import { createUnit } from "@/services/unitService";
 
 const UNIT_TYPES = [
   "Communicative I/O",
@@ -217,6 +218,7 @@ const THRESHOLD_NAMES = {
       alert("Please fill in all required fields");
       return;
     }
+    
     setIsSubmitting(true);
     try {
       // Prepare benchmarks data
@@ -236,9 +238,13 @@ const THRESHOLD_NAMES = {
         unitType: form.unitType,
         signatureProfile: form.signatureProfile,
         environment: form.environment,
-        benchmarks: benchmarks
+        benchmarks: benchmarks,
+        ...form.passThresholds,
       };
 
+      const createdUnit = await createUnit(unitData);
+      console.log("Unit created successfully:", createdUnit);
+      
       await onSubmit(unitData);
       console.log(unitData);
       onClose();
