@@ -13,5 +13,6 @@ export const API_ROUTES = {
     INCOME: "/income",
     INSERT_SCORE: "/insert-score",
     SCORING_CRITERIA: "/scoring-criteria",
-    SCORING_TRENDS: "/scoring-trends"
+    SCORING_TRENDS: "/scoring-trends",
+    TABULATION: "/tabulation"
 };
