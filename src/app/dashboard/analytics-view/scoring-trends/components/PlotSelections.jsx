@@ -300,7 +300,7 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
         x: Number(val),
         y: Number(row.totalRows ?? 0),
         ppId: row.ppId,
-        label: `PP ${row.ppId}`,
+        label: `${row.ppId}`,
       };
     });
   
@@ -419,12 +419,12 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Month
+                            PP Id / Label
                           </th>
                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             X Axis Value
@@ -432,32 +432,38 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                             Y Axis Value
                           </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Z Axis Value
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.name}
-                            </td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.xValue}
-                            </td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.yValue}
-                            </td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.zValue}
+                        {xyData && xyData.length > 0 ? (
+                          xyData.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-blue-50">
+                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                {row.label ?? row.ppId ?? `#${idx + 1}`}
+                              </td>
+                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                {row.x}
+                              </td>
+                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                {row.y}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="text-center text-gray-500 border border-gray-300 px-3 py-2"
+                            >
+                              No data available
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 )}
+
               </div>
             </div>
           </div>
