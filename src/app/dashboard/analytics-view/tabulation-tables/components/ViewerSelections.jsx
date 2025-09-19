@@ -62,96 +62,7 @@ export default function ViewerSelections({candidate, unitId}) {
 
 
   const [tableData, setTableData] = useState([
-    // {
-    //   "PP ID": 1,
-    //   "Critical Reference Date": "2025-08-02",
-    //   "Day Count (Days)": 8,
-    //   "Productivity_CSD": 85,
-    //   "Productivity_USD": 80,
-    //   'RRN': 30,
-    //   "PRN": 90,
-    //   "ARN": 88,
-    //   "XLR": 80,
-    //   "XRR": 82,
-    //   "XSR": 78,
-    //   "XWR": 75,
-    //   "XTR": 70,
-    //   "XPR": 77,
-    //   "XRVSR": 84,
-    //   "XPVSR": 86,
-    //   "XAVSR": 83,
-    //   "XEP": 88,
-    //   "XCP": 87,
-    //   "XBP": 3,
-    //   "MSIP": 5,
-    //   "STA/P": 95,
-    //   "IC": 2,
-    //   "ΔRRN": 10,
-    //   "ΔPRN": 12,
-    //   "ΔARN": 12,
-    //   "GEQ": 7,
-    //   "STA/G": 92,
-    //   "RRGT1": 6,
-    //   "PRGT1": 8,
-    //   "ARGT1": 7,
-    //   "RRGT2": 5,
-    //   "PRGT2": 7,
-    //   "ARGT2": 6,
-    //   "RRGT3": 4,
-    //   "PRGT3": 6,
-    //   "ARGT3": 5,
-    //   "RRGT4": 3,
-    //   "PRGT4": 5,
-    //   "ARGT4": 4,
-    //   "RRGT5": 2,
-    //   "PRGT5": 4,
-    //   "ARGT5": 3
-    // },    
-    // {
-    //   "PP ID": 2,
-    //   "Critical Reference Date": "2025-08-02",
-    //   "Day Count (Days)": 8,
-    //   "Productivity_CSD": 85,
-    //   "Productivity_USD": 80,
-    //   'RRN': 30,
-    //   "PRN": 90,
-    //   "ARN": 88,
-    //   "XLR": 80,
-    //   "XRR": 82,
-    //   "XSR": 78,
-    //   "XWR": 75,
-    //   "XTR": 70,
-    //   "XPR": 77,
-    //   "XRVSR": 84,
-    //   "XPVSR": 86,
-    //   "XAVSR": 83,
-    //   "XEP": 88,
-    //   "XCP": 87,
-    //   "XBP": 3,
-    //   "MSIP": 5,
-    //   "STA/P": 95,
-    //   "IC": 2,
-    //   "ΔRRN": 10,
-    //   "ΔPRN": 12,
-    //   "ΔARN": 12,
-    //   "GEQ": 7,
-    //   "STA/G": 92,
-    //   "RRGT1": 6,
-    //   "PRGT1": 8,
-    //   "ARGT1": 7,
-    //   "RRGT2": 5,
-    //   "PRGT2": 7,
-    //   "ARGT2": 6,
-    //   "RRGT3": 4,
-    //   "PRGT3": 6,
-    //   "ARGT3": 5,
-    //   "RRGT4": 3,
-    //   "PRGT4": 5,
-    //   "ARGT4": 4,
-    //   "RRGT5": 2,
-    //   "PRGT5": 4,
-    //   "ARGT5": 3
-    // }
+    
     ]);
 
 
@@ -282,15 +193,15 @@ useEffect(() => {
 
   return (
     <>
-      <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center ">
+      <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
         <span className="pl-2 text-md text-gray-800">Viewers</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2 mx-1">
-        <div className='w-full flex flex-col border-1 h-full border-gray-200  p-1'>
-          <div className="flex items-center justify-between  mb-3 px-1 mx-1 mt-1 text-gray-700 ">
-            <h2 className="text-sm font-semibold mx-1">Candidate Display</h2>
-            <div className="flex items-center gap-2">
+        <div className='w-full flex flex-col border-2 h-full border-gray-200 '>
+          <div className="flex items-center justify-between  mb-1 px-1 mx-1 mt-1 text-gray-700 ">
+            <h2 className="text-sm font-semibold">Candidate Display</h2>
+            <div className="flex items-center gap-1">
               <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
@@ -301,7 +212,7 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-1 flex-col">
+          <div className=" h-full overflow-hidden w-full my-1 flex-col gap-1">
             <div className=" flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {candidate && (
@@ -342,7 +253,7 @@ useEffect(() => {
             </div>
 
             <div className=" flex flex-col flex-1 min-h-55 border border-gray-200 ">
-              <h2 className="text-sm font-semibold mx-1 p-2 text-gray-600">Candidate </h2>
+              <h2 className="text-sm font-semibold mx-1 p-2 text-gray-700">Candidate </h2>
               {/* <div className="flex space-x-2 border-b p-2">
                 <button
                   className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
@@ -375,7 +286,7 @@ useEffect(() => {
 
                 {activeAdjustPropertieTab === 'Table' && ( */}
                 
-                  <div className="flex-1 overflow-auto">
+                  <div className="flex-1 overflow-auto mx-1">
                     {/* table */}
                     <table className="w-full text-left text-xs mb-7"> 
                       <thead className="bg-gray-50">
@@ -383,7 +294,7 @@ useEffect(() => {
                             {Object.entries(headers).map(([header, description]) => (
                               <th 
                                 key={header}
-                                className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 group relative"
+                                className="whitespace-nowrap text-center border-1 border-gray-200 px-2 py-1 group relative"
                               >
                                 {header}
                                 <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">

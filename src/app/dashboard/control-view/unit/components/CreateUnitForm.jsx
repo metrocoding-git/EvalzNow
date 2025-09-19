@@ -242,8 +242,8 @@ const THRESHOLD_NAMES = {
         ...form.passThresholds,
       };
 
-      const createdUnit = await createUnit(unitData);
-      console.log("Unit created successfully:", createdUnit);
+      // const createdUnit = await createUnit(unitData);
+      // console.log("Unit created successfully:", createdUnit);
       
       await onSubmit(unitData);
       console.log(unitData);

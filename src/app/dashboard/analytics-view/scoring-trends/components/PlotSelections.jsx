@@ -263,30 +263,39 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
     fetchMaxScoreData();
   }, [unitId, filters, candidateId]);
 
-  const buildXYChartData = (scoringData, attainedScoreData, maxScoreData, selectedChart) => {
+  const buildXYChartData = (
+    scoringData,
+    attainedScoreData,
+    maxScoreData,
+    selectedChart
+  ) => {
     if (!selectedChart) return [];
   
     const key = selectedChart.key;
   
-    // Handle Attained Score chart
+    // Handle Attained Score chart (keep sorting by x)
     if (key === "attained") {
       if (!attainedScoreData) return [];
-      return attainedScoreData.map((row) => ({
-        x: Number(row.attainedScore ?? 0),
-        y: Number(row.totalRows ?? 0),
-      })).sort((a, b) => a.x - b.x);
+      return attainedScoreData
+        .map((row) => ({
+          x: Number(row.attainedScore ?? 0),
+          y: Number(row.totalRows ?? 0),
+        }))
+        .sort((a, b) => a.x - b.x);
     }
   
-    // Handle Max Score chart
+    // Handle Max Score chart (keep sorting by x)
     if (key === "max") {
       if (!maxScoreData) return [];
-      return maxScoreData.map((row) => ({
-        x: Number(row.maxScore ?? 0),
-        y: Number(row.totalRows ?? 0),
-      })).sort((a, b) => a.x - b.x);
+      return maxScoreData
+        .map((row) => ({
+          x: Number(row.maxScore ?? 0),
+          y: Number(row.totalRows ?? 0),
+        }))
+        .sort((a, b) => a.x - b.x);
     }
   
-    // Handle MC/CC charts (existing logic)
+    // Handle MC/CC charts → sort by ppId
     if (!scoringData || !key) return [];
   
     const points = scoringData.map((row) => {
@@ -304,9 +313,12 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
       };
     });
   
-    points.sort((a, b) => a.x - b.x);
+    // ✅ Only MC/CC sorted by ppId
+    points.sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
+  
     return points;
   };
+  
   
   
   const xyData = buildXYChartData(
@@ -325,7 +337,7 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
         <span className="pl-2 text-md">Plot Selections</span>
-        
+        <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2 mx-1">
         <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1">
