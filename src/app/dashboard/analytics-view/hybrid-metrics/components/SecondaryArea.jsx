@@ -16,12 +16,12 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted:", { 
-      ppIdFrom, 
-      ppIdTo, 
-      criticalDate, 
-      thresholdEnabled, 
-      showGrowthTarget, 
+    console.log("Submitted:", {
+      ppIdFrom,
+      ppIdTo,
+      criticalDate,
+      thresholdEnabled,
+      showGrowthTarget,
       selectedPpId,
       unitMode
     });
@@ -55,7 +55,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
                 placeholder="From (e.g., -3)"
               />
             </div>
-            
+
             <div className="flex items-center ">
               <label htmlFor="" className="w-1/2">To:</label>
               <input
@@ -66,7 +66,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
                 placeholder="To (e.g., 3)"
               />
             </div>
-            
+
           </div>
         </div>
 
@@ -107,14 +107,12 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               className="relative w-12 h-6 cursor-pointer"
             >
               <div
-                className={`absolute inset-0 rounded-full transition-colors duration-300 ${
-                  thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
-                }`}
+                className={`absolute inset-0 rounded-full transition-colors duration-300 ${thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
+                  }`}
               />
               <div
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                  thresholdEnabled ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${thresholdEnabled ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </div>
           </div>
@@ -122,7 +120,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
 
 
         {/* Candidate Level Options */}
-        {selectedSort === "activateCandidateLevel" && (
+        {selectedSort === "activateCandidateLevel" && !isSelectedInteractionClass && (
           <>
             {/* Growth Target Toggle */}
             <div className="flex items-center justify-between p-2">
@@ -134,50 +132,22 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
                 className="relative w-12 h-6 cursor-pointer"
               >
                 <div
-                  className={`absolute inset-0 rounded-full transition-colors duration-300 ${
-                    showGrowthTarget ? "bg-gray-600" : "bg-gray-300"
-                  }`}
+                  className={`absolute inset-0 rounded-full transition-colors duration-300 ${showGrowthTarget ? "bg-gray-600" : "bg-gray-300"
+                    }`}
                 />
                 <div
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                    showGrowthTarget ? "translate-x-6" : "translate-x-0"
-                  }`}
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${showGrowthTarget ? "translate-x-6" : "translate-x-0"
+                    }`}
                 />
               </div>
             </div>
 
-            {/* PP ID select */}
-            <div className="p-2">
-              <label className="block font-medium text-gray-700 mb-1">
-                Select PP ID
-              </label>
-              <select
-                value={selectedPpId ?? ""}
-                onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
-                className="border px-2 py-1 w-full"
-              >
-                <option value="" disabled>
-                  -- Select a PP ID --
-                </option>
-                {ppIds.map((id) => (
-                  <option key={id} value={id}>
-                    {id}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            {/* Scoring points */}
-            <div className="p-2">
-              <p className="block font-medium text-gray-700 mb-1">
-                Scoring points: <span>3 points</span>
-              </p>
-            </div>
           </>
         )}
 
         {/* Unit Level Options */}
-        {selectedSort === "activateUnitLevel" && (
+        {selectedSort === "activateUnitLevel" && !isSelectedInteractionClass && (
           <>
             {/* Mode Switch */}
             <div className="p-2">
@@ -194,28 +164,21 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               </select>
             </div>
 
-            {unitMode === "averages" && (
-              <div className="p-2">
-                <p className="text-gray-700 text-sm">
-                  Averages will pull RR, PR, and AR values from Tabulation Tables.
-                </p>
-              </div>
-            )}
 
-            {unitMode === "target" && (
-              <div className="p-2">
-                <label className="block font-medium text-gray-700 mb-1">
-                  Enter Target PP ID
-                </label>
-                <input
-                  type="number"
-                  value={selectedPpId ?? ""}
-                  onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
-                  className="border px-2 py-1 w-full"
-                  placeholder="Enter -/+ PP ID"
-                />
-              </div>
-            )}
+
+            <div className="p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Enter Target PP ID
+              </label>
+              <input
+                type="number"
+                value={selectedPpId ?? ""}
+                onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
+                className="border px-2 py-1 w-full"
+                placeholder="Enter -/+ PP ID"
+              />
+            </div>
+
           </>
         )}
       </div>
