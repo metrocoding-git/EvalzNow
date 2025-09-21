@@ -87,7 +87,7 @@ export default function UnitControl() {
         setLoading(true);
         const units = await getAllUnits();
         setDataList(Array.isArray(units) ? units : []);
-        console.log(units);
+        console.log("units in control: " , units, " using data list: ", dataList);
         if (units.length > 0) {
           setSelectedUnit(units[0]);
           setShowEdit(true);
@@ -254,46 +254,18 @@ export default function UnitControl() {
     fetchUnitRosterByUnitId();
   }, [selectedUnit?.id]);
 
-  // Create candidate
+  
+  // ✅ Add handleCreate
   const handleCreate = async (newUnit) => {
     try {
-      setLoading(true);
-      
-      // Prepare the data for API
-      const unitData = {
-        unitName: newUnit.unitName,
-        unitId: newUnit.unitId,
-        unitStartDate: newUnit.unitStartDate, // Changed from startDate
-        unitEndDate: newUnit.unitEndDate,     // or newUnit.unitEndDate
-        unitDirector: newUnit.unitDirector,
-        unitType: newUnit.unitType,
-        signatureProfile: newUnit.signatureProfile,
-        environment: newUnit.environment,
-        environment: newUnit.environment,
-        benchmarks: newUnit.benchmarks,
-        ...newUnit.passThresholds, 
-      };
-
-      // const createdUnit = await createUnit(unitData);
-      
-      console.log("Unit Submitted success:", unitData);
-
-      // Update state
-      setDataList(prev => [...prev, unitData]);
-      setSelectedUnit(unitData);
-      setShowAdd(false);
-      setShowEdit(true);
-      
-      return unitData;
+      const data = await createUnit(newUnit);
+      setDataList((prev) => [...prev, data]); // update datalist
+      setSelectedUnit(data); // optionally auto-select it
+      setShowAdd(false); // close form after success
     } catch (err) {
-      console.error("Failed to create unit:", err);
-      setError("Failed to create unit. Please try again.");
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error("Error updating unit list:", err);
     }
   };
-
 
 
   const sortedDataList = [...dataList].sort((a, b) => {

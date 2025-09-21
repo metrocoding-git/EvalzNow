@@ -6,6 +6,7 @@ import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
 import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/services/unitRosterService";
+import toast, { Toaster } from "react-hot-toast";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
@@ -88,6 +89,15 @@ useEffect(() => {
   
       // Refresh roster table after deletion
       await fetchRosterData();
+
+       // Remove deleted candidates from refreshCandidateData
+      if (refreshCandidateData) {
+        refreshCandidateData(prevCandidates => 
+          prevCandidates.filter(candidate => 
+            !itemsToDelete.some(item => item.candidate_id === candidate.id)
+          )
+        );
+      }
   
       // Clear selection
       setSelectedEntityRows([]);
@@ -539,7 +549,16 @@ useEffect(() => {
 
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setShowCreateBlockForm(true)}
+                  onClick={() => { 
+                    if (!selectedCandidate) {
+                      toast.error("Please select the candidate");
+                    }
+                    else {
+                      setShowCreateBlockForm(true);
+                    }
+                    
+                  }
+                  }
                   title="Add new"
                   className="p-1.5 text-gray-600 hover:text-black transition-colors cursor-pointer"
                 >
@@ -684,6 +703,7 @@ useEffect(() => {
         />
       )}
 
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
