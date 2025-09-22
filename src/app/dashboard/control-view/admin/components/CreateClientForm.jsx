@@ -1,8 +1,10 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createClient } from "@/services/clientService";
 import { getCompanySize } from "@/services/companyService";
 import { ListFilterPlus, Plus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 // Generate 10-char random alphanumeric ID
 const generateExecutiveId = () => {
@@ -31,7 +33,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
   const [error, setError] = useState(null);
   const [companySize, setCompanySize] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { formStatus, setFormStatus } = useFormStatus();
   useEffect(() => {
     setExecutiveId(generateExecutiveId());
   }, []);
@@ -85,31 +87,35 @@ export default function CreateClientForm({ onClose, onCreate }) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setFormStatus("Processing...");
   
+    const clientData = {
+      lastName: form["Executive Last Name"],
+      firstName: form["Executive First Name"],
+      jobTitle: form["Executive Job Title"],
+      emailAddress: form["Executive E-mail Address"],
+      companyName: form["Company Name"],
+      companyContactNumber: form["Company Contact Number"],
+      institutionalType: form["Institutional Type"],
+      businessRegistrationNo: form["Business Registration No."],
+      country: form["Country"],
+      companySizeId: form["Company Size"],
+      status: form["Status"] || "Activate",
+      executiveId: executiveId // Make sure to include this
+    };
+
     try {
-      const clientData = {
-        lastName: form["Executive Last Name"],
-        firstName: form["Executive First Name"],
-        jobTitle: form["Executive Job Title"],
-        emailAddress: form["Executive E-mail Address"],
-        companyName: form["Company Name"],
-        companyContactNumber: form["Company Contact Number"],
-        institutionalType: form["Institutional Type"],
-        businessRegistrationNo: form["Business Registration No."],
-        country: form["Country"],
-        companySizeId: form["Company Size"],
-        status: form["Status"] || "Activate",
-        executiveId: executiveId // Make sure to include this
-      };
-  
-      onCreate(clientData);
+      
+      await onCreate(clientData);
+      setFormStatus("Completed");
+
+      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
+      setTimeout(() => setFormStatus("Ready..."), 2500);
+
       onClose();
       
     } catch (err) {
-      console.error("Failed to create client:", err);
-      // Try to get more detailed error message
-      const errorMessage = err.response?.data?.message ||  err.message ||  "Failed to create client";
-      setError(errorMessage);
+      setFormStatus("Ready...");
     } finally {
       setIsSubmitting(false);
     }
@@ -127,7 +133,10 @@ export default function CreateClientForm({ onClose, onCreate }) {
 
         {/* Close icon */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+            setFormStatus("Ready..");
+          }}
           className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
           <X className="w-5 h-5" />
@@ -228,6 +237,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
           </div>
         </div>
       
+      <Toaster position="top-right" reverseOrder={false} />
     </form>
   );
 }

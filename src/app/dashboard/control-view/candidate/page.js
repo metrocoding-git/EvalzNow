@@ -25,6 +25,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 export default function CandidateControl() {
   const contextRef = useRef(null);
   const formRef = useRef(null);
+  const createFormRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showList, setShowList] = useState(true);
@@ -56,7 +57,7 @@ export default function CandidateControl() {
    const [candidateIncome, setCandidateIncome] = useState("");
    const [candidateEthnicity, setCandidateEthnicity] = useState("");
    const { setFormStatus } = useFormStatus();
-
+   const controlsRef = useRef(null);
    const reviewRef = useRef(null);
 
   // Fetch all candidates on mount
@@ -238,10 +239,12 @@ export default function CandidateControl() {
         contextRef.current && contextRef.current.contains(e.target);
       const isCandidateClick = e.target.closest(".candidate-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
+      const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
       const isReviewClick = reviewRef.current && reviewRef.current.contains(e.target);
+      const isControlClick = controlsRef.current && controlsRef.current.contains(e.target);
 
       // Only deselect if click is outside candidate item, context menu, and form
-      if (!isContextMenuClick && !isCandidateClick && !isFormClick && !isReviewClick) {
+      if (!isContextMenuClick && !isCandidateClick && !isFormClick && !isReviewClick && !isControlClick & !isCreateFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedCandidate: null });
         setSelectedCandidate(null);
         setShowEdit(false);
@@ -408,11 +411,13 @@ export default function CandidateControl() {
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
-                <button
+                <button ref={controlsRef}
                   className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
                   onClick={() => {
                     setSelectedCandidate(null);
                     setShowAdd(true);
+                    setShowEdit(false);
+                    setFormStatus("Creating...");
                   }}
                 >
                   <Plus className="w-3.5 h-3.5 text-black" />
@@ -708,7 +713,7 @@ export default function CandidateControl() {
       <div className="w-1/2 lg:w-9/12 bg-white">
         
           {showAdd && (
-            <div className="h-full flex flex-col w-96">
+            <div className="h-full flex flex-col w-96" ref={createFormRef}>
               <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
             </div>
           )}

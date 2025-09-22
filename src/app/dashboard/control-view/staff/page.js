@@ -15,6 +15,7 @@ import StaffEditor from "./components/StaffEditor";
 import CreateStaffForm from "./components/CreateStaffForm";
 import { createStaff, deleteStaff, getAllStaffs } from "@/services/staffService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import toast from "react-hot-toast";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -24,6 +25,7 @@ export default function StaffControl() {
   const [sortBy, setSortBy] = useState("id");
   const [selectedStaff, setSelectedStaff] = useState(null);
   const formRef = useRef(null);
+  const createFormRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [contextMenu, setContextMenu] = useState({
@@ -51,6 +53,7 @@ export default function StaffControl() {
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
+  const controlsRef = useRef(null);
 
   // Fetch staff data
   useEffect(() => {
@@ -78,8 +81,11 @@ export default function StaffControl() {
       setDataList((prev) => [...prev, createdStaff]);
       setSelectedStaff(createdStaff);
       setShowAdd(false);
+      return createStaff;
     } catch (err) {
-      console.error("Failed to create staff:", err);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to create staff";
+      toast.error(errorMessage); // ✅ show toast here
+      throw new Error(errorMessage); // ✅ re-throw so form does not close
     }
   };
 
@@ -145,9 +151,11 @@ export default function StaffControl() {
         contextRef.current && contextRef.current.contains(e.target);
       const isStaffClick = e.target.closest(".staff-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
+      const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
+      const isControlClick = controlsRef.current && controlsRef.current.contains(e.target);
 
       // Only deselect if click is outside staff item, context menu, and form
-      if (!isContextMenuClick && !isStaffClick && !isFormClick) {
+      if (!isContextMenuClick && !isStaffClick && !isFormClick && !isControlClick & !isCreateFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedStaff: null });
         setSelectedStaff(null);
         setShowEdit(false);
@@ -194,12 +202,14 @@ export default function StaffControl() {
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
-              <div className="flex justify-end gap-1">
-                <button
+              <div className="flex justify-end gap-1" >
+                <button ref={controlsRef}
                   className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
                   onClick={() => {
                     setSelectedStaff(null);
                     setShowAdd(true);
+                    setShowEdit(false);
+                    setFormStatus("Creating...");
                   }}
                 >
                   <Plus className="w-3.5 h-3.5 text-black" />
@@ -208,8 +218,13 @@ export default function StaffControl() {
                 {selectedStaff && (
                   <div className="flex gap-1 staff-item">
                     <button
-                      className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                      className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${
+                        selectedStaff.accessLevel === "Full Access"
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-gray-400 hover:text-white"
+                      }`}
                       onClick={() => handleDelete(selectedStaff.id)}
+                      disabled= {selectedStaff.accessLevel === "Full Access"}
                     >
                       <Trash className="w-3.5 h-3.5" />
                     </button>
@@ -368,7 +383,7 @@ export default function StaffControl() {
 
       {/* Right Panel - Create Staff */}
       <div className="w-1/2 lg:w-9/12 bg-white">
-        <div className="h-full flex flex-col w-96">
+        <div className="h-full flex flex-col w-96" ref={createFormRef}>
           {showAdd && (
             <CreateStaffForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
           )}

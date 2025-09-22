@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import StaffLookup from "./StaffLookUp";
 import { getAllCandidates } from "@/services/candidateService";
 import { createUnit } from "@/services/unitService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const UNIT_TYPES = [
   "Communicative I/O",
@@ -66,6 +67,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
   };
   const [lookupFor, setLookupFor] = useState(null);
   const [showLookup, setShowLookup] = useState(false);
+  const { formStatus, setFormStatus } = useFormStatus();
 
   const showThresholds = form.unitType !== "";
 
@@ -220,6 +222,7 @@ const THRESHOLD_NAMES = {
     }
     
     setIsSubmitting(true);
+    setFormStatus("Processing...");
     try {
       // Prepare benchmarks data
       const benchmarks = form.benchmarks.map(bm => ({
@@ -246,6 +249,7 @@ const THRESHOLD_NAMES = {
       // console.log("Unit created successfully:", createdUnit);
       
       await onSubmit(unitData);
+      setFormStatus("Completed");
       console.log(unitData);
       onClose();
     } catch (error) {
