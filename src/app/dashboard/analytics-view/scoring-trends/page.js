@@ -47,9 +47,9 @@ export default function ScoringTrends() {
     data.length > 0 ? data[0].id : null
   );
 
-  if(!selectedUnitId) {
-    redirect('/dashboard/analytics-view');
-  }
+  // if(!selectedUnitId) {
+  //   redirect('/dashboard/analytics-view');
+  // }
 
   useEffect(() => {
     if (activeCandidateId) {
@@ -124,6 +124,7 @@ export default function ScoringTrends() {
             setUnitData(null);
             setData([]);
             // router.replace("/dashboard/control-view/unit");
+            redirect("/dashboard/setup-view/unit");
             return;
           }
   

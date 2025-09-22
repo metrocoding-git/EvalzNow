@@ -1,17 +1,53 @@
 "use client"
+import Loading from '@/components/Loading';
 import { useUnit } from '@/context/UnitContext';
-import { redirect } from 'next/navigation';
+import { getUniRostertByUnitId } from '@/services/unitRosterService';
+import { redirect, useRouter } from 'next/navigation';
+
+import { useEffect, useState } from 'react';
 
 
 export default function AnalyticsView({ searchParams }) {
 
   const { selectedUnitId, setSelectedUnitId } = useUnit();
-  if(selectedUnitId) {
-    redirect('/dashboard/analytics-view/scoring-trends');
-  }
-  else {
-    redirect('/dashboard/setup-view');    
-  }
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkRoster = async () => {
+      if (!selectedUnitId) {
+        router.replace("/dashboard/setup-view");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          // 👈 empty roster → setup view
+          router.replace("/dashboard/setup-view");
+        } else {
+          // 👈 roster exists → go to scoring trends
+          router.replace("/dashboard/analytics-view/scoring-trends");
+        }
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        router.replace("/dashboard/setup-view");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkRoster();
+  }, [selectedUnitId, router]);
+
+  return (
+    <div className="flex items-center justify-center h-screen w-full">
+      <Loading /> {/* full-screen loading while redirecting */}
+    </div>
+  );
+
    
   // const tabs = [{ label: "Session", path: "/dashboard/analytics-view" }];
 

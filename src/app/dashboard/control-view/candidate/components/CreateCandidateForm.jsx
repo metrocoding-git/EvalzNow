@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { getAllEthinicities } from "@/services/ethinictyService";
 import { getAllIncomes } from "@/services/incomeService";
 import { ListFilterPlus, Plus, Trash2, X } from "lucide-react";
@@ -26,7 +27,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
   const [ethnicities, setEthnicities] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const { formStatus, setFormStatus } = useFormStatus();
 
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
@@ -105,6 +106,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setFormStatus("Processing...");
   
     try {
       const candidateData = {
@@ -131,12 +133,16 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
       };
   
       await onCreate(candidateData);
+      setFormStatus("Completed");
+
+      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
+      setTimeout(() => setFormStatus("Ready..."), 2500);
       onClose();
       
     } catch (err) {
       console.error("Failed to create candidate:", err);
       setError(err.message || "Failed to create candidate");
-      
+      setFormStatus("Ready...");
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +159,10 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
 
         {/* Close icon */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+            setFormStatus("Ready..");
+          }}
           className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
           <X className="w-5 h-5" />

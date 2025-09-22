@@ -44,6 +44,7 @@ export default function UnitControl() {
   const [sortField, setSortField] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   const formRef = useRef(null);
+  const createFormRef = useRef(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [showUnitRoster, setUnitRoster] = useState(false);
   const [displayRosterData, setDisplayRosterData] = useState([]);
@@ -77,7 +78,7 @@ export default function UnitControl() {
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
-
+  const controlsRef = useRef(null);
   const { setSelectedUnitId } = useUnit(); 
 
   // Fetch all units on mount
@@ -387,9 +388,11 @@ export default function UnitControl() {
         contextRef.current && contextRef.current.contains(e.target);
       const isUnitClick = e.target.closest(".unit-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
+      const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
+      const isControlClick = controlsRef.current && controlsRef.current.contains(e.target);
 
       // If clicked outside both context menu and unit item will deselect
-      if (!isContextMenuClick && !isUnitClick && !isFormClick) {
+      if (!isContextMenuClick && !isUnitClick && !isFormClick & !isControlClick & !isCreateFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedUnit: null });
         setSelectedUnit(null);
         setShowEdit(false);
@@ -555,7 +558,7 @@ export default function UnitControl() {
                   </button>
                 ) : (
                   <>
-                    <button
+                    <button ref={controlsRef}
                       className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
                       onClick={() => {
                         if (showUnitRoster) {
@@ -563,6 +566,8 @@ export default function UnitControl() {
                         } else {
                           setSelectedUnit(null);
                           setShowAdd(true);
+                          setShowEdit(false);
+                          setFormStatus("Creating...");
                         }
                       }}
                     >
@@ -1060,7 +1065,7 @@ export default function UnitControl() {
       {/* Right Panel */}
       <div className="w-1/2 lg:w-9/12 bg-white">
         {showAdd && (
-          <div className="h-full flex flex-col w-96">
+          <div className="h-full flex flex-col w-96" ref={createFormRef}>
             <CreateUnitForm onClose={() => setShowAdd(false)} onSubmit={handleCreate}   />
           </div>
         )}

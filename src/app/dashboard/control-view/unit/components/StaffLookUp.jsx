@@ -15,7 +15,11 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   
 
   const filteredStaffs = staffs
-  .filter((staff) => staff.accountStatus === "Enabled") // ✅ only enabled
+  .filter(
+    (staff) =>
+      staff.accountStatus === "Enabled" &&
+      staff.accessLevel === "Leaders Access" // ✅ only leaders
+  )
   .filter((staff) =>
     `${staff.firstName} ${staff.lastName} ${staff.jobTitle} ${staff.emailAddress} ${staff.department}`
       .toLowerCase()

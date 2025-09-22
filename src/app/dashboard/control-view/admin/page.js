@@ -13,12 +13,15 @@ import ClientEditor from "./components/ClientEditor";
 import CreateClientForm from "./components/CreateClientForm";
 import { createClient, deleteClient, getAllClients } from "@/services/clientService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import toast, { Toaster } from "react-hot-toast";
+import { Controls } from "three";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [showList, setShowList] = useState(true);
-  const formRef = useRef(null);
+  const editorFormRef = useRef(null);
+  const createFormRef = useRef(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortBy, setSortBy] = useState("id");
   const [showObjects, setShowObjects] = useState(false);
@@ -54,9 +57,10 @@ export default function AdminControl() {
   const [error, setError] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const controlsRef = useRef(null);
 
-  // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -89,9 +93,13 @@ export default function AdminControl() {
       console.log(dataList);
       setSelectedClient(createdClient);
       setShowAdd(false);
+      return createdClient;
     } catch (err) {
       console.error("Failed to create client:", err);
-      // You might want to set an error state here to show in the UI
+      const errorMessage = err.response?.data?.message || err.message || "Failed to create client";
+      toast.error(errorMessage); // ✅ show toast here
+      throw new Error(errorMessage); // ✅ re-throw so form does not close
+
     }
   };
 
@@ -216,10 +224,13 @@ export default function AdminControl() {
       const isContextMenuClick =
         contextRef.current && contextRef.current.contains(e.target);
       const isClientClick = e.target.closest(".staff-item");
-      const isFormClick = formRef.current && formRef.current.contains(e.target);
+      const isEditorFormClick = editorFormRef.current && editorFormRef.current.contains(e.target);
+      const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
+      const isControlClick = controlsRef.current && controlsRef.current.contains(e.target);
+
 
       // Only deselect if click is outside staff item, context menu, and form
-      if (!isContextMenuClick && !isClientClick && !isFormClick) {
+      if (!isContextMenuClick && !isClientClick && !isEditorFormClick && !isControlClick & !isCreateFormClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedClient: null });
         setSelectedClient(null);
         setShowEdit(false);
@@ -250,13 +261,14 @@ export default function AdminControl() {
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
-                <div className="flex justify-end gap-1">
-                  <button
+                <div className="flex justify-end gap-1" >
+                  <button ref={controlsRef}
                     className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
                     onClick={() => {
                       setSelectedClient(null);
-                      
                       setShowAdd(true);
+                      setShowEdit(false);
+                      setFormStatus("Creating...");
                       
                     }}
                   >
@@ -429,7 +441,7 @@ export default function AdminControl() {
         )}
 
         {/* Client editor */}
-        <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
+        <div className="h-1/2 overflow-auto my-0.5" ref={editorFormRef}>
           <ClientEditor
             client={selectedClient}
             showForm={!!selectedClient && showEdit} // show only if a client is selected
@@ -457,10 +469,12 @@ export default function AdminControl() {
 
       {/* Right Panel */}
       <div className="w-1/2 lg:w-9/12 bg-white">
-        <div className="h-full flex flex-col w-96">
+        <div className="h-full flex flex-col w-96" ref={createFormRef} >
           {showAdd && <CreateClientForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />}
         </div>
       </div>
+
+      
     </div>
   );
 }

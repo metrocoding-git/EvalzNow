@@ -1,7 +1,9 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createStaff } from "@/services/staffService";
 import { ListFilterPlus, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
 
 const accessLevels = [
   "Full Access",
@@ -14,6 +16,14 @@ export default function CreateStaffForm({ onClose, onCreate }) {
   const [form, setForm] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  const { formStatus, setFormStatus } = useFormStatus();
+
+    // // Set status when the form opens
+    // useEffect(() => {
+    //   setFormStatus("Creating...");
+    //   return () => setFormStatus("Ready..."); // Reset when form unmounts
+    // }, [setFormStatus]);
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
@@ -42,6 +52,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setFormStatus("Processing...");
 
     try {
       const staffData = {
@@ -58,13 +69,17 @@ export default function CreateStaffForm({ onClose, onCreate }) {
         accountStatus: form["Account Status"] || "Enabled",
       };
 
-      onCreate(staffData);
+      await onCreate(staffData);
+      setFormStatus("Completed");
+
+      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
+      setTimeout(() => setFormStatus("Ready..."), 2500);
       onClose();
     } catch (err) {
-      console.error("Failed to create staff:", err);
       const errorMessage =
         err.response?.data?.message || err.message || "Failed to create staff";
       setError(errorMessage);
+      setFormStatus("Ready...");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +97,10 @@ export default function CreateStaffForm({ onClose, onCreate }) {
 
         {/* Close icon */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+            setFormStatus("Ready..");
+          }}
           className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
           <X className="w-5 h-5" />
@@ -168,6 +186,8 @@ export default function CreateStaffForm({ onClose, onCreate }) {
           </button>
         </div>
       </div>
+
+      <Toaster position="top-right" reverseOrder={false} />
     </form>
   );
 }
