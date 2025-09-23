@@ -18,6 +18,42 @@ const companySizes = [
   "Tier 10 - Mass Network : > 50000 Candidates",
 ];
 
+
+const countries = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+  "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
+  "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+  "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
+  "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus",
+  "Czechia (Czech Republic)", "Democratic Republic of the Congo", "Denmark",
+  "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador",
+  "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (fmr. 'Swaziland')", "Ethiopia",
+  "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
+  "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti",
+  "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+  "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya",
+  "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho",
+  "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro",
+  "Morocco", "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
+  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+  "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine State",
+  "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis",
+  "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
+  "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles",
+  "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia",
+  "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan",
+  "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand",
+  "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey",
+  "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela",
+  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+];
+
 export default function ClientEditor({ client, onClose, onSave, showForm }) {
   const [form, setForm] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +119,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
+    // setFormStatus("Editing...");
   };
 
   const handleSubmit = async () => {
@@ -156,7 +193,6 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
             "Company Contact Number",
             "Institutional Type",
             "Business Registration No.",
-            "Country",
           ].map((label, idx) => (
             <React.Fragment key={idx}>
               <label className="col-span-1 flex items-center text-gray-700">
@@ -165,17 +201,41 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
               <input
                 type="text"
                 value={form[label] || ""}
+                onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                 className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />
             </React.Fragment>
           ))}
 
+
+          {/* Country */}
+          <label className="col-span-1 flex items-center text-gray-700">
+              Country:
+          </label>
+          <select required value={form["Country"] || ""} onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
+            onChange={(e) => handleChange("Country", e.target.value)}
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+          >
+            <option value="" disabled>
+              Select Country
+            </option>
+            {countries.map((country, i) => (
+              <option key={i} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+
           {/* Executive ID */}
           <label className="col-span-1 flex items-center text-gray-700">Executive ID:</label>
           <input
             type="text"
             value={client.executiveId}
+            onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
             disabled
             className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-xs"
           />
@@ -185,12 +245,14 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
           <select
             value={form["Company Size"] || ""}
             onChange={(e) => handleChange("Company Size", e.target.value)}
+            onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
             className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="">Select Size</option>
             {companySize.map((size, i) => (
                 <option key={i} value={size.id}> {/* Use size.id as value if needed */}
-                  {size.tier} - {size.size} {/* Access the properties you want to display */}
+                  {size.tier} - {size.size}: {size.candidate}{/* Access the properties you want to display */}
                 </option>
             ))}
           </select>
@@ -198,7 +260,8 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
           {/* Status */}
           <label className="col-span-1 flex items-center text-gray-700">Status:</label>
           <select
-            value={form["Status"] || "Activate"}
+            value={form["Status"] || "Activate"} onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
             onChange={(e) => handleChange("Status", e.target.value)}
             className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >

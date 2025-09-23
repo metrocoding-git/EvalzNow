@@ -59,6 +59,10 @@ export default function AdminControl() {
   const [searchTerm, setSearchTerm] = useState("");
   const controlsRef = useRef(null);
 
+  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+  const isSuperAdmin = loggedInUser?.role === "super admin";
+
+
   const { setFormStatus } = useFormStatus();
 
   useEffect(() => {
@@ -87,7 +91,12 @@ export default function AdminControl() {
 
   const handleCreate = async (newClient) => {
     try {
-      const createdClient = await createClient(newClient);
+      const clientWithAccount = {
+        ...newClient,
+        accountId: loggedInUser?.id, // ✅ assign accountId
+      };
+
+      const createdClient = await createClient(clientWithAccount);
       setClients(prev => [...prev, createdClient]);
       setDataList(prev => [...prev, createdClient]);
       console.log(dataList);
@@ -129,7 +138,7 @@ export default function AdminControl() {
       return (
         item.firstName?.toLowerCase().includes(term) ||
         item.lastName?.toLowerCase().includes(term) ||
-        String(item.candidateId || item.id).toLowerCase().includes(term)
+        String(item.executiveId || item.id).toLowerCase().includes(term)
       );
     });
   };
@@ -262,18 +271,20 @@ export default function AdminControl() {
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
                 <div className="flex justify-end gap-1" >
-                  <button ref={controlsRef}
-                    className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
-                    onClick={() => {
-                      setSelectedClient(null);
-                      setShowAdd(true);
-                      setShowEdit(false);
-                      setFormStatus("Creating...");
-                      
-                    }}
-                  >
-                    <Plus className="w-3.5 h-3.5 text-black" />
-                  </button>
+                {isSuperAdmin && (
+                    <button
+                      ref={controlsRef}
+                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                      onClick={() => {
+                        setSelectedClient(null);
+                        setShowAdd(true);
+                        setShowEdit(false);
+                        setFormStatus("Creating...");
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5 text-black" />
+                    </button>
+                  )}
 
                   {selectedClient && (
                     <div className="flex gap-1 client-item">
@@ -358,7 +369,7 @@ export default function AdminControl() {
                         setSelectedClient(item)
                         setShowEdit(true);
                         setShowAdd(false);
-                        setFormStatus("Editing...");
+                        // setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -375,22 +386,22 @@ export default function AdminControl() {
                     >
                       <p
                         className={`text-sm  truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        } ${item.status === "Activate" ? "font-bold" : "font-medium"}`}
+                          isSelected ? "text-black font-bold" : "text-gray-800"
+                        } `}
                       >
                         {item.lastName}
                       </p>
                       <p
                         className={`text-sm truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        } ${item.status === "Activate" ? "font-bold" : ""}`}
+                          isSelected ? "text-black font-bold" : "text-gray-800"
+                        } `}
                       >
                         {item.firstName}
                       </p>
                       <p
                         className={`text-sm  truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        } ${item.status === "Activate" ? "font-bold" : ""}`}
+                          isSelected ? "text-black font-bold" : "text-gray-800"
+                        } `}
                       >
                         {item.executiveId}
                       </p>
@@ -458,7 +469,7 @@ export default function AdminControl() {
                 )
               );
               setSelectedClient(updatedClient);
-              setFormStatus("Completed");
+              setFormStatus("Client Created");
 
               // Optional: revert back to Ready after 2s
               setTimeout(() => setFormStatus("Ready..."), 2000);

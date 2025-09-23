@@ -11,18 +11,42 @@ const generateExecutiveId = () => {
   return Math.random().toString(36).substring(2, 12).toUpperCase();
 };
 
-const companySizes = [
-  "Tier 1 - Micro-Size: 1-4 Candidates",
-  "Tier 2 - Small-Size : 5-19 Candidates",
-  "Tier 3 - Medium-Size : 20-99 Candidates",
-  "Tier 4 - Large-Size : 100-249 Candidates",
-  "Tier 5 - Low Enterprise : 250-999 Candidates",
-  "Tier 6 - High Enterprise : 1000-2499 Candidates",
-  "Tier 7 - Small Campus : 2500-4999 Candidates",
-  "Tier 8 - Medium Campus : 5000-14999 Candidates",
-  "Tier 9 - Large Campus : 15000-50000 Candidates",
-  "Tier 10 - Mass Network : > 50000 Candidates",
+const countries = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+  "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
+  "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+  "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
+  "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus",
+  "Czechia (Czech Republic)", "Democratic Republic of the Congo", "Denmark",
+  "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador",
+  "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (fmr. 'Swaziland')", "Ethiopia",
+  "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
+  "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti",
+  "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+  "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya",
+  "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho",
+  "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro",
+  "Morocco", "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
+  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+  "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine State",
+  "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis",
+  "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
+  "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles",
+  "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia",
+  "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan",
+  "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand",
+  "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey",
+  "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela",
+  "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
+
+
 
 
 export default function CreateClientForm({ onClose, onCreate }) {
@@ -157,7 +181,6 @@ export default function CreateClientForm({ onClose, onCreate }) {
               "Company Contact Number",
               "Institutional Type",
               "Business Registration No.",
-              "Country",
             ].map((label, idx) => (
               <React.Fragment key={idx}>
                 <label className="col-span-1 flex items-center text-gray-700">
@@ -171,6 +194,27 @@ export default function CreateClientForm({ onClose, onCreate }) {
                 />
               </React.Fragment>
             ))}
+
+
+            {/* Country */}
+            <label className="col-span-1 flex items-center text-gray-700">
+              Country:
+            </label>
+            <select
+              defaultValue=""
+              required 
+              onChange={(e) => handleChange("Country", e.target.value)}
+              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            >
+              <option value="" disabled>
+                Select Size
+              </option>
+              {countries.map((country, i) => (
+                <option key={i} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
 
             {/* Executive ID */}
             <label className="col-span-1 flex items-center text-gray-700">

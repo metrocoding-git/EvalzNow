@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { getUserRoleRedirect } from '@/utils/authHelpers';
+import { login } from "@/services/accountService";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -18,23 +20,21 @@ export default function LoginForm() {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await login(formData);
 
-      if (!res.ok) {
-        throw new Error('Invalid credentials');
-      }
+    // ✅ Show success toast
+    toast.success("Login successful!");
 
-      const data = await res.json();
-      const redirectTo = getUserRoleRedirect(data.role);
-      router.push(redirectTo);
+    // Save JWT in localStorage
+    localStorage.setItem("token", res.token);
+
+      // Save logged-in user data in localStorage
+    localStorage.setItem("user", JSON.stringify(res.user));
+
+    router.push("/dashboard/control-view/admin");
     } catch (err) {
-      setError(err.message);
+      toast.error(err.response?.data?.message || err.message || "Login failed");
+      setError(err.response?.data?.message || err.message || "Login failed");
     }
   };
 
@@ -85,6 +85,9 @@ export default function LoginForm() {
           © EvalzNow. All Rights Reserved.
         </div>
       </form>
+
+
+      <Toaster />
     </div>
   );
 }

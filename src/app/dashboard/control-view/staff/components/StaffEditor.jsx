@@ -107,6 +107,8 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
               </label>
               <input
                 type={label.includes("Date") ? "date" : "text"}
+                onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                 className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
                 value={form[label] || ""}
                 onChange={(e) => handleChange(label, e.target.value)}
@@ -121,6 +123,8 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           <select
             className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={form["Access Level"]}
+            onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
             onChange={(e) => handleChange("Access Level", e.target.value)}
           >
             {accessLevels.map((level, i) => (
@@ -137,6 +141,8 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           <select
             className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={form["Account Status"]}
+            onFocus={() => setFormStatus("Editing...")}
+            onBlur={() => setFormStatus("Ready...")}
             onChange={(e) => handleChange("Account Status", e.target.value)}
           >
             {accountStatuses.map((status, i) => (
