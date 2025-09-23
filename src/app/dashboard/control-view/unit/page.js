@@ -80,7 +80,7 @@ export default function UnitControl() {
   const { setFormStatus } = useFormStatus();
   const controlsRef = useRef(null);
   const { setSelectedUnitId } = useUnit(); 
-
+  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   // Fetch all units on mount
   useEffect(() => {
     const fetchUnits = async () => {
@@ -259,7 +259,11 @@ export default function UnitControl() {
   // ✅ Add handleCreate
   const handleCreate = async (newUnit) => {
     try {
-      const data = await createUnit(newUnit);
+      const unitWithAccount = {
+        ...newUnit,
+        accountId: loggedInUser?.id, // ✅ assign accountId
+      };
+      const data = await createUnit(unitWithAccount);
       setDataList((prev) => [...prev, data]); // update datalist
       setSelectedUnit(data); // optionally auto-select it
       setShowAdd(false); // close form after success
@@ -959,7 +963,7 @@ export default function UnitControl() {
                   setInsertScores((prev) => [...prev, ...duplicatedInsertScores]);
                 }
 
-                setFormStatus("Completed");
+                setFormStatus("Candidate Created");
                 setTimeout(() => setFormStatus("Ready..."), 2000);
 
                 } catch (err) {

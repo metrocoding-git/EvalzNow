@@ -35,6 +35,7 @@ export default function StaffControl() {
     selectedStaff: null,
   });
 
+  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   // const [dataList, setDataList] = useState([
   //   { id: "001", firstName: "John", lastName: "Doe" },
   //   { id: "002", firstName: "Jane", lastName: "Smith" },
@@ -61,7 +62,19 @@ export default function StaffControl() {
       try {
         setLoading(true);
         const data = await getAllStaffs();
-        setDataList(Array.isArray(data) ? data : []);
+         // Sort ascending by staffId or id
+        const sortedData = (Array.isArray(data) ? data : []).sort(
+          (a, b) => Number(a.id) - Number(b.id)
+        );
+
+        setDataList(sortedData);
+
+        // Select first staff by default
+        if (sortedData.length > 0) {
+          setSelectedStaff(sortedData[0]);
+          setShowEdit(true);
+          setShowAdd(false);
+        }
       } catch (err) {
         console.error("Failed to fetch staffs:", err);
         setError("Failed to load staffs. Please try again.");
@@ -77,7 +90,20 @@ export default function StaffControl() {
   // Create new staff
   const handleCreate = async (newStaff) => {
     try {
-      const createdStaff = await createStaff(newStaff);
+
+      const exists = dataList.some(
+        (staff) => staff.staffId === newStaff.staffId
+      );
+  
+      if (exists) {
+        toast.error(`Staff ID "${newStaff.staffId}" already exists`);
+      }
+  
+      const staffWithAccount = {
+        ...newStaff,
+        accountId: loggedInUser?.id, // ✅ assign accountId
+      };
+      const createdStaff = await createStaff(staffWithAccount);
       setDataList((prev) => [...prev, createdStaff]);
       setSelectedStaff(createdStaff);
       setShowAdd(false);
@@ -115,7 +141,7 @@ export default function StaffControl() {
       return (
         item.firstName?.toLowerCase().includes(term) ||
         item.lastName?.toLowerCase().includes(term) ||
-        String(item.candidateId || item.id).toLowerCase().includes(term)
+        String(item.staffId || item.id).toLowerCase().includes(term)
       );
     });
   };
@@ -148,7 +174,7 @@ export default function StaffControl() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       const isContextMenuClick =
-        contextRef.current && contextRef.current.contains(e.target);
+      contextRef.current && contextRef.current.contains(e.target);
       const isStaffClick = e.target.closest(".staff-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
       const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
@@ -193,6 +219,7 @@ export default function StaffControl() {
     }
   };
   
+  console.log("staffs: ", dataList);
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -297,7 +324,7 @@ export default function StaffControl() {
                       setSelectedStaff(item);
                       setShowEdit(true);
                       setShowAdd(false);
-                      setFormStatus("Editing...");
+                      // setFormStatus("Editing...");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -372,7 +399,7 @@ export default function StaffControl() {
               )
             );
             setSelectedStaff(updatedStaff);
-            setFormStatus("Completed");
+            setFormStatus("Staff Created");
 
               // Optional: revert back to Ready after 2s
               setTimeout(() => setFormStatus("Ready..."), 2000);

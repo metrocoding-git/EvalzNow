@@ -21,6 +21,7 @@ import { createCandidate, deleteCandidate, getAllCandidateEthinicities, getAllCa
 import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicity } from "@/services/ethinictyService";
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/services/incomeService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -59,6 +60,7 @@ export default function CandidateControl() {
    const { setFormStatus } = useFormStatus();
    const controlsRef = useRef(null);
    const reviewRef = useRef(null);
+   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -163,11 +165,26 @@ export default function CandidateControl() {
   // Create candidate
   const handleCreate = async (newCandidate) => {
     try {
-      const created = await createCandidate(newCandidate);
+
+      const exists = dataList.some(
+        (candidate) => candidate.candidateId === newCandidate.candidateId
+      );
+  
+      if (exists) {
+        toast.error(`Candidate ID "${newCandidate.candidateId}" already exists`);
+        // return false;
+      }
+
+      const candidateWithAccount = {
+        ...newCandidate,
+        accountId: loggedInUser?.id, // ✅ assign accountId
+      };
+      const created = await createCandidate(candidateWithAccount);
       setDataList(prev => [...prev, created]);
       setSelectedCandidate(created);
       setShowAdd(false);
-      setShowEdit(true);
+      // setShowEdit(true);
+      return created; 
     } catch (err) {
       console.error("Failed to create candidate:", err);
       setError("Failed to create candidate.");
@@ -502,7 +519,7 @@ export default function CandidateControl() {
                       setShowEdit(true);
                       setShowAdd(false);
                       setShowReview(false);
-                      setFormStatus("Editing...");
+                      // setFormStatus("Editing...");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -603,7 +620,7 @@ export default function CandidateControl() {
                   {/* Income Inputs */}
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Incomes Ranges (Max 10):
+                      Incomes Ranges:
                     </label>
                     <div className="space-y-1">
                       {incomes.map((income, idx) => (
@@ -699,7 +716,7 @@ export default function CandidateControl() {
               )
             );
             setSelectedCandidate(updatedCandidate);
-            setFormStatus("Completed");
+            setFormStatus("Candidate Created");
 
               // Optional: revert back to Ready after 2s
               setTimeout(() => setFormStatus("Ready..."), 2000);
@@ -726,6 +743,8 @@ export default function CandidateControl() {
 
        
       </div>
+
+   
     </div>
   );
 }

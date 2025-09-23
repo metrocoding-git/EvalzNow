@@ -48,13 +48,40 @@ const jobTypeOptions = [
 ];
 
 const nationalityOptions = [
-  "Non-disclosed",
-  "United States",
-  "Canada",
-  "India",
-  "Germany",
-  "Other",
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+  "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain",
+  "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria",
+  "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
+  "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus",
+  "Czechia (Czech Republic)", "Democratic Republic of the Congo", "Denmark",
+  "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador",
+  "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (fmr. 'Swaziland')", "Ethiopia",
+  "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
+  "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti",
+  "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+  "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya",
+  "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho",
+  "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro",
+  "Morocco", "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
+  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+  "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine State",
+  "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
+  "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis",
+  "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
+  "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles",
+  "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia",
+  "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan",
+  "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand",
+  "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey",
+  "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela",
+  "Vietnam", "Yemen", "Zambia", "Zimbabwe", "Non-disclosed"
 ];
+
 const ethnicityOptions = [
   "Non-Disclosed",
   "Asian",
@@ -323,6 +350,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
               type={label.includes("Date") ? "date" : "text"}
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             />
           </React.Fragment>
@@ -346,6 +375,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
             <select
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
               <option value="">Select {label}</option>
@@ -359,6 +390,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
             <select
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
               <option value="">Select {label}</option>
@@ -372,6 +405,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
             <select
               className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
               <option value="">Select {label}</option>
@@ -393,16 +428,16 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
             <table className="w-full text-xs border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-left">
+                  <th className="border border-gray-300 px-3 py-2 text-center">
                     Irregularities
                   </th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">
+                  <th className="border border-gray-300 px-3 py-2 text-center">
                     ID
                   </th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">
+                  <th className="border border-gray-300 px-3 py-2 text-center">
                     Comments
                   </th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Action</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -414,6 +449,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                         onChange={(e) =>
                           handleRowChange(index, "type", e.target.value)
                         }
+                        onFocus={() => setFormStatus("Editing...")}
+                        onBlur={() => setFormStatus("Ready...")}
                         className="w-full px-2 py-1 border"
                       >
                         <option value="">Select</option>
@@ -432,6 +469,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                         onChange={(e) =>
                           handleRowChange(index, "id", e.target.value)
                         }
+                        onFocus={() => setFormStatus("Editing...")}
+                        onBlur={() => setFormStatus("Ready...")}
                         className="w-full px-2 py-1 border"
                       />
                     </td>
@@ -443,6 +482,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                         onChange={(e) =>
                           handleRowChange(index, "comment", e.target.value)
                         }
+                        onFocus={() => setFormStatus("Editing...")}
+                        onBlur={() => setFormStatus("Ready...")}
                         className="w-full px-2 py-1 border"
                         placeholder="Max 40 characters"
                       />
