@@ -14,5 +14,6 @@ export const API_ROUTES = {
     INSERT_SCORE: "/insert-score",
     SCORING_CRITERIA: "/scoring-criteria",
     SCORING_TRENDS: "/scoring-trends",
-    TABULATION: "/tabulation"
+    TABULATION: "/tabulation",
+    ACCOUNT: "/account"
 };
