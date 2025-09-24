@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { updateInsertScore } from "@/services/insertScoreService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -150,7 +151,7 @@ const engageLevel = ["High", "Medium", "Low", "N/A"];
 
 const competencyTypes = {
   communicative: ["Listening", "Reading", "Speaking", "Writing"],
-  'theory practical': ["Practice", "Theory"],
+  'theory & practice': ["Practice", "Theory"],
   'third parameter': ["Receptive", "Productive", "Acuity"],
   // Add more types if needed
 };
@@ -159,9 +160,16 @@ const competencyTypes = {
 export default function Editor({ details, performancePoints, onClose, onUpdate  }) {
   const [form, setForm] = useState({});
   const searchParams = useSearchParams();
-  const type = searchParams.get('type') || 'communicative'; // Default to communicative if not specified
-  const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
+  const { setFormStatus } = useFormStatus();
   const environment = searchParams.get('environment') || 'workspace';
+  const unitId = searchParams.get('unitId');
+
+  const rawType = searchParams.get("type") || "communicative";
+  const type = rawType.toLowerCase(); // normalize
+
+  // Get the appropriate competencies based on type
+  const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
+
   const mockPpIds =
     performancePoints === "Direct"
       ? ["1", "2", "3"]
@@ -229,6 +237,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
   
     try {
       setLoading(true);
+      setFormStatus("Processing...");
   
       const payload = {
         ...formData,
@@ -243,6 +252,10 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
       };
   
       const response = await updateInsertScore(details.id, payload); 
+      setFormStatus("Completed");
+
+      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
+      setTimeout(() => setFormStatus("Ready..."), 2500);
       console.log("Successfully updated insert score.");
   
       if (onUpdate) onUpdate(response);
@@ -280,6 +293,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.ppId}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("ppId", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -304,6 +319,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                   type="number"
                   min="0"
                   step="0.01"
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   value={formData.durationHrs || ""}
                   onChange={(e) => handleChange("durationHrs", e.target.value)}
                   className="flex-1 border px-2 py-1"
@@ -318,6 +335,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 <input
                   type="date"
                   value={formData.criticalRefDate}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("criticalRefDate", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 />
@@ -331,6 +350,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 <input
                   type="text"
                   maxLength={50}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   value={formData.remarks}
                   onChange={(e) => handleChange("remarks", e.target.value)}
                   className="flex-1 border px-2 py-1"
@@ -344,6 +365,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.workflowStage}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("workflowStage", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -363,6 +386,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.assessmentType}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("assessmentType", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -382,6 +407,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.scheduleImpact}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("scheduleImpact", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -401,6 +428,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.engageLevel || ""}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("engageLevel", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -422,6 +451,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 </label>
                 <select
                   value={formData.competency || ""}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => handleChange("competency", e.target.value)}
                   className="flex-1 border px-2 py-1"
                 >
@@ -446,6 +477,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                       type="number"
                       min={0}
                       value={formData.attainedScore || ""}
+                      onFocus={() => setFormStatus("Editing...")}
+                      onBlur={() => setFormStatus("Ready...")}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -464,6 +497,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                       type="number"
                       min={1}
                       value={formData.maxScore || ""}
+                      onFocus={() => setFormStatus("Editing...")}
+                      onBlur={() => setFormStatus("Ready...")}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -482,7 +517,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                 onClick={handleSubmit}
                 className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
               >
-                Close
+                Edit
               </button>
             </div>
             

@@ -250,7 +250,7 @@ const THRESHOLD_NAMES = {
       
       await onSubmit(unitData);
       setFormStatus("Completed");
-      console.log(unitData);
+      console.log("unit Data", unitData);
       onClose();
     } catch (error) {
       console.error("Error creating unit:", error);

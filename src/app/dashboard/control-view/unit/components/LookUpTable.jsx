@@ -38,8 +38,9 @@ useEffect(() => {
   const filteredData = candidateData.filter(candidate =>
     candidate.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     candidate.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.candidateId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.specialIdNo.toLowerCase().includes(searchTerm.toLowerCase())
+    candidate.candidateId.toLowerCase().includes(searchTerm.toLowerCase())
+    // candidate.specialIdNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // candidate.dateOfBirth.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
 
   // Sort filtered data
@@ -106,9 +107,10 @@ useEffect(() => {
 
         {/* Column Headers */}
         <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-          <div className="grid grid-cols-5 gap-4 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+          <div className="grid grid-cols-6 gap-4 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+            <div className="flex items-center justify-center cursor-pointer hover:text-gray-900 transition-colors">Action</div>
             <div
-              className="flex items-center cursor-pointer hover:text-gray-900 transition-colors"
+              className="flex items-center justify-center cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => handleSort("lastName")}
             >
               Last Name
@@ -119,7 +121,7 @@ useEffect(() => {
               )}
             </div>
             <div
-              className="flex items-center cursor-pointer hover:text-gray-900 transition-colors"
+              className="flex items-center   justify-center cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => handleSort("firstName")}
             >
               First Name
@@ -130,7 +132,7 @@ useEffect(() => {
               )}
             </div>
             <div
-              className="flex items-center cursor-pointer hover:text-gray-900 transition-colors"
+              className="flex items-center  justify-center cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => handleSort("candidateId")}
             >
               Candidate ID
@@ -141,7 +143,7 @@ useEffect(() => {
               )}
             </div>
             <div
-              className="flex items-center cursor-pointer hover:text-gray-900 transition-colors"
+              className="flex items-center justify-center  cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => handleSort("specialIdNo")}
             >
               Special ID No.
@@ -152,7 +154,7 @@ useEffect(() => {
               )}
             </div>
             <div
-              className="flex items-center cursor-pointer hover:text-gray-900 transition-colors"
+              className="flex items-center  justify-center cursor-pointer hover:text-gray-900 transition-colors"
               onClick={() => handleSort("dateOfBirth")}
             >
               Date of Birth
@@ -176,22 +178,32 @@ useEffect(() => {
               {sortedData.map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={`grid grid-cols-5 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${selectedIds.includes(candidate.id) ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                  className={`grid grid-cols-6 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${selectedIds.includes(candidate.id) ? "bg-gray-200" : "hover:bg-gray-100"}`}
                   onClick={() => toggleSelect(candidate.id)}
                 >
-                  <div className="text-sm font-medium text-gray-900 truncate">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(candidate.id)}
+                      onChange={() => toggleSelect(candidate.id)}
+                      onClick={() => toggleSelect(candidate.id)}
+                      className="w-4 h-4 text-sm text-center font-medium text-gray-900 rounded focus:ring-blue-500"
+                    /> 
+                  </div>
+
+                  <div className="text-sm text-center font-medium text-gray-900 truncate">
                     {candidate.lastName}
                   </div>
-                  <div className="text-sm text-gray-900 truncate">
+                  <div className="text-sm  text-center text-gray-900 truncate">
                     {candidate.firstName}
                   </div>
-                  <div className="text-sm text-gray-900 font-mono truncate">
+                  <div className="text-sm  text-center text-gray-900 font-mono truncate">
                     {candidate.candidateId}
                   </div>
-                  <div className="text-sm text-gray-900 font-mono truncate">
+                  <div className="text-sm  text-center text-gray-900 font-mono truncate">
                     {candidate.specialIdNo}
                   </div>
-                  <div className="text-sm text-gray-900 truncate">
+                  <div className="text-sm  text-center text-gray-900 truncate">
                     {new Date(candidate.dateOfBirth).toLocaleDateString()}
                   </div>
                 </div>

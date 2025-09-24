@@ -90,6 +90,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
         <table className="w-full border text-xs">
           <thead className="bg-gray-100">
             <tr>
+              <th className="border p-1">Action</th>
               <th className="border p-1">Last Name</th>
               <th className="border p-1">First Name</th>
               <th className="border p-1">Job Title</th>
@@ -108,7 +109,15 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
                       : "hover:bg-gray-100"
                   }`}
                 >
-
+                <td className="border p-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(c.id)}
+                    onChange={() => handleRowClick(c.id)}
+                    onClick={() => handleRowClick(c.id)}
+                    className="w-4 h-4 text-sm text-center font-medium text-gray-900 rounded focus:ring-blue-500"
+                    /> 
+                </td>
                 <td className="border p-1">{c.lastName}</td>
                 <td className="border p-1">{c.firstName}</td>
                 <td className="border p-1">{c.jobTitle}</td>

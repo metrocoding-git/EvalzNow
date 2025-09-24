@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import Loading from "@/components/Loading";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function EntitiesManager() {
   // Initial table data in state
@@ -41,6 +42,7 @@ export default function EntitiesManager() {
   const [activeCandidateId, setActiveCandidateId] = useState(null);
   const [sortColumn, setSortColumn] = useState("id");
   const [sortDirection, setSortDirection] = useState("asc");
+  const { setFormStatus } = useFormStatus();
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -211,7 +213,7 @@ export default function EntitiesManager() {
   return (
     <div className="flex h-full overflow-hidden">
 
-{loading ? (
+    {loading ? (
       <div className="flex items-center justify-center w-full">
         <Loading />
       </div>
@@ -355,7 +357,7 @@ export default function EntitiesManager() {
         <div className="flex-1 bg-white flex flex-col  overflow-y-auto">
           {scoreAdd && (
             <div className="w-1/2 lg:w-9/12 bg-white h-full">
-              <div className="h-full flex flex-col w-96">
+              <div className="h-full flex flex-col w-5/7">
                 <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} />
               </div>
             </div>

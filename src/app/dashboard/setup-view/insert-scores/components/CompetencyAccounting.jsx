@@ -15,6 +15,7 @@ import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
 import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId } from "@/services/insertScoreService";
 import { createScoringCriteria, deleteScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -54,6 +55,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const unitId = searchParams.get('unitId');
   const [classroomData, setClassroomData] = useState([]);
   const [workforceData, setWorkforceData] = useState([]);
+  const { setFormStatus } = useFormStatus();
   const [tableData, setTableData] = useState([
     {
       firstName: "John",
@@ -596,7 +598,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
               {/* Right side: Plus button */}
               <div className="mr-1">
                 <button
-                  onClick={() => setScoreAdd(true)}
+                  onClick={() => {
+                    setScoreAdd(true) 
+                    setFormStatus("Creating...")
+                  }}
                   title="Create Material"
                   className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer"
                 >
