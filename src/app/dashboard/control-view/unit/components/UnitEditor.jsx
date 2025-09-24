@@ -4,6 +4,7 @@ import { Edit, Trash2, Trash } from "lucide-react";
 import { getUnitById, updateUnit } from "@/services/unitService";
 import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import StaffLookup from "./StaffLookUp";
 
 
 
@@ -106,7 +107,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     scoringSystem: "",
     benchmarks: []
   });
-
+  const [unitDirectors, setUnitDirectors] = useState([]);
   const [blockData, setBlockData] = useState({
     ppId: "",
     periodType: "",
@@ -114,7 +115,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     delivery: "",
     manageType: "",
   });
-
+  const [lookupFor, setLookupFor] = useState(null);
+  const [showLookup, setShowLookup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -175,15 +177,34 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setUnit((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleStaffSelect = (selectedStaffArray) => {
+    if (lookupFor === "leaders") {
+      const leaderIds = selectedStaffArray.map((s) => s.id);
+      handleChange("assignedLeaders", leaderIds);
+  
+      // Update unitDirectors dropdown to match selected leaders
+      setUnitDirectors(selectedStaffArray);
+    } else if (lookupFor === "assessors") {
+      handleChange(
+        "assignedAssessors",
+        selectedStaffArray.map((s) => s.id)
+      );
+    } else if (lookupFor === "director") {
+      handleChange("unitDirector", selectedStaffArray[0]?.id || "");
+    }
+  
+    setShowLookup(false);
+    setLookupFor(null);
+  };
  
-// Handle benchmark field change
-const handleBenchmarkChange = (index, field, value) => {
-  setUnit(prevUnit => {
-    const updated = [...prevUnit.benchmarks];
-    updated[index][field] = value;
-    return { ...prevUnit, benchmarks: updated };
-  });
-};
+  // Handle benchmark field change
+  const handleBenchmarkChange = (index, field, value) => {
+    setUnit(prevUnit => {
+      const updated = [...prevUnit.benchmarks];
+      updated[index][field] = value;
+      return { ...prevUnit, benchmarks: updated };
+    });
+  };
 
   const addBenchmark = () => {
     setUnit(prev => ({
@@ -320,6 +341,8 @@ const handleBenchmarkChange = (index, field, value) => {
                   <input
                     name={key}
                     value={unit[key] || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
                     onChange={(e) => handleChange(key, e.target.value)}
                     type={type || "text"}
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -327,11 +350,115 @@ const handleBenchmarkChange = (index, field, value) => {
                 </React.Fragment>
               ))}
 
-              <label className="text-gray-700 font-medium text-xs">Unit Type:</label>
+              {/* Staff Assignment */}
+          <div className="pt-4 border-t border-gray-200 space-y-3">
+            <h3 className="text-base font-semibold text-gray-800">
+              Staff Assignment
+            </h3>
+
+            {/* Assigned Leaders */}
+            <div className="flex justify-between gap-2 space-y-1">
+              <label className="col-span-1 flex items-center text-gray-700">
+                Assigned Leaders:
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLookupFor("leaders");
+                    setShowLookup(true);
+                  }}
+                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                >
+                  + Add Leader
+                </button>
+                <div className="text-sm text-gray-700">
+                  {/* {form.assignedLeaders?.length || 0} selected */}
+                  Max 3
+                </div>
+              </div>
+            </div>
+
+            {/* Assigned Assessors */}
+            <div className="flex justify-between gap-2 space-y-1">
+              <label className="col-span-1 flex items-center text-gray-700">
+                Assigned Assessors:
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLookupFor("assessors");
+                    setShowLookup(true);
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                >
+                  + Add Assessor
+                </button>
+                <div className="text-sm text-gray-700">
+                  {/* {form.assignedAssessors?.length || 0} selected */}
+                  Max 3
+                </div>
+              </div>
+            </div>
+
+            {/* Unit Director */}
+            <div className="flex justify-between gap-2 space-y-1">
+
+              {/* <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLookupFor("director");
+                    setShowLookup(true);
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                >
+                  Select Director
+                </button>
+                <div className="text-sm text-gray-700">
+                  {form.unitDirector
+                    ? staffPool.find((s) => s.id === form.unitDirector)?.name ||
+                    "Selected"
+                    : "None"}
+                </div>
+              </div> */}
+
+              <label className="col-span-1 flex items-center text-gray-700">
+                Unit Director:
+              </label>
               <select
+                required
+                value={unit.unitDirector || ""}
+                onChange={(e) => handleChange("unitDirector", e.target.value)}
+                className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              >
+                <option value="">Select Unit Director</option>
+                {unitDirectors.map((staff) => (
+                  <option key={staff.id} value={staff.id}>
+                    {staff.firstName} {staff.lastName} — {staff.jobTitle}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+              <label className="text-gray-700 font-medium text-xs">Unit Type:</label>
+              <input
+                    name="unitType"
+                    disabled
+                    value={unit.unitType || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
+                    type="text"
+                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  />
+              {/* <select
                 name="unitType"
                 disabled
                 value={unit.unitType || ""}
+                onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                 onChange={(e) => handleChange("unitType", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
@@ -339,13 +466,24 @@ const handleBenchmarkChange = (index, field, value) => {
                 <option value="Communicative I/O">Communicative I/O</option>
                 <option value="Theory & Practice">Theory & Practice</option>
                 <option value="Third Parameter">Third Parameter</option>
-              </select>
+              </select> */}
 
               <label className="text-gray-700 font-medium text-xs">Signature Profile:</label>
-              <select
+              <input
+                    name="signatureProfile"
+                    disabled
+                    value={unit.signatureProfile || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
+                    type="text"
+                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  />
+              {/* <select
                 name="signatureProfile"
                 disabled
                 value={unit.signatureProfile || ""}
+                onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                 onChange={(e) => handleChange("signatureProfile", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
@@ -354,35 +492,57 @@ const handleBenchmarkChange = (index, field, value) => {
                 <option value="Case 2: Rigorous Balanced">Case 2: Rigorous Balanced</option>
                 <option value="Case 3a: Productive-Weighted">Case 3a: Productive-Weighted</option>
                 <option value="Case 3b: Receptive-Weighed">Case 3b: Receptive-Weighed</option>
-              </select>
+              </select> */}
 
               <label className="text-gray-700 font-medium text-xs">Environment:</label>
-              <select
+              <input
+                    name="environment"
+                    disabled
+                    value={unit.environment || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
+                    type="text"
+                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  />
+              {/* <select
                 name="environment"
                 disabled
                 value={unit.environment || ""}
+                onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                 onChange={(e) => handleChange("environment", e.target.value)}
                 className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
                 <option value="">Select Environment</option>
                 <option value="Workforce">Workforce</option>
                 <option value="Classroom">Classroom</option>
-              </select>
+              </select> */}
 
               {unit.environment === "Workforce" && (
                 <>
                   <label className="text-gray-700 font-medium text-xs">Scoring System:</label>
-                  <select
+                  <input
                     name="scoringSystem"
                     disabled
                     value={unit.scoringSystem || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
+                    type="text"
+                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  />
+                  {/* <select
+                    name="scoringSystem"
+                    disabled
+                    value={unit.scoringSystem || ""}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
                     onChange={(e) => handleChange("scoringSystem", e.target.value)}
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   >
                     <option value="">Select System</option>
                     <option value="3-Point">3-Point</option>
                     <option value="5-Point">5-Point</option>
-                  </select>
+                  </select> */}
                 </>
               )}
             </div>
@@ -394,18 +554,31 @@ const handleBenchmarkChange = (index, field, value) => {
                 <table className="w-full text-xs border border-gray-300">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border border-gray-300 px-2 py-1 text-left">Benchmark Type</th>
-                      <th className="border border-gray-300 px-2 py-1 text-left">Benchmark Ref</th>
-                      <th className="border border-gray-300 px-2 py-1 text-left">Description</th>
-                      <th className="border border-gray-300 px-2 py-1 text-left">Action</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-8 py-1 text-left">ID</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Type</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Ref</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Description</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {unit.benchmarks.map((bm, index) => (
                       <tr key={index} className="even:bg-gray-50">
                         <td className="border border-gray-300 px-2 py-1">
+                          <input
+                            type="text"
+                            value={bm.benchmarkId}
+                            onFocus={() => setFormStatus("Editing...")}
+                            onBlur={() => setFormStatus("Ready...")}
+                            onChange={(e) => handleBenchmarkChange(index, "benchmarkId", e.target.value)}
+                            className="w-full px-2 py-1 border"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
                           <select
                             value={bm.benchmarkType}
+                            onFocus={() => setFormStatus("Editing...")}
+                            onBlur={() => setFormStatus("Ready...")}
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkType", e.target.value)}
                             className="w-full px-2 py-1 border"
                           >
@@ -419,6 +592,8 @@ const handleBenchmarkChange = (index, field, value) => {
                           <input
                             type="text"
                             value={bm.benchmarkRef}
+                            onFocus={() => setFormStatus("Editing...")}
+                            onBlur={() => setFormStatus("Ready...")}
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkRef", e.target.value)}
                             className="w-full px-2 py-1 border"
                           />
@@ -427,6 +602,8 @@ const handleBenchmarkChange = (index, field, value) => {
                           <input
                             type="text"
                             value={bm.benchmarkDescription}
+                            onFocus={() => setFormStatus("Editing...")}
+                onBlur={() => setFormStatus("Ready...")}
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkDescription", e.target.value)}
                             className="w-full px-2 py-1 border"
                           />
@@ -482,6 +659,8 @@ const handleBenchmarkChange = (index, field, value) => {
               </label>
               <div className="flex items-center gap-2">
                 <select className="w-full border px-2 py-0.5" 
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   value={blockData?.periodType}
                   onChange={(e) => setBlockData(prev => ({ ...prev, periodType: e.target.value }))} >
                   {PERIOD_TYPES.map((type, i) => (
@@ -502,6 +681,8 @@ const handleBenchmarkChange = (index, field, value) => {
                   placeholder="Enter short description"
                   name="shortDescription"
                   value={blockData?.shortDescription}
+                  onFocus={() => setFormStatus("Editing...")}
+                  onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
                   className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 w-full"
                 />
@@ -517,6 +698,8 @@ const handleBenchmarkChange = (index, field, value) => {
                   <div className="flex items-center gap-2">
                     <select className="w-full border px-2 py-0.5" 
                       value={blockData?.delivery}
+                      onFocus={() => setFormStatus("Editing...")}
+                      onBlur={() => setFormStatus("Ready...")}
                       onChange={(e) => setBlockData(prev => ({ ...prev, delivery: e.target.value }))} >
                       {activeTab === "Direct"
                           ? DIRECT_DELIVERY.map((type, i) => <option key={i}>{type}</option>)
@@ -558,6 +741,29 @@ const handleBenchmarkChange = (index, field, value) => {
           </div>
         </form>
       )}
+
+{
+        showLookup && (
+          <StaffLookup
+            onClose={() => {
+              setShowLookup(false);
+              setLookupFor(null);
+            }}
+            onSelect={handleStaffSelect} // reuse handleStaffSelect
+            selectedIds={
+              lookupFor === "leaders"
+                ? unit.assignedLeaders || []
+                : lookupFor === "assessors"
+                ? unit.assignedAssessors || []
+                : lookupFor === "director"
+                ? unit.unitDirector
+                  ? [unit.unitDirector]
+                  : []
+                : []
+            }
+          />
+        )
+      }
 
     </div>
   );

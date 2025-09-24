@@ -15,5 +15,6 @@ export const API_ROUTES = {
     SCORING_CRITERIA: "/scoring-criteria",
     SCORING_TRENDS: "/scoring-trends",
     TABULATION: "/tabulation",
-    ACCOUNT: "/account"
+    ACCOUNT: "/account",
+    BENCHMARK: "/benchmark"
 };
