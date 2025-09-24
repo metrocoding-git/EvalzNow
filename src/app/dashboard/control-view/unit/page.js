@@ -30,6 +30,7 @@ import { useUnit } from "@/context/UnitContext";
 import { createAssessmentBlock, createDuplicateAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 import { createScoringCriteria, getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { createInsertScore, getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
+import { createBenchmark } from "@/services/benchmarkService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -205,6 +206,22 @@ export default function UnitControl() {
     });
   };
 
+
+  // Filtered candidate list based on searchTerm
+const filteredCandidates = unitRosterData
+.filter(roster => roster.unitId === selectedUnit?.id) // only current unit
+.filter(roster => {
+  const candidate = roster.candidate;
+  if (!candidate) return false;
+  const term = searchTerm.toLowerCase();
+  return (
+    (candidate.lastName || "").toLowerCase().includes(term) ||
+    (candidate.firstName || "").toLowerCase().includes(term) ||
+    (candidate.candidateId || "").toLowerCase().includes(term)
+  );
+});
+
+
   // Add this function to refresh candidate data
   const refreshCandidateData = async () => {
     try {
@@ -264,13 +281,41 @@ export default function UnitControl() {
         accountId: loggedInUser?.id, // ✅ assign accountId
       };
       const data = await createUnit(unitWithAccount);
+       
       setDataList((prev) => [...prev, data]); // update datalist
-      setSelectedUnit(data); // optionally auto-select it
+      setSelectedUnit(data); 
+
+      // 3️⃣ Create benchmarks only after unit is created
+    if (newUnit.benchmarks && newUnit.benchmarks.length > 0) {
+      for (let i = 0; i < newUnit.benchmarks.length; i++) {
+        const bm = newUnit.benchmarks[i];
+
+        // Ensure a unique benchmarkRef per unit
+        const benchmarkRef = bm.benchmarkRef || `BM-${i + 1}`;
+
+        try {
+          await createBenchmark({
+            unitId: data.id,           // Use the PK from the created unit
+            benchmarkType: bm.benchmarkType, // e.g., "Strategic"
+            benchmarkRef: benchmarkRef,       // e.g., "PERF-001" or auto-generated
+            benchmarkDescription: bm.benchmarkDescription || "",
+          });
+        } catch (err) {
+          console.error(
+            `Error creating benchmark "${benchmarkRef}" for unit "${data.unitName}":`,
+            err?.message || err
+          );
+        }
+      }
+    }
       setShowAdd(false); // close form after success
     } catch (err) {
       console.error("Error updating unit list:", err);
     }
   };
+
+
+  
 
 
   const sortedDataList = [...dataList].sort((a, b) => {
@@ -294,7 +339,8 @@ export default function UnitControl() {
   });
 
   const filteredUnits = sortedDataList.filter(unit =>
-    unit.unitName.toLowerCase().includes(searchTerm.toLowerCase())
+    (unit.unitName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (unit.unitId || "").toLowerCase().includes(searchTerm.toLowerCase()) // <-- added unitId
   );
 
   // Handle sorting
@@ -650,7 +696,7 @@ export default function UnitControl() {
               
 
               {/* Unit Details (smaller and less prominent) */}
-              <div className="items-center justify-center px-4 mt-1">
+              <div className="items-center justify-center px-4 py-2 mt-1 mb-2 ">
                 <div className="border border-gray-200 p-2">
                   <span className="text-sm text-gray-600">
                     Unit Name: {selectedUnit?.unitName || "N/A"}
@@ -672,13 +718,12 @@ export default function UnitControl() {
 
               {/* Candidate List */}
               <div className="max-h-40 overflow-y-auto">
-                {unitRosterData
-                  .filter(roster => roster.unitId === selectedUnit?.id)
-                  .map((rosterItem, index) => (
+                {filteredCandidates.map((rosterItem, index) => (
                     <div 
                     key={index}
                     className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 cursor-pointer 
-                      ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-gray-200 " : "hover:bg-gray-50"}`}
+                      ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                        : "hover:bg-gray-50"}`}
                     onClick={() => handleCandidateSelect(rosterItem.candidate)}
                     >
                       <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
@@ -742,7 +787,7 @@ export default function UnitControl() {
                         setSelectedUnit(item);
                         setShowEdit(true);
                         setShowAdd(false);
-                        setFormStatus("Editing...");
+                        // setFormStatus("Editing...");
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -849,7 +894,7 @@ export default function UnitControl() {
         {contextMenu.visible && (
           <div
             ref={contextRef}
-            className="unit-item absolute bg-gray-200 border font-semibold border-gray-300 shadow-md z-50 w-60"
+            className="unit-item absolute bg-gray-200 border font-semibold border-gray-300 shadow-md z-50 w-70"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button
@@ -883,6 +928,7 @@ export default function UnitControl() {
                     unitType: unitToDuplicate.unitType,
                     signatureProfile: unitToDuplicate.signatureProfile,
                     environment: unitToDuplicate.environment,
+                    accountId: unitToDuplicate.accountId,
                     benchmarks: undefined
                   };
 
@@ -990,6 +1036,7 @@ export default function UnitControl() {
                 setSelectedUnit(unit);
                 setUnitRoster(true);
                 setShowAdd(false);
+                setShowEdit(false);
 
                 // auto-select first candidate in roster
                 const rosterForUnit = unitRosterData.filter(
@@ -1038,6 +1085,25 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Play className="w-4 h-4" />
                 Activate Setup View
+              </span>
+              <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
+            </button>
+
+
+            <button
+              className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
+              onClick={() => {
+                if (contextMenu.selectedUnit) {
+                  setSelectedUnitId(contextMenu.selectedUnit.id);
+                  console.log("Global Unit Id: ", contextMenu.selectedUnit.id);
+                }
+                setContextMenu((prev) => ({ ...prev, visible: false }));
+                router.push(`/dashboard/analytics-view/scoring-trends?unitId=${encodeURIComponent(contextMenu.selectedUnit.id)}&environment=${encodeURIComponent(contextMenu.selectedUnit.environment)}&type=${encodeURIComponent(contextMenu.selectedUnit.unitType)}`);
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                Activate Analytics View
               </span>
               <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
             </button>

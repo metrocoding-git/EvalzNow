@@ -166,15 +166,6 @@ export default function CandidateControl() {
   const handleCreate = async (newCandidate) => {
     try {
 
-      const exists = dataList.some(
-        (candidate) => candidate.candidateId === newCandidate.candidateId
-      );
-  
-      if (exists) {
-        toast.error(`Candidate ID "${newCandidate.candidateId}" already exists`);
-        // return false;
-      }
-
       const candidateWithAccount = {
         ...newCandidate,
         accountId: loggedInUser?.id, // ✅ assign accountId
@@ -186,8 +177,9 @@ export default function CandidateControl() {
       // setShowEdit(true);
       return created; 
     } catch (err) {
-      console.error("Failed to create candidate:", err);
-      setError("Failed to create candidate.");
+      const errorMessage = err.response?.data?.message || err.message || "Failed to create candidate";
+      toast.error(errorMessage); // ✅ show toast here
+      throw new Error(errorMessage); // ✅ re-throw so form does not close
     }
   };
 

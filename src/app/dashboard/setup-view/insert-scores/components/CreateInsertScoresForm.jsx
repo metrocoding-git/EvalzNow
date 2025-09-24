@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import { createInsertScore } from "@/services/insertScoreService";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
@@ -242,7 +243,7 @@ const [formData, setFormData] = useState({
   const [customCriteria, setCustomCriteria] = useState([]);
   const searchParams = useSearchParams();
   const [scoringSystem, setScoringSystem] = useState();
-  
+  const { setFormStatus } = useFormStatus();
   const environment = searchParams.get('environment') || 'workspace';
   const unitId = searchParams.get('unitId');
 
@@ -253,6 +254,7 @@ const [formData, setFormData] = useState({
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
   const handleChange = (label, value) => {
+    
     setFormData((prev) => ({
       ...prev,
       [label]: value,
@@ -282,8 +284,19 @@ const [formData, setFormData] = useState({
     "engageLevel",
     "competency",
   ];
-  
-  // Check if any required field is empty
+
+  // Check if at least one MC or CC has a value
+  const hasAtLeastOneCriteriaValue = () => {
+    for (let i = 1; i <= 20; i++) {
+      if ((formData[`mc${i}`] !== "" && formData[`mc${i}`] !== null) ||
+          (formData[`cc${i}`] !== "" && formData[`cc${i}`] !== null)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Update isSubmitDisabled
   const isSubmitDisabled = requiredFields.some(
     (field) => !formData[field] || formData[field].toString().trim() === ""
   ) || (environment === "Classroom" && (
@@ -291,8 +304,8 @@ const [formData, setFormData] = useState({
         formData.attainedScore === "" ||
         formData.maxScore === null ||
         formData.maxScore === ""
-      ));
-  
+      )) 
+    || !hasAtLeastOneCriteriaValue(); 
   
 
   const handleSubmit = async () => {
@@ -387,6 +400,7 @@ const [formData, setFormData] = useState({
   
     try {
       setLoading(true);
+      setFormStatus("Processing...");
   
       // Prepare payload with proper null handling for empty values
       const payload = {
@@ -406,6 +420,8 @@ const [formData, setFormData] = useState({
   
       await createInsertScore(payload);
       console.log("successfully submitted.", payload);
+      setFormStatus("Completed");
+      setTimeout(() => setFormStatus("Ready..."), 2500);
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
@@ -518,7 +534,9 @@ const [formData, setFormData] = useState({
 
         {/* Close icon */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+            setFormStatus("Ready..")}}
           className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
           <X className="w-5 h-5" />
@@ -559,6 +577,9 @@ const [formData, setFormData] = useState({
             step="0.01"
             value={formData.durationHrs}
             onChange={(e) => handleChange("durationHrs", e.target.value)}
+            onBlur={(e) =>
+              handleChange("durationHrs", parseFloat(e.target.value || 0).toFixed(2))
+            }
             className="flex-1 border px-2 py-1"
           />
 
@@ -696,7 +717,7 @@ const [formData, setFormData] = useState({
                 return (
                   <div key={fieldKey} className="flex items-center gap-2 w-full">
                     {/* Left side label */}
-                    <label className="w-40 pr-2 text-left text-gray-700">
+                    <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
                       {criteria.label} ({criteria.name}):
                     </label>
 
@@ -705,12 +726,15 @@ const [formData, setFormData] = useState({
                       step="0.01"
                        min="0"
                       type="number"
-                      // onBlur={(e) =>
-                      //   handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
-                      // }
+                      onBlur={(e) => {
+                        const val = e.target.value;
+                        if (val !== "" && val !== null) {
+                          handleChange(fieldKey, parseFloat(val).toFixed(2));
+                        }
+                      }}
                       value={formData[fieldKey]}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
-                      className="flex-1 border px-2 py-1 w-42"
+                      className="flex-1 border px-2 py-1"
                     />
                   </div>
                 );
@@ -720,19 +744,25 @@ const [formData, setFormData] = useState({
                 const fieldKey = `cc${index + 1}`;
                 return (
                   <div key={fieldKey} className="flex items-center gap-2 w-full">
-                    <label className="w-60 pr-2 text-left text-gray-700">
+                    <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
                       CC{index + 1} ({criteria.criteria}):
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       min="0"
+                      onBlur={(e) => {
+                        const val = e.target.value;
+                        if (val !== "" && val !== null) {
+                          handleChange(fieldKey, parseFloat(val).toFixed(2));
+                        }
+                      }}
                       value={formData[fieldKey]}
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
                       // onBlur={(e) =>
                       //   handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
                       // }
-                      className="border px-2 py-1 flex-1 w-42"
+                      className="border px-2 py-1 flex-1"
                     />
                   </div>
                 );

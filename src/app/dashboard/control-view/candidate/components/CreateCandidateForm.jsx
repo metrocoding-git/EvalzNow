@@ -1,10 +1,11 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { getAllCandidates } from "@/services/candidateService";
 import { getAllEthinicities } from "@/services/ethinictyService";
 import { getAllIncomes } from "@/services/incomeService";
 import { ListFilterPlus, Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const genderOptions = ["Female", "Male", "Non-Disclosed", "Other"];
 const religionOptions = [
@@ -64,7 +65,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(false);
   const { formStatus, setFormStatus } = useFormStatus();
-
+  const [dataList, setDataList] = useState([]);
+  const [duplicateId, setDuplicateId] = useState(false);
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -77,6 +79,21 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
 
   const handleChange = (label, value) => {
     setForm((prev) => ({ ...prev, [label]: value }));
+
+    if (label === "Candidate ID") {
+      const exists = dataList.some(
+        (candidate) =>
+          candidate.candidateId?.toString().trim().toLowerCase() ===
+          value.toString().trim().toLowerCase()
+      );
+  
+      if (exists) {
+        toast.error("This Candidate ID already exists!");
+        setDuplicateId(true); 
+      } else {
+        setDuplicateId(false); // clear duplicate flag
+      }
+    }
   };
 
   // Check if required fields are filled
@@ -120,6 +137,28 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     fetchEthnicity();
   }, []);
 
+  // Fetch all candidates on mount
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllCandidates();
+        const sortedData = Array.isArray(data)
+          ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
+          : [];
+        setDataList(sortedData);
+
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        setError("Failed to load candidates. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, []);
+
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -143,6 +182,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     setIsSubmitting(true);
     setError(null);
     setFormStatus("Processing...");
+
+  
   
     try {
       const candidateData = {
@@ -178,7 +219,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     } catch (err) {
       console.error("Failed to create candidate:", err);
       setError(err.message || "Failed to create candidate");
-      setFormStatus("Ready...");
+      setFormStatus("Creating...");
+      
     } finally {
       setIsSubmitting(false);
     }
@@ -392,10 +434,10 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
-            disabled={!isFormValid() || isSubmitting}
+            disabled={!isFormValid() || isSubmitting || duplicateId}
             // onClick={onClose}
             className={`px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm ${
-              !isFormValid() || isSubmitting
+              !isFormValid() || isSubmitting || duplicateId
                 ? "cursor-not-allowed"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}

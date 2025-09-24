@@ -64,9 +64,9 @@ const DIRECT_DELIVERY = [
 
 export default function CreateBlockManagerForm({ onClose, activeTab, unitId, candidate, refreshBlocks }) {
   const [form, setForm] = useState({
-    periodType: "",
+    periodType: PERIOD_TYPES[0], // default to first period type
     shortDescription: "",
-    delivery: ""
+    delivery: activeTab === "Direct" ? DIRECT_DELIVERY[0] : INDIRECT_DELIVERY[0], // default delivery
   });
 
   const handleChange = (field, value) => {
@@ -99,7 +99,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
     }
   };
 
-  const isFormValid = form.periodType && form.delivery;
+  const isFormValid = form.shortDescription;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">

@@ -160,6 +160,47 @@ useEffect(() => {
     }
   };
 
+  useEffect(() => {
+    const fetchAndSelectFirstBlock = async () => {
+      if (!selectedUnit?.id || !selectedCandidate?.id) return;
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
+        
+        let blockArray = [];
+        if (Array.isArray(blocks)) {
+          blockArray = blocks;
+        } else if (blocks && typeof blocks === "object") {
+          blockArray = [blocks];
+        }
+        
+        setAssessmentBlocks(blockArray);
+  
+        // Automatically select the first block if available
+        if (blockArray.length > 0) {
+          setSelectedBlock(blockArray[0]);
+          setSelectedRow(0);
+          setShowEditBlockManager(true); // optionally open edit panel
+          if (onBlockSelect) {
+            onBlockSelect(blockArray[0]);
+          }
+        } else {
+          setSelectedBlock(null);
+          setSelectedRow(null);
+        }
+  
+      } catch (err) {
+        console.error("Failed to fetch blocks:", err);
+        setError("Failed to load blocks. Please try again.");
+        setAssessmentBlocks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAndSelectFirstBlock();
+  }, [selectedUnit?.id, selectedCandidate?.id]); 
+  
   console.log("selected candidate in roster", assessmentBlocks );
   // call it when unit changes
   useEffect(() => {
