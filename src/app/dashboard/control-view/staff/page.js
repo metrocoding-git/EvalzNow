@@ -16,6 +16,7 @@ import CreateStaffForm from "./components/CreateStaffForm";
 import { createStaff, deleteStaff, getAllStaffs } from "@/services/staffService";
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -27,6 +28,7 @@ export default function StaffControl() {
   const formRef = useRef(null);
   const createFormRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   const [contextMenu, setContextMenu] = useState({
     visible: false,
@@ -55,6 +57,16 @@ export default function StaffControl() {
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
   const controlsRef = useRef(null);
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
 
   // Fetch staff data
   useEffect(() => {

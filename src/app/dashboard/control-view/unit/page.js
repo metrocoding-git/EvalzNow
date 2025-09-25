@@ -37,7 +37,7 @@ export default function UnitControl() {
   const contextRef = useRef(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showAddBlockManager, setShowAddBlockManager] = useState(false);
-
+  const [unitToDuplicate, setUnitToDuplicate] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showEditBlockManager, setShowEditBlockManager] = useState(false);
 
@@ -82,6 +82,18 @@ export default function UnitControl() {
   const controlsRef = useRef(null);
   const { setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+
   // Fetch all units on mount
   useEffect(() => {
     const fetchUnits = async () => {
@@ -286,28 +298,7 @@ const filteredCandidates = unitRosterData
       setSelectedUnit(data); 
 
       // 3️⃣ Create benchmarks only after unit is created
-    if (newUnit.benchmarks && newUnit.benchmarks.length > 0) {
-      for (let i = 0; i < newUnit.benchmarks.length; i++) {
-        const bm = newUnit.benchmarks[i];
-
-        // Ensure a unique benchmarkRef per unit
-        const benchmarkRef = bm.benchmarkRef || `BM-${i + 1}`;
-
-        try {
-          await createBenchmark({
-            unitId: data.id,           // Use the PK from the created unit
-            benchmarkType: bm.benchmarkType, // e.g., "Strategic"
-            benchmarkRef: benchmarkRef,       // e.g., "PERF-001" or auto-generated
-            benchmarkDescription: bm.benchmarkDescription || "",
-          });
-        } catch (err) {
-          console.error(
-            `Error creating benchmark "${benchmarkRef}" for unit "${data.unitName}":`,
-            err?.message || err
-          );
-        }
-      }
-    }
+    
       setShowAdd(false); // close form after success
     } catch (err) {
       console.error("Error updating unit list:", err);
@@ -577,8 +568,76 @@ const filteredCandidates = unitRosterData
     (!selectedCandidate || roster.candidate?.id === selectedCandidate.id)
   );
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedUnit) return; // ✅ require a selected unit
+  
+      // Ctrl + E → Duplicate
+      if (e.ctrlKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        handleDuplicate(selectedUnit);
+      }
+  
+      // Ctrl + C → Unit Config
+      if (e.ctrlKey && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        setSelectedUnit(selectedUnit);
+        setUnitRoster(true);
+        setShowAdd(false);
+        setShowEdit(false);
+  
+        const rosterForUnit = unitRosterData.filter(
+          (r) => r.unitId === selectedUnit.id || r.unit?.id === selectedUnit.id
+        );
+        if (rosterForUnit.length > 0) {
+          setSelectedCandidate(rosterForUnit[0].candidate);
+        } else {
+          setSelectedCandidate(null);
+        }
+      }
+  
+      // Delete → Delete unit
+      if (e.key === "Delete") {
+        e.preventDefault();
+        handleDelete(selectedUnit.id);
+      }
+  
+      // Ctrl + 2 → Activate Setup View
+      if (e.ctrlKey && e.key === "2") {
+        e.preventDefault();
+        setSelectedUnitId(selectedUnit.id);
+        router.push(
+          `/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
+        );
+      }
+  
+      // Ctrl + 3 → Activate Analytics View
+      if (e.ctrlKey && e.key === "3") {
+        e.preventDefault();
+        setSelectedUnitId(selectedUnit.id);
+        router.push(
+          `/dashboard/analytics-view/scoring-trends?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
+        );
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedUnit, unitRosterData, router, setSelectedUnitId]);
+  
 
-
+  const handleDuplicate = (unit) => {
+    if (!unit) return;
+  
+    // Pass the unit to duplicate form
+    setUnitToDuplicate(unit);
+  
+    // Close context menu if visible
+    setContextMenu(prev => ({ ...prev, visible: false }));
+  
+    // Show the Add/Duplicate form
+    setShowAdd(true);
+  };
 
 
   return (
@@ -900,126 +959,12 @@ const filteredCandidates = unitRosterData
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left"
               onClick={async (e) => {
-                e.stopPropagation();
-                const unitToDuplicate = contextMenu.selectedUnit;
-                if (!unitToDuplicate) return;
-
-                try {
-                  setLoading(true);
-                  setFormStatus("Processing...");
-
-                  // Generate new unitId
-                  const generateNewUnitId = (existingUnits) => {
-                    const baseId = unitToDuplicate.unitId.replace(/\D/g, "");
-                    let newIdNumber = Number(baseId || 0) + 1;
-                    while (existingUnits.some(u => u.unitId === `U${newIdNumber.toString().padStart(3, '0')}`)) {
-                      newIdNumber++;
-                    }
-                    return `U${newIdNumber.toString().padStart(3, '0')}`;
-                  };
-
-                  // Prepare new unit data
-                  const newUnitData = {
-                    unitName: `${unitToDuplicate.unitName} Copy`,
-                    unitId: generateNewUnitId(dataList),
-                    unitStartDate: unitToDuplicate.unitStartDate,
-                    unitEndDate: unitToDuplicate.unitEndDate,
-                    unitDirector: unitToDuplicate.unitDirector,
-                    unitType: unitToDuplicate.unitType,
-                    signatureProfile: unitToDuplicate.signatureProfile,
-                    environment: unitToDuplicate.environment,
-                    accountId: unitToDuplicate.accountId,
-                    benchmarks: undefined
-                  };
-
-                  // Create the new unit
-                  const createdUnit = await createUnit(newUnitData);
-                  setDataList(prev => [...prev, createdUnit]);
-                  setSelectedUnit(createdUnit);
-                  setShowEdit(true);
-
-                  // --- DUPLICATE ROSTER ---
-                  const originalRoster = unitRosterData.filter(r => r.unitId === unitToDuplicate.id || r.unit?.id === unitToDuplicate.id);
-                  if (originalRoster.length > 0) {
-                    const duplicatedRosterPromises = originalRoster.map(entry => {
-                      const newEntry = {
-                        ...entry,
-                        id: undefined, // remove id so backend can create a new entry
-                        unitId: createdUnit.id, // assign new unitId
-                        unit: undefined
-                      };
-                      return createUnitRoster(newEntry);
-                    });
-                    const duplicatedRoster = await Promise.all(duplicatedRosterPromises);
-                    setUnitRosterData(prev => [...prev, ...duplicatedRoster]);
-                  }
-
-                 // --- DUPLICATE ASSESSMENT BLOCKS USING THE NEW ENDPOINT ---
-                const originalBlocks = assessmentBlocks.filter(b => b.unitId === unitToDuplicate.id);
                 
-                if (originalBlocks.length > 0) {
-                  // Use the dedicated duplicate endpoint
-                  const duplicatedBlocks = await createDuplicateAssessmentBlock({
-                    originalUnitId: unitToDuplicate.id,
-                    newUnitId: createdUnit.id
-                  });
-                  
-                  setAssessmentBlocks(prev => [...prev, ...duplicatedBlocks]);
+                e.stopPropagation();
+                if (contextMenu.selectedUnit) {
+                  handleDuplicate(contextMenu.selectedUnit);// ✅ pass selected unit
                 }
-
-                // --- DUPLICATE CUSTOM CRITERIA ---
-                const originalCriteria = customCriteria.filter(c => c.unitId === unitToDuplicate.id);
-
-                if (originalCriteria.length > 0) {
-                  const duplicatedCriteriaPromises = originalCriteria.map(c => {
-                    const newCriteria = {
-                      criteria: c.criteria,
-                      unitId: createdUnit.id, // link to the new unit
-                    };
-                    return createScoringCriteria(newCriteria);
-                  });
-
-                  const duplicatedCriteria = await Promise.all(duplicatedCriteriaPromises);
-
-                  setCustomCriteria(prev => [...prev, ...duplicatedCriteria]);
-                }
-
-                // --- DUPLICATE INSERT SCORES ---
-                const originalInsertScores = insertScores.filter(
-                  (s) => s.unitId === unitToDuplicate.id
-                );
-
-                if (originalInsertScores.length > 0) {
-                  const duplicatedInsertScoresPromises = originalInsertScores.map((s) => {
-                    const newScore = {
-                      ...s,
-                      id: undefined, // let backend generate new ID
-                      unitId: createdUnit.id, // link to new unit
-                      unit: undefined,
-                      candidateId: s.candidateId, // keep same candidate
-                      assessmentBlockId: s.assessmentBlockId, // keep same block reference if still valid
-                    };
-                    return createInsertScore(newScore);
-                  });
-
-                  const duplicatedInsertScores = await Promise.all(
-                    duplicatedInsertScoresPromises
-                  );
-
-                  setInsertScores((prev) => [...prev, ...duplicatedInsertScores]);
-                }
-
-                setFormStatus("Candidate Created");
-                setTimeout(() => setFormStatus("Ready..."), 2000);
-
-                } catch (err) {
-                  console.error("Failed to duplicate unit, roster, or blocks:", err);
-                  setError("Failed to duplicate unit. Please try again.");
-                  setFormStatus("Ready...");
-                } finally {
-                  setLoading(false);
-                  setContextMenu(prev => ({ ...prev, visible: false }));
-                }
+                setShowAdd(true);
               }}
             >
               <span className="flex items-center gap-2">
@@ -1105,7 +1050,7 @@ const filteredCandidates = unitRosterData
                 <Play className="w-4 h-4" />
                 Activate Analytics View
               </span>
-              <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
+              <span className="text-gray-400 text-xs ml-4">CTRL + 3</span>
             </button>
           </div>
         )}
@@ -1136,7 +1081,9 @@ const filteredCandidates = unitRosterData
       <div className="w-1/2 lg:w-9/12 bg-white">
         {showAdd && (
           <div className="h-full flex flex-col w-96" ref={createFormRef}>
-            <CreateUnitForm onClose={() => setShowAdd(false)} onSubmit={handleCreate}   />
+            <CreateUnitForm onClose={() => {
+               setShowAdd(false)
+               setUnitToDuplicate([])}} onSubmit={handleCreate} unitData={unitToDuplicate}  />
           </div>
         )}
 

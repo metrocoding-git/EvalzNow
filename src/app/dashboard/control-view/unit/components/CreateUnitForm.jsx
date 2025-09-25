@@ -48,7 +48,7 @@ const BENCHMARK_TYPES = [
   "Trial & Error",
 ];
 
-export default function CreateUnitForm({ onClose, staffPool = [], onSubmit }) {
+export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unitData }) {
   const [form, setForm] = useState({
     unitName: "",
     unitId: "",
@@ -261,6 +261,35 @@ const THRESHOLD_NAMES = {
     }
     
   };
+
+  console.log("selcted duplicate data: ", unitData);
+
+
+
+   // Populate form if unitData is provided (for editing)
+   useEffect(() => {
+    if (!unitData) return;
+
+    setForm({
+      unitName: "",
+      unitId: "",
+      startDate: unitData.unitStartDate || "",
+      endDate: unitData.unitEndDate || "",
+      unitType: unitData.unitType || "",
+      environment: unitData.environment || "",
+      signatureProfile: unitData.signatureProfile || "",
+      unitDirector: unitData.unitDirector || "",
+      passThresholds: unitData.passThresholds || defaultThresholds[unitData.unitType] || {},
+      benchmarks: unitData.benchmarks || [],
+      assignedLeaders: unitData.assignedLeaders || [],
+      assignedAssessors: unitData.assignedAssessors || [],
+      scoringSystem: unitData.scoringSystem || "",
+    });
+
+    // Update unitDirectors dropdown based on assigned leaders
+    // const directors = staffPool.filter(s => unitData.assignedLeaders?.includes(s.id));
+    // setUnitDirectors(directors);
+  }, [unitData]);
   
 
   return (
@@ -432,6 +461,8 @@ const THRESHOLD_NAMES = {
                 </select>
               </div>
             ))}
+
+
 
             {form.environment === "Workforce" && (
               <div className="space-y-1">

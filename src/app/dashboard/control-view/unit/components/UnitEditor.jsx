@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Edit, Trash2, Trash } from "lucide-react";
 import { getUnitById, updateUnit } from "@/services/unitService";
 import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
@@ -108,6 +108,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     benchmarks: []
   });
   const [unitDirectors, setUnitDirectors] = useState([]);
+  const staffLookupRef = useRef(null);
   const [blockData, setBlockData] = useState({
     ppId: "",
     periodType: "",
@@ -145,6 +146,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
           scoringSystem: unitData.scoringSystem || "",
           benchmarks: (unitData.benchmarks || []).map(bm => ({
             id: bm.id,
+            benchmarkId: bm.benchmarkId,
             benchmarkType: bm.benchmarkType || "",
             benchmarkRef: bm.benchmarkRef || "",
             benchmarkDescription: bm.benchmarkDescription || ""
@@ -184,6 +186,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   
       // Update unitDirectors dropdown to match selected leaders
       setUnitDirectors(selectedStaffArray);
+      
+      // If there's only one leader selected, auto-set them as unit director
+      if (selectedStaffArray.length === 1 && !unit.unitDirector) {
+        handleChange("unitDirector", selectedStaffArray[0].id);
+      }
+      
     } else if (lookupFor === "assessors") {
       handleChange(
         "assignedAssessors",
@@ -191,6 +199,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       );
     } else if (lookupFor === "director") {
       handleChange("unitDirector", selectedStaffArray[0]?.id || "");
+      setShowLookup(false);
+      setLookupFor(null);
     }
   
     setShowLookup(false);
@@ -351,13 +361,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               ))}
 
               {/* Staff Assignment */}
-          <div className="pt-4 border-t border-gray-200 space-y-3">
-            <h3 className="text-base font-semibold text-gray-800">
-              Staff Assignment
-            </h3>
-
-            {/* Assigned Leaders */}
-            <div className="flex justify-between gap-2 space-y-1">
               <label className="col-span-1 flex items-center text-gray-700">
                 Assigned Leaders:
               </label>
@@ -377,10 +380,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   Max 3
                 </div>
               </div>
-            </div>
 
-            {/* Assigned Assessors */}
-            <div className="flex justify-between gap-2 space-y-1">
+
               <label className="col-span-1 flex items-center text-gray-700">
                 Assigned Assessors:
               </label>
@@ -391,7 +392,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     setLookupFor("assessors");
                     setShowLookup(true);
                   }}
-                  className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                  className="px-1 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
                 >
                   + Add Assessor
                 </button>
@@ -400,29 +401,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   Max 3
                 </div>
               </div>
-            </div>
-
-            {/* Unit Director */}
-            <div className="flex justify-between gap-2 space-y-1">
-
-              {/* <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLookupFor("director");
-                    setShowLookup(true);
-                  }}
-                  className="px-3 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
-                >
-                  Select Director
-                </button>
-                <div className="text-sm text-gray-700">
-                  {form.unitDirector
-                    ? staffPool.find((s) => s.id === form.unitDirector)?.name ||
-                    "Selected"
-                    : "None"}
-                </div>
-              </div> */}
 
               <label className="col-span-1 flex items-center text-gray-700">
                 Unit Director:
@@ -440,8 +418,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   </option>
                 ))}
               </select>
-            </div>
-          </div>
 
               <label className="text-gray-700 font-medium text-xs">Unit Type:</label>
               <input
@@ -453,20 +429,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     type="text"
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
-              {/* <select
-                name="unitType"
-                disabled
-                value={unit.unitType || ""}
-                onFocus={() => setFormStatus("Editing...")}
-                onBlur={() => setFormStatus("Ready...")}
-                onChange={(e) => handleChange("unitType", e.target.value)}
-                className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              >
-                <option value="">Select Unit Type</option>
-                <option value="Communicative I/O">Communicative I/O</option>
-                <option value="Theory & Practice">Theory & Practice</option>
-                <option value="Third Parameter">Third Parameter</option>
-              </select> */}
+             
 
               <label className="text-gray-700 font-medium text-xs">Signature Profile:</label>
               <input
@@ -478,21 +441,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     type="text"
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
-              {/* <select
-                name="signatureProfile"
-                disabled
-                value={unit.signatureProfile || ""}
-                onFocus={() => setFormStatus("Editing...")}
-                onBlur={() => setFormStatus("Ready...")}
-                onChange={(e) => handleChange("signatureProfile", e.target.value)}
-                className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              >
-                <option value="">Select Profile</option>
-                <option value="Case 1: Solid Balanced">Case 1: Solid Balanced</option>
-                <option value="Case 2: Rigorous Balanced">Case 2: Rigorous Balanced</option>
-                <option value="Case 3a: Productive-Weighted">Case 3a: Productive-Weighted</option>
-                <option value="Case 3b: Receptive-Weighed">Case 3b: Receptive-Weighed</option>
-              </select> */}
+              
 
               <label className="text-gray-700 font-medium text-xs">Environment:</label>
               <input
@@ -504,20 +453,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     type="text"
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
-              {/* <select
-                name="environment"
-                disabled
-                value={unit.environment || ""}
-                onFocus={() => setFormStatus("Editing...")}
-                onBlur={() => setFormStatus("Ready...")}
-                onChange={(e) => handleChange("environment", e.target.value)}
-                className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              >
-                <option value="">Select Environment</option>
-                <option value="Workforce">Workforce</option>
-                <option value="Classroom">Classroom</option>
-              </select> */}
-
+            
               {unit.environment === "Workforce" && (
                 <>
                   <label className="text-gray-700 font-medium text-xs">Scoring System:</label>
@@ -530,19 +466,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     type="text"
                     className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
-                  {/* <select
-                    name="scoringSystem"
-                    disabled
-                    value={unit.scoringSystem || ""}
-                    onFocus={() => setFormStatus("Editing...")}
-                    onBlur={() => setFormStatus("Ready...")}
-                    onChange={(e) => handleChange("scoringSystem", e.target.value)}
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                  >
-                    <option value="">Select System</option>
-                    <option value="3-Point">3-Point</option>
-                    <option value="5-Point">5-Point</option>
-                  </select> */}
+                 
                 </>
               )}
             </div>
@@ -564,14 +488,14 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   <tbody>
                     {unit.benchmarks.map((bm, index) => (
                       <tr key={index} className="even:bg-gray-50">
-                        <td className="border border-gray-300 px-2 py-1">
+                        <td className="border border-gray-300 px-2 py-1 text-center">
                           <input
                             type="text"
                             value={bm.benchmarkId}
                             onFocus={() => setFormStatus("Editing...")}
                             onBlur={() => setFormStatus("Ready...")}
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkId", e.target.value)}
-                            className="w-full px-2 py-1 border"
+                            className="w-full px-2 py-1 border text-center"
                           />
                         </td>
                         <td className="border border-gray-300 px-2 py-1">
@@ -745,7 +669,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 {
         showLookup && (
           <StaffLookup
-            onClose={() => {
+            
+            onClose={(e) => {
               setShowLookup(false);
               setLookupFor(null);
             }}

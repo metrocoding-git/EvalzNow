@@ -35,6 +35,15 @@ export default function ControlViewLayout({ children }) {
   console.log("logged in user", loggedInUser);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  useEffect(() => {
     const isValidPath = visibleTabs.some((tab) =>
       pathname?.startsWith(tab.path)
     );

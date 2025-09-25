@@ -22,6 +22,7 @@ import { createEthinicity, deleteEthinicity, getAllEthinicities, updateEthinicit
 import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/services/incomeService";
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -60,7 +61,17 @@ export default function CandidateControl() {
    const { setFormStatus } = useFormStatus();
    const controlsRef = useRef(null);
    const reviewRef = useRef(null);
+   const router = useRouter();
    const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+
+   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
 
   // Fetch all candidates on mount
   useEffect(() => {

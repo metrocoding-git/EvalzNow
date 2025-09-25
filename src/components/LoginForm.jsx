@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { getUserRoleRedirect } from '@/utils/authHelpers';
 import { login } from "@/services/accountService";
@@ -14,6 +14,14 @@ export default function LoginForm() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Optional: validate token with backend before redirect
+      router.push("/dashboard/control-view/admin");
+    }
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

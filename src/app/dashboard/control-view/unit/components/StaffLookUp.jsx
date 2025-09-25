@@ -71,7 +71,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   
 
   return (
-    <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50">
+    <div onClick={(e) => e.stopPropagation()} className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50">
       <div className="bg-white p-4 w-[600px] border shadow-2xl border-gray-200">        <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Staff Lookup</h2>
         <button onClick={onClose} className="cursor-pointer">
@@ -114,7 +114,8 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
                     type="checkbox"
                     checked={selectedIds.includes(c.id)}
                     onChange={() => handleRowClick(c.id)}
-                    onClick={() => handleRowClick(c.id)}
+                    // onClick={() => handleRowClick(c.id)}
+                    onClick={(e) => e.stopPropagation()}
                     className="w-4 h-4 text-sm text-center font-medium text-gray-900 rounded focus:ring-blue-500"
                     /> 
                 </td>
