@@ -1,7 +1,7 @@
 "use client";
-import { Children, useState } from "react";
+import { Children, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const tabs = [
   { label: "Insert Scores", path: "/dashboard/setup-view/insert-scores" },
@@ -10,6 +10,7 @@ const tabs = [
 
 export default function SetupViewLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const currentTab = tabs.find(tab => pathname?.startsWith(tab.path))?.label || "Insert Scores";
 
   const [activeTab, setActiveTab] = useState(currentTab);
@@ -17,6 +18,15 @@ export default function SetupViewLayout({ children }) {
   const unitId = searchParams.get('unitId');
   const environment = searchParams.get('environment') || '';
   const type = searchParams.get('type') || '';
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
 
 
   return (

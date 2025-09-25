@@ -15,6 +15,7 @@ import { createClient, deleteClient, getAllClients } from "@/services/clientServ
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast, { Toaster } from "react-hot-toast";
 import { Controls } from "three";
+import { useRouter } from "next/navigation";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -58,12 +59,22 @@ export default function AdminControl() {
   const [showEdit, setShowEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const controlsRef = useRef(null);
+  const router = useRouter();
 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   const isSuperAdmin = loggedInUser?.role === "super admin";
 
 
   const { setFormStatus } = useFormStatus();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
 
   useEffect(() => {
     const fetchClients = async () => {

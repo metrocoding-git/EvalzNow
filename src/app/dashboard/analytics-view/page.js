@@ -42,6 +42,15 @@ export default function AnalyticsView({ searchParams }) {
     checkRoster();
   }, [selectedUnitId, router]);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+  
+    if (!token || !user) {
+      router.replace("/login");
+    }
+  }, [router]);
+
   return (
     <div className="flex items-center justify-center h-screen w-full">
       <Loading /> {/* full-screen loading while redirecting */}
