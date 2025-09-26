@@ -121,7 +121,7 @@ const initialFormState = {
   Comments: "",
 };
 
-const CandidateEditor = ({ candidate, showForm, onSave }) => {
+const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], incomes = [] }) => {
   const [form, setForm] = useState(initialFormState);
   const [rows, setRows] = useState([
     { id: "", type: "", comment: "" }
@@ -130,47 +130,47 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const [ethnicities, setEthnicities] = useState([]);
-  const [incomes, setIncomes] = useState([]);
+  // const [ethnicities, setEthnicities] = useState([]);
+  // const [incomes, setIncomes] = useState([]);
   
   const [loading, setLoading] = useState(false);
 
   const { setFormStatus } = useFormStatus();
 
   // Fetch all candidates on mount
-  useEffect(() => {
-    const fetchEthnicity = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllEthinicities();
-        // keep objects instead of just names
-        setEthnicities(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch ethnicities:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEthnicity();
-  }, []);
+  // useEffect(() => {
+  //   const fetchEthnicity = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getAllEthinicities();
+  //       // keep objects instead of just names
+  //       setEthnicities(Array.isArray(data) ? data : []);
+  //     } catch (err) {
+  //       console.error("Failed to fetch ethnicities:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchEthnicity();
+  // }, []);
 
 
   // Fetch all candidates on mount
-  useEffect(() => {
-    const fetchIncome = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllIncomes();
-        // keep objects instead of just names
-        setIncomes(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch incomes:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchIncome();
-  }, []);
+  // useEffect(() => {
+  //   const fetchIncome = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getAllIncomes();
+  //       // keep objects instead of just names
+  //       setIncomes(Array.isArray(data) ? data : []);
+  //     } catch (err) {
+  //       console.error("Failed to fetch incomes:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchIncome();
+  // }, []);
 
 
   useEffect(() => {
@@ -381,10 +381,10 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
             >
               <option value="">Select {label}</option>
               {ethnicities.map((eth) => (
-                <option key={eth.id || eth.name} value={eth.name}>
-                  {eth.name}
-                </option>
-              ))}
+              <option key={eth.id || eth.name} value={eth.name}>
+                {eth.name}
+              </option>
+            ))}
             </select>
           ) : label === "Income" ? (
             <select
@@ -461,18 +461,8 @@ const CandidateEditor = ({ candidate, showForm, onSave }) => {
                         ))}
                       </select>
                     </td>
-                    <td className="border border-gray-300 px-2 py-1">
-                      <input
-                        type="number"
-                        min={1}
-                        value={row.id}
-                        onChange={(e) =>
-                          handleRowChange(index, "id", e.target.value)
-                        }
-                        onFocus={() => setFormStatus("Editing...")}
-                        onBlur={() => setFormStatus("Ready...")}
-                        className="w-full px-2 py-1 border"
-                      />
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                    {index + 1}
                     </td>
                     <td className="border border-gray-300 px-2 py-1">
                       <input

@@ -4,6 +4,7 @@ import { getAllCandidates } from "@/services/candidateService";
 import { createUnitRoster } from "@/services/unitRosterService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function SearchLookup({ onClose, selectedUnit, refreshRoster, refreshCandidateData}) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -224,6 +225,12 @@ useEffect(() => {
                 const selectedCandidates = candidateData.filter(c =>
                   selectedIds.includes(c.id)
                 );
+
+                // ✅ Require exactly 3 selected
+                if (selectedCandidates.length !== 3) {
+                  toast.error("Please select exactly 3 candidates before continuing.");
+                  return;
+                }
             
                 for (const candidate of selectedCandidates) {
                   const payload = {
@@ -241,7 +248,7 @@ useEffect(() => {
                 }
             
                 console.log("✅ All candidates added to roster");
-
+                
                 if (refreshRoster) {
                   await refreshRoster();
                 }
@@ -253,7 +260,7 @@ useEffect(() => {
                 onClose();
               } catch (err) {
                 console.error("❌ Error creating roster:", err);
-                alert("Failed to add candidates to roster. Please try again.");
+                toast.error("Failed to add candidates to roster. Please try again.");
               }
             }}
             
@@ -263,6 +270,8 @@ useEffect(() => {
           </button>
         </div>
       </div>
+
+      {/* <Toaster position="top-right" reverseOrder={false} /> */}
     </div>
   );
 }

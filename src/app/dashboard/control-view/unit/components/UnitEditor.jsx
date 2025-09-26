@@ -217,14 +217,36 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   };
 
   const addBenchmark = () => {
-    setUnit(prev => ({
-      ...prev,
-      benchmarks: [
-        ...(prev.benchmarks || []),
-        { id: null, benchmarkType: "", benchmarkRef: "", benchmarkDescription: "" }
-      ]
-    }));
+    setUnit(prev => {
+      // Get the current benchmarks
+      const benchmarks = prev.benchmarks || [];
+  
+      // Find the last benchmarkId (fallback to 0 if none)
+      let lastId = 0;
+      if (benchmarks.length > 0) {
+        const lastBenchmark = benchmarks[benchmarks.length - 1];
+        const lastBenchmarkId = parseInt(lastBenchmark.benchmarkId, 10);
+        if (!isNaN(lastBenchmarkId)) {
+          lastId = lastBenchmarkId;
+        }
+      }
+  
+      // Create new benchmark with incremented benchmarkId
+      const newBenchmark = {
+        id: null,
+        benchmarkId: (lastId + 1).toString(), // auto increment for UX
+        benchmarkType: "",
+        benchmarkRef: "",
+        benchmarkDescription: "",
+      };
+  
+      return {
+        ...prev,
+        benchmarks: [...benchmarks, newBenchmark],
+      };
+    });
   };
+  
 
   // Delete a benchmark at a specific index
   const deleteBenchmark = (index) => {
@@ -478,7 +500,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 <table className="w-full text-xs border border-gray-300">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="whitespace-nowrap border border-gray-300 px-8 py-1 text-left">ID</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-8 py-1 text-left">BID</th>
                       <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Type</th>
                       <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Ref</th>
                       <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Description</th>
@@ -490,6 +512,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                       <tr key={index} className="even:bg-gray-50">
                         <td className="border border-gray-300 px-2 py-1 text-center">
                           <input
+                            disabled
                             type="text"
                             value={bm.benchmarkId}
                             onFocus={() => setFormStatus("Editing...")}

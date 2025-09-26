@@ -266,18 +266,19 @@ useEffect(() => {
   };
 
   const moveRowUp = () => {
-    if (selectedRow === null || selectedRow === 0) return;
-    
-    // Swap the selected row with the row above it
-    swapAssessmentBlocks(selectedRow, selectedRow - 1);
+    if (selectedRow === null || selectedRow <= 0) return; // stop if first row
+    const newIndex = selectedRow - 1;
+    setSelectedRow(newIndex);
+    setSelectedBlock(filteredAssessmentBlocks[newIndex]);
   };
   
   const moveRowDown = () => {
-    if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
-    
-    // Swap the selected row with the row below it
-    swapAssessmentBlocks(selectedRow, selectedRow + 1);
+    if (selectedRow === null || selectedRow >= filteredAssessmentBlocks.length - 1) return; // stop if last row
+    const newIndex = selectedRow + 1;
+    setSelectedRow(newIndex);
+    setSelectedBlock(filteredAssessmentBlocks[newIndex]);
   };
+  
   
   
 
@@ -671,10 +672,10 @@ useEffect(() => {
                 <table className="w-full text-left text-xs border-collapse h-full">
                   <thead className="bg-gray-100 sticky top-0 z-10">
                     <tr>
-                      <th className="border p-1 w-10 text-center">PP ID</th>
-                      <th className="border p-1 text-center">Period Type</th>
-                      <th className="border p-1 text-center">Short Description</th>
-                      <th className="border p-1 text-center">Delivery</th>
+                      <th className="whitespace-nowrap border p-1 w-10 text-center">PP ID</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Period Type</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Short Description</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Delivery</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -690,10 +691,10 @@ useEffect(() => {
                           />
                           +{index + 1}
                         </td> */}
-                        <td className="border p-1 text-center">{block.ppId}</td>
-                        <td className="border p-1 text-center">{block.periodType}</td>
-                        <td className="border p-1 text-center">{block.shortDescription}</td>
-                        <td className="border p-1 text-center">{block.delivery}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.ppId}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.periodType}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.shortDescription}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -706,10 +707,10 @@ useEffect(() => {
                 <table className="w-full text-left text-xs border-collapse ">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="border p-1 w-10 text-center">PP ID</th>
-                      <th className="border p-1 text-center">Period Type</th>
-                      <th className="border p-1 text-center">Short Description</th>
-                      <th className="border p-1 text-center">Delivery</th>
+                      <th className="whitespace-nowrap border p-1 w-10 text-center">PP ID</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Period Type</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Short Description</th>
+                      <th className="whitespace-nowrap border p-1 text-center">Delivery</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -718,10 +719,10 @@ useEffect(() => {
                       <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `}  key={`indirect-${block.id}`} 
                         onClick={() => handleRowClick(block, index)}>
 
-                        <td className="border p-1 text-center">{block.ppId}</td>
-                        <td className="border p-1 text-center">{block.periodType}</td>
-                        <td className="border p-1 text-center">{block.shortDescription}</td>
-                        <td className="border p-1 text-center">{block.delivery}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.ppId}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.periodType}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.shortDescription}</td>
+                        <td className="whitespace-nowrap border p-1 text-center">{block.delivery}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -744,7 +745,7 @@ useEffect(() => {
         />
       )}
 
-      <Toaster position="top-right" reverseOrder={false} />
+
     </div>
   );
 }

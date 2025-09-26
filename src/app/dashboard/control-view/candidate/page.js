@@ -711,6 +711,8 @@ export default function CandidateControl() {
         <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
         <CandidateEditor
           candidate={selectedCandidate}
+          ethnicities={ethnicities}   
+          incomes={incomes}  
           showForm={showEdit}
           onSave={(updatedCandidate) => {
             setDataList((prev) =>
