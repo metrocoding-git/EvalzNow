@@ -16,6 +16,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import toast, { Toaster } from "react-hot-toast";
 import { Controls } from "three";
 import { useRouter } from "next/navigation";
+import { useClient } from "@/context/ClientContext";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -66,6 +67,7 @@ export default function AdminControl() {
 
 
   const { setFormStatus } = useFormStatus();
+  const { activeClientId, setActiveClientId } = useClient();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -190,8 +192,10 @@ export default function AdminControl() {
     // Select first client by default
     if (dataList.length > 0) {
       setSelectedClient(dataList[0]);
+      setActiveClientId(dataList[0].id);
     } else {
       setSelectedClient(null);
+      setActiveClientId(null);
     }
   }, [dataList]);
 
@@ -367,25 +371,27 @@ export default function AdminControl() {
               <div className="flex-1">
                 {getFilteredData().map((item) => {
                   const isSelected =  selectedClient?.id === item.id;
+                  const isActive = activeClientId === item.id;   
                   return (
                     <div
                       key={item.id}
                       className={`client-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
                         isSelected
                           ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                          : "hover:bg-gray-50"
-                      }`}
+                          : "hover:bg-gray-50"} `}
                       onClick={(e) => { 
                         e.stopPropagation();
                         setSelectedClient(item)
                         setShowEdit(true);
                         setShowAdd(false);
                         // setFormStatus("Editing...");
+                
                       }}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setSelectedClient(item);
+                        setActiveClientId(item.id);
                         setContextMenu({
                           visible: true,
                           x: e.pageX,
@@ -397,22 +403,22 @@ export default function AdminControl() {
                     >
                       <p
                         className={`text-sm  truncate ${
-                          isSelected ? "text-black font-bold" : "text-gray-800"
-                        } `}
+                          isSelected ? "text-black" : "text-gray-800"
+                        } ${isActive ? "font-bold" : "text-gray-800"}`}
                       >
                         {item.lastName}
                       </p>
                       <p
                         className={`text-sm truncate ${
-                          isSelected ? "text-black font-bold" : "text-gray-800"
-                        } `}
+                          isSelected ? "text-black " : "text-gray-800"
+                        } ${isActive ? "font-bold" : "text-gray-800"}`}
                       >
                         {item.firstName}
                       </p>
                       <p
                         className={`text-sm  truncate ${
-                          isSelected ? "text-black font-bold" : "text-gray-800"
-                        } `}
+                          isSelected ? "text-black " : "text-gray-800"
+                        } ${isActive ? "font-bold" : "text-gray-800"}`}
                       >
                         {item.executiveId}
                       </p>
@@ -441,7 +447,7 @@ export default function AdminControl() {
         
 
         {/* Context Menu */}
-        {contextMenu.visible && (
+        {/* {contextMenu.visible && (
           <div
             className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -460,7 +466,7 @@ export default function AdminControl() {
               <span className="text-gray-400 text-xs ml-4">Del</span>
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Client editor */}
         <div className="h-1/2 overflow-auto my-0.5" ref={editorFormRef}>
@@ -480,10 +486,10 @@ export default function AdminControl() {
                 )
               );
               setSelectedClient(updatedClient);
-              setFormStatus("Client Created");
+              setFormStatus("Client Updated");
 
               // Optional: revert back to Ready after 2s
-              setTimeout(() => setFormStatus("Ready..."), 2000);
+              // setTimeout(() => setFormStatus("Ready..."), 2000);
             }}
           />
         </div>
