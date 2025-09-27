@@ -18,7 +18,7 @@ export default function Loading() {
 
       {/* Main heading */}
       <div className="px-8 py-8 ">
-        <h1 className="text-3xl font-bold text-gray-800">Altair® HyperMesh®</h1>
+        <h1 className="text-4xl font-bold text-gray-800">Altair<span className='text-2xl'><sup>®</sup></span> HyperMesh<span className='text-2xl'><sup>®</sup></span></h1>
       </div>
 
       {/* Footer section */}
@@ -26,23 +26,23 @@ export default function Loading() {
         <div className="flex justify-between items-end px-4">
           <div className="text-sm text-gray-600">
             <p className='text-2xl font-bold'>2024</p>
-            <p>Copyright© 2024 Altair Engineering Inc. All Rights Reserved</p>
+            <p>Copyright © 2024 Altair Engineering Inc. All Rights Reserved</p>
             <p>Loading HyperWorksDesktop.</p>
           </div>
 
-          <div className="flex items-center">
-            <div className="relative">
+          <div className="flex items-center mb-4">
+            <div className="relative bottom-1">
               <Image 
                 src={loadingIcon}
                 alt="Altair icon"
-                width={40}
-                height={40}
+                width={45}
+                height={45}
                 priority
               />
             </div>
             <div className="">
-              <p className="font-semibold text-Blue-800">ALTAIR</p>
-              <p className="text-xs text-Blue-500">ONLY FORWARD</p>
+              <p className="font-semibold text-lg text-blue-800">ALTAIR</p>
+              <p className="text-[8px] font-semibold text-blue-300">ONLY FORWARD</p>
             </div>
           </div>
         </div>

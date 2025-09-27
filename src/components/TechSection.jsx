@@ -1,9 +1,9 @@
 export default function TextSection() {
   return (
     <div className="flex-1 bg-gradient-to-br from-red-900 to-blue-900 text-white flex items-center justify-center p-12">
-      <div className="max-w-md text-justify">
+      <div className=" text-justify">
         <h1 className="text-6xl text-center font-bold mb-8">EVZ</h1>
-        <p>
+        <p className="text-2xl">
           EvalzNow, which is derived from cognitive science, educational
           psychology, and complex mathematical modelling, is the first human
           capital assessment tool that calculates proficiency scores, growth

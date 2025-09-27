@@ -131,10 +131,10 @@ export default function CreateClientForm({ onClose, onCreate }) {
     try {
       
       await onCreate(clientData);
-      setFormStatus("Completed");
+      setFormStatus("Client Created");
 
       // Show "Completed" for 2.5 seconds, then revert to "Ready..."
-      setTimeout(() => setFormStatus("Ready..."), 2500);
+      // setTimeout(() => setFormStatus("Ready..."), 2500);
 
       onClose();
       

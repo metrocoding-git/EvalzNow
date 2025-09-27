@@ -17,6 +17,7 @@ import { createStaff, deleteStaff, getAllStaffs } from "@/services/staffService"
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useClient } from "@/context/ClientContext";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -56,9 +57,10 @@ export default function StaffControl() {
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
+  const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
 
-
+  console.log("active Client Id on staff:", activeClientId);
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -224,14 +226,14 @@ export default function StaffControl() {
         setShowEdit(false);
       }
   
-      console.log("Staff deleted successfully");
+      // console.log("Staff deleted successfully");
     } catch (err) {
       console.error("Failed to delete staff:", err);
       setError("Failed to delete staff. Please try again.");
     }
   };
   
-  console.log("staffs: ", dataList);
+  // console.log("staffs: ", dataList);
 
   return (
     <div className="flex h-full overflow-hidden">

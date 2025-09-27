@@ -213,15 +213,11 @@ export default function EntitiesManager() {
   return (
     <div className="flex h-full overflow-hidden">
 
-    {loading ? (
+    {/* {loading ? (
       <div className="flex items-center justify-center w-full">
         <Loading />
       </div>
-    ) : !unitData ? (
-      <div className="flex items-center justify-center w-full h-screen">
-        <Loading />
-      </div>
-    ) : (
+    )  : ( */}
       <>
         {/* Sidebar */}
         <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
@@ -368,7 +364,7 @@ export default function EntitiesManager() {
         </div>
 
         </>
-      )}
+      {/* )} */}
     </div>
   );
 }

@@ -48,54 +48,57 @@ export default function LoginForm() {
 
   return (
     <div className="flex-1 relative flex items-center justify-center p-12 bg-white">
-      <div className="absolute top-4 left-4 text-sm text-gray-600 cursor-pointer hover:text-gray-900 transition-colors">
+      {/* Top left "Return Home" */}
+      <div className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors">
         &lt;&lt; RETURN HOME
       </div>
-
+  
+      {/* Login Form */}
       <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
         <h2 className="text-2xl text-black font-bold text-center">EVALZNOW</h2>
-        <p className="text-center text-xs text-gray-500">
+        <p className="text-center text-xs">
           PLEASE ENTER YOUR USERNAME AND PASSWORD TO LOGIN
         </p>
-
+  
         <input
           type="text"
           name="username"
           placeholder="USERNAME"
-          className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors"
+          className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors placeholder-black"
           onChange={handleChange}
           value={formData.username}
         />
-
+  
         <input
           type="password"
           name="password"
           placeholder="PASSWORD"
-          className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors"
+          className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors placeholder-black"
           onChange={handleChange}
           value={formData.password}
         />
-
+  
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
-
-        <div className="text-right text-xs text-blue-700 hover:underline cursor-pointer">
+  
+        <div className="text-center text-xs cursor-pointer">
           RECOVER PASSWORD
         </div>
-
+  
         <button
           type="submit"
           className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium"
         >
           LOGIN
         </button>
-
-        <div className="text-center text-xs text-gray-400 mt-4">
-          © EvalzNow. All Rights Reserved.
-        </div>
       </form>
-
-
+  
+      {/* Bottom-right copyright */}
+      <div className="absolute bottom-4 right-4 text-xs font-bold">
+        © EvalzNow. All Rights Reserved.
+      </div>
+  
       <Toaster />
     </div>
   );
+  
 }

@@ -285,27 +285,59 @@ const [formData, setFormData] = useState({
     "competency",
   ];
 
-  // Check if at least one MC or CC has a value
-  const hasAtLeastOneCriteriaValue = () => {
+// Check if all MC and CC fields are filled (for Workforce)
+const allCriteriaFilled = () => {
+  for (let i = 1; i <= 20; i++) {
+    if (
+      (formData[`mc${i}`] === "" || formData[`mc${i}`] === null) &&
+      (formData[`cc${i}`] === "" || formData[`cc${i}`] === null)
+    ) {
+      return false; // Found an empty MC or CC field
+    }
+  }
+  return true; // All fields filled
+};
+
+const isSubmitDisabled = (() => {
+  // Check required fields common for both environments
+  const requiredMissing = requiredFields.some(
+    (field) => !formData[field] || formData[field].toString().trim() === ""
+  );
+  if (requiredMissing) return true;
+
+  if (environment === "Classroom") {
+    return (
+      formData.attainedScore === null ||
+      formData.attainedScore === "" ||
+      formData.maxScore === null ||
+      formData.maxScore === ""
+    );
+  }
+
+  if (environment === "Workforce") {
+    // At least one MC or CC must have a value
+    let hasValue = false;
+
     for (let i = 1; i <= 20; i++) {
-      if ((formData[`mc${i}`] !== "" && formData[`mc${i}`] !== null) ||
-          (formData[`cc${i}`] !== "" && formData[`cc${i}`] !== null)) {
-        return true;
+      if (
+        (formData[`mc${i}`] !== "" && formData[`mc${i}`] !== null) ||
+        (formData[`cc${i}`] !== "" && formData[`cc${i}`] !== null)
+      ) {
+        hasValue = true;
+        break;
       }
     }
-    return false;
-  };
 
-  // Update isSubmitDisabled
-  const isSubmitDisabled = requiredFields.some(
-    (field) => !formData[field] || formData[field].toString().trim() === ""
-  ) || (environment === "Classroom" && (
-        formData.attainedScore === null ||
-        formData.attainedScore === "" ||
-        formData.maxScore === null ||
-        formData.maxScore === ""
-      )) 
-    || !hasAtLeastOneCriteriaValue(); 
+    return !hasValue; // disable if none have value
+  }
+
+  return false;
+})();
+
+
+
+
+
   
 
   const handleSubmit = async () => {
@@ -493,16 +525,24 @@ const [formData, setFormData] = useState({
   
           // Extract PP IDs and sort ascending (numeric or string)
           const ppList = blocks
-          .map((b) => b.ppId)
-          .filter((pp) => pp !== undefined && pp !== null && pp !== "")
-          .sort((a, b) => {
-            // Try numeric comparison first
-            const numA = parseInt(a, 10);
-            const numB = parseInt(b, 10);
-            if (!isNaN(numA) && !isNaN(numB)) return numA - numB; // ascending
-            // fallback to string compare
-            return a.localeCompare(b);
-          });
+  .map((b) => b.ppId)
+  .filter((pp) => pp !== undefined && pp !== null && pp !== "")
+  .sort((a, b) => {
+    const numA = parseInt(a, 10);
+    const numB = parseInt(b, 10);
+
+    // If both negative, sort descending
+    if (numA < 0 && numB < 0) return numB - numA;
+    // If both positive, sort ascending
+    if (numA > 0 && numB > 0) return numA - numB;
+    // Negatives come before positives
+    if (numA < 0) return -1;
+    if (numB < 0) return 1;
+
+    // Fallback for strings
+    return a.localeCompare(b);
+  });
+
 
           setPpIds(ppList);
 

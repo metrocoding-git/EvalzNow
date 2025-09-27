@@ -31,6 +31,7 @@ import { createAssessmentBlock, createDuplicateAssessmentBlock, getAssessmentBlo
 import { createScoringCriteria, getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { createInsertScore, getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
 import { createBenchmark } from "@/services/benchmarkService";
+import { Toaster } from "react-hot-toast";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -1108,7 +1109,7 @@ const filteredCandidates = unitRosterData
           </div>
         )}
       </div>
-
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
