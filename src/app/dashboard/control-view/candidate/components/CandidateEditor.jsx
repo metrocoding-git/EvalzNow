@@ -273,7 +273,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setFormStatus("Processing");
+    setFormStatus("Processing...");
     setError(null);
   
     try {
@@ -301,7 +301,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
       };
   
       const updatedCandidate = await updateCandidate(candidate.id, updatedData);
-  
+      
       if (typeof onSave === "function") {
         onSave(updatedCandidate);
       }

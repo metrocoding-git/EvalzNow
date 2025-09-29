@@ -70,10 +70,8 @@ export default function CreateStaffForm({ onClose, onCreate }) {
       };
 
       await onCreate(staffData);
-      setFormStatus("Completed");
+      setFormStatus("Staff Created");
 
-      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
-      setTimeout(() => setFormStatus("Ready..."), 2500);
       onClose();
     } catch (err) {
       const errorMessage =

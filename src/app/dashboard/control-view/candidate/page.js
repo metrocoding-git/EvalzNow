@@ -289,9 +289,11 @@ export default function CandidateControl() {
 
   const handleDelete = async (id) => {
     try {
+      setFormStatus('Processing...')
       await deleteCandidate(id);
       const updated = dataList.filter(item => item.id !== id);
       setDataList(updated);
+      setFormStatus('Candidate Deleted');
       if (selectedCandidate?.id === id) {
         setSelectedCandidate(updated[0] || null);
         setShowEdit(updated.length > 0);
@@ -721,10 +723,10 @@ export default function CandidateControl() {
               )
             );
             setSelectedCandidate(updatedCandidate);
-            setFormStatus("Candidate Created");
+            setFormStatus("Candidate Updated");
 
               // Optional: revert back to Ready after 2s
-              setTimeout(() => setFormStatus("Ready..."), 2000);
+              
           }}
         />
 

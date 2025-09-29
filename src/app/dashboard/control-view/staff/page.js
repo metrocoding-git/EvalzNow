@@ -217,10 +217,11 @@ export default function StaffControl() {
 
   const handleDelete = async (id) => {
     try {
+      setFormStatus('Processing...')
       await deleteStaff(id); // API call to delete from backend
       
       setDataList((prev) => prev.filter((staff) => staff.id !== id)); // Remove from state
-      
+      setFormStatus('Staff Deleted');
       if (selectedStaff?.id === id) {
         setSelectedStaff(null);
         setShowEdit(false);
@@ -413,10 +414,8 @@ export default function StaffControl() {
               )
             );
             setSelectedStaff(updatedStaff);
-            setFormStatus("Staff Created");
+            setFormStatus("Staff Updated");
 
-              // Optional: revert back to Ready after 2s
-              setTimeout(() => setFormStatus("Ready..."), 2000);
           }}
         />
         </div>

@@ -39,7 +39,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    setFormStatus("Processing");
+    setFormStatus("Processing...");
     setError(null);
 
     try {
@@ -58,7 +58,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
       };
 
       const updatedStaff = await updateStaff(staff.id, updatedData);
-
+     
       onSave(updatedStaff); // Notify parent of changes
       onClose(); // Close editor
     } catch (err) {

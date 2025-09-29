@@ -210,10 +210,8 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
       };
   
       await onCreate(candidateData);
-      setFormStatus("Completed");
+      setFormStatus("Candidate Created");
 
-      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
-      setTimeout(() => setFormStatus("Ready..."), 2500);
       onClose();
       
     } catch (err) {
