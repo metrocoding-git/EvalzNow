@@ -249,7 +249,7 @@ const THRESHOLD_NAMES = {
       // console.log("Unit created successfully:", createdUnit);
       
       await onSubmit(unitData);
-      setFormStatus("Completed");
+      setFormStatus("Unit Created");
       console.log("unit Data", unitData);
       onClose();
     } catch (error) {
@@ -537,7 +537,7 @@ const THRESHOLD_NAMES = {
                   {/* Benchmark ID */}
                   <div className="flex flex-col min-w-[120px]">
                     <label className="text-gray-700 font-medium text-xs">
-                      Benchmark ID:
+                      BID:
                     </label>
                     <input
                       type="text"

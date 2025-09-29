@@ -1,7 +1,7 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
-import { createInsertScore } from "@/services/insertScoreService";
+import { createInsertScore, getCriticalRefbyPpId } from "@/services/insertScoreService";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { ListFilterPlus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -174,6 +174,7 @@ const competencyTypes = {
 const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 
+
 export default function CreateInsertScoresForm({ onClose, candidateId }) {
 
 const [formData, setFormData] = useState({
@@ -249,7 +250,7 @@ const [formData, setFormData] = useState({
 
   const rawType = searchParams.get("type") || "communicative";
   const type = rawType.toLowerCase(); // normalize
-
+  const [criticalRange, setCriticalRange] = useState(null);
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
@@ -315,36 +316,43 @@ const isSubmitDisabled = (() => {
   }
 
   if (environment === "Workforce") {
-    // At least one MC or CC must have a value
-    let hasValue = false;
+    // Check if at least one MC or CC has a valid numeric value (not empty, not null, not undefined, not NaN)
+    let hasAtLeastOneValue = false;
 
     for (let i = 1; i <= 20; i++) {
-      if (
-        (formData[`mc${i}`] !== "" && formData[`mc${i}`] !== null) ||
-        (formData[`cc${i}`] !== "" && formData[`cc${i}`] !== null)
-      ) {
-        hasValue = true;
-        break;
+      const mcValue = formData[`mc${i}`];
+      const ccValue = formData[`cc${i}`];
+      
+      // Convert to number and check if it's a valid number
+      const mcNum = parseFloat(mcValue);
+      const ccNum = parseFloat(ccValue);
+      
+      const mcHasValue = !isNaN(mcNum) && mcValue !== "" && mcValue !== null && mcValue !== undefined;
+      const ccHasValue = !isNaN(ccNum) && ccValue !== "" && ccValue !== null && ccValue !== undefined;
+      
+      if (mcHasValue || ccHasValue) {
+        hasAtLeastOneValue = true;
+        break; // Found at least one value, no need to check further
       }
     }
 
-    return !hasValue; // disable if none have value
+    return !hasAtLeastOneValue; // disable if none have value
   }
 
   return false;
 })();
 
 
-
-
-
-  
-
   const handleSubmit = async () => {
     if (!formData.assessmentBlockId || !unitId) {
       setError("Missing unitId or assessmentBlockId.");
       return;
     }
+
+    // Validate against critical date range
+if (!validateCriticalDate(formData.criticalRefDate)) return;
+
+    
   
     for (let field of requiredFields) {
       if (!formData[field] || formData[field].toString().trim() === "") {
@@ -452,8 +460,8 @@ const isSubmitDisabled = (() => {
   
       await createInsertScore(payload);
       console.log("successfully submitted.", payload);
-      setFormStatus("Completed");
-      setTimeout(() => setFormStatus("Ready..."), 2500);
+      setFormStatus("Insert Score Created");
+     
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
@@ -525,26 +533,25 @@ const isSubmitDisabled = (() => {
   
           // Extract PP IDs and sort ascending (numeric or string)
           const ppList = blocks
-  .map((b) => b.ppId)
-  .filter((pp) => pp !== undefined && pp !== null && pp !== "")
-  .sort((a, b) => {
-    const numA = parseInt(a, 10);
-    const numB = parseInt(b, 10);
+        .map((b) => b.ppId)
+        .filter((pp) => pp !== undefined && pp !== null && pp !== "")
+        .sort((a, b) => {
+          const numA = parseInt(a, 10);
+          const numB = parseInt(b, 10);
 
-    // If both negative, sort descending
-    if (numA < 0 && numB < 0) return numB - numA;
-    // If both positive, sort ascending
-    if (numA > 0 && numB > 0) return numA - numB;
-    // Negatives come before positives
-    if (numA < 0) return -1;
-    if (numB < 0) return 1;
+          // If both negative, sort descending
+          if (numA < 0 && numB < 0) return numB - numA;
+          // If both positive, sort ascending
+          if (numA > 0 && numB > 0) return numA - numB;
+          // Negatives come before positives
+          if (numA < 0) return -1;
+          if (numB < 0) return 1;
 
-    // Fallback for strings
-    return a.localeCompare(b);
-  });
+          // Fallback for strings
+          return a.localeCompare(b);
+        });
 
-
-          setPpIds(ppList);
+        setPpIds(ppList);
 
         } else {
           setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
@@ -560,7 +567,62 @@ const isSubmitDisabled = (() => {
   
     fetchBlockInfo();
   }, [unitId, candidateId]);
-  
+
+
+  // Fetch Critical Reference Date by PP ID
+useEffect(() => {
+  const fetchCriticalRefByPpId = async () => {
+    if (!unitId || !candidateId || !formData?.ppId) return;
+
+    try {
+      setLoading(true);
+      const response = await getCriticalRefbyPpId(unitId, candidateId, formData?.ppId);
+
+      // Ensure response exists and has startDate
+      if (response && response.startDate) {
+        setCriticalRange({
+          start: new Date(response.startDate),
+          end: response.endDate ? new Date(response.endDate) : null, // endDate might be null
+        });
+      } else {
+        // No critical range for this PP ID
+        setCriticalRange(null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch critical ref:", err);
+      toast.error("Failed to load critical date range.");
+      setCriticalRange(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCriticalRefByPpId();
+}, [unitId, candidateId, formData?.ppId]);
+
+// Validation before submit
+const validateCriticalDate = (inputDateStr) => {
+  if (!criticalRange || !inputDateStr) return true; // nothing to validate
+
+  const inputDate = new Date(inputDateStr);
+  const startDate = criticalRange.start;
+  const endDate = criticalRange.end;
+
+  if (inputDate < startDate) {
+    toast.error(`Critical Ref. Date cannot be before ${startDate.toLocaleDateString()}.`);
+    return false;
+  }
+
+  if (endDate && inputDate > endDate) {
+    toast.error(`Critical Ref. Date cannot be after ${endDate.toLocaleDateString()}.`);
+    return false;
+  }
+
+  return true;
+};
+
+
+
 
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">

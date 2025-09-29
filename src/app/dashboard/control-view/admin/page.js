@@ -221,11 +221,13 @@ export default function AdminControl() {
     // }
 
     try {
+      setFormStatus('Processing...')
       // Call the delete service
       await deleteClient(id);
       
       // Update local state
       const updatedData = dataList.filter((item) => item.id !== id);
+      setFormStatus('Client Deleted');
       setDataList(updatedData);
       
       // Update selected client if needed

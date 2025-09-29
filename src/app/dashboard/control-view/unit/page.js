@@ -81,7 +81,7 @@ export default function UnitControl() {
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
   const controlsRef = useRef(null);
-  const { setSelectedUnitId } = useUnit(); 
+  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
 
 
@@ -366,10 +366,11 @@ const filteredCandidates = unitRosterData
   // Delete unit
   const handleDelete = async (id) => {
     try {
+      setFormStatus('processing...')
       await deleteUnit(id);
       const updated = dataList.filter(item => item.id !== id);
       setDataList(updated);
-      
+      setFormStatus('Unit Deleted')
       if (selectedUnit?.id === id) {
         setSelectedUnit(updated[0] || null);
         setShowEdit(updated.length > 0);
@@ -417,7 +418,7 @@ const filteredCandidates = unitRosterData
     }
   };
 
-  console.log("selected candidate in roster", assessmentBlocks );
+  // console.log("selected candidate in roster", assessmentBlocks );
   // call it when unit changes
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
@@ -459,7 +460,7 @@ const filteredCandidates = unitRosterData
 
   // Remove or simplify the handleBlockUpdate function since UnitRoster handles it
   const handleBlockUpdate = (updatedBlock) => {
-    console.log("Block updated:", updatedBlock);
+    // console.log("Block updated:", updatedBlock);
     // UnitRoster will handle the refresh internally
   };
 
@@ -471,7 +472,7 @@ const filteredCandidates = unitRosterData
       // Call the update API
       const result = await updateUnit(updatedUnit.id, updatedUnit);
       
-      console.log(result);
+      // console.log(result);
       // Update the local state
       setDataList(prev =>
         prev.map(unit => unit.id === updatedUnit.id ? result : unit)
@@ -479,8 +480,8 @@ const filteredCandidates = unitRosterData
       setSelectedUnit(result);
       setShowEdit(false);
       
-      setFormStatus("Completed");
-      setTimeout(() => setFormStatus("Ready..."), 2000);
+      setFormStatus("Unit Updated");
+      
 
       return result;
     } catch (err) {
@@ -508,7 +509,7 @@ const filteredCandidates = unitRosterData
       try {
         const data = await getInsertScoreByUnitAndCandidate(selectedUnit?.id, selectedCandidate?.id);
         if (!Array.isArray(data)) throw new Error("Invalid insert score response");
-        console.log("Fetched insert scores:", data);
+        // console.log("Fetched insert scores:", data);
   
         const classroomRows = [];
         const workforceRows = [];
@@ -980,10 +981,11 @@ const filteredCandidates = unitRosterData
               onClick={() => {
                 const unit = contextMenu.selectedUnit;
                 setSelectedUnit(unit);
+                setSelectedUnitId(unit.id);
                 setUnitRoster(true);
                 setShowAdd(false);
                 setShowEdit(false);
-
+                console.log("Global Unit Id: ", unit.id);
                 // auto-select first candidate in roster
                 const rosterForUnit = unitRosterData.filter(
                   r => r.unitId === unit.id || r.unit?.id === unit.id
@@ -1022,7 +1024,7 @@ const filteredCandidates = unitRosterData
               onClick={() => {
                 if (contextMenu.selectedUnit) {
                   setSelectedUnitId(contextMenu.selectedUnit.id);
-                  console.log("Global Unit Id: ", contextMenu.selectedUnit.id);
+                  
                 }
                 setContextMenu((prev) => ({ ...prev, visible: false }));
                 router.push(`/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(contextMenu.selectedUnit.id)}&environment=${encodeURIComponent(contextMenu.selectedUnit.environment)}&type=${encodeURIComponent(contextMenu.selectedUnit.unitType)}`);
