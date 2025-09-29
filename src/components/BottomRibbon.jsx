@@ -34,9 +34,9 @@ export default function BottomRibbon({  activeButton, formStatus }) {
       </div>
 
       {/* Right side: logout button (3/12) */}
-      <div className="col-span-3 flex justify-end mr-3">
+      {/* <div className="col-span-3 flex justify-end mr-3">
         <button onClick={handleLogout} className="bg-gray-300 px-2 py-1 hover:bg-gray-400 rounded"> Logout</button>
-      </div>
+      </div> */}
     </div>
   );
 }

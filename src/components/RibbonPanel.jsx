@@ -1,6 +1,7 @@
 "use client";
 
 import IconButton from "./IconButton";
+import SettingsButton from "./SettingsButton";
 import SubIconButton from "./SubIconButton";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -109,6 +110,13 @@ const analyticCategories = [
         link: "/dashboard/analytics-view/data-reports",
         type: true,
       },
+      {
+        component: SettingsButton, // use the React component directly
+        label: "Settings",
+        link: "/dashboard/settings",
+        type: true,
+        color: "blue",
+      }
     ],
   },
 ];
@@ -218,12 +226,21 @@ export default function RibbonPanel() {
                         <div className="h-14 bg-gray-300 mr-1"></div>
                       )}
 
-                      <SubIconButton
-                        icon={item.path}
-                        label={item.label}
-                        onClick={() => item.link && router.push(item.link)}
-                        active={activeButton === item.label}
-                      />
+                      {item.component ? (
+                        <item.component
+                          icon={item.path}
+                          label={item.label}
+                          onClick={() => item.link && router.push(item.link)}
+                          active={activeButton === item.label} />
+                      ) : (
+                        <SubIconButton
+                          icon={item.path}
+                          label={item.label}
+                          onClick={() => item.link && router.push(item.link)}
+                          active={activeButton === item.label}
+                          
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
