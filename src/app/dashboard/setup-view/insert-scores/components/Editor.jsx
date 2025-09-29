@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Edit, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { updateInsertScore } from "@/services/insertScoreService";
+import { getCriticalRefbyPpId, updateInsertScore } from "@/services/insertScoreService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
+import toast from "react-hot-toast";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -163,9 +165,10 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
   const { setFormStatus } = useFormStatus();
   const environment = searchParams.get('environment') || 'workspace';
   const unitId = searchParams.get('unitId');
-
+  const [ppIds, setPpIds] = useState([]);
   const rawType = searchParams.get("type") || "communicative";
   const type = rawType.toLowerCase(); // normalize
+  const [criticalRange, setCriticalRange] = useState(null);
 
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
@@ -235,6 +238,17 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
       return;
     }
   
+    // Validate against critical date range
+    if (criticalRange && formData.criticalRefDate) {
+      const inputDate = new Date(formData.criticalRefDate);
+      if (inputDate < criticalRange.start || inputDate > criticalRange.end) {
+        toast.error(
+          `Critical Ref. Date must be between ${criticalRange.start.toLocaleDateString()} and ${criticalRange.end.toLocaleDateString()}`
+        );
+        return; // ⛔ Stop submission
+      }
+    }
+
     try {
       setLoading(true);
       setFormStatus("Processing...");
@@ -252,10 +266,9 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
       };
   
       const response = await updateInsertScore(details.id, payload); 
-      setFormStatus("Completed");
+      setFormStatus("Insert Score Updated");
 
-      // Show "Completed" for 2.5 seconds, then revert to "Ready..."
-      setTimeout(() => setFormStatus("Ready..."), 2500);
+      
       console.log("Successfully updated insert score.");
   
       if (onUpdate) onUpdate(response);
@@ -268,6 +281,80 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
     }
   };
   
+  useEffect(() => {
+    const fetchBlockInfo = async () => {
+      if (!formData.unitId || !formData.candidate_id) return;
+  
+      try {
+        setLoading(true);
+        const blocks = await getAssessmentBlockByUnitAndCandidate(formData.unitId, formData.candidate_id);
+  
+        if (blocks?.length > 0) {
+          
+          // Extract PP IDs and sort ascending (numeric or string)
+          const ppList = blocks
+        .map((b) => b.ppId)
+        .filter((pp) => pp !== undefined && pp !== null && pp !== "")
+        .sort((a, b) => {
+          const numA = parseInt(a, 10);
+          const numB = parseInt(b, 10);
+
+          // If both negative, sort descending
+          if (numA < 0 && numB < 0) return numB - numA;
+          // If both positive, sort ascending
+          if (numA > 0 && numB > 0) return numA - numB;
+          // Negatives come before positives
+          if (numA < 0) return -1;
+          if (numB < 0) return 1;
+
+          // Fallback for strings
+          return a.localeCompare(b);
+        });
+
+        setPpIds(ppList);
+
+        } else {
+          // setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
+          setPpIds([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch block info:", err);
+        toast.error("Failed to load candidate block data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchBlockInfo();
+  }, [formData.unitId, formData.candidate_id]);
+
+  useEffect(() => {
+    const fetchCriticalRefByPpId = async () => {
+      if (!formData.unitId || !formData.candidate_id || !formData.ppId) return;
+  
+      try {
+        setLoading(true);
+        const response = await getCriticalRefbyPpId(formData.unitId, formData.candidate_id, formData.ppId);
+        console.log("selected pp id:->", response);
+        // assuming your API returns { ppId, startDate, endDate }
+        if (response) {
+          setCriticalRange({
+            start: new Date(response.startDate),
+            end: new Date(response.endDate),
+          });
+        } else {
+          setCriticalRange(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch critical ref:", err);
+        toast.error("Failed to load critical date range.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCriticalRefByPpId();
+  }, [formData.unitId, formData.candidate_id, formData?.ppId]);
 
 
   return (
@@ -302,7 +389,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
                     Select PP ID
                   </option>
                   {performancePoints == ""}
-                  {mockPpIds.map((pp, i) => (
+                  {ppIds.map((pp, i) => (
                     <option key={i} value={pp}>
                       {pp}
                     </option>

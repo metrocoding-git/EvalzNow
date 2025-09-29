@@ -19,6 +19,7 @@ import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import Loading from "@/components/Loading";
 import { useFormStatus } from "@/context/FormStatusContext";
+import toast from "react-hot-toast";
 
 export default function EntitiesManager() {
   // Initial table data in state
@@ -86,7 +87,7 @@ export default function EntitiesManager() {
         if (!Array.isArray(data) || data.length === 0) {
           setUnitData(null);
           setCandidateList([]);
-          router.replace("/dashboard/control-view/unit");
+          toast.error("Please choose the candidate on unit roster.");
           return;
         }
 
@@ -297,7 +298,11 @@ export default function EntitiesManager() {
 
                   {/* Candidate Rows */}
                   <div className="mt-2">
-                    {filteredData.map((item) => (
+                    {filteredData.length === 0 ? (
+    <div className="px-4 py-6 text-center text-gray-500">
+      No candidates found for this unit.
+    </div>
+  ) : (filteredData.map((item) => (
                       <div
                         key={item.id}
                         className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${selectedEntity?.id === item.id
@@ -328,7 +333,7 @@ export default function EntitiesManager() {
                         <div>{item.firstName}</div>
                         <div>{item.id}</div>
                       </div>
-                    ))}
+                   ) ))}
                   </div>
                 </>
               )}

@@ -96,6 +96,19 @@ export const getPpIdSummary = async (unitId, candidate_id) => {
   }
 };
 
+export const getCriticalRefbyPpId = async (unitId, candidate_id, ppId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.INSERT_SCORE}/critical-range?unitId=${unitId}&candidate_id=${candidate_id}&ppId=${ppId}`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error fetching critical reference range for unitId=${unitId}, candidate_id=${candidate_id}:`,
+      error
+    );
+    throw error;
+  }
+};
+
 
 
   // Get insert scores by pp id summary
