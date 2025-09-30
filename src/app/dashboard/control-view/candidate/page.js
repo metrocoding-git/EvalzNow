@@ -23,6 +23,7 @@ import { createIncome, deleteIncome, getAllIncomes, updateIncome } from "@/servi
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useClient } from "@/context/ClientContext";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -63,6 +64,7 @@ export default function CandidateControl() {
    const reviewRef = useRef(null);
    const router = useRouter();
    const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+   const { activeClientId, setActiveClientId } = useClient();
 
    useEffect(() => {
     const token = localStorage.getItem("token");
@@ -78,7 +80,7 @@ export default function CandidateControl() {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        const data = await getAllCandidates();
+        const data = await getAllCandidates(activeClientId);
         const sortedData = Array.isArray(data)
           ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
           : [];
@@ -97,7 +99,7 @@ export default function CandidateControl() {
     };
 
     fetchCandidates();
-  }, []);
+  }, [activeClientId]);
 
 
   // Fetch all candidates on mount
@@ -180,6 +182,7 @@ export default function CandidateControl() {
       const candidateWithAccount = {
         ...newCandidate,
         accountId: loggedInUser?.id, // ✅ assign accountId
+        clientId: activeClientId
       };
       const created = await createCandidate(candidateWithAccount);
       setDataList(prev => [...prev, created]);

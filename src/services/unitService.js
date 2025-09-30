@@ -35,9 +35,9 @@ export const deleteUnit = async (id) => {
 };
 
 // Get all units
-export const getAllUnits = async () => {
+export const getAllUnits = async (clientId) => {
   try {
-    const response = await api.get(API_ROUTES.UNIT);
+    const response = await api.get(`${API_ROUTES.UNIT}/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching units:", error);

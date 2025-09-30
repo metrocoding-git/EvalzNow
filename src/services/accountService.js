@@ -57,3 +57,15 @@ export const login = async (loginData) => {
 };
 
 
+// Create new client
+export const createAccount = async (accData) => {
+  try {
+    const response = await api.post(`${API_ROUTES.ACCOUNT}/create`, accData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating client:", error);
+    throw error;
+  }
+};
+
+

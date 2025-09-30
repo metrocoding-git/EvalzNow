@@ -1,5 +1,6 @@
 // SearchLookup.js - Create this as a separate component file
 "use client";
+import { useClient } from "@/context/ClientContext";
 import { getAllCandidates } from "@/services/candidateService";
 import { createUnitRoster, deleteUnitRoster, getUniRostertByUnitId } from "@/services/unitRosterService";
 import { X, Search, ChevronDown, ChevronRight } from "lucide-react";
@@ -16,13 +17,14 @@ export default function SearchLookup({ onClose, selectedUnit, refreshRoster, ref
   const [error, setError] = useState(null);
   const [candidateData, setCandidateData] = useState([]);
   // const [rosterCandidateIds, setRosterCandidateIds] = useState([]);
-  
+  const { activeClientId, setActiveClientId } = useClient();
+
 // Fetch all candidates on mount
 useEffect(() => {
   const fetchCandidates = async () => {
     try {
       setLoading(true);
-      const data = await getAllCandidates();
+      const data = await getAllCandidates(activeClientId);
       setCandidateData(Array.isArray(data) ? data : []); // ✅ store in state
     } catch (err) {
       console.error("Failed to fetch candidates:", err);
@@ -33,7 +35,7 @@ useEffect(() => {
   };
 
   fetchCandidates();
-}, []);
+}, [activeClientId]);
 
 const [rosterCandidateIds, setRosterCandidateIds] = useState([]);
 

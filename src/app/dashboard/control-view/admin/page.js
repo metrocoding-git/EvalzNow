@@ -17,6 +17,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { Controls } from "three";
 import { useRouter } from "next/navigation";
 import { useClient } from "@/context/ClientContext";
+import { createAccount } from "@/services/accountService";
 
 export default function AdminControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -104,15 +105,26 @@ export default function AdminControl() {
 
   const handleCreate = async (newClient) => {
     try {
+
+      const accountPayload = {
+        username: newClient.emailAddress,
+        password: "12345678", // default password
+        acc_id: loggedInUser?.acc,
+        role: "admin",
+      };
+      const createdAccount = await createAccount(accountPayload);
+
+      console.log("client created: ->", createdAccount);
+
       const clientWithAccount = {
         ...newClient,
         accountId: loggedInUser?.id, // ✅ assign accountId
       };
-
+      
       const createdClient = await createClient(clientWithAccount);
       setClients(prev => [...prev, createdClient]);
       setDataList(prev => [...prev, createdClient]);
-      console.log(dataList);
+      // console.log(dataList);
       setSelectedClient(createdClient);
       setShowAdd(false);
       return createdClient;

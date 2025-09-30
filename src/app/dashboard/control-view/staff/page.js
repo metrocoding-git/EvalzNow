@@ -31,6 +31,7 @@ export default function StaffControl() {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -75,7 +76,7 @@ export default function StaffControl() {
     const fetchStaffs = async () => {
       try {
         setLoading(true);
-        const data = await getAllStaffs();
+        const data = await getAllStaffs(activeClientId);
          // Sort ascending by staffId or id
         const sortedData = (Array.isArray(data) ? data : []).sort(
           (a, b) => Number(a.id) - Number(b.id)
@@ -99,7 +100,7 @@ export default function StaffControl() {
     };
 
     fetchStaffs();
-  }, []);
+  }, [activeClientId]);
 
   // Create new staff
   const handleCreate = async (newStaff) => {
@@ -116,6 +117,7 @@ export default function StaffControl() {
       const staffWithAccount = {
         ...newStaff,
         accountId: loggedInUser?.id, // ✅ assign accountId
+        clientId: activeClientId, 
       };
       const createdStaff = await createStaff(staffWithAccount);
       setDataList((prev) => [...prev, createdStaff]);

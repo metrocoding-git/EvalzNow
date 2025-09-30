@@ -96,9 +96,9 @@ export const getPpIdSummary = async (unitId, candidate_id) => {
   }
 };
 
-export const getCriticalRefbyPpId = async (unitId, candidate_id, ppId) => {
+export const getCriticalRefbyPpId = async (ppId, unitId, candidate_id) => {
   try {
-    const response = await api.get(`${API_ROUTES.INSERT_SCORE}/critical-range?unitId=${unitId}&candidate_id=${candidate_id}&ppId=${ppId}`);
+    const response = await api.get(`${API_ROUTES.INSERT_SCORE}/critical-range/${ppId}/${unitId}/${candidate_id}`);
     return response.data;
   } catch (error) {
     console.error(

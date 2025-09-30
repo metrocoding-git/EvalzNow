@@ -32,6 +32,7 @@ import { createScoringCriteria, getScoringCriteriaByUnitId } from "@/services/sc
 import { createInsertScore, getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
 import { createBenchmark } from "@/services/benchmarkService";
 import { Toaster } from "react-hot-toast";
+import { useClient } from "@/context/ClientContext";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -80,6 +81,7 @@ export default function UnitControl() {
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
+  const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
@@ -100,7 +102,7 @@ export default function UnitControl() {
     const fetchUnits = async () => {
       try {
         setLoading(true);
-        const units = await getAllUnits();
+        const units = await getAllUnits(activeClientId);
         setDataList(Array.isArray(units) ? units : []);
         console.log("units in control: " , units, " using data list: ", dataList);
         if (units.length > 0) {
@@ -116,7 +118,7 @@ export default function UnitControl() {
     };
 
     fetchUnits();
-  }, []);
+  }, [activeClientId]);
 
   const fetchRosterData = async () => {
     if (!selectedUnit?.id) return;
@@ -292,6 +294,7 @@ const filteredCandidates = unitRosterData
       const unitWithAccount = {
         ...newUnit,
         accountId: loggedInUser?.id, // ✅ assign accountId
+        clientId: activeClientId, 
       };
       const data = await createUnit(unitWithAccount);
        

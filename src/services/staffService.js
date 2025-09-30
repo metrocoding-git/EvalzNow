@@ -36,9 +36,9 @@ export const deleteStaff = async (id) => {
   }
 };
 
-export const getAllStaffs = async () => {
+export const getAllStaffs = async (clientId) => {
     try {
-        const response = await api.get(API_ROUTES.STAFFS);
+        const response = await api.get(`${API_ROUTES.STAFFS}/${clientId}`);
         return response.data;
       } catch (error) {
         console.error("Error fetching clients:", error);
