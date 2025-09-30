@@ -350,7 +350,7 @@ const isSubmitDisabled = (() => {
     }
 
     // Validate against critical date range
-if (!validateCriticalDate(formData.criticalRefDate)) return;
+    if (!validateCriticalDate(formData.criticalRefDate)) return;
 
     
   
@@ -576,8 +576,9 @@ useEffect(() => {
 
     try {
       setLoading(true);
-      const response = await getCriticalRefbyPpId(unitId, candidateId, formData?.ppId);
+      const response = await getCriticalRefbyPpId(formData?.ppId, unitId, candidateId);
 
+      console.log("ref check: ->", response);
       // Ensure response exists and has startDate
       if (response && response.startDate) {
         setCriticalRange({
@@ -696,6 +697,7 @@ const validateCriticalDate = (inputDateStr) => {
             value={formData.criticalRefDate}
             onChange={(e) => handleChange("criticalRefDate", e.target.value)}
             className="flex-1 border px-2 py-1"
+           
           />
 
 
@@ -934,7 +936,7 @@ const validateCriticalDate = (inputDateStr) => {
         </div>
       </div>
 
-      <Toaster position="top-right" reverseOrder={false} />
+   
 
     </div >
   );

@@ -239,15 +239,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
     }
   
     // Validate against critical date range
-    if (criticalRange && formData.criticalRefDate) {
-      const inputDate = new Date(formData.criticalRefDate);
-      if (inputDate < criticalRange.start || inputDate > criticalRange.end) {
-        toast.error(
-          `Critical Ref. Date must be between ${criticalRange.start.toLocaleDateString()} and ${criticalRange.end.toLocaleDateString()}`
-        );
-        return; // ⛔ Stop submission
-      }
-    }
+    if (!validateCriticalDate(formData.criticalRefDate)) return;
+
 
     try {
       setLoading(true);
@@ -328,33 +321,58 @@ export default function Editor({ details, performancePoints, onClose, onUpdate  
     fetchBlockInfo();
   }, [formData.unitId, formData.candidate_id]);
 
-  useEffect(() => {
-    const fetchCriticalRefByPpId = async () => {
-      if (!formData.unitId || !formData.candidate_id || !formData.ppId) return;
-  
-      try {
-        setLoading(true);
-        const response = await getCriticalRefbyPpId(formData.unitId, formData.candidate_id, formData.ppId);
-        console.log("selected pp id:->", response);
-        // assuming your API returns { ppId, startDate, endDate }
-        if (response) {
-          setCriticalRange({
-            start: new Date(response.startDate),
-            end: new Date(response.endDate),
-          });
-        } else {
-          setCriticalRange(null);
-        }
-      } catch (err) {
-        console.error("Failed to fetch critical ref:", err);
-        toast.error("Failed to load critical date range.");
-      } finally {
-        setLoading(false);
+   // Fetch Critical Reference Date by PP ID
+useEffect(() => {
+  const fetchCriticalRefByPpId = async () => {
+    if (!formData.unitId || !formData.candidate_id || !formData?.ppId) return;
+
+    try {
+      setLoading(true);
+      const response = await getCriticalRefbyPpId(formData?.ppId, formData.unitId, formData.candidate_id);
+
+      console.log("ref check: ->", response);
+      // Ensure response exists and has startDate
+      if (response && response.startDate) {
+        setCriticalRange({
+          start: new Date(response.startDate),
+          end: response.endDate ? new Date(response.endDate) : null, // endDate might be null
+        });
+      } else {
+        // No critical range for this PP ID
+        setCriticalRange(null);
       }
-    };
-  
-    fetchCriticalRefByPpId();
-  }, [formData.unitId, formData.candidate_id, formData?.ppId]);
+    } catch (err) {
+      console.error("Failed to fetch critical ref:", err);
+      toast.error("Failed to load critical date range.");
+      setCriticalRange(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCriticalRefByPpId();
+}, [formData.unitId, formData.candidate_id, formData?.ppId]);
+
+// Validation before submit
+const validateCriticalDate = (inputDateStr) => {
+  if (!criticalRange || !inputDateStr) return true; // nothing to validate
+
+  const inputDate = new Date(inputDateStr);
+  const startDate = criticalRange.start;
+  const endDate = criticalRange.end;
+
+  if (inputDate < startDate) {
+    toast.error(`Critical Ref. Date cannot be before ${startDate.toLocaleDateString()}.`);
+    return false;
+  }
+
+  if (endDate && inputDate > endDate) {
+    toast.error(`Critical Ref. Date cannot be after ${endDate.toLocaleDateString()}.`);
+    return false;
+  }
+
+  return true;
+};
 
 
   return (
