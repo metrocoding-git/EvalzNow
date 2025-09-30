@@ -20,6 +20,7 @@ import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlock
 import Loading from "@/components/Loading";
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast from "react-hot-toast";
+import { useClient } from "@/context/ClientContext";
 
 export default function EntitiesManager() {
   // Initial table data in state
@@ -65,7 +66,7 @@ export default function EntitiesManager() {
   const searchParams = useSearchParams();
   const unitQuery = searchParams.get("unitId");
   const [searchTerm, setSearchTerm] = useState("");
- 
+  const { activeClientId, setActiveClientId } = useClient();
   useEffect(() => {
     if (!unitQuery) {
       router.replace("/dashboard/control-view/unit");

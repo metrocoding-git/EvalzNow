@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllStaffs } from "@/services/staffService";
+import { useClient } from "@/context/ClientContext";
 
 
 
@@ -12,7 +13,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [staffs, setStaffs] = useState([]);
-  
+  const { activeClientId, setActiveClientId } = useClient();
 
   const filteredStaffs = staffs
   .filter(
@@ -32,7 +33,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
     const fetchStaffs = async () => {
       try {
         setLoading(true);
-        const data = await getAllStaffs();
+        const data = await getAllStaffs(activeClientId);
         setStaffs(data);
         console.log(data);
       } catch (err) {
@@ -44,7 +45,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
     };
 
     fetchStaffs();
-  }, []);
+  }, [activeClientId]);
 
   // useEffect(() => {
   //   setSelectedIds(initialSelectedIds); // sync whenever modal opens

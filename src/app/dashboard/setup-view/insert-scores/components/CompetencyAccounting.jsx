@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
-import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId } from "@/services/insertScoreService";
+import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId, updateInsertScore } from "@/services/insertScoreService";
 import { createScoringCriteria, deleteScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
 import { useFormStatus } from "@/context/FormStatusContext";
 
@@ -290,9 +290,17 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         });
 
 
-        // ✅ sort by ppId ascending before setting state
-        classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
-        workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+        if (activeTab === "Indirect") {
+          // Sort descending for negatives
+          classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10) > 0 ? 1 : -1);
+          workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10) > 0 ? 1 : -1);
+          classroomRows.sort((a, b) => parseInt(b.ppId, 10) - parseInt(a.ppId, 10)); // simpler
+          workforceRows.sort((a, b) => parseInt(b.ppId, 10) - parseInt(a.ppId, 10));
+        } else {
+          classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+          workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+        }
+        
   
         setClassroomData(classroomRows);
         setWorkforceData(workforceRows);
@@ -362,50 +370,92 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   
   if (!visible) return null;
 
-  const moveRowUp = () => {
+  const moveRowUp = async () => {
     if (deleteSelectedRow === null || deleteSelectedRow <= 0) return;
   
     const dataArray = environment === "Classroom" ? [...classroomData] : [...workforceData];
     const newIndex = deleteSelectedRow - 1;
-    
-    // Swap rows
-    [dataArray[deleteSelectedRow], dataArray[newIndex]] = 
-    [dataArray[newIndex], dataArray[deleteSelectedRow]];
-    
-    // Update state
+  
+    const selectedItem = { ...dataArray[deleteSelectedRow] };
+    const targetItem = { ...dataArray[newIndex] };
+  
+    // ✅ If ppIds are different, update ppId + criticalReferenceDate
+    if (selectedItem.ppId !== targetItem.ppId) {
+      selectedItem.ppId = targetItem.ppId;
+      selectedItem.criticalRefDate = targetItem.criticalRefDate;
+    } else {
+      // ✅ If ppIds are same, update only ppId
+      selectedItem.ppId = targetItem.ppId;
+    }
+  
+    // ✅ Swap visually
+    dataArray[deleteSelectedRow] = targetItem;
+    dataArray[newIndex] = selectedItem;
+  
+    // ✅ Update selectedRow state
+    setDeleteSelectedRow(newIndex);
+    setSelectedRow(selectedItem);
+  
+    // ✅ Update state array
     if (environment === "Classroom") {
       setClassroomData(dataArray);
     } else {
       setWorkforceData(dataArray);
     }
-    
-    // Update selected row
-    setDeleteSelectedRow(newIndex);
-    setSelectedRow(dataArray[newIndex]);
+  
+    // ✅ Update backend (only selected row)
+    try {
+      await updateInsertScore(selectedItem.id, selectedItem);
+      console.log(`Updated row ${selectedItem.id} with ppId ${selectedItem.ppId} and criticalReferenceDate ${selectedItem.criticalRefDate}`);
+    } catch (err) {
+      console.error("Failed to update row after moving up:", err);
+    }
   };
   
-  const moveRowDown = () => {
+  const moveRowDown = async () => {
     const dataArray = environment === "Classroom" ? [...classroomData] : [...workforceData];
-    
     if (deleteSelectedRow === null || deleteSelectedRow >= dataArray.length - 1) return;
-    
+  
     const newIndex = deleteSelectedRow + 1;
-    
-    // Swap rows
-    [dataArray[deleteSelectedRow], dataArray[newIndex]] = 
-    [dataArray[newIndex], dataArray[deleteSelectedRow]];
-    
-    // Update state
+  
+    const selectedItem = { ...dataArray[deleteSelectedRow] };
+    const targetItem = { ...dataArray[newIndex] };
+  
+    // ✅ If ppIds are different, update ppId + criticalReferenceDate
+    if (selectedItem.ppId !== targetItem.ppId) {
+      selectedItem.ppId = targetItem.ppId;
+      selectedItem.criticalRefDate = targetItem.criticalRefDate;
+    } else {
+      // ✅ If ppIds are same, update only ppId
+      selectedItem.ppId = targetItem.ppId;
+    }
+  
+    // ✅ Swap visually
+    dataArray[deleteSelectedRow] = targetItem;
+    dataArray[newIndex] = selectedItem;
+  
+    // ✅ Update selectedRow state
+    setDeleteSelectedRow(newIndex);
+    setSelectedRow(selectedItem);
+  
+    // ✅ Update state array
     if (environment === "Classroom") {
       setClassroomData(dataArray);
     } else {
       setWorkforceData(dataArray);
     }
-    
-    // Update selected row
-    setDeleteSelectedRow(newIndex);
-    setSelectedRow(dataArray[newIndex]);
+  
+    // ✅ Update backend (only selected row)
+    try {
+      await updateInsertScore(selectedItem.id, selectedItem);
+      console.log(`Updated row ${selectedItem.id} with ppId ${selectedItem.ppId} and criticalReferenceDate ${selectedItem.criticalRefDate}`);
+    } catch (err) {
+      console.error("Failed to update row after moving down:", err);
+    }
   };
+  
+  
+  
   
 
 
@@ -448,6 +498,44 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     } catch (err) {
       console.error("Error deleting insert score:", err);
       alert("Failed to delete insert score.");
+    }
+  };
+
+
+  const handleSubmit = async () => {
+    if (!formData.assessmentBlockId || !formData.unitId) {
+      setError("Missing unitId or assessmentBlockId.");
+      return;
+    }
+  
+    // Validate against critical date range
+    if (criticalRange && formData.criticalRefDate) {
+      const inputDate = new Date(formData.criticalRefDate);
+      if (inputDate < criticalRange.start || inputDate > criticalRange.end) {
+        toast.error(
+          `Critical Ref. Date must be between ${criticalRange.start.toLocaleDateString()} and ${criticalRange.end.toLocaleDateString()}`
+        );
+        return; // ⛔ Stop submission
+      }
+    }
+
+    try {
+      setLoading(true);
+      setFormStatus("Processing...");
+    
+      const response = await updateInsertScore(details.id, payload); 
+      setFormStatus("Insert Score Updated");
+
+      
+      console.log("Successfully updated insert score.");
+  
+      if (onUpdate) onUpdate(response);
+      onClose?.(); // Close the form if callback provided
+    } catch (err) {
+      console.error("Failed to update insert score:", err);
+      setError("Failed to save insert score.");
+    } finally {
+      setLoading(false);
     }
   };
   

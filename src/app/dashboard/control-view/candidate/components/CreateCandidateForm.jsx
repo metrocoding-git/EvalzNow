@@ -1,4 +1,5 @@
 "use client";
+import { useClient } from "@/context/ClientContext";
 import { useFormStatus } from "@/context/FormStatusContext";
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllEthinicities } from "@/services/ethinictyService";
@@ -67,6 +68,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
   const { formStatus, setFormStatus } = useFormStatus();
   const [dataList, setDataList] = useState([]);
   const [duplicateId, setDuplicateId] = useState(false);
+  const { activeClientId, setActiveClientId } = useClient();
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -142,7 +144,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        const data = await getAllCandidates();
+        const data = await getAllCandidates(activeClientId);
         const sortedData = Array.isArray(data)
           ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
           : [];
@@ -157,7 +159,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
     };
 
     fetchCandidates();
-  }, []);
+  }, [activeClientId]);
 
 
   // Fetch all candidates on mount

@@ -35,9 +35,9 @@ export const deleteCandidate = async (id) => {
 };
 
 // Get all candidates
-export const getAllCandidates = async () => {
+export const getAllCandidates = async (clientId) => {
   try {
-    const response = await api.get(API_ROUTES.CANDIDATE);
+    const response = await api.get(`${API_ROUTES.CANDIDATE}/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching candidates:", error);
