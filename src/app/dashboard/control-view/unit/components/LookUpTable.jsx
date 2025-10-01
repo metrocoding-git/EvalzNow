@@ -17,7 +17,8 @@ export default function SearchLookup({ onClose, selectedUnit, refreshRoster, ref
   const [error, setError] = useState(null);
   const [candidateData, setCandidateData] = useState([]);
   // const [rosterCandidateIds, setRosterCandidateIds] = useState([]);
-  const { activeClientId, setActiveClientId } = useClient();
+  // const { activeClientId, setActiveClientId } = useClient();
+  const activeClientId = sessionStorage.getItem('activeClientId');
 
 // Fetch all candidates on mount
 useEffect(() => {
@@ -35,7 +36,7 @@ useEffect(() => {
   };
 
   fetchCandidates();
-}, [activeClientId]);
+}, []);
 
 const [rosterCandidateIds, setRosterCandidateIds] = useState([]);
 

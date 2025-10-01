@@ -68,8 +68,10 @@ export default function AdminControl() {
 
 
   const { setFormStatus } = useFormStatus();
-  const { activeClientId, setActiveClientId } = useClient();
+  // const { activeClientId, setActiveClientId } = useClient();
 
+  const ACTIVE_CLIENT_KEY = "activeClientId";
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -80,28 +82,55 @@ export default function AdminControl() {
   }, [router]);
 
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllClients(); // Directly get data
-        console.log(data);
-        setDataList(data);
-        if (!data) {
-          throw new Error("No data received");
-        }
-        
-        setClients(Array.isArray(data) ? data : []); // Ensure it's an array
-      } catch (err) {
-        console.error("Failed to fetch clients:", err);
-        setError("Failed to load clients. Please try again.");
-        setClients([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllClients();
+      const clientsArray = Array.isArray(data) ? data : [];
+      setDataList(clientsArray);
+      setClients(clientsArray);
 
-    fetchClients();
-  }, []);
+      if (clientsArray.length === 0) return;
+
+      // Restore selectedClient from sessionStorage
+      const storedId = sessionStorage.getItem(ACTIVE_CLIENT_KEY);
+      let initialClient = null;
+
+      if (storedId) {
+        initialClient = clientsArray.find(c => String(c.id) === storedId);
+      }
+
+      if (!initialClient) {
+        // Fallback to first client if no stored client
+        initialClient = clientsArray[0];
+        sessionStorage.setItem(ACTIVE_CLIENT_KEY, initialClient.id);
+      }
+
+      // Set both selectedClient AND sessionStorage correctly
+      setSelectedClient(initialClient);
+
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+      setError("Failed to load clients. Please try again.");
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchClients();
+}, []);
+  
+
+
+
+
+  // ✅ Update sessionStorage when selectedClient changes
+  useEffect(() => {
+    if (selectedClient) {
+      sessionStorage.setItem(ACTIVE_CLIENT_KEY, selectedClient.id);
+    }
+  }, [selectedClient]);
 
   const handleCreate = async (newClient) => {
     try {
@@ -200,16 +229,16 @@ export default function AdminControl() {
     });
   };
 
-  useEffect(() => {
-    // Select first client by default
-    if (dataList.length > 0) {
-      setSelectedClient(dataList[0]);
-      setActiveClientId(dataList[0].id);
-    } else {
-      setSelectedClient(null);
-      setActiveClientId(null);
-    }
-  }, [dataList]);
+  // useEffect(() => {
+  //   // Select first client by default
+  //   if (dataList.length > 0) {
+  //     setSelectedClient(dataList[0]);
+  //     setActiveClientId(dataList[0].id);
+  //   } else {
+  //     setSelectedClient(null);
+  //     setActiveClientId(null);
+  //   }
+  // }, [dataList]);
 
   // const handleDelete = (id) => {
   //   const updatedData = dataList.filter((item) => item.id !== id);
@@ -276,17 +305,10 @@ export default function AdminControl() {
       }
     };
 
-    if (dataList.length > 0) {
-      setSelectedClient(dataList[0]);
-      setShowEdit(true);
-      setShowAdd(false);
-    } else {
-      setSelectedClient(null);
-      setShowEdit(false);
-    }
+    
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [dataList, setFormStatus]);
+  }, [ setFormStatus]);
   
 
 
@@ -385,7 +407,7 @@ export default function AdminControl() {
               <div className="flex-1">
                 {getFilteredData().map((item) => {
                   const isSelected =  selectedClient?.id === item.id;
-                  const isActive = activeClientId === item.id;   
+                  const isActive = sessionStorage.getItem(ACTIVE_CLIENT_KEY) === String(item.id); 
                   return (
                     <div
                       key={item.id}
@@ -405,7 +427,7 @@ export default function AdminControl() {
                         e.preventDefault();
                         e.stopPropagation();
                         setSelectedClient(item);
-                        setActiveClientId(item.id);
+                        
                         setContextMenu({
                           visible: true,
                           x: e.pageX,

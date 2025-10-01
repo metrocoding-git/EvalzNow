@@ -132,7 +132,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       try {
         setIsLoading(true);
         const unitData = await getUnitById(unitId);
-        
+        console.log("unit data fetched -->", unitData);
         // Transform API data to match form state
         setUnit({
           unitName: unitData.unitName,
@@ -162,6 +162,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 
     fetchUnitData();
   }, [unitId]);
+
+ 
 
   useEffect(() => {
     if (selectedBlock) {
@@ -216,6 +218,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     });
   };
 
+  console.log('selected Unit-->', unitId);
   const addBenchmark = () => {
     setUnit(prev => {
       // Get the current benchmarks

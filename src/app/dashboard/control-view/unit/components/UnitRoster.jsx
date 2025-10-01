@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
-import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId, updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/services/unitRosterService";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -129,28 +129,36 @@ useEffect(() => {
   // useEffect(() => {
   //   fetchBlocks();
   // }, [selectedUnit?.id]);
-
+  const sortBlocksByPPId = (blocks, tab) => {
+    if (!blocks || blocks.length === 0) return [];
+    
+    return blocks.sort((a, b) => {
+      if (tab === "Direct") {
+        return a.ppId - b.ppId;       // 1,2,3,4...
+      } else if (tab === "Indirect") {
+        return b.ppId - a.ppId;       // -1,-2,-3,-4
+      }
+      return 0;
+    });
+  };
 
   
 
-  // Add this near your other state
   const fetchBlocksByUnitAndCandidate = async () => {
     if (!selectedUnit?.id || !selectedCandidate?.id) return;
     try {
       setLoading(true);
       const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
-      
-      // Handle the response properly - it could be a single object or an array
-      if (Array.isArray(blocks)) {
-        setAssessmentBlocks(blocks);
-      } else if (blocks && typeof blocks === 'object') {
-        // If it's a single object, wrap it in an array
-        setAssessmentBlocks([blocks]);
-      } else {
-        setAssessmentBlocks([]);
-      }
-      
-      console.log("blocks", blocks);
+  
+      let blockArray = [];
+      if (Array.isArray(blocks)) blockArray = blocks;
+      else if (blocks && typeof blocks === 'object') blockArray = [blocks];
+  
+      // Sort blocks by ppId based on activeTab
+      const sortedBlocks = sortBlocksByPPId(blockArray, activeTab);
+  
+      setAssessmentBlocks(sortedBlocks);
+      console.log("blocks", sortedBlocks);
     } catch (err) {
       console.error("Failed to fetch blocks:", err);
       setError("Failed to load blocks. Please try again.");
@@ -159,6 +167,10 @@ useEffect(() => {
       setLoading(false);
     }
   };
+  
+  useEffect(() => {
+    fetchBlocksByUnitAndCandidate();
+  }, [selectedUnit?.id, selectedCandidate?.id, activeTab]);
 
   useEffect(() => {
     const fetchAndSelectFirstBlock = async () => {
@@ -221,65 +233,134 @@ useEffect(() => {
     setShowEditBlockManager(false);
   };
 
-  // Function to swap assessment block positions
-  const swapAssessmentBlocks = async (index1, index2) => {
-    if (index1 < 0 || index2 < 0 || index1 >= filteredAssessmentBlocks.length || index2 >= filteredAssessmentBlocks.length) {
-      return;
-    }
-    
-    try {
-      // Create a copy of the assessment blocks array
-      const updatedBlocks = [...assessmentBlocks];
-      
-      // Get the blocks to swap
-      const block1 = filteredAssessmentBlocks[index1];
-      const block2 = filteredAssessmentBlocks[index2];
-      
-      // Find the indices of these blocks in the main assessmentBlocks array
-      const mainIndex1 = updatedBlocks.findIndex(b => b.id === block1.id);
-      const mainIndex2 = updatedBlocks.findIndex(b => b.id === block2.id);
-      
-      if (mainIndex1 === -1 || mainIndex2 === -1) return;
-      
-      // Swap the positions
-      [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [updatedBlocks[mainIndex2], updatedBlocks[mainIndex1]];
-      
-      // Update state
-      setAssessmentBlocks(updatedBlocks);
-      
-      // Update the selected row
-      setSelectedRow(index2);
-      setSelectedBlock(filteredAssessmentBlocks[index2]);
-      
-      // If there's a callback to update blocks in parent component
-      if (onBlockUpdate) {
-        onBlockUpdate(updatedBlocks);
-      }
-      
-      // Optionally, update the order in the backend
-      // You might need to add an API endpoint for this
-      // await updateAssessmentBlockOrder(updatedBlocks);
-      
-    } catch (err) {
-      console.error("Failed to swap blocks:", err);
-    }
-  };
+  // Function to swap and update ppId values
+const swapAssessmentBlocks = async (index1, index2) => {
+  if (
+    index1 < 0 ||
+    index2 < 0 ||
+    index1 >= filteredAssessmentBlocks.length ||
+    index2 >= filteredAssessmentBlocks.length
+  ) {
+    return;
+  }
 
-  const moveRowUp = () => {
-    if (selectedRow === null || selectedRow <= 0) return; // stop if first row
-    const newIndex = selectedRow - 1;
-    setSelectedRow(newIndex);
-    setSelectedBlock(filteredAssessmentBlocks[newIndex]);
+  try {
+    const updatedBlocks = [...assessmentBlocks];
+
+    const block1 = filteredAssessmentBlocks[index1];
+    const block2 = filteredAssessmentBlocks[index2];
+
+    const mainIndex1 = updatedBlocks.findIndex((b) => b.id === block1.id);
+    const mainIndex2 = updatedBlocks.findIndex((b) => b.id === block2.id);
+
+    if (mainIndex1 === -1 || mainIndex2 === -1) return;
+
+    // --- Adjust ppId values depending on tab & direction ---
+    let newBlock1 = { ...block1 };
+    let newBlock2 = { ...block2 };
+
+    if (activeTab === "Direct") {
+      // Direct performance
+      if (index2 < index1) {
+        // Move Up
+        newBlock1.ppId = block1.ppId - 1;
+        newBlock2.ppId = block2.ppId + 1;
+      } else {
+        // Move Down
+        newBlock1.ppId = block1.ppId + 1;
+        newBlock2.ppId = block2.ppId - 1;
+      }
+    } else if (activeTab === "Indirect") {
+      // Indirect performance (reverse logic)
+      if (index2 < index1) {
+        // Move Up
+        newBlock1.ppId = block1.ppId + 1;
+        newBlock2.ppId = block2.ppId - 1;
+      } else {
+        // Move Down
+        newBlock1.ppId = block1.ppId - 1;
+        newBlock2.ppId = block2.ppId + 1;
+      }
+    }
+
+    // Swap their order in UI
+    [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [
+      newBlock2,
+      newBlock1,
+    ];
+
+    setAssessmentBlocks(updatedBlocks);
+
+    // Update selection
+    setSelectedRow(index2);
+    setSelectedBlock(newBlock1);
+
+    // --- Persist to backend ---
+    await Promise.all([
+      updateAssessmentBlock(newBlock1.id, { ...newBlock1 }),
+      updateAssessmentBlock(newBlock2.id, { ...newBlock2 }),
+    ]);
+
+    // Notify parent if needed
+    if (onBlockUpdate) {
+      onBlockUpdate(updatedBlocks);
+    }
+  } catch (err) {
+    console.error("Failed to swap/update blocks:", err);
+  }
+};
+
+
+const moveRowUp = () => {
+  if (selectedRow === null || selectedRow === 0) return;
+  swapAssessmentBlocks(selectedRow, selectedRow - 1);
+};
+
+const moveRowDown = () => {
+  if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
+  swapAssessmentBlocks(selectedRow, selectedRow + 1);
+};
+
+  
+  const handleSaveBlock = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+  
+    try {
+      if (!blockData || !selectedBlock) return;
+  
+      // Call API to update the block
+      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
+  
+      // Notify parent about the updated block
+      if (onBlockUpdate) {
+        onBlockUpdate(savedBlock);
+      }
+  
+      if (onBlockSubmitStatus) {
+        onBlockSubmitStatus(true);
+      }
+  
+      onClose();
+    } catch (err) {
+      console.error("Failed to update unit:", err);
+  
+      const message =
+        err.response?.data?.message ||
+        err.data?.message ||
+        err.message ||
+        "Failed to update unit";
+  
+      setError(message);
+  
+      if (onBlockSubmitStatus) {
+        onBlockSubmitStatus(false);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
-  const moveRowDown = () => {
-    if (selectedRow === null || selectedRow >= filteredAssessmentBlocks.length - 1) return; // stop if last row
-    const newIndex = selectedRow + 1;
-    setSelectedRow(newIndex);
-    setSelectedBlock(filteredAssessmentBlocks[newIndex]);
-  };
-  
-  
   
 
   // const handleCandidateSelect = (newUnitRosterEntries) => {

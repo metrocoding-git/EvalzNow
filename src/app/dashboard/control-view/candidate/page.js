@@ -64,8 +64,8 @@ export default function CandidateControl() {
    const reviewRef = useRef(null);
    const router = useRouter();
    const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
-   const { activeClientId, setActiveClientId } = useClient();
-
+  //  const { activeClientId, setActiveClientId } = useClient();
+   const activeClientId = sessionStorage.getItem('activeClientId');
    useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -80,6 +80,7 @@ export default function CandidateControl() {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
+        
         const data = await getAllCandidates(activeClientId);
         const sortedData = Array.isArray(data)
           ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
@@ -99,7 +100,7 @@ export default function CandidateControl() {
     };
 
     fetchCandidates();
-  }, [activeClientId]);
+  }, []);
 
 
   // Fetch all candidates on mount

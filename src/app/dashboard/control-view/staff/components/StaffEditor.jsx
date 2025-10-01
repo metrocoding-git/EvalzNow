@@ -60,6 +60,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
       const updatedStaff = await updateStaff(staff.id, updatedData);
      
       onSave(updatedStaff); // Notify parent of changes
+      setFormStatus("Staff Updated");
       onClose(); // Close editor
     } catch (err) {
       console.error("Failed to update staff:", err);
