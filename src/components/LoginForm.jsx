@@ -35,6 +35,7 @@ export default function LoginForm() {
 
     // Save JWT in localStorage
     localStorage.setItem("token", res.token);
+    sessionStorage.setItem('activeClientId', res.user.clientId);
 
       // Save logged-in user data in localStorage
     localStorage.setItem("user", JSON.stringify(res.user));
@@ -63,7 +64,7 @@ export default function LoginForm() {
         <input
           type="text"
           name="username"
-          placeholder="USERNAME"
+          placeholder="EMAIL"
           className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors placeholder-black"
           onChange={handleChange}
           value={formData.username}
@@ -97,7 +98,6 @@ export default function LoginForm() {
         © EvalzNow. All Rights Reserved.
       </div>
   
-      <Toaster />
     </div>
   );
   
