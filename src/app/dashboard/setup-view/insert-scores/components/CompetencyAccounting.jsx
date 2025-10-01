@@ -380,13 +380,13 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     const targetItem = { ...dataArray[newIndex] };
   
     // ✅ If ppIds are different, update ppId + criticalReferenceDate
-    if (selectedItem.ppId !== targetItem.ppId) {
+    // if (selectedItem.ppId !== targetItem.ppId) {
       selectedItem.ppId = targetItem.ppId;
       selectedItem.criticalRefDate = targetItem.criticalRefDate;
-    } else {
+    // } else {
       // ✅ If ppIds are same, update only ppId
-      selectedItem.ppId = targetItem.ppId;
-    }
+    //   selectedItem.ppId = targetItem.ppId;
+    // }
   
     // ✅ Swap visually
     dataArray[deleteSelectedRow] = targetItem;
@@ -422,13 +422,13 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     const targetItem = { ...dataArray[newIndex] };
   
     // ✅ If ppIds are different, update ppId + criticalReferenceDate
-    if (selectedItem.ppId !== targetItem.ppId) {
+    // if (selectedItem.ppId !== targetItem.ppId) {
       selectedItem.ppId = targetItem.ppId;
       selectedItem.criticalRefDate = targetItem.criticalRefDate;
-    } else {
+    // } else {
       // ✅ If ppIds are same, update only ppId
-      selectedItem.ppId = targetItem.ppId;
-    }
+      // selectedItem.ppId = targetItem.ppId;
+    // }
   
     // ✅ Swap visually
     dataArray[deleteSelectedRow] = targetItem;

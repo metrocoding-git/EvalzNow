@@ -48,7 +48,7 @@ export const getAllUnits = async (clientId) => {
 // Get unit by ID
 export const getUnitById = async (id) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNIT}/${id}`);
+    const response = await api.get(`${API_ROUTES.UNIT}/id/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching unit:", error);

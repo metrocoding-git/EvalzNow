@@ -56,9 +56,10 @@ export default function StaffControl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // const [formStatus, setFormStatus] = useState("Ready");
-  const { setFormStatus } = useFormStatus();
-  const { activeClientId, setActiveClientId } = useClient();
+  const [formStatus, setFormStatus] = useState("Ready");
+  // const { setFormStatus } = useFormStatus();
+  const activeClientId = sessionStorage.getItem('activeClientId');
+  // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
 
   console.log("active Client Id on staff:", activeClientId);
@@ -75,6 +76,7 @@ export default function StaffControl() {
   useEffect(() => {
     const fetchStaffs = async () => {
       try {
+        
         setLoading(true);
         const data = await getAllStaffs(activeClientId);
          // Sort ascending by staffId or id
@@ -100,7 +102,7 @@ export default function StaffControl() {
     };
 
     fetchStaffs();
-  }, [activeClientId]);
+  }, []);
 
   // Create new staff
   const handleCreate = async (newStaff) => {

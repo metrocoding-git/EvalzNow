@@ -255,24 +255,25 @@ const [formData, setFormData] = useState({
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
   const handleChange = (label, value) => {
-    
     setFormData((prev) => ({
       ...prev,
       [label]: value,
     }));
-
-    
-    // When ppId changes, update the assessmentBlockId accordingly
+  
     if (label === "ppId") {
-      const selectedBlock = assessmentBlocks.find(block => block.ppId === value);
+      const selectedBlock = assessmentBlocks.find(
+        (block) => block.ppId?.toString() === value.toString()
+      );
       if (selectedBlock) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          assessmentBlockId: selectedBlock.id
+          ppId: value,
+          assessmentBlockId: selectedBlock.id,
         }));
       }
     }
   };
+  
 
   const requiredFields = [
     "ppId",
@@ -509,64 +510,51 @@ const isSubmitDisabled = (() => {
 
   console.log("custom criteria:", customCriteria);
 
-  useEffect(() => {
-    const fetchBlockInfo = async () => {
-      if (!unitId || !candidateId) return;
-  
-      try {
-        setLoading(true);
-        const blocks = await getAssessmentBlockByUnitAndCandidate(unitId, candidateId);
-  
-        if (blocks?.length > 0) {
-          const block = blocks[0]; // pick first block for simplicity
-          setFormData((prev) => ({
-            ...prev,
-            assessmentBlockId: block.id, // set assessment block ID
-            // ppId: block.ppId || "", // default PP ID if available
-          }));
+  // Fetch block info
+useEffect(() => {
+  const fetchBlockInfo = async () => {
+    if (!unitId || !candidateId) return;
 
-          if (environment === "Workforce" && block.unit?.scoringSystem) {
-            setScoringSystem(block.unit.scoringSystem);
-            console.log("scoring Points: ", block.unit.scoringSystem);
-          }
-          
-  
-          // Extract PP IDs and sort ascending (numeric or string)
-          const ppList = blocks
-        .map((b) => b.ppId)
-        .filter((pp) => pp !== undefined && pp !== null && pp !== "")
-        .sort((a, b) => {
-          const numA = parseInt(a, 10);
-          const numB = parseInt(b, 10);
+    try {
+      setLoading(true);
+      const blocks = await getAssessmentBlockByUnitAndCandidate(unitId, candidateId);
 
-          // If both negative, sort descending
-          if (numA < 0 && numB < 0) return numB - numA;
-          // If both positive, sort ascending
-          if (numA > 0 && numB > 0) return numA - numB;
-          // Negatives come before positives
-          if (numA < 0) return -1;
-          if (numB < 0) return 1;
+      if (blocks?.length > 0) {
+        // Store all blocks in state
+        setAssessmentBlocks(blocks);
 
-          // Fallback for strings
-          return a.localeCompare(b);
-        });
+        // Extract PP IDs and sort them
+        const ppList = blocks
+          .map((b) => b.ppId)
+          .filter((pp) => pp !== undefined && pp !== null && pp !== "")
+          .sort((a, b) => {
+            const numA = parseInt(a, 10);
+            const numB = parseInt(b, 10);
+
+            if (numA < 0 && numB < 0) return numB - numA; // negative: descending
+            if (numA > 0 && numB > 0) return numA - numB; // positive: ascending
+            if (numA < 0) return -1; // negatives before positives
+            if (numB < 0) return 1;
+            return a.localeCompare(b);
+          });
 
         setPpIds(ppList);
-
-        } else {
-          setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
-          setPpIds([]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch block info:", err);
-        toast.error("Failed to load candidate block data.");
-      } finally {
-        setLoading(false);
+      } else {
+        setAssessmentBlocks([]);
+        setFormData((prev) => ({ ...prev, assessmentBlockId: "", ppId: "" }));
+        setPpIds([]);
       }
-    };
-  
-    fetchBlockInfo();
-  }, [unitId, candidateId]);
+    } catch (err) {
+      console.error("Failed to fetch block info:", err);
+      toast.error("Failed to load candidate block data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBlockInfo();
+}, [unitId, candidateId]);
+
 
 
   // Fetch Critical Reference Date by PP ID

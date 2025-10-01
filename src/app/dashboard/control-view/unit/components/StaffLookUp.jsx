@@ -13,7 +13,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [staffs, setStaffs] = useState([]);
-  const { activeClientId, setActiveClientId } = useClient();
+  // const { activeClientId, setActiveClientId } = useClient();
 
   const filteredStaffs = staffs
   .filter(
@@ -33,6 +33,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
     const fetchStaffs = async () => {
       try {
         setLoading(true);
+        const activeClientId = sessionStorage.getItem('activeClientId');
         const data = await getAllStaffs(activeClientId);
         setStaffs(data);
         console.log(data);
@@ -45,7 +46,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
     };
 
     fetchStaffs();
-  }, [activeClientId]);
+  }, []);
 
   // useEffect(() => {
   //   setSelectedIds(initialSelectedIds); // sync whenever modal opens

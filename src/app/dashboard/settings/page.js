@@ -7,6 +7,7 @@ export default function Settings() {
     const handleLogout = () => {
         localStorage.removeItem("token");  // remove JWT
         localStorage.removeItem("user");   // remove user info
+        sessionStorage.removeItem("activeClientId");
         router.push("/login");             // redirect to login page
       };
     return(

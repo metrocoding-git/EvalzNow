@@ -81,11 +81,11 @@ export default function UnitControl() {
 
   // const [formStatus, setFormStatus] = useState("Ready");
   const { setFormStatus } = useFormStatus();
-  const { activeClientId, setActiveClientId } = useClient();
+  // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
-
+  const activeClientId = sessionStorage.getItem('activeClientId');
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -102,6 +102,7 @@ export default function UnitControl() {
     const fetchUnits = async () => {
       try {
         setLoading(true);
+        
         const units = await getAllUnits(activeClientId);
         setDataList(Array.isArray(units) ? units : []);
         console.log("units in control: " , units, " using data list: ", dataList);
@@ -118,7 +119,7 @@ export default function UnitControl() {
     };
 
     fetchUnits();
-  }, [activeClientId]);
+  }, []);
 
   const fetchRosterData = async () => {
     if (!selectedUnit?.id) return;
@@ -159,7 +160,8 @@ export default function UnitControl() {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        const data = await getAllCandidates();
+        
+        const data = await getAllCandidates(activeClientId);
         setCandidateList(Array.isArray(data) ? data : []);
         console.log(data);
       } catch (err) {
@@ -1114,7 +1116,7 @@ const filteredCandidates = unitRosterData
           </div>
         )}
       </div>
-      <Toaster position="top-right" reverseOrder={false} />
+      {/* <Toaster position="top-right" reverseOrder={false} /> */}
     </div>
   );
 }
