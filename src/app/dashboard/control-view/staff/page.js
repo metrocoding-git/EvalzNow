@@ -18,6 +18,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useClient } from "@/context/ClientContext";
+import { createAccount } from "@/services/accountService";
 
 export default function StaffControl() {
   const [showAdd, setShowAdd] = useState(false);
@@ -115,6 +116,14 @@ export default function StaffControl() {
       if (exists) {
         toast.error(`Staff ID "${newStaff.staffId}" already exists`);
       }
+
+      const accountPayload = {
+        username: newStaff.emailAddress,
+        password: "12345678", // default password
+        acc_id: loggedInUser?.acc,
+        role: "staff",
+      };
+      const createdAccount = await createAccount(accountPayload);
   
       const staffWithAccount = {
         ...newStaff,

@@ -589,6 +589,7 @@ const filteredCandidates = unitRosterData
       if (e.ctrlKey && e.key.toLowerCase() === "c") {
         e.preventDefault();
         setSelectedUnit(selectedUnit);
+        setSelectedUnitId(selectedUnit.id);
         setUnitRoster(true);
         setShowAdd(false);
         setShowEdit(false);

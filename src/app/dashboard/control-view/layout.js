@@ -1,11 +1,11 @@
 "use client";
-import { Children, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-
+import { getStaffById } from "@/services/staffService";
 
 const tabs = [
-  { label: "Admin", path: "/dashboard/control-view/admin", role: "super admin"},
+  { label: "Admin", path: "/dashboard/control-view/admin" },
   { label: "Staff", path: "/dashboard/control-view/staff" },
   { label: "Candidate", path: "/dashboard/control-view/candidate" },
   { label: "Unit", path: "/dashboard/control-view/unit" }
@@ -14,17 +14,66 @@ const tabs = [
 export default function ControlViewLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
+
   const loggedInUser =
     typeof window !== "undefined"
       ? JSON.parse(localStorage.getItem("user"))
       : null;
 
-  const isSuperAdmin = loggedInUser?.role === "super admin";
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [staff, setStaff] = useState();
 
-  // 🔹 Filter tabs: Admin visible only for super admin
-  const visibleTabs = tabs.filter(
-    (tab) => !tab.role || (tab.role === "super admin" && isSuperAdmin)
-  );
+  const isSuperAdmin = loggedInUser?.role === "super admin";
+  const isAdmin = loggedInUser?.role === "admin";
+  const isStaff = loggedInUser?.role === "staff";
+
+  // Fetch staff data only if logged-in user is staff
+  useEffect(() => {
+    if (!isStaff) return;
+
+    const fetchStaffById = async () => {
+      try {
+        setLoading(true);
+        const data = await getStaffById(loggedInUser?.staffId);
+        setStaff(data);
+        console.log("Staff data:", data);
+      } catch (err) {
+        console.error("Failed to fetch staff:", err);
+        setError("Failed to load staff data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffById();
+  }, [loggedInUser?.staffId, isStaff]);
+
+  // Determine visible tabs based on role / access level
+  const visibleTabs = tabs.filter((tab) => {
+    if (isSuperAdmin) {
+      // Super admin sees all tabs
+      return true;
+    }
+
+    if (isAdmin) {
+      // Admin sees Staff, Candidate, Unit
+      return tab.label !== "Admin";
+    }
+
+    if (isStaff) {
+      if (staff?.accessLevel === "Full Access") {
+        // Staff Full Access sees Staff, Candidate, Unit
+        return tab.label !== "Admin";
+      } else if (staff?.accessLevel === "Leaders Access") {
+        // Staff Leaders Access sees only Candidate + Unit
+        return tab.label === "Candidate" || tab.label === "Unit";
+      }
+    }
+
+    // Default: hide all tabs
+    return false;
+  });
 
   const currentTab =
     visibleTabs.find((tab) => pathname?.startsWith(tab.path))?.label ||
@@ -32,17 +81,16 @@ export default function ControlViewLayout({ children }) {
 
   const [activeTab, setActiveTab] = useState(currentTab);
 
-  console.log("logged in user", loggedInUser);
-
+  // Redirect if not logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
     if (!token || !user) {
       router.replace("/login");
     }
   }, [router]);
 
+  // Redirect to first visible tab if current path is invalid
   useEffect(() => {
     const isValidPath = visibleTabs.some((tab) =>
       pathname?.startsWith(tab.path)
@@ -58,7 +106,7 @@ export default function ControlViewLayout({ children }) {
         {/* Tab buttons */}
         <div className="flex space-x-0 border-b border-gray-200 bg-gray-50 mt-1.5">
           {visibleTabs.map((tab, index) => (
-            <Link href={tab.path} key={index} >
+            <Link href={tab.path} key={index}>
               <span
                 onClick={() => setActiveTab(tab.label)}
                 className={
