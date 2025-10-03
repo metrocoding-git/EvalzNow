@@ -47,3 +47,14 @@ export const getAllStaffs = async (clientId) => {
 };
 
 
+export const getStaffById = async (staffId) => {
+  try {
+      const response = await api.get(`${API_ROUTES.STAFFS}/id/${staffId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      throw error; // Re-throw for components to handle
+    }
+};
+
+
