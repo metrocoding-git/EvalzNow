@@ -21,6 +21,7 @@ import Loading from "@/components/Loading";
 import { useFormStatus } from "@/context/FormStatusContext";
 import toast from "react-hot-toast";
 import { useClient } from "@/context/ClientContext";
+import { useUnit } from "@/context/UnitContext";
 
 export default function EntitiesManager() {
   // Initial table data in state
@@ -59,12 +60,12 @@ export default function EntitiesManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const unitQuery = searchParams.get("unitId");
+  const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");
   const { activeClientId, setActiveClientId } = useClient();
   useEffect(() => {

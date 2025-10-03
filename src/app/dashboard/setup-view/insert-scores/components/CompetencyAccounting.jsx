@@ -291,15 +291,42 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
 
         if (activeTab === "Indirect") {
-          // Sort descending for negatives
-          classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10) > 0 ? 1 : -1);
-          workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10) > 0 ? 1 : -1);
-          classroomRows.sort((a, b) => parseInt(b.ppId, 10) - parseInt(a.ppId, 10)); // simpler
-          workforceRows.sort((a, b) => parseInt(b.ppId, 10) - parseInt(a.ppId, 10));
+          // Negative ppIds → sort descending
+          classroomRows.sort((a, b) => {
+            const pa = parseInt(a.ppId, 10);
+            const pb = parseInt(b.ppId, 10);
+        
+            if (pa !== pb) return pb - pa; // higher negative closer to zero comes first
+            // same ppId → sort by criticalRefDate ASC
+            return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+          });
+        
+          workforceRows.sort((a, b) => {
+            const pa = parseInt(a.ppId, 10);
+            const pb = parseInt(b.ppId, 10);
+        
+            if (pa !== pb) return pb - pa;
+            return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+          });
         } else {
-          classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
-          workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
+          // Positive ppIds → sort ascending
+          classroomRows.sort((a, b) => {
+            const pa = parseInt(a.ppId, 10);
+            const pb = parseInt(b.ppId, 10);
+        
+            if (pa !== pb) return pa - pb; 
+            return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+          });
+        
+          workforceRows.sort((a, b) => {
+            const pa = parseInt(a.ppId, 10);
+            const pb = parseInt(b.ppId, 10);
+        
+            if (pa !== pb) return pa - pb;
+            return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+          });
         }
+        
         
   
         setClassroomData(classroomRows);
@@ -383,6 +410,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     // if (selectedItem.ppId !== targetItem.ppId) {
       selectedItem.ppId = targetItem.ppId;
       selectedItem.criticalRefDate = targetItem.criticalRefDate;
+      selectedItem.assessmentBlockId = targetItem.assessmentBlockId;
     // } else {
       // ✅ If ppIds are same, update only ppId
     //   selectedItem.ppId = targetItem.ppId;
@@ -425,6 +453,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     // if (selectedItem.ppId !== targetItem.ppId) {
       selectedItem.ppId = targetItem.ppId;
       selectedItem.criticalRefDate = targetItem.criticalRefDate;
+      selectedItem.assessmentBlockId = targetItem.assessmentBlockId;
     // } else {
       // ✅ If ppIds are same, update only ppId
       // selectedItem.ppId = targetItem.ppId;
