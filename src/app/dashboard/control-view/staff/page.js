@@ -60,6 +60,7 @@ export default function StaffControl() {
   const [formStatus, setFormStatus] = useState("Ready");
   // const { setFormStatus } = useFormStatus();
   const activeClientId = sessionStorage.getItem('activeClientId');
+  const user = localStorage.getItem('user');
   // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
 
@@ -274,12 +275,12 @@ export default function StaffControl() {
                   <div className="flex gap-1 staff-item">
                     <button
                       className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${
-                        selectedStaff.accessLevel === "Full Access"
+                        selectedStaff.accessLevel === "Full Access" && user.role === "staff"
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:bg-gray-400 hover:text-white"
                       }`}
                       onClick={() => handleDelete(selectedStaff.id)}
-                      disabled= {selectedStaff.accessLevel === "Full Access"}
+                      disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
                     >
                       <Trash className="w-3.5 h-3.5" />
                     </button>

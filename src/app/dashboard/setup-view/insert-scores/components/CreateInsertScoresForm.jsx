@@ -1,5 +1,6 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { useUnit } from "@/context/UnitContext";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import { createInsertScore, getCriticalRefbyPpId } from "@/services/insertScoreService";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
@@ -175,7 +176,7 @@ const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 
 
-export default function CreateInsertScoresForm({ onClose, candidateId }) {
+export default function CreateInsertScoresForm({ onClose, candidateId, unit }) {
 
 const [formData, setFormData] = useState({
   ppId: "",
@@ -245,15 +246,17 @@ const [formData, setFormData] = useState({
   const searchParams = useSearchParams();
   const [scoringSystem, setScoringSystem] = useState();
   const { setFormStatus } = useFormStatus();
-  const environment = searchParams.get('environment') || 'workspace';
-  const unitId = searchParams.get('unitId');
 
+  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const unitId = selectedUnitId
+  const environment = unit.environment;
   const rawType = searchParams.get("type") || "communicative";
-  const type = rawType.toLowerCase(); // normalize
+  const type = unit.unitType.toLowerCase(); // normalize
   const [criticalRange, setCriticalRange] = useState(null);
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 
+  console.log(" unit data: ", unit);
   const handleChange = (label, value) => {
     setFormData((prev) => ({
       ...prev,

@@ -276,7 +276,7 @@ useEffect(() => {
                       checked={selectedIds.includes(candidate.id)}
                       onChange={() => toggleSelect(candidate.id)}
                       onClick={(e) => e.stopPropagation()}
-                      className="w-4 h-4 text-sm text-center font-medium text-gray-900 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-sm text-center accent-black font-medium text-gray-900 rounded focus:ring-blue-500"
                     /> 
                   </div>
 
@@ -362,7 +362,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* <Toaster position="top-right" reverseOrder={false} /> */}
+      
     </div>
   );
 }

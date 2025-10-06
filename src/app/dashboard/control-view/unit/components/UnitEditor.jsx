@@ -255,10 +255,16 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   const deleteBenchmark = (index) => {
     setUnit(prevUnit => {
       const updated = prevUnit.benchmarks.filter((_, i) => i !== index);
-      return {
-        ...prevUnit,
-        benchmarks: updated // no auto re-add
-      };
+      // Reassign sequential IDs (1, 2, 3, ...)
+    const reordered = updated.map((bm, i) => ({
+      ...bm,
+      benchmarkId: (i + 1).toString(),
+    }));
+
+    return {
+      ...prevUnit,
+      benchmarks: reordered,
+    };
     });
   };
   

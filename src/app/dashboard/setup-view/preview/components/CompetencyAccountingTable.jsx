@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { getPpIdSummary } from "@/services/insertScoreService";
 import { useSearchParams } from "next/navigation";
+import { useUnit } from "@/context/UnitContext";
 
 const CompetencyAccountingTable = ({ data, candidateId }) => {
   const [selectedRow, setSelectedRow] = useState(null);
@@ -20,7 +21,8 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const searchParams = useSearchParams();
-  const unitId = searchParams.get('unitId');
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const unitId = selectedUnitId;
 
   // Filter data based on active tab
   useEffect(() => {

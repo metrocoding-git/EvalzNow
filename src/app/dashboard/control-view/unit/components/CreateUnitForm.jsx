@@ -74,10 +74,10 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
   // Map of abbreviations to expanded names
 const THRESHOLD_NAMES = {
   XEP: "Equivalent Proficiency",
-  XRR: "Unilateral Proficiency",
-  XLR: "Listening Proficiency",
-  XSR: "Speaking Proficiency",
-  XWR: "Writing Proficiency",
+  XRR: "Reading Ratio",
+  XLR: "Listening Ratio",
+  XSR: "Speaking Ratio",
+  XWR: "Writing Ratio",
   XCP: "Composite Proficiency",
   XBP: "Band Proficiency",
   MSIP: "Butler Interaction Proficiency",
@@ -86,10 +86,10 @@ const THRESHOLD_NAMES = {
   ΔARN: "Acuity Growth Differential",
   ΔGEQ: "Equivalent Growth Differential",
   IC: "Interaction Class",
-  XTR: "Theory & Practice Proficiency",
-  XPR: "Productive Proficiency",
-  XRVSR: "Receptive Value Score Ratio",
-  XPVSR: "Productive Value Score Ratio",
+  XTR: "Theory-Based Ratio",
+  XPR: "Practice Ratio",
+  XRVSR: "Receptive Variable Scoring Ratio",
+  XPVSR: "Productive Variable Scoring Ratio",
   XAVSR: "Acuity Value Score Ratio"
 };
 
@@ -248,10 +248,14 @@ const THRESHOLD_NAMES = {
       // const createdUnit = await createUnit(unitData);
       // console.log("Unit created successfully:", createdUnit);
       
-      await onSubmit(unitData);
-      setFormStatus("Unit Created");
-      console.log("unit Data", unitData);
-      onClose();
+      const result = await onSubmit(unitData);
+      // ✅ Only close if submission was successful
+      if (result !== false) {
+        setFormStatus("Unit Created");
+        onClose(); // close form only on success
+      } else {
+        setFormStatus("Submission failed");
+      }
     } catch (error) {
       console.error("Error creating unit:", error);
       alert("Failed to create unit. Please try again.");
@@ -420,7 +424,7 @@ const THRESHOLD_NAMES = {
                 <option value="">Select Unit Director</option>
                 {unitDirectors.map((staff) => (
                   <option key={staff.id} value={staff.id}>
-                    {staff.firstName} {staff.lastName} — {staff.jobTitle}
+                    {staff.firstName} {staff.lastName} 
                   </option>
                 ))}
               </select>
@@ -615,8 +619,16 @@ const THRESHOLD_NAMES = {
                     <button
                       type="button"
                       onClick={() => {
+                        // Remove the selected benchmark
                         const updated = form.benchmarks.filter((_, i) => i !== idx);
-                        setForm((f) => ({ ...f, benchmarks: updated }));
+                    
+                        // Reorder IDs sequentially (1, 2, 3, ...)
+                        const reordered = updated.map((bm, i) => ({
+                          ...bm,
+                          id: String(i + 1),
+                        }));
+                    
+                        setForm((f) => ({ ...f, benchmarks: reordered }));
                       }}
                       className="text-red-500 hover:text-red-700"
                     >
@@ -633,12 +645,19 @@ const THRESHOLD_NAMES = {
                 type="button"
                 onClick={() =>
                   setForm((f) => {
-                    const nextId =
-                      (f.benchmarks?.length || 0) + 1; // auto-increment
+                    // Reindex existing first to ensure consistency
+                    const reordered = (f.benchmarks || []).map((bm, i) => ({
+                      ...bm,
+                      id: String(i + 1),
+                    }));
+              
+                    // Add new one with next sequential ID
+                    const nextId = reordered.length + 1;
+              
                     return {
                       ...f,
                       benchmarks: [
-                        ...(f.benchmarks || []),
+                        ...reordered,
                         { id: String(nextId), ref: "", type: "", description: "" },
                       ],
                     };

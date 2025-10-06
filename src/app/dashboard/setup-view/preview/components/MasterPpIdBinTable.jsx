@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 import { getScoreByUnitGroup } from "@/services/insertScoreService";
+import { useUnit } from "@/context/UnitContext";
 
 // Define competency types and their corresponding columns
 const competencyTypes = {
@@ -39,7 +40,8 @@ const MasterPpIdBinTable = ({ data }) => {
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
 
   const searchParams = useSearchParams();
-  const unitId = searchParams.get('unitId');
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const unitId = selectedUnitId;
 
   useEffect(() => {
     const fetchBlocks = async () => {

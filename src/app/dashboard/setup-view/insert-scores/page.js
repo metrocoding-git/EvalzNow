@@ -19,7 +19,7 @@ import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import Loading from "@/components/Loading";
 import { useFormStatus } from "@/context/FormStatusContext";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useClient } from "@/context/ClientContext";
 import { useUnit } from "@/context/UnitContext";
 
@@ -70,7 +70,7 @@ export default function EntitiesManager() {
   const { activeClientId, setActiveClientId } = useClient();
   useEffect(() => {
     if (!unitQuery) {
-      router.replace("/dashboard/control-view/unit");
+      toast.error("No Unit Selected")
     }
   }, [unitQuery, router]);
 
@@ -78,7 +78,7 @@ export default function EntitiesManager() {
     const fetchCandidateByUnitId = async () => {
       if (!unitQuery) {
         setLoading(false);
-        router.replace("/dashboard/control-view/unit");
+        toast.error("No Candidate Selected");
         return;
       }
 
@@ -282,6 +282,11 @@ export default function EntitiesManager() {
                 <>
                   {/* Session Info */}
                   <div className="px-4">
+                  {unitData?.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-gray-500">
+                    No Unit Selected.
+                  </div>
+                  ) : (
                     <div className="border border-gray-200 p-2">
                       <p className="text-sm text-gray-600">
                         Unit Name: {unitData?.unitName || "N/A"}
@@ -296,15 +301,16 @@ export default function EntitiesManager() {
                         Signature Profile: {unitData?.signatureProfile || "N/A"} 
                       </p>
                     </div>
+                  )}
                   </div>
 
                   {/* Candidate Rows */}
                   <div className="mt-2">
                     {filteredData.length === 0 ? (
-    <div className="px-4 py-6 text-center text-gray-500">
-      No candidates found for this unit.
-    </div>
-  ) : (filteredData.map((item) => (
+                        <div className="px-4 py-6 text-center text-gray-500">
+                          No candidates found for this unit.
+                        </div>
+                      ) : (filteredData.map((item) => (
                       <div
                         key={item.id}
                         className={`grid grid-cols-3 gap-1 items-center px-4 py-1 text-sm cursor-pointer ${selectedEntity?.id === item.id
@@ -361,17 +367,18 @@ export default function EntitiesManager() {
           {scoreAdd && (
             <div className="w-1/2 lg:w-9/12 bg-white h-full">
               <div className="h-full flex flex-col w-5/7">
-                <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} />
+                <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} unit={unitData} />
               </div>
             </div>
           )}
           {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity?.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd}
-          refreshTrigger={refreshTrigger}
+          refreshTrigger={refreshTrigger} unit={unitData}
             />}
         </div>
 
         </>
       {/* )} */}
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
