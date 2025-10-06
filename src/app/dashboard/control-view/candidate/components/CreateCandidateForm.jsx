@@ -55,20 +55,22 @@ const jobTypeOptions = ["Contractor", "Employee", "Non-disclosed", "Other", "Stu
 const irregularityOptions = ["Disability", "Special Needs", "Other"];
 
 
-export default function CreateCandidateForm({ onClose, onCreate }) {
+export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [], incomes = [] }) {
   const [form, setForm] = useState({
     
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [rows, setRows] = useState([{ sequenceNumber: 1, type: "", comments: "" }]);
-  const [ethnicities, setEthnicities] = useState([]);
-  const [incomes, setIncomes] = useState([]);
+  // const [ethnicities, setEthnicities] = useState([]);
+  // const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(false);
   const { formStatus, setFormStatus } = useFormStatus();
   const [dataList, setDataList] = useState([]);
   const [duplicateId, setDuplicateId] = useState(false);
   const { activeClientId, setActiveClientId } = useClient();
+  const [localEthnicities, setLocalEthnicities] = useState(ethnicities);
+  const [localIncomes, setLocalIncomes] = useState(incomes);
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -123,21 +125,31 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
 
 
   // Fetch all candidates on mount
-  useEffect(() => {
-    const fetchEthnicity = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllEthinicities();
-        // keep objects instead of just names
-        setEthnicities(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch ethnicities:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEthnicity();
-  }, []);
+  // useEffect(() => {
+  //   const fetchEthnicity = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getAllEthinicities();
+  //       // keep objects instead of just names
+  //       setEthnicities(Array.isArray(data) ? data : []);
+  //     } catch (err) {
+  //       console.error("Failed to fetch ethnicities:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchEthnicity();
+  // }, []);
+
+    // ✅ Sync when parent updates
+    useEffect(() => {
+      setLocalEthnicities(ethnicities);
+    }, [ethnicities]);
+  
+    useEffect(() => {
+      setLocalIncomes(incomes);
+    }, [incomes]);
+  
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -163,21 +175,21 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
 
 
   // Fetch all candidates on mount
-  useEffect(() => {
-    const fetchIncome = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllIncomes();
-        // keep objects instead of just names
-        setIncomes(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch incomes:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchIncome();
-  }, []);
+  // useEffect(() => {
+  //   const fetchIncome = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getAllIncomes();
+  //       // keep objects instead of just names
+  //       setIncomes(Array.isArray(data) ? data : []);
+  //     } catch (err) {
+  //       console.error("Failed to fetch incomes:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchIncome();
+  // }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -320,7 +332,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Income", e.target.value)}
           >
             <option value="">Select Income</option>
-            {incomes
+            {localIncomes
             .filter((inc) => inc?.name && inc.name.trim() !== "").map((income, i) => (
               <option key={i} value={income.name}>
                 {income.name}
@@ -335,7 +347,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Ethnicity", e.target.value)}
           >
             <option value="">Select Ethnicity</option>
-            {ethnicities
+            {localEthnicities
             .filter((ethinicity) => ethinicity?.name && ethinicity.name.trim() !== "").map((eth, i) => (
               <option key={i} value={eth.name}>
                 {eth.name}
@@ -393,7 +405,7 @@ export default function CreateCandidateForm({ onClose, onCreate }) {
                         maxLength={40}
                         onChange={(e) => handleRowChange(index, "comments", e.target.value)}
                         className="w-full px-2 py-1 border"
-                        placeholder="Max 40 characters"
+                        
                       />
                     </td>
 

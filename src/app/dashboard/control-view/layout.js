@@ -67,7 +67,7 @@ export default function ControlViewLayout({ children }) {
         return tab.label !== "Admin";
       } else if (staff?.accessLevel === "Leaders Access") {
         // Staff Leaders Access sees only Candidate + Unit
-        return tab.label === "Candidate" || tab.label === "Unit";
+        return tab.label === "Unit";
       }
     }
 

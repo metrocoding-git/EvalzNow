@@ -31,8 +31,9 @@ import { createAssessmentBlock, createDuplicateAssessmentBlock, getAssessmentBlo
 import { createScoringCriteria, getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { createInsertScore, getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
 import { createBenchmark } from "@/services/benchmarkService";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useClient } from "@/context/ClientContext";
+import { getStaffById } from "@/services/staffService";
 
 export default function UnitControl() {
   const router = useRouter();
@@ -86,6 +87,7 @@ export default function UnitControl() {
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   const activeClientId = sessionStorage.getItem('activeClientId');
+  const [staff, setStaff] = useState();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -289,25 +291,56 @@ const filteredCandidates = unitRosterData
     fetchUnitRosterByUnitId();
   }, [selectedUnit?.id]);
 
+   // Fetch staff data only if logged-in user is staff
+   useEffect(() => {
+
+    const fetchStaffById = async () => {
+      try {
+        setLoading(true);
+        const data = await getStaffById(loggedInUser?.staffId);
+        setStaff(data);
+        console.log("Staff data:", data);
+      } catch (err) {
+        console.error("Failed to fetch staff:", err);
+        setError("Failed to load staff data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffById();
+  }, [loggedInUser?.staffId]);
   
   // ✅ Add handleCreate
   const handleCreate = async (newUnit) => {
     try {
+      const duplicate = dataList.some(
+        (u) => u.unitId?.toLowerCase() === newUnit.unitId?.toLowerCase()
+      );
+  
+      if (duplicate) {
+        toast.error(`A unit with ID "${newUnit.unitId}" already exists.`);
+        setShowAdd(true);
+        return false;  // Stop submission
+      }
+
       const unitWithAccount = {
         ...newUnit,
         accountId: loggedInUser?.id, // ✅ assign accountId
         clientId: activeClientId, 
       };
+
       const data = await createUnit(unitWithAccount);
        
       setDataList((prev) => [...prev, data]); // update datalist
       setSelectedUnit(data); 
 
-      // 3️⃣ Create benchmarks only after unit is created
-    
-      setShowAdd(false); // close form after success
+      setShowAdd(false); // ✅ only closes after successful creation
+      return true;// close form after success
     } catch (err) {
       console.error("Error updating unit list:", err);
+      toast.error("Failed to create unit. Please try again.");
+      return false;
     }
   };
 
@@ -654,7 +687,6 @@ const filteredCandidates = unitRosterData
       <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
-            {/* Control buttons */}
           
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
@@ -675,21 +707,23 @@ const filteredCandidates = unitRosterData
                   </button>
                 ) : (
                   <>
-                    <button ref={controlsRef}
-                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
-                      onClick={() => {
-                        if (showUnitRoster) {
-                          setShowAddBlockManager(true);
-                        } else {
-                          setSelectedUnit(null);
-                          setShowAdd(true);
-                          setShowEdit(false);
-                          setFormStatus("Creating...");
-                        }
-                      }}
-                    >
-                      <Plus className="w-3.5 h-3.5 text-black" />
-                    </button>
+                    	{!(loggedInUser?.role === "staff" && staff?.accessLevel === "Leaders Access") && (
+                      <button ref={controlsRef}
+                        className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (showUnitRoster) {
+                            setShowAddBlockManager(true);
+                          } else {
+                            setSelectedUnit(null);
+                            setShowAdd(true);
+                            setShowEdit(false);
+                            setFormStatus("Creating...");
+                          }
+                        }}
+                      >
+                        <Plus className="w-3.5 h-3.5 text-black" />
+                      </button>
+                      )}
 
                     {selectedUnit && (
                       <div className="flex gap-1 unit-item">

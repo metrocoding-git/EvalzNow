@@ -629,7 +629,7 @@ export default function CandidateControl() {
                   {/* Income Inputs */}
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Incomes Ranges:
+                      Incomes Ranges (Max 10):
                     </label>
                     <div className="space-y-1">
                       {incomes.map((income, idx) => (
@@ -742,7 +742,8 @@ export default function CandidateControl() {
         
           {showAdd && (
             <div className="h-full flex flex-col w-96" ref={createFormRef}>
-              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
+              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} ethnicities={ethnicities}
+    incomes={incomes} />
             </div>
           )}
 

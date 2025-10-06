@@ -82,56 +82,44 @@ export default function AdminControl() {
   }, [router]);
 
   useEffect(() => {
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-      const data = await getAllClients();
-      const clientsArray = Array.isArray(data) ? data : [];
-      setDataList(clientsArray);
-      setClients(clientsArray);
-
-      if (clientsArray.length === 0) return;
-
-      // Restore selectedClient from sessionStorage
-      const storedId = sessionStorage.getItem(ACTIVE_CLIENT_KEY);
-      let initialClient = null;
-
-      if (storedId) {
-        initialClient = clientsArray.find(c => String(c.id) === storedId);
-      }
-
-      if (!initialClient) {
-        // Fallback to first client if no stored client
-        initialClient = clientsArray[0];
-        sessionStorage.setItem(ACTIVE_CLIENT_KEY, initialClient.id);
-      }
-
-      // Set both selectedClient AND sessionStorage correctly
-      setSelectedClient(initialClient);
-
-    } catch (err) {
-      console.error("Failed to fetch clients:", err);
-      setError("Failed to load clients. Please try again.");
-      setClients([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchClients();
-}, []);
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllClients();
+        const clientsArray = Array.isArray(data) ? data : [];
+        setDataList(clientsArray);
+        setClients(clientsArray);
   
-
-
-
-
-  // ✅ Update sessionStorage when selectedClient changes
-  useEffect(() => {
-    if (selectedClient) {
-      sessionStorage.setItem(ACTIVE_CLIENT_KEY, selectedClient.id);
-    }
-  }, [selectedClient]);
-
+        if (clientsArray.length === 0) return;
+  
+        // ✅ Keep the active client stored in sessionStorage
+        const storedId = sessionStorage.getItem(ACTIVE_CLIENT_KEY);
+  
+        // ✅ Do NOT overwrite the active client
+        // We just need to ensure one is stored
+        if (!storedId) {
+          sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(clientsArray[0].id));
+        }
+  
+        // ✅ Always select the first client for editing (independent of active)
+        const firstClient = clientsArray[0];
+        setSelectedClient(firstClient);
+        setShowEdit(true);
+        setShowAdd(false);
+  
+      } catch (err) {
+        console.error("Failed to fetch clients:", err);
+        setError("Failed to load clients. Please try again.");
+        setClients([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchClients();
+  }, []);
+  
+  
   const handleCreate = async (newClient) => {
     try {
 
@@ -341,7 +329,9 @@ export default function AdminControl() {
                     <div className="flex gap-1 client-item">
                       <button
                         className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
-                        onClick={() => handleDelete(selectedClient.id)}
+                        onClick={() => {
+                          handleDelete(selectedClient.id)
+                        }}
                       >
                         <Trash className="w-3.5 h-3.5" />
                       </button>
@@ -406,28 +396,36 @@ export default function AdminControl() {
             {showList && (
               <div className="flex-1">
                 {getFilteredData().map((item) => {
-                  const isSelected =  selectedClient?.id === item.id;
-                  const isActive = sessionStorage.getItem(ACTIVE_CLIENT_KEY) === String(item.id); 
+                  const isSelected = selectedClient?.id === item.id;
+                  const activeClientId = sessionStorage.getItem(ACTIVE_CLIENT_KEY);
+                  const isActive = String(activeClientId) === String(item.id);
+
                   return (
                     <div
                       key={item.id}
-                      className={`client-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                        isSelected
-                          ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                          : "hover:bg-gray-50"} `}
-                      onClick={(e) => { 
+                      className={`client-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all
+                        ${isActive ? "font-bold" : ""}
+                        ${isSelected ? "bg-blue-100 border-l-4 border-l-blue-400" : "hover:bg-gray-50"}
+                      `}
+                      //  LEFT CLICK = select only
+                      onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedClient(item)
+                        setSelectedClient(item);
                         setShowEdit(true);
                         setShowAdd(false);
-                        // setFormStatus("Editing...");
-                
                       }}
+                      //  RIGHT CLICK = make active + context menu
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setSelectedClient(item);
-                        
+
+                        // ✅ Mark this client as active in session storage
+                        sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(item.id));
+
+                        // ✅ Force UI update
+                        setSelectedClient((prev) => ({ ...prev }));
+
+                        // ✅ (optional) open context menu if you have one
                         setContextMenu({
                           visible: true,
                           x: e.pageX,
@@ -435,32 +433,32 @@ export default function AdminControl() {
                           selectedClient: item,
                         });
                       }}
-                      
                     >
                       <p
-                        className={`text-sm  truncate ${
-                          isSelected ? "text-black" : "text-gray-800"
-                        } ${isActive ? "font-bold" : "text-gray-800"}`}
+                        className={`text-sm truncate ${
+                          isActive ? "font-bold text-black" : "text-gray-800"
+                        }`}
                       >
                         {item.lastName}
                       </p>
                       <p
                         className={`text-sm truncate ${
-                          isSelected ? "text-black " : "text-gray-800"
-                        } ${isActive ? "font-bold" : "text-gray-800"}`}
+                          isActive ? "font-bold text-black" : "text-gray-800"
+                        }`}
                       >
                         {item.firstName}
                       </p>
                       <p
-                        className={`text-sm  truncate ${
-                          isSelected ? "text-black " : "text-gray-800"
-                        } ${isActive ? "font-bold" : "text-gray-800"}`}
+                        className={`text-sm truncate ${
+                          isActive ? "font-bold text-black" : "text-gray-800"
+                        }`}
                       >
                         {item.executiveId}
                       </p>
                     </div>
                   );
                 })}
+
               </div>
             )}
 

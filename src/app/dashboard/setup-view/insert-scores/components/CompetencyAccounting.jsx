@@ -16,6 +16,8 @@ import { useSearchParams } from 'next/navigation';
 import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId, updateInsertScore } from "@/services/insertScoreService";
 import { createScoringCriteria, deleteScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { useUnit } from "@/context/UnitContext";
+import { Toaster } from "react-hot-toast";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -40,7 +42,7 @@ const MAIN_CRITERIA = [
   "Sick/Injury Avoidance",
 ];
 
-export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId, refreshTrigger }) {
+export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId, refreshTrigger, unit }) {
 
   const [scores, setScores] = useState([]);
 
@@ -49,10 +51,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     setScoreAdd(false);
   };
 
+  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const searchParams = useSearchParams();
-  const environment = searchParams.get('environment') || 'workspace';
+  const environment = unit.environment;
 
-  const unitId = searchParams.get('unitId');
+  const unitId = selectedUnitId;
   const [classroomData, setClassroomData] = useState([]);
   const [workforceData, setWorkforceData] = useState([]);
   const { setFormStatus } = useFormStatus();
@@ -846,6 +849,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
 
         </div>
+        
       </div>
 
       {/* {scoreAdd && (
@@ -854,5 +858,6 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         </div>
       )} */}
     </>
+    
   );
 }

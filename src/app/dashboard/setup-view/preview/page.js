@@ -7,6 +7,7 @@ import MasterPpIdBinTable from "./components/MasterPpIdBinTable";
 import ClientEditor from "../../analytics-view/components/ClientEditor";
 import { useSearchParams } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { useUnit } from "@/context/UnitContext";
 
 const masterPPIDData = [
   {
@@ -99,9 +100,9 @@ export default function PreviewPage() {
   const [unitData, setUnitData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
   const searchParams = useSearchParams();
-  const unitQuery = searchParams.get("unitId");
+  const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");
 
   const sortedCandidates = [...candidateList].sort((a, b) => {
@@ -243,20 +244,26 @@ export default function PreviewPage() {
             <div className="p-2 space-y-1">
               {/* Session Info */}
               <div className="px-4 ">
-                <div className="border border-gray-200 p-2 ">
-                <p className="text-sm text-gray-600">
-                      Unit Name: {unitData?.unitName || "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Unit ID: {unitData?.unitId || "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Unit Type: {unitData?.unitType || "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Signature Profile: {unitData?.signatureProfile || "N/A"} 
-                    </p>
-                </div>
+                {unitData?.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-gray-500">
+                      No Unit Selected.
+                    </div>
+                    ) : (
+                  <div className="border border-gray-200 p-2 ">
+                  <p className="text-sm text-gray-600">
+                        Unit Name: {unitData?.unitName || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Unit ID: {unitData?.unitId || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Unit Type: {unitData?.unitType || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Signature Profile: {unitData?.signatureProfile || "N/A"} 
+                      </p>
+                  </div>
+                )}
               </div>
 
               {filteredData.length === 0 ? (
