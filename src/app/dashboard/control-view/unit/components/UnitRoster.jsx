@@ -671,23 +671,24 @@ const moveRowDown = () => {
               <h2 className="text-sm font-semibold mx-1">Assessment Block Manager</h2>
 
               <div className="flex items-center gap-1">
-                <button
-                  onClick={() => { 
-                    if (!selectedCandidate) {
-                      toast.error("Please select the candidate");
+                {selectedCandidate && (
+                  <button
+                    onClick={() => { 
+                      if (!selectedCandidate) {
+                        toast.error("Please select the candidate");
+                      }
+                      else {
+                        setShowCreateBlockForm(true);
+                      }
+                      
                     }
-                    else {
-                      setShowCreateBlockForm(true);
                     }
-                    
-                  }
-                  }
-                  title="Add new"
-                  className="p-1.5 text-gray-600 hover:text-black transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5 " />
-                </button>
-
+                    title="Add new"
+                    className="p-1.5 text-gray-600 hover:text-black transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 " />
+                  </button>
+                )}
 
                 {selectedRow !== null && (
                   <button
@@ -701,25 +702,50 @@ const moveRowDown = () => {
                 )}
 
 
-                <button
-                  onClick={moveRowUp}
-                  title="Move Up"
-                  className="text-gray-600 hover:text-black cursor-pointer p-1.5"
-                >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                </button>
+                {/* Move Up / Move Down buttons – only visible if that tab has data */}
+                {activeTab === "Direct" && assessmentBlocks.filter(b => b.ppId > 0).length > 0 && (
+                  <>
+                    <button
+                      onClick={moveRowUp}
+                      title="Move Up"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
 
-                <button
-                  onClick={moveRowDown}
-                  title="Move Down"
-                  className="text-gray-600 hover:text-black cursor-pointer p-1.5"
-                >
-                  <ArrowDown className="w-3.5 h-3.5" />
-                </button>
+                    <button
+                      onClick={moveRowDown}
+                      title="Move Down"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
 
+                {activeTab === "Indirect" && assessmentBlocks.filter(b => b.ppId < 0).length > 0 && (
+                  <>
+                    <button
+                      onClick={moveRowUp}
+                      title="Move Up"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={moveRowDown}
+                      title="Move Down"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1.5"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
 
               </div>
             </div>
+            
             <div className="flex items-center justify-between border-b p-1 bg-gray-100 mx-2">
               {/* Tab Buttons */}
               <div className="flex space-x-2">
@@ -826,7 +852,7 @@ const moveRowDown = () => {
         />
       )}
 
-<Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }

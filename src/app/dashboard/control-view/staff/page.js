@@ -57,7 +57,7 @@ export default function StaffControl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [formStatus, setFormStatus] = useState("Ready");
+  const {formStatus, setFormStatus} = useFormStatus();
   // const { setFormStatus } = useFormStatus();
   const activeClientId = sessionStorage.getItem('activeClientId');
   const user = localStorage.getItem('user');
@@ -116,6 +116,7 @@ export default function StaffControl() {
   
       if (exists) {
         toast.error(`Staff ID "${newStaff.staffId}" already exists`);
+        return false;
       }
 
       const accountPayload = {
@@ -139,7 +140,7 @@ export default function StaffControl() {
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "Failed to create staff";
       toast.error(errorMessage); // ✅ show toast here
-      throw new Error(errorMessage); // ✅ re-throw so form does not close
+      return null;
     }
   };
 

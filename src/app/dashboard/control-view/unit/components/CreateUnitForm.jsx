@@ -156,11 +156,16 @@ const THRESHOLD_NAMES = {
 
   // Reset signatureProfile whenever unitType changes
   useEffect(() => {
+
+    if (unitData) {
+      return;
+    }
+
     setForm((prev) => ({
       ...prev,
       signatureProfile: "", // reset selection
     }));
-  }, [form.unitType]);
+  }, [form.unitType, unitData]);
 
   const handleStaffSelect = (selectedStaffArray) => {
     if (lookupFor === "leaders") {
@@ -284,7 +289,13 @@ const THRESHOLD_NAMES = {
       signatureProfile: unitData.signatureProfile || "",
       unitDirector: unitData.unitDirector || "",
       passThresholds: unitData.passThresholds || defaultThresholds[unitData.unitType] || {},
-      benchmarks: unitData.benchmarks || [],
+      benchmarks: (unitData.benchmarks || []).map((bm, i) => ({
+        id: String(i + 1),
+        benchmarkId: bm.benchmarkId || "",
+        type: bm.benchmarkType || "",
+        ref: bm.benchmarkRef || "",
+        description: bm.benchmarkDescription || "",
+      })),
       assignedLeaders: unitData.assignedLeaders || [],
       assignedAssessors: unitData.assignedAssessors || [],
       scoringSystem: unitData.scoringSystem || "",
@@ -295,6 +306,7 @@ const THRESHOLD_NAMES = {
     // setUnitDirectors(directors);
   }, [unitData]);
   
+  console.log("unit dta -->", unitData);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -548,7 +560,7 @@ const THRESHOLD_NAMES = {
                       placeholder="Ex: 01"
                       maxLength={20}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                      value={bm.id || ""}
+                      value={bm.benchmarkId ||bm.id || ""}
                       readOnly
                       
                     />
