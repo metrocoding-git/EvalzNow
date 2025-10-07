@@ -445,7 +445,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 <option value="">Select Unit Director</option>
                 {unitDirectors.map((staff) => (
                   <option key={staff.id} value={staff.id}>
-                    {staff.firstName} {staff.lastName} — {staff.jobTitle}
+                    {staff.firstName} {staff.lastName}
                   </option>
                 ))}
               </select>

@@ -264,7 +264,7 @@ const filteredCandidates = unitRosterData
       setLoading(false);
     }
   };
-  
+
 
   // Fetch all candidates on mount
   // Fetch unit roster by unit ID when selectedUnit changes
@@ -293,6 +293,10 @@ const filteredCandidates = unitRosterData
 
    // Fetch staff data only if logged-in user is staff
    useEffect(() => {
+
+    if (!loggedInUser?.staffId) {
+      return;
+    }
 
     const fetchStaffById = async () => {
       try {
@@ -423,10 +427,10 @@ const filteredCandidates = unitRosterData
 
   // Select candidate from roster
   const handleCandidateSelect = (candidate) => {
-    setSelectedCandidate(candidate); // store selected candidate
-    console.log("candidate key", selectedCandidate);
-    // Optional: you can also update UnitRoster state if needed
-  };
+    setSelectedCandidate(prev =>
+      prev?.id === candidate?.id ? null : candidate
+    );
+  };  
 
 
   // Add this near your other state
@@ -461,6 +465,7 @@ const filteredCandidates = unitRosterData
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
   }, [selectedUnit?.id, selectedCandidate?.id]);
+  
 
 
   useEffect(() => {
@@ -1145,7 +1150,6 @@ const filteredCandidates = unitRosterData
             onBlockSelect={setSelectedBlock}
             onRosterUpdate={handleRosterUpdate}
             refreshCandidateData={refreshCandidateData} 
-            // refreshAssessmentBlocks={fetchBlocksByUnitAndCandidate}
             showEditBlockManager={showEditBlockManager}
                />
           </div>

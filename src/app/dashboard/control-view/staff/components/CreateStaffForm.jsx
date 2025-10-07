@@ -70,7 +70,12 @@ export default function CreateStaffForm({ onClose, onCreate }) {
       };
 
       await onCreate(staffData);
+      if (created) {
       setFormStatus("Staff Created");
+      onClose();
+    } else {
+      setFormStatus("Ready...");
+    }
 
       onClose();
     } catch (err) {

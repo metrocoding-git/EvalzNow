@@ -9,9 +9,9 @@ export default function TextSection() {
         <Image
           src={loginImg}
           alt="Login illustration"
-          width={120}
-          height={120}
-          className="mx-auto mb-6 rounded-xl"
+          width={160}
+          height={160}
+          className="mx-auto mb-6 "
           priority
         />
                 <p className="text-2xl">

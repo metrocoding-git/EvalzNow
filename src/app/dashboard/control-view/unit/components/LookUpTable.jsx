@@ -19,6 +19,8 @@ export default function SearchLookup({ onClose, selectedUnit, refreshRoster, ref
   // const [rosterCandidateIds, setRosterCandidateIds] = useState([]);
   // const { activeClientId, setActiveClientId } = useClient();
   const activeClientId = sessionStorage.getItem('activeClientId');
+  const [rosterEntries, setRosterEntries] = useState([]); 
+  const [rosterEntriesToDelete, setRosterEntriesToDelete] = useState([]);
 
 // Fetch all candidates on mount
 useEffect(() => {
@@ -48,7 +50,7 @@ useEffect(() => {
     try {
       setLoading(true);
       const roster = await getUniRostertByUnitId(selectedUnit.id);
-
+      setRosterEntries(roster);
       const rosterIds = roster.map(r => r.candidateId);
       setRosterCandidateIds(rosterIds);
       setSelectedIds(rosterIds); // preselect in UI
@@ -93,37 +95,44 @@ useEffect(() => {
     }
   };
 
-  const toggleSelect = async (id) => {
-    if (selectedIds.includes(id)) {
-      // ✅ User is unchecking this candidate
-      setSelectedIds(prev => prev.filter(sid => sid !== id));
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const isSelected = prev.includes(id);
   
-      // If it was part of the original roster, delete from DB
-      if (rosterCandidateIds.includes(id)) {
-        try {
-          // Find the roster entry by candidateId
-          const roster = await getUniRostertByUnitId(selectedUnit.id);
-          const rosterEntry = roster.find(r => r.candidateId === id);
+      if (isSelected) {
+        // remove from selected
+        const newSelected = prev.filter((sid) => sid !== id);
   
-          if (rosterEntry?.id) {
-            await deleteUnitRoster(rosterEntry.id);
-            console.log(`🗑️ Candidate ${id} removed from roster`);
-            toast.success("Candidate removed from roster");
-            
-            // Refresh UI
-            if (refreshRoster) await refreshRoster();
-            if (refreshCandidateData) await refreshCandidateData();
+        // if part of original roster, mark for deletion
+        if (rosterCandidateIds.includes(id)) {
+          const entry = rosterEntries.find((r) => r.candidateId === id);
+          if (entry?.id) {
+            setRosterEntriesToDelete((prevDel) =>
+              prevDel.includes(entry.id) ? prevDel : [...prevDel, entry.id]
+            );
           }
-        } catch (err) {
-          console.error("❌ Failed to remove candidate:", err);
-          toast.error("Failed to remove candidate from roster");
         }
+  
+        return newSelected;
+      } else {
+        // add to selected
+        const newSelected = [...prev, id];
+  
+        // if was previously marked for deletion, undo that
+        if (rosterCandidateIds.includes(id)) {
+          const entry = rosterEntries.find((r) => r.candidateId === id);
+          if (entry?.id) {
+            setRosterEntriesToDelete((prevDel) =>
+              prevDel.filter((eid) => eid !== entry.id)
+            );
+          }
+        }
+  
+        return newSelected;
       }
-    } else {
-      // ✅ User is checking this candidate
-      setSelectedIds(prev => [...prev, id]);
-    }
+    });
   };
+  
   
 
   // Focus search input when component mounts
@@ -134,39 +143,61 @@ useEffect(() => {
   }, []);
 
 
-  const handleUnitRosterDeleteCurve = async () => {
-    if (selectedEntitiyRows.length === 0) return;
   
+
+
+  const handleSubmit = async () => {
     try {
-      // Get the selected roster items to delete
-      const itemsToDelete = selectedEntitiyRows.map(index => displayRosterData[index]);
+      const selectedCandidates = candidateData.filter(c =>
+        selectedIds.includes(c.id)
+      );
   
-      // Delete each item from the backend
-      for (const item of itemsToDelete) {
-        if (item.id) { // Make sure it has an ID
-          await deleteUnitRoster(item.id);
+      // if (selectedCandidates.length !== 3) {
+      //   toast.error("Please select exactly 3 candidates before continuing.");
+      //   return;
+      // }
+  
+      setLoading(true);
+  
+      // Delete unselected original entries
+      for (const rosterEntryId of rosterEntriesToDelete) {
+        try {
+          await deleteUnitRoster(rosterEntryId);
+        } catch (err) {
+          console.error(`Failed to delete roster entry ${rosterEntryId}:`, err);
         }
       }
   
-
-       // Remove deleted candidates from refreshCandidateData
-      // if (refreshCandidateData) {
-      //   refreshCandidateData(prevCandidates => 
-      //     prevCandidates.filter(candidate => 
-      //       !itemsToDelete.some(item => item.candidate_id === candidate.id)
-      //     )
-      //   );
-      // }
+      // Create new ones
+      for (const candidate of selectedCandidates) {
+        if (rosterCandidateIds.includes(candidate.id)) continue;
+        await createUnitRoster({
+          unitId: selectedUnit?.id || selectedUnit?.unitId,
+          candidateId: candidate.id,
+          presentCount: 0,
+          excusedAbsences: 0,
+          unexcusedAbsences: 0,
+          excusedTardies: 0,
+          unexcusedTardies: 0,
+          unitOutcome: "Ongoing",
+        });
+      }
   
-      // Clear selection
-      // setSelectedEntityRows([]);
+      toast.success("Roster updated successfully");
   
-      console.log("✅ Selected roster items deleted successfully");
+      if (refreshRoster) await refreshRoster();
+      if (refreshCandidateData) await refreshCandidateData();
+  
+      setRosterEntriesToDelete([]);
+      onClose();
     } catch (err) {
-      console.error("❌ Failed to delete selected roster items:", err);
-      alert("Failed to delete selected roster items. Please try again.");
+      console.error("❌ Error updating roster:", err);
+      toast.error("Failed to update roster. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-center z-50">
@@ -308,52 +339,7 @@ useEffect(() => {
           </p>
           <button
             type="button"
-            onClick={async () => {
-              try {
-                const selectedCandidates = candidateData.filter(c =>
-                  selectedIds.includes(c.id)
-                );
-
-                // ✅ Require exactly 3 selected
-                if (selectedCandidates.length !== 3) {
-                  toast.error("Please select exactly 3 candidates before continuing.");
-                  return;
-                }
-            
-                for (const candidate of selectedCandidates) {
-                  // Only add if NOT already in roster
-                  if (rosterCandidateIds.includes(candidate.id)) continue;
-            
-                  const payload = {
-                    unitId: selectedUnit?.id || selectedUnit?.unitId,
-                    candidateId: candidate.id,
-                    presentCount: 0,
-                    excusedAbsences: 0,
-                    unexcusedAbsences: 0,
-                    excusedTardies: 0,
-                    unexcusedTardies: 0,
-                    unitOutcome: "Ongoing",
-                  };
-            
-                  await createUnitRoster(payload);
-                }
-            
-                console.log("✅ All candidates added to roster");
-                
-                if (refreshRoster) {
-                  await refreshRoster();
-                }
-                
-                if (refreshCandidateData) {
-                  await refreshCandidateData();
-                }
-
-                onClose();
-              } catch (err) {
-                console.error("❌ Error creating roster:", err);
-                toast.error("Failed to add candidates to roster. Please try again.");
-              }
-            }}
+            onClick={handleSubmit}
             
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-200 transition-colors"
           >
