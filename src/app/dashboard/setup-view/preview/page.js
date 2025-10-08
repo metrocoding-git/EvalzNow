@@ -267,7 +267,9 @@ export default function PreviewPage() {
               </div>
 
               {filteredData.length === 0 ? (
-                <p className="text-xs text-gray-500">No activated candidates.</p>
+                <div className="px-4 py-3 text-center text-gray-500">
+                No candidates found for this unit.
+              </div>
               ) : (
                 filteredData.map((candidate) => (
                   <div

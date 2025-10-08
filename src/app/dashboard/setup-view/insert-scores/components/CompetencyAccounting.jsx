@@ -741,22 +741,25 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                   </button>
                 )}
 
+                {insertScores.length > 0 && selectedRow !== null && (
+                  <> 
+                    <button
+                      onClick={moveRowUp}
+                      title="Move Up"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
 
-                <button
-                  onClick={moveRowUp}
-                  title="Move Up"
-                  className="text-gray-600 hover:text-black cursor-pointer p-1"
-                >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  onClick={moveRowDown}
-                  title="Move Down"
-                  className="text-gray-600 hover:text-black cursor-pointer p-1"
-                >
-                  <ArrowDown className="w-3.5 h-3.5" />
-                </button>
+                    <button
+                      onClick={moveRowDown}
+                      title="Move Down"
+                      className="text-gray-600 hover:text-black cursor-pointer p-1"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
               </div>
 
             </div>
