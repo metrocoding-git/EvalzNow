@@ -36,9 +36,9 @@ export const deleteIncome = async (id) => {
 };
 
 // Get all Incomes
-export const getAllIncomes = async () => {
+export const getAllIncomes = async (clientId) => {
   try {
-    const response = await api.get(API_ROUTES.INCOME);
+    const response = await api.get(`${API_ROUTES.INCOME}/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching incomes:", error);
@@ -49,7 +49,7 @@ export const getAllIncomes = async () => {
 // Get single Income by ID
 export const getIncomeById = async (id) => {
   try {
-    const response = await api.get(`${API_ROUTES.INCOME}/${id}`);
+    const response = await api.get(`${API_ROUTES.INCOME}/id/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching income:", error);

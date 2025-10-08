@@ -102,7 +102,9 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
   const isFormValid = form.shortDescription;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
+    <form onSubmit={handleSubmit}
+      className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200" >
+        
       {/* Header */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2 text-black font-semibold">
@@ -120,63 +122,50 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
 
       {/* Scrollable Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-1 gap-1 space-y-3 text-sm max-w-xl">
-
+        <div className="grid grid-cols-[150px_1fr] gap-y-4 gap-x-4 text-sm max-w-xl">
           {/* Period Type */}
-          <div className="flex justify-between gap-2 space-y-1">
-            <label className="col-span-1 flex items-center text-gray-700">
-              Period Type:
-            </label>
-            <div className="flex items-center gap-2">
-              <select className="w-full border px-2 py-0.5" 
-                value={form.periodType}
-                onChange={(e) => handleChange("periodType", e.target.value)}>
-                {PERIOD_TYPES.map((type, i) => (
-                  <option key={`period-${i}`} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <label className="flex items-center text-gray-700">Period Type:</label>
+          <select
+            className="border px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-gray-400"
+            value={form.periodType}
+            onChange={(e) => handleChange("periodType", e.target.value)}
+          >
+            {PERIOD_TYPES.map((type, i) => (
+              <option key={`period-${i}`} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
 
           {/* Short Description */}
-          <div className="flex justify-between gap-2 space-y-1">
-            <label className="col-span-1 flex items-center text-gray-700">
-              Short Description:
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Enter short description"
-                value={form.shortDescription}
-                onChange={(e) => handleChange("shortDescription", e.target.value)}
-                className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-              />
-            </div>
-          </div>
+          <label className="flex items-center text-gray-700">Short Description:</label>
+          <input
+            type="text"
+            placeholder="Enter short description"
+            value={form.shortDescription}
+            onChange={(e) => handleChange("shortDescription", e.target.value)}
+            className="border px-2 py-1 w-full bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+          />
 
           {/* Delivery */}
-          <div className="flex justify-between gap-2 space-y-1">
-            <label className="col-span-1 flex items-center text-gray-700">
-              Delivery:
-            </label>
-            <div className="flex items-center gap-2">
-              <select className="w-full border px-2 py-0.5" 
-                value={form.delivery}
-                onChange={(e) => handleChange("delivery", e.target.value)}>
-                  {(activeTab === "Direct" ? DIRECT_DELIVERY : INDIRECT_DELIVERY).map(
-                    (type, i) => (
-                      <option key={`delivery-${i}`} value={type}>
-                        {type}
-                      </option>
-                    )
-                  )}
-              </select>
-            </div>
-          </div>
-
+          <label className="flex items-center text-gray-700">Delivery:</label>
+          <select
+            className="border px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-gray-400"
+            value={form.delivery}
+            onChange={(e) => handleChange("delivery", e.target.value)}
+          >
+            {(activeTab === "Direct" ? DIRECT_DELIVERY : INDIRECT_DELIVERY).map(
+              (type, i) => (
+                <option key={`delivery-${i}`} value={type}>
+                  {type}
+                </option>
+              )
+            )}
+          </select>
         </div>
       </div>
-      {/*  Bottom Actions */}
+
+      {/* Bottom Actions */}
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           <button
@@ -193,7 +182,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
           </button>
         </div>
       </div>
-
     </form>
+
   );
 }

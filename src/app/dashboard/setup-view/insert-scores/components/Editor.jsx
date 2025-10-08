@@ -6,6 +6,7 @@ import { getCriticalRefbyPpId, updateInsertScore } from "@/services/insertScoreS
 import { useFormStatus } from "@/context/FormStatusContext";
 import { getAssessmentBlockByUnitAndCandidate } from "@/services/assessmentBlockManagerService";
 import toast from "react-hot-toast";
+import { useUnit } from "@/context/UnitContext";
 
 const companySizes = [
   "Tier 1 - Micro-Size: 1-4 Candidates",
@@ -159,15 +160,17 @@ const competencyTypes = {
 };
 
 
-export default function Editor({ details, performancePoints, onClose, onUpdate  }) {
+export default function Editor({ details, performancePoints, onClose, onUpdate, unit }) {
   const [form, setForm] = useState({});
   const searchParams = useSearchParams();
   const { setFormStatus } = useFormStatus();
-  const environment = searchParams.get('environment') || 'workspace';
-  const unitId = searchParams.get('unitId');
+  
+  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const unitId = selectedUnitId;
+  const environment = unit?.environment || "";
   const [ppIds, setPpIds] = useState([]);
   const rawType = searchParams.get("type") || "communicative";
-  const type = rawType.toLowerCase(); // normalize
+  const type = unit?.unitType?.toLowerCase(); // normalize
   const [criticalRange, setCriticalRange] = useState(null);
 
   // Get the appropriate competencies based on type
@@ -377,246 +380,204 @@ const validateCriticalDate = (inputDateStr) => {
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
-        <div className="flex items-center gap-2 text-black font-semibold text-sm">
-          <Edit className="w-4 h-4" />
-          Entity Editor
-        </div>
+  {/* Header */}
+  <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
+    <div className="flex items-center gap-2 text-black font-semibold text-sm">
+      <Edit className="w-4 h-4" />
+      Entity Editor
+    </div>
+  </div>
 
-      </div>
+  {details && (
+    <>
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto">
+        <form onSubmit={handleSubmit} className=" text-xs space-y-3 bg-white">
+          <div className="grid grid-cols-[140px_1fr] items-center gap-x-2 gap-y-3 p-3">
+            {/* PP ID */}
+            <label className="text-gray-700 text-left">PP ID Callout:</label>
+            <select
+              value={formData.ppId}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("ppId", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="" disabled>
+                Select PP ID
+              </option>
+              {ppIds.map((pp, i) => (
+                <option key={i} value={pp}>
+                  {pp}
+                </option>
+              ))}
+            </select>
 
-      {details && (
-        <>
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto">
-            <form onSubmit={handleSubmit} className="p-4 text-xs space-y-3 bg-white">
-              {/* PP ID */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  PP ID Callout:
-                </label>
-                <select
-                  value={formData.ppId}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("ppId", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="" disabled>
-                    Select PP ID
-                  </option>
-                  {performancePoints == ""}
-                  {ppIds.map((pp, i) => (
-                    <option key={i} value={pp}>
-                      {pp}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {/* Duration */}
+            <label className="text-gray-700 text-left">Duration (Days):</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.durationHrs || ""}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("durationHrs", e.target.value)}
+              className="border px-2 py-1 w-full"
+            />
 
-              {/* Duration */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Duration (Days):
-                </label>
+            {/* Critical Reference Date */}
+            <label className="text-gray-700 text-left">Critical Ref. Date:</label>
+            <input
+              type="date"
+              value={formData.criticalRefDate}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("criticalRefDate", e.target.value)}
+              className="border px-2 py-1 w-full"
+            />
+
+            {/* Task Declaration */}
+            <label className="text-gray-700 text-left">Task Declaration:</label>
+            <input
+              type="text"
+              maxLength={50}
+              value={formData.remarks}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("remarks", e.target.value)}
+              className="border px-2 py-1 w-full"
+            />
+
+            {/* Workflow Stage */}
+            <label className="text-gray-700 text-left">Workflow Stage:</label>
+            <select
+              value={formData.workflowStage}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("workflowStage", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="">Select Stage</option>
+              {workflowStages.map((stage, i) => (
+                <option key={i} value={stage}>
+                  {stage}
+                </option>
+              ))}
+            </select>
+
+            {/* Assessment Type */}
+            <label className="text-gray-700 text-left">Assessment Type:</label>
+            <select
+              value={formData.assessmentType}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("assessmentType", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="">Select Assessment Type</option>
+              {assessmentTypes.map((type, i) => (
+                <option key={i} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+
+            {/* Schedule Impact */}
+            <label className="text-gray-700 text-left">Schedule Impact:</label>
+            <select
+              value={formData.scheduleImpact}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("scheduleImpact", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="">Select Schedule Impact</option>
+              {scheduleImpacts.map((impact, i) => (
+                <option key={i} value={impact}>
+                  {impact}
+                </option>
+              ))}
+            </select>
+
+            {/* Engage Level */}
+            <label className="text-gray-700 text-left">Engage Level:</label>
+            <select
+              value={formData.engageLevel || ""}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("engageLevel", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="" disabled>
+                Select Engage Level
+              </option>
+              {engageLevel.map((level, i) => (
+                <option key={i} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+
+            {/* Competency */}
+            <label className="text-gray-700 text-left">Competency:</label>
+            <select
+              value={formData.competency || ""}
+              onFocus={() => setFormStatus("Editing...")}
+              onBlur={() => setFormStatus("Ready...")}
+              onChange={(e) => handleChange("competency", e.target.value)}
+              className="border px-2 py-1 w-full"
+            >
+              <option value="" disabled>
+                Select Competency
+              </option>
+              {currentCompetencies.map((comp, i) => (
+                <option key={i} value={comp}>
+                  {comp}
+                </option>
+              ))}
+            </select>
+
+            {environment === "Classroom" && (
+              <>
+                <label className="text-gray-700 text-left">Attained Score:</label>
                 <input
                   type="number"
-                  min="0"
-                  step="0.01"
+                  min={0}
+                  value={formData.attainedScore || ""}
                   onFocus={() => setFormStatus("Editing...")}
                   onBlur={() => setFormStatus("Ready...")}
-                  value={formData.durationHrs || ""}
-                  onChange={(e) => handleChange("durationHrs", e.target.value)}
-                  className="flex-1 border px-2 py-1"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      attainedScore: e.target.value,
+                    }))
+                  }
+                  className="border px-2 py-1 w-full"
                 />
-              </div>
 
-              {/* Critical Reference Date */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Critical Ref. Date:
-                </label>
+                <label className="text-gray-700 text-left">Maximum Score:</label>
                 <input
-                  type="date"
-                  value={formData.criticalRefDate}
+                  type="number"
+                  min={1}
+                  value={formData.maxScore || ""}
                   onFocus={() => setFormStatus("Editing...")}
                   onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("criticalRefDate", e.target.value)}
-                  className="flex-1 border px-2 py-1"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      maxScore: e.target.value,
+                    }))
+                  }
+                  className="border px-2 py-1 w-full"
                 />
-              </div>
+              </>
+            )}
+          </div>
 
-              {/* Task Declaration */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Task Declaration:
-                </label>
-                <input
-                  type="text"
-                  maxLength={50}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  value={formData.remarks}
-                  onChange={(e) => handleChange("remarks", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                />
-              </div>
-
-              {/* Workflow Stage */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Workflow Stage:
-                </label>
-                <select
-                  value={formData.workflowStage}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("workflowStage", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="">Select Stage</option>
-                  {workflowStages.map((stage, i) => (
-                    <option key={i} value={stage}>
-                      {stage}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Assessment Type */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Assessment Type:
-                </label>
-                <select
-                  value={formData.assessmentType}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("assessmentType", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="">Select Assessment Type</option>
-                  {assessmentTypes.map((type, i) => (
-                    <option key={i} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Schedule Impact */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Schedule Impact:
-                </label>
-                <select
-                  value={formData.scheduleImpact}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("scheduleImpact", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="">Select Schedule Impact</option>
-                  {scheduleImpacts.map((impact, i) => (
-                    <option key={i} value={impact}>
-                      {impact}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Engage Level */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Engage Level:
-                </label>
-                <select
-                  value={formData.engageLevel || ""}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("engageLevel", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="" disabled>
-                    Select Engage Level
-                  </option>
-                  {engageLevel.map((level, i) => (
-                    <option key={i} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Competency */}
-              <div className="flex items-center">
-                <label className="w-40 pr-2 text-left text-gray-700">
-                  Competency:
-                </label>
-                <select
-                  value={formData.competency || ""}
-                  onFocus={() => setFormStatus("Editing...")}
-                  onBlur={() => setFormStatus("Ready...")}
-                  onChange={(e) => handleChange("competency", e.target.value)}
-                  className="flex-1 border px-2 py-1"
-                >
-                  <option value="" disabled>
-                    Select Competency
-                  </option>
-                  {currentCompetencies.map((comp, i) => (
-                    <option key={i} value={comp}>
-                      {comp}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {environment === "Classroom" && (
-                <>
-                  <div className="flex items-center">
-                    <label className="w-40 pr-2 text-left text-gray-700">
-                      Attained Score:
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formData.attainedScore || ""}
-                      onFocus={() => setFormStatus("Editing...")}
-                      onBlur={() => setFormStatus("Ready...")}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          attainedScore: e.target.value,
-                        }))
-                      }
-                      className="flex-1 border px-2 py-1"
-                    />
-                  </div>
-
-                  <div className="flex items-center">
-                    <label className="w-40 pr-2 text-left text-gray-700">
-                      Maximum Score:
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={formData.maxScore || ""}
-                      onFocus={() => setFormStatus("Editing...")}
-                      onBlur={() => setFormStatus("Ready...")}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          maxScore: e.target.value,
-                        }))
-                      }
-                      className="flex-1 border px-2 py-1"
-                    />
-                  </div>
-                </>
-              )}
-
-            <div className="flex justify-end gap-2">
+          {/* Button */}
+          <div className="border-t border-gray-200 p-2 bg-gray-50 pr-3">
+            <div className="flex justify-end  ">
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -625,13 +586,13 @@ const validateCriticalDate = (inputDateStr) => {
                 Edit
               </button>
             </div>
-            
-
-            </form>
           </div>
-        </>
-      )}
+        </form>
+      </div>
+    </>
+  )}
+</div>
 
-    </div>
+
   );
 }

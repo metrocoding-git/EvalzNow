@@ -272,7 +272,7 @@ export default function StaffControl() {
                   <Plus className="w-3.5 h-3.5 text-black" />
                 </button>
 
-                {selectedStaff && (
+                {selectedStaff && loggedInUser?.role !== "staff" && (
                   <div className="flex gap-1 staff-item">
                     <button
                       className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${

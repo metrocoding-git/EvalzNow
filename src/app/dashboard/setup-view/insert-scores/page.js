@@ -223,7 +223,7 @@ export default function EntitiesManager() {
     )  : ( */}
       <>
         {/* Sidebar */}
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
+        <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
           <div className="flex-grow flex flex-col h-1/2">
             {/* Header */}
             <div className="flex flex-col items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
@@ -307,7 +307,7 @@ export default function EntitiesManager() {
                   {/* Candidate Rows */}
                   <div className="mt-2">
                     {filteredData.length === 0 ? (
-                        <div className="px-4 py-6 text-center text-gray-500">
+                        <div className="px-4 py-3 text-center text-gray-500">
                           No candidates found for this unit.
                         </div>
                       ) : (filteredData.map((item) => (
@@ -353,6 +353,7 @@ export default function EntitiesManager() {
                 details={selectedRow}
                 performancePoints={activeTab}
                 onClose={() => setScoreAdd(false)}
+                unit={unitData}
                 onUpdate={() => {
                   // Trigger refresh when editor updates data
                   setRefreshTrigger(prev => prev + 1); 

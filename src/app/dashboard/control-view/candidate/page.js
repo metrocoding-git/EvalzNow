@@ -108,7 +108,7 @@ export default function CandidateControl() {
     const fetchEthnicity = async () => {
       try {
         setLoading(true);
-        const data = await getAllEthinicities();
+        const data = await getAllEthinicities(activeClientId);
         // keep objects instead of just names
         setEthnicities(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -126,7 +126,7 @@ export default function CandidateControl() {
     const fetchIncome = async () => {
       try {
         setLoading(true);
-        const data = await getAllIncomes();
+        const data = await getAllIncomes(activeClientId);
         // keep objects instead of just names
         setIncomes(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -311,24 +311,23 @@ export default function CandidateControl() {
 
   const handleEthnicityChange = async (idx, value) => {
     const updated = [...ethnicities];
-    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
+    updated[idx] = { ...updated[idx], name: value };
     setEthnicities(updated);
   
     try {
-      // If existing (has id) → update
       if (updated[idx].id) {
         await updateEthinicity(updated[idx].id, { name: value });
-      } 
-      // Else → create new
-      else if (value.trim() !== "") {
-        const created = await createEthinicity({ name: value });
-        updated[idx] = created; // replace with saved object (with ID)
+      } else if (value.trim() !== "") {
+        // ✅ Include active client ID here
+        const created = await createEthinicity({ name: value, clientId: activeClientId });
+        updated[idx] = created;
         setEthnicities([...updated]);
       }
     } catch (err) {
       console.error("Failed to save ethnicity:", err);
     }
   };
+  
   
   
   const handleEthnicityDelete = async (idx) => {
@@ -350,31 +349,13 @@ export default function CandidateControl() {
   const handleAddEthnicity = () => {
     setEthnicities([...ethnicities, { name: "" }]); // no id yet
   };
-  
+
 
   const handleIncomeChange = async (idx, value) => {
     const updated = [...incomes];
-    updated[idx] = { ...updated[idx], name: value }; // keep id if exists
+    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
     setIncomes(updated);
   
-    // try {
-    //   if (updated[idx].id) {
-    //     if (value.trim() === "") {
-    //       // ✅ Delete when cleared (same as ethnicity)
-    //       await deleteIncome(updated[idx].id);
-    //       setIncomes(incomes.filter((_, i) => i !== idx));
-    //     } else {
-    //       // ✅ Update if value is not empty
-    //       await updateIncome(updated[idx].id, { name: value });
-    //     }
-    //   } else if (value.trim() !== "") {
-    //     // ✅ Create new when non-empty
-    //     const created = await createIncome({ name: value });
-    //     updated[idx] = created;
-    //     setIncomes([...updated]);
-    //   }
-    // }
-
     try {
       // If existing (has id) → update
       if (updated[idx].id) {
@@ -382,17 +363,15 @@ export default function CandidateControl() {
       } 
       // Else → create new
       else if (value.trim() !== "") {
-        const created = await createIncome({ name: value });
+        const created = await createIncome({ name: value, clientId: activeClientId });
         updated[idx] = created; // replace with saved object (with ID)
         setIncomes([...updated]);
       }
-    } 
-    
-    catch (err) {
-      console.error("Failed to save income:", err);
+    } catch (err) {
+      console.error("Failed to save incomes:", err);
     }
-  };  
-  
+  };
+
   
   const handleIncomeDelete = async (idx) => {
     const income = incomes[idx];

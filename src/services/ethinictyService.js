@@ -36,9 +36,9 @@ export const deleteEthinicity = async (id) => {
 };
 
 // Get all ethinicities
-export const getAllEthinicities = async () => {
+export const getAllEthinicities = async (clientId) => {
   try {
-    const response = await api.get(API_ROUTES.ETHINICITY);
+    const response = await api.get(`${API_ROUTES.ETHINICITY}/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching ethinicities:", error);
@@ -49,7 +49,7 @@ export const getAllEthinicities = async () => {
 // Get single ethinicity by ID
 export const getEthinicityById = async (id) => {
   try {
-    const response = await api.get(`${API_ROUTES.ETHINICITY}/${id}`);
+    const response = await api.get(`${API_ROUTES.ETHINICITY}/id/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching ethinicity:", error);
