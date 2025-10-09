@@ -3,7 +3,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import { createStaff } from "@/services/staffService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const accessLevels = [
   "Full Access",
@@ -62,9 +62,15 @@ export default function CreateStaffForm({ onClose, onCreate }) {
       today.setHours(0, 0, 0, 0);
       if (dobDate > today) {
         toast.error("Date of birth is wrong.");
-        setFormStatus("Ready...");
+        setFormStatus("Creating...");
         return; // stop submission
       }
+    }
+
+    if (!isFormValid()) {
+      toast.error("Please check your validity.");
+      setFormStatus("Creating...");
+      return; // stop submission
     }
 
     setIsSubmitting(true);
@@ -86,20 +92,21 @@ export default function CreateStaffForm({ onClose, onCreate }) {
         accountStatus: form["Account Status"] || "Enabled",
       };
 
-      await onCreate(staffData);
-      if (created) {
-      setFormStatus("Staff Created");
-      onClose();
-    } else {
-      setFormStatus("Ready...");
-    }
-
-      onClose();
+      const result = await onCreate(staffData);
+      
+      if (result !== false) {
+        setFormStatus("Staff Created");
+        onClose(); // close form only on success
+      } else {
+        setFormStatus("Submission failed");
+      }
+     
+      
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Failed to create staff";
       setError(errorMessage);
-      setFormStatus("Ready...");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
     }
