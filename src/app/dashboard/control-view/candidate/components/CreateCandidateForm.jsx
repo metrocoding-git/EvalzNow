@@ -71,6 +71,9 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
   const { activeClientId, setActiveClientId } = useClient();
   const [localEthnicities, setLocalEthnicities] = useState(ethnicities);
   const [localIncomes, setLocalIncomes] = useState(incomes);
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const handleRowChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -193,6 +196,21 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const dobValue = form["Date of Birth"];
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      const today = new Date();
+      // Compare dates ignoring time
+      dobDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      if (dobDate > today) {
+        toast.error("Date of birth is wrong.");
+        setFormStatus("Creating...");
+        return; // stop submission
+      }
+    }
+
     setIsSubmitting(true);
     setError(null);
     setFormStatus("Processing...");
@@ -278,6 +296,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
               </label>
               <input
                 type={label.includes("Date") ? "date" : "text"}
+                max={label === "Date of Birth" ? todayStr : undefined} // prevents picking future DOB
                 className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />

@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -68,6 +69,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
     shortDescription: "",
     delivery: activeTab === "Direct" ? DIRECT_DELIVERY[0] : INDIRECT_DELIVERY[0], // default delivery
   });
+  const { setFormStatus } = useFormStatus();
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -77,6 +79,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormStatus("Processing");
     try {
       const payload = {
         unitId: unitId,    
@@ -92,7 +95,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
       if (refreshBlocks) {
         await refreshBlocks();
       }
-
+      setFormStatus("Assessment Block Manager Created");
       onClose(); // close form after success
     } catch (error) {
       console.error("Error creating block:", error);
@@ -113,7 +116,11 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
 
         {/* Close icon */}
         <button
-          onClick={onClose}
+          onClick={ () => {
+            onClose()
+            setFormStatus("Ready...")
+          }
+        }
           className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
         >
           <X className="w-5 h-5" />

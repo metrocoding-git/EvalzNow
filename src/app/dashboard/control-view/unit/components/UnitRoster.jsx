@@ -7,6 +7,7 @@ import CreateBlockManagerForm from "./CreateBlockManagerForm";
 import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId, updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/services/unitRosterService";
 import toast, { Toaster } from "react-hot-toast";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
@@ -23,7 +24,7 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
   const [selectedBlock, setSelectedBlock] = useState(null);
 
-
+  const { setFormStatus } = useFormStatus();
 
   const [points, setPoints] = useState(
     Array.from({ length: 20 }, () => ({ x: "", y: "" }))
@@ -79,11 +80,12 @@ useEffect(() => {
     try {
       // Get the selected roster items to delete
       const itemsToDelete = selectedEntitiyRows.map(index => displayRosterData[index]);
-  
+      setFormStatus("Processing");
       // Delete each item from the backend
       for (const item of itemsToDelete) {
         if (item.id) { // Make sure it has an ID
           await deleteUnitRoster(item.id);
+          setFormStatus("Unit Roster Deleted");
         }
       }
   
@@ -426,30 +428,33 @@ const moveRowDown = () => {
     block.manageType === activeTab
   );
 
-    const handleDeleteBlock = async () => {
-      if (selectedRow === null) return; // no row selected
-    
-      try {
-        const blockToDelete = filteredAssessmentBlocks[selectedRow];
-        if (!blockToDelete) return;
-    
-        // Call API to delete
-        await deleteAssessmentBlock(blockToDelete.id);
-    
-        // Remove from local state
-        // setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
-        await fetchBlocksByUnitAndCandidate();
-    
-        // Reset selection
-        setSelectedRow(null);
-        setShowEditBlockManager(false);
-    
-        console.log("Deleted block:", blockToDelete.id);
-      } catch (err) {
-        console.error("Failed to delete block:", err);
-        alert("Failed to delete block. Please try again.");
-      }
-    };
+  const handleDeleteBlock = async () => {
+    if (selectedRow === null) return; // no row selected
+  
+    try {
+      const blockToDelete = filteredAssessmentBlocks[selectedRow];
+      if (!blockToDelete) return;
+
+      setFormStatus("Processing");
+  
+      // Call API to delete
+      await deleteAssessmentBlock(blockToDelete.id);
+  
+      // Remove from local state
+      // setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
+      await fetchBlocksByUnitAndCandidate();
+  
+      setFormStatus("Assessment Block Deleted");
+      // Reset selection
+      setSelectedRow(null);
+      setShowEditBlockManager(false);
+  
+      console.log("Deleted block:", blockToDelete.id);
+    } catch (err) {
+      console.error("Failed to delete block:", err);
+      alert("Failed to delete block. Please try again.");
+    }
+  };
   
 
     // Debounce helper
@@ -602,6 +607,8 @@ const moveRowDown = () => {
                           className="w-full border px-1 py-0.5 text-xs text-center"
                           value={rosterItem.unitOutcome || "Ongoing"}
                           onChange={(e) => handleChange(index, "unitOutcome", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                         >
                           <option>Ongoing</option>
                           <option>Pass</option>
@@ -614,6 +621,8 @@ const moveRowDown = () => {
                           min="0"
                           value={rosterItem.presentCount || 0}
                           onChange={(e) => handleChange(index, "present", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
@@ -623,6 +632,8 @@ const moveRowDown = () => {
                           min="0"
                           value={rosterItem.excusedAbsences || 0}
                           onChange={(e) => handleChange(index, "excusedAbs", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
@@ -632,6 +643,8 @@ const moveRowDown = () => {
                           min="0"
                           value={rosterItem.unexcusedAbsences || 0}
                           onChange={(e) => handleChange(index, "unexcusedAbs", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
@@ -641,6 +654,8 @@ const moveRowDown = () => {
                           min="0"
                           value={rosterItem.excusedTardies || 0}
                           onChange={(e) => handleChange(index, "excusedTardy", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
@@ -650,6 +665,8 @@ const moveRowDown = () => {
                           min="0"
                           value={rosterItem.unexcusedTardies || 0}
                           onChange={(e) => handleChange(index, "unexcusedTardy", e.target.value)}
+                          onFocus={() => setFormStatus("Editing...")}
+                          onBlur={() => setFormStatus("Ready...")}
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
@@ -679,6 +696,7 @@ const moveRowDown = () => {
                       }
                       else {
                         setShowCreateBlockForm(true);
+                        setFormStatus("Creating...");
                       }
                       
                     }
