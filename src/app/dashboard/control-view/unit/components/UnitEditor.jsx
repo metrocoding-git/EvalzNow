@@ -310,6 +310,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
   const handleSaveBlock = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setFormStatus("Processing");
     setError(null);
   
     try {
@@ -326,7 +327,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       if (onBlockSubmitStatus) {
         onBlockSubmitStatus(true);
       }
-  
+      setFormStatus("Assessment Block Manager Updated");
       onClose();
     } catch (err) {
       console.error("Failed to update unit:", err);

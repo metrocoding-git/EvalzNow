@@ -683,6 +683,7 @@ const filteredCandidates = unitRosterData
   
     // Show the Add/Duplicate form
     setShowAdd(true);
+    setFormStatus("Creating...");
   };
 
 

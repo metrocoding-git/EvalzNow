@@ -130,7 +130,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
             {filteredStaffs.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center p-2 text-gray-500">
-                  No matching candidates found.
+                  No matching Staff found.
                 </td>
               </tr>
             )}

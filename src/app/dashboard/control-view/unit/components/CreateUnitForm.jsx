@@ -5,6 +5,7 @@ import StaffLookup from "./StaffLookUp";
 import { getAllCandidates } from "@/services/candidateService";
 import { createUnit } from "@/services/unitService";
 import { useFormStatus } from "@/context/FormStatusContext";
+import { Toaster } from "react-hot-toast";
 
 const UNIT_TYPES = [
   "Communicative I/O",
@@ -627,7 +628,7 @@ const THRESHOLD_NAMES = {
                     />
                   </div>
 
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center mb-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -724,6 +725,7 @@ const THRESHOLD_NAMES = {
           />
         )
       }
+      <Toaster position="top-right" reverseOrder={false} />
     </form >
   );
 }

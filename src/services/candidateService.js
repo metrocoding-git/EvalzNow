@@ -46,9 +46,9 @@ export const getAllCandidates = async (clientId) => {
 };
 
 // Get all ethnicities
-export const getAllCandidateEthinicities = async () => {
+export const getAllCandidateEthinicities = async (clientId) => {
   try {
-    const response = await api.get(`${API_ROUTES.CANDIDATE}/ethnicities`);
+    const response = await api.get(`${API_ROUTES.CANDIDATE}/ethnicities/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching candidates:", error);
@@ -58,9 +58,9 @@ export const getAllCandidateEthinicities = async () => {
 
 
 // Get all incomes
-export const getAllCandidateIncomes = async () => {
+export const getAllCandidateIncomes = async (clientId) => {
   try {
-    const response = await api.get(`${API_ROUTES.CANDIDATE}/incomes`);
+    const response = await api.get(`${API_ROUTES.CANDIDATE}/incomes/${clientId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching candidates:", error);

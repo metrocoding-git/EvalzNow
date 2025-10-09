@@ -68,8 +68,8 @@ export default function CandidateControl() {
   //  const { activeClientId, setActiveClientId } = useClient();
    const activeClientId = sessionStorage.getItem('activeClientId');
 
-  const [loadingEthnicity, setLoadingEthnicity] = useState(false);
-  const [loadingIncome, setLoadingIncome] = useState(false);
+  // const [loadingEthnicity, setLoadingEthnicity] = useState(false);
+  // const [loadingIncome, setLoadingIncome] = useState(false);
 
   const [editingEthnicity, setEditingEthnicity] = useState({ idx: null, value: "" });
   const debouncedEthnicity = useDebounce(editingEthnicity);
@@ -155,9 +155,10 @@ export default function CandidateControl() {
     const fetchIncomeFromCandidate = async () => {
       try {
         setLoading(true);
-        const data = await getAllCandidateIncomes();
+        const data = await getAllCandidateIncomes(activeClientId);
         // keep objects instead of just names
         setCandidateIncome(Array.isArray(data) ? data : []);
+        console.log("candidate income: -->", data);
       } catch (err) {
         console.error("Failed to fetch ethnicities:", err);
       } finally {
@@ -173,9 +174,10 @@ export default function CandidateControl() {
     const fetchEthnicitiesFromCandidate = async () => {
       try {
         setLoading(true);
-        const data = await getAllCandidateEthinicities();
+        const data = await getAllCandidateEthinicities(activeClientId);
         // keep objects instead of just names
         setCandidateEthnicity(Array.isArray(data) ? data : []);
+        console.log("candidate ethnicities", data);
       } catch (err) {
         console.error("Failed to fetch ethnicities:", err);
       } finally {
@@ -323,16 +325,48 @@ export default function CandidateControl() {
   
 
   const handleEthnicityChange = (idx, value) => {
-    // Update UI immediately
+    // Just update UI instantly
     setEthnicities(prev => {
       const updated = [...prev];
       updated[idx] = { ...updated[idx], name: value };
       return updated;
     });
-
-    // Track for debounced save
-    setEditingEthnicity({ idx, value });
   };
+  
+  const handleEthnicityBlur = async (idx) => {
+    const eth = ethnicities[idx];
+    const value = eth.name.trim();
+  
+    try {
+      // If empty, delete from both UI and DB
+      if (!value) {
+        if (eth.id) await deleteEthinicity(eth.id);
+        setEthnicities(prev => prev.filter((_, i) => i !== idx));
+        toast.error("Empty ethnicity removed");
+        return;
+      }
+  
+      // Update existing
+      if (eth.id) {
+        await updateEthinicity(eth.id, { name: value });
+        toast.success("Ethnicity updated");
+      } 
+      // Create new
+      else {
+        const created = await createEthinicity({ name: value, clientId: activeClientId });
+        setEthnicities(prev => {
+          const updated = [...prev];
+          updated[idx] = created;
+          return updated;
+        });
+        toast.success("Ethnicity added");
+      }
+    } catch (err) {
+      console.error("Failed to save ethnicity:", err);
+      toast.error("Failed to save ethnicity");
+    }
+  };
+  
 
   // Debounce save
   useEffect(() => {
@@ -357,7 +391,7 @@ export default function CandidateControl() {
             updated[idx] = created;
             return updated;
           });
-          // toast.success("Ethnicity added successfully!");
+          toast.success("Ethnicity added successfully!");
         }
       } catch (err) {
         console.error("Failed to save ethnicity:", err);
@@ -399,8 +433,38 @@ export default function CandidateControl() {
       updated[idx] = { ...updated[idx], name: value };
       return updated;
     });
-    setEditingIncome({ idx, value });
   };
+  
+  const handleIncomeBlur = async (idx) => {
+    const inc = incomes[idx];
+    const value = inc.name.trim();
+  
+    try {
+      if (!value) {
+        if (inc.id) await deleteIncome(inc.id);
+        setIncomes(prev => prev.filter((_, i) => i !== idx));
+        toast.error("Empty income removed");
+        return;
+      }
+  
+      if (inc.id) {
+        await updateIncome(inc.id, { name: value });
+        toast.success("Income updated");
+      } else {
+        const created = await createIncome({ name: value, clientId: activeClientId });
+        setIncomes(prev => {
+          const updated = [...prev];
+          updated[idx] = created;
+          return updated;
+        });
+        toast.success("Income added");
+      }
+    } catch (err) {
+      console.error("Failed to save income:", err);
+      toast.error("Failed to save income");
+    }
+  };
+  
   
   useEffect(() => {
     const { idx, value } = debouncedIncome;
@@ -461,35 +525,25 @@ export default function CandidateControl() {
   console.log("selected Candiate", selectedCandidate);
 
 
-  // ✅ Check if ethnicity is used by any candidate
-  const isEthnicityUsed = (eth) => {
-    return candidateEthnicity.includes(eth.name);
-  };
-
-  // ✅ Check if income is used by any candidate
-  const isIncomeUsed = (inc) => {
-    return candidateIncome.includes(inc.name);
-  };
-
-  // Delete ethnicity if left empty
-const handleEthnicityBlur = async (idx) => {
-  const eth = ethnicities[idx];
-  if (!eth.name.trim()) {
-    // If user left it empty, delete it
-    await handleEthnicityDelete(idx);
-    toast.error("Empty ethnicity removed");
-  }
+// ✅ Check if an ethnicity is used by any candidate
+const isEthnicityUsed = (eth) => {
+  if (!eth?.name || !Array.isArray(candidateEthnicity)) return false;
+  return candidateEthnicity.some(
+    (usedEth) =>
+      usedEth?.trim().toLowerCase() === eth.name.trim().toLowerCase()
+  );
 };
 
-// Delete income if left empty
-const handleIncomeBlur = async (idx) => {
-  const inc = incomes[idx];
-  if (!inc.name.trim()) {
-    await handleIncomeDelete(idx);
-    toast.error("Empty income removed");
-  }
+
+const isIncomeUsed = (inc) => {
+  if (!inc?.name || !Array.isArray(candidateIncome)) return false;
+  return candidateIncome.some(
+    (usedInc) =>
+      usedInc?.trim().toLowerCase() === inc.name.trim().toLowerCase()
+  );
 };
-  
+
+
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -665,17 +719,18 @@ const handleIncomeBlur = async (idx) => {
                             placeholder={`Ethnicity ${idx + 1}`}
                           />
                           <button
-                            type="button"
-                            onClick={() => handleEthnicityDelete(idx)}
-                            disabled={isEthnicityUsed(eth)}  // ✅ disable if in use
-                            className={`px-2 py-1 text-xs rounded ${
-                              isEthnicityUsed(eth)
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-red-500  "
-                            }`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+  type="button"
+  onClick={() => handleEthnicityDelete(idx)}
+  disabled={isEthnicityUsed(eth)}  // ✅ disable if used
+  className={`px-2 py-1 text-xs rounded ${
+    isEthnicityUsed(eth)
+      ? "text-gray-400 cursor-not-allowed"
+      : "text-red-500"
+  }`}
+>
+  <Trash2 className="w-4 h-4" />
+</button>
+
                         </div>
                       ))}
                       {ethnicities.length < 10 && (
