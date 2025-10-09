@@ -628,35 +628,26 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                           className="w-full border border-gray-200 text-center focus:outline-gray-200 px-1 py-0.5 text-sm"
                           placeholder="Enter custom criteria"
                           value={customCriteria[index]?.name || ""}
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const value = e.target.value;
                             const updated = [...customCriteria];
-                            updated[index] = {
-                              ...updated[index],
-                              name: value,
-                            };
+                            updated[index] = { ...updated[index], name: value };
                             setCustomCriteria(updated);
-
-                            const criteriaItem = updated[index];
+                          }}
+                          onBlur={async () => {
+                            const criteriaItem = customCriteria[index];
+                            const value = criteriaItem.name?.trim() || "";
                             try {
-                              if (value.trim() === "" && criteriaItem.id) {
-                                // DELETE from backend if existing and now empty
-                                const res = await deleteScoringCriteria(criteriaItem.id);
-                                updated[index] = { ...updated[index], id: null, criteriaId: null }; // reset local state
+                              if (value === "" && criteriaItem.id) {
+                                await deleteScoringCriteria(criteriaItem.id);
+                                const updated = [...customCriteria];
+                                updated[index] = { ...updated[index], id: null, criteriaId: null };
                                 setCustomCriteria(updated);
-                                console.log("deleted: ", res);
-                              } else if (criteriaItem.id) {
-                                // Existing → update using primary key id
-                                await updateScoringCriteria(criteriaItem.id, {
-                                  criteria: value,
-                                  unitId: criteriaItem.unitId,
-                                });
-                              } else if (value.trim() !== "") {
-                                // New → create
-                                const created = await createScoringCriteria({
-                                  criteria: value,
-                                  unitId: criteriaItem.unitId,
-                                });
+                              } else if (criteriaItem.id && value !== "") {
+                                await updateScoringCriteria(criteriaItem.id, { criteria: value, unitId: criteriaItem.unitId });
+                              } else if (!criteriaItem.id && value !== "") {
+                                const created = await createScoringCriteria({ criteria: value, unitId: criteriaItem.unitId });
+                                const updated = [...customCriteria];
                                 updated[index] = {
                                   ...updated[index],
                                   id: created.id,

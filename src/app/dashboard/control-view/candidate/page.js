@@ -24,6 +24,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useClient } from "@/context/ClientContext";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function CandidateControl() {
   const contextRef = useRef(null);
@@ -66,6 +67,16 @@ export default function CandidateControl() {
    const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   //  const { activeClientId, setActiveClientId } = useClient();
    const activeClientId = sessionStorage.getItem('activeClientId');
+
+  const [loadingEthnicity, setLoadingEthnicity] = useState(false);
+  const [loadingIncome, setLoadingIncome] = useState(false);
+
+  const [editingEthnicity, setEditingEthnicity] = useState({ idx: null, value: "" });
+  const debouncedEthnicity = useDebounce(editingEthnicity);
+
+  const [editingIncome, setEditingIncome] = useState({ idx: null, value: "" });
+  const debouncedIncome = useDebounce(editingIncome);
+
    useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -309,25 +320,56 @@ export default function CandidateControl() {
     }
   };
 
-  const handleEthnicityChange = async (idx, value) => {
-    const updated = [...ethnicities];
-    updated[idx] = { ...updated[idx], name: value };
-    setEthnicities(updated);
   
-    try {
-      if (updated[idx].id) {
-        await updateEthinicity(updated[idx].id, { name: value });
-      } else if (value.trim() !== "") {
-        // ✅ Include active client ID here
-        const created = await createEthinicity({ name: value, clientId: activeClientId });
-        updated[idx] = created;
-        setEthnicities([...updated]);
-      }
-    } catch (err) {
-      console.error("Failed to save ethnicity:", err);
-    }
+
+  const handleEthnicityChange = (idx, value) => {
+    // Update UI immediately
+    setEthnicities(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], name: value };
+      return updated;
+    });
+
+    // Track for debounced save
+    setEditingEthnicity({ idx, value });
   };
-  
+
+  // Debounce save
+  useEffect(() => {
+    const { idx, value } = debouncedEthnicity;
+    if (idx === null || !value?.trim()) return;
+
+    const saveEthnicity = async () => {
+      const current = ethnicities[idx];
+      setLoadingEthnicity(true);
+
+      try {
+        if (current?.id) {
+          await updateEthinicity(current.id, { name: value });
+          toast.success("Ethnicity updated successfully!");
+        } else {
+          const created = await createEthinicity({
+            name: value,
+            clientId: activeClientId,
+          });
+          setEthnicities(prev => {
+            const updated = [...prev];
+            updated[idx] = created;
+            return updated;
+          });
+          // toast.success("Ethnicity added successfully!");
+        }
+      } catch (err) {
+        console.error("Failed to save ethnicity:", err);
+        toast.error("Failed to save ethnicity. Please try again.");
+      } finally {
+        setLoadingEthnicity(false);
+      }
+    };
+
+    saveEthnicity();
+  }, [debouncedEthnicity]);
+
   
   
   const handleEthnicityDelete = async (idx) => {
@@ -351,26 +393,49 @@ export default function CandidateControl() {
   };
 
 
-  const handleIncomeChange = async (idx, value) => {
-    const updated = [...incomes];
-    updated[idx] = { ...updated[idx], name: value }; // keep existing id if any
-    setIncomes(updated);
-  
-    try {
-      // If existing (has id) → update
-      if (updated[idx].id) {
-        await updateIncome(updated[idx].id, { name: value });
-      } 
-      // Else → create new
-      else if (value.trim() !== "") {
-        const created = await createIncome({ name: value, clientId: activeClientId });
-        updated[idx] = created; // replace with saved object (with ID)
-        setIncomes([...updated]);
-      }
-    } catch (err) {
-      console.error("Failed to save incomes:", err);
-    }
+  const handleIncomeChange = (idx, value) => {
+    setIncomes(prev => {
+      const updated = [...prev];
+      updated[idx] = { ...updated[idx], name: value };
+      return updated;
+    });
+    setEditingIncome({ idx, value });
   };
+  
+  useEffect(() => {
+    const { idx, value } = debouncedIncome;
+    if (idx === null || !value?.trim()) return;
+  
+    const saveIncome = async () => {
+      const current = incomes[idx];
+      setLoadingIncome(true);
+      try {
+        if (current?.id) {
+          await updateIncome(current.id, { name: value });
+          // toast.success("Income updated successfully!");
+        } else {
+          const created = await createIncome({
+            name: value,
+            clientId: activeClientId,
+          });
+          setIncomes(prev => {
+            const updated = [...prev];
+            updated[idx] = created;
+            return updated;
+          });
+          // toast.success("Income added successfully!");
+        }
+      } catch (err) {
+        console.error("Failed to save income:", err);
+        toast.error("Failed to save income. Please try again.");
+      } finally {
+        setLoadingIncome(false);
+      }
+    };
+  
+    saveIncome();
+  }, [debouncedIncome]);
+  
 
   
   const handleIncomeDelete = async (idx) => {
@@ -405,6 +470,25 @@ export default function CandidateControl() {
   const isIncomeUsed = (inc) => {
     return candidateIncome.includes(inc.name);
   };
+
+  // Delete ethnicity if left empty
+const handleEthnicityBlur = async (idx) => {
+  const eth = ethnicities[idx];
+  if (!eth.name.trim()) {
+    // If user left it empty, delete it
+    await handleEthnicityDelete(idx);
+    toast.error("Empty ethnicity removed");
+  }
+};
+
+// Delete income if left empty
+const handleIncomeBlur = async (idx) => {
+  const inc = incomes[idx];
+  if (!inc.name.trim()) {
+    await handleIncomeDelete(idx);
+    toast.error("Empty income removed");
+  }
+};
   
 
   return (
@@ -576,6 +660,7 @@ export default function CandidateControl() {
                             value={eth.name || ""}
                             disabled={isEthnicityUsed(eth)} 
                             onChange={(e) => handleEthnicityChange(idx, e.target.value)}
+                            onBlur={() => handleEthnicityBlur(idx)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Ethnicity ${idx + 1}`}
                           />
@@ -619,6 +704,7 @@ export default function CandidateControl() {
                             value={income.name || ""}
                             disabled={isIncomeUsed(income)} 
                             onChange={(e) => handleIncomeChange(idx, e.target.value)}
+                            onBlur={() => handleIncomeBlur(idx)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Income Ranges ${idx + 1}`}
                           />

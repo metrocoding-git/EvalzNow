@@ -110,12 +110,21 @@ export default function StaffControl() {
   const handleCreate = async (newStaff) => {
     try {
 
-      const exists = dataList.some(
+      const staffIdExists = dataList.some(
         (staff) => staff.staffId === newStaff.staffId
       );
+
+      const staffEmailExists = dataList.some(
+        (staff) => staff.emailAddress === newStaff.emailAddress
+      );
   
-      if (exists) {
+      if (staffIdExists) {
         toast.error(`Staff ID "${newStaff.staffId}" already exists`);
+        return false;
+      }
+
+      if (staffEmailExists) {
+        toast.error(`Staff Email "${newStaff.emailAddress}" already exists`);
         return false;
       }
 
@@ -136,6 +145,7 @@ export default function StaffControl() {
       setDataList((prev) => [...prev, createdStaff]);
       setSelectedStaff(createdStaff);
       setShowAdd(false);
+      setFormStatus("Staff Created");
       return createStaff;
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "Failed to create staff";

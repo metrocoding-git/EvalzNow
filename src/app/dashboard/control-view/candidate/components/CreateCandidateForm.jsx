@@ -225,7 +225,6 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
   
       await onCreate(candidateData);
       setFormStatus("Candidate Created");
-
       onClose();
       
     } catch (err) {

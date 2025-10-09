@@ -139,7 +139,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
       onClose();
       
     } catch (err) {
-      setFormStatus("Ready...");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
     }
