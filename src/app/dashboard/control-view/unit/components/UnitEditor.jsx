@@ -5,6 +5,7 @@ import { getUnitById, updateUnit } from "@/services/unitService";
 import { updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
 import { useFormStatus } from "@/context/FormStatusContext";
 import StaffLookup from "./StaffLookUp";
+import { getAllStaffs } from "@/services/staffService";
 
 
 
@@ -105,7 +106,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     signatureProfile: "",
     environment: "",
     scoringSystem: "",
-    benchmarks: []
+    benchmarks: [],
+    assignedLeaders: [],
+    assignedAssessors: []
   });
   const [unitDirectors, setUnitDirectors] = useState([]);
   const staffLookupRef = useRef(null);
@@ -134,6 +137,17 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         const unitData = await getUnitById(unitId);
         console.log("unit data fetched -->", unitData);
         // Transform API data to match form state
+
+
+         // Transform staffAssignments into assignedLeaders and assignedAssessors
+        const assignedLeaders = (unitData.staffAssignments || [])
+        .filter(sa => sa.roleType === "Leader")
+        .map(sa => sa.staff.id);
+
+        const assignedAssessors = (unitData.staffAssignments || [])
+        .filter(sa => sa.roleType === "Assessor")
+        .map(sa => sa.staff.id);
+
         setUnit({
           unitName: unitData.unitName,
           unitId: unitData.unitId,
@@ -150,8 +164,17 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
             benchmarkType: bm.benchmarkType || "",
             benchmarkRef: bm.benchmarkRef || "",
             benchmarkDescription: bm.benchmarkDescription || ""
-          }))
+          })),
+          assignedLeaders,
+          assignedAssessors
         });
+
+          // Set unitDirectors dropdown to match selected leaders
+        if (assignedLeaders.length > 0) {
+          const leaderStaffs = await getAllStaffs(sessionStorage.getItem("activeClientId"));
+          const selectedLeaders = leaderStaffs.filter(s => assignedLeaders.includes(s.id));
+          setUnitDirectors(selectedLeaders);
+        }
       } catch (err) {
         console.error("Failed to fetch unit data:", err);
         setError("Failed to load unit data");
@@ -181,30 +204,28 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setUnit((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Staff select handler
   const handleStaffSelect = (selectedStaffArray) => {
     if (lookupFor === "leaders") {
       const leaderIds = selectedStaffArray.map((s) => s.id);
-      handleChange("assignedLeaders", leaderIds);
-  
-      // Update unitDirectors dropdown to match selected leaders
+      setUnit(prev => ({ ...prev, assignedLeaders: leaderIds }));
       setUnitDirectors(selectedStaffArray);
-      
-      // If there's only one leader selected, auto-set them as unit director
+
       if (selectedStaffArray.length === 1 && !unit.unitDirector) {
-        handleChange("unitDirector", selectedStaffArray[0].id);
+        setUnit(prev => ({ ...prev, unitDirector: selectedStaffArray[0].id }));
       }
-      
     } else if (lookupFor === "assessors") {
-      handleChange(
-        "assignedAssessors",
-        selectedStaffArray.map((s) => s.id)
-      );
+      setUnit(prev => ({
+        ...prev,
+        assignedAssessors: selectedStaffArray.map(s => s.id)
+      }));
     } else if (lookupFor === "director") {
-      handleChange("unitDirector", selectedStaffArray[0]?.id || "");
-      setShowLookup(false);
-      setLookupFor(null);
+      setUnit(prev => ({
+        ...prev,
+        unitDirector: selectedStaffArray[0]?.id || ""
+      }));
     }
-  
+
     setShowLookup(false);
     setLookupFor(null);
   };
@@ -397,16 +418,21 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 Assigned Leaders:
               </label>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLookupFor("leaders");
-                    setShowLookup(true);
-                  }}
-                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
-                >
-                  + Add Leader
-                </button>
+              <button
+  type="button"
+  onClick={() => {
+    setLookupFor("leaders");
+    setShowLookup(true);
+
+    // Pass already assigned leaders to the lookup modal
+    const assignedLeaders = unit.assignedLeaders || [];
+    // setInitialSelectedIds(assignedLeaders);
+  }}
+  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+>
+  + Add Leader
+</button>
+
                 <div className="text-sm text-gray-700">
                   {/* {form.assignedLeaders?.length || 0} selected */}
                   Max 3
@@ -699,29 +725,26 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         </form>
       )}
 
-{
-        showLookup && (
-          <StaffLookup
-            
-            onClose={(e) => {
-              setShowLookup(false);
-              setLookupFor(null);
-            }}
-            onSelect={handleStaffSelect} // reuse handleStaffSelect
-            selectedIds={
-              lookupFor === "leaders"
-                ? unit.assignedLeaders || []
-                : lookupFor === "assessors"
-                ? unit.assignedAssessors || []
-                : lookupFor === "director"
-                ? unit.unitDirector
-                  ? [unit.unitDirector]
-                  : []
-                : []
-            }
-          />
-        )
-      }
+{showLookup && (
+  <StaffLookup
+    onClose={() => {
+      setShowLookup(false);
+      setLookupFor(null);
+    }}
+    onSelect={handleStaffSelect}
+    selectedIds={
+      lookupFor === "leaders"
+        ? unit.assignedLeaders
+        : lookupFor === "assessors"
+        ? unit.assignedAssessors
+        : lookupFor === "director"
+        ? unit.unitDirector ? [unit.unitDirector] : []
+        : []
+    }
+    lookupFor={lookupFor}
+  />
+)}
+
 
     </div>
   );
