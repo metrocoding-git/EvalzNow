@@ -237,6 +237,18 @@ const THRESHOLD_NAMES = {
         benchmarkDescription: bm.description
       }));
 
+      // 🧩 Prepare staff lookup data
+      const staffLookup = [
+        ...(form.assignedLeaders || []).map((id) => ({
+          staffId: id,
+          roleType: "Leader",
+        })),
+        ...(form.assignedAssessors || []).map((id) => ({
+          staffId: id,
+          roleType: "Assessor",
+        })),
+      ];
+
       // Prepare the complete unit data
       const unitData = {
         unitName: form.unitName,
@@ -248,6 +260,7 @@ const THRESHOLD_NAMES = {
         signatureProfile: form.signatureProfile,
         environment: form.environment,
         benchmarks: benchmarks,
+        staffLookup: staffLookup,
         ...form.passThresholds,
       };
 
