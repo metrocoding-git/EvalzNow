@@ -56,6 +56,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
 
   const handleSubmit = () => {
     const selectedStaff = staffs.filter((staff) => selectedIds.includes(staff.id));
+    console.log("staff look up dta::", selectedStaff)
     onSelect(selectedStaff);
     onClose();
   };

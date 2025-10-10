@@ -298,6 +298,28 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setError(null);
 
     try {
+
+      // Prepare staffLookup array (same as create)
+    const staffLookup = [
+      ...(unit.assignedLeaders || []).map((id) => ({
+        staffId: id,
+        roleType: "Leader",
+      })),
+      ...(unit.assignedAssessors || []).map((id) => ({
+        staffId: id,
+        roleType: "Assessor",
+      })),
+      ...(unit.unitDirector
+        ? [
+            {
+              staffId: unit.unitDirector,
+              roleType: "Director",
+            },
+          ]
+        : []),
+    ];
+
+
       // Prepare the data for API
       const updatedUnit = {
         unitName: unit.unitName,
@@ -309,7 +331,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         signatureProfile: unit.signatureProfile,
         environment: unit.environment,
         scoringSystem: unit.scoringSystem,
-        benchmarks: unit.benchmarks
+        benchmarks: unit.benchmarks,
+        staffLookup: staffLookup, 
       };
 
       // Call API to update
@@ -419,19 +442,19 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               </label>
               <div className="flex items-center gap-2">
               <button
-  type="button"
-  onClick={() => {
-    setLookupFor("leaders");
-    setShowLookup(true);
+                type="button"
+                onClick={() => {
+                  setLookupFor("leaders");
+                  setShowLookup(true);
 
-    // Pass already assigned leaders to the lookup modal
-    const assignedLeaders = unit.assignedLeaders || [];
-    // setInitialSelectedIds(assignedLeaders);
-  }}
-  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
->
-  + Add Leader
-</button>
+                  // Pass already assigned leaders to the lookup modal
+                  const assignedLeaders = unit.assignedLeaders || [];
+                  // setInitialSelectedIds(assignedLeaders);
+                }}
+                className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+              >
+                + Add Leader
+              </button>
 
                 <div className="text-sm text-gray-700">
                   {/* {form.assignedLeaders?.length || 0} selected */}

@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Search,
   Trash2,
+  Check,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import ClientEditor from "./components/ClientEditor";
@@ -414,18 +415,18 @@ export default function AdminControl() {
                         setShowEdit(true);
                         setShowAdd(false);
                       }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(item.id));
+                        setSelectedClient((prev) => ({ ...prev }));
+                        // setFormStatus(`Active Client: ${item.firstName} ${item.lastName}`);
+                      }}
                       //  RIGHT CLICK = make active + context menu
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-
-                        // ✅ Mark this client as active in session storage
-                        sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(item.id));
-
-                        // ✅ Force UI update
-                        setSelectedClient((prev) => ({ ...prev }));
-
-                        // ✅ (optional) open context menu if you have one
+                      
+                        // ✅ Open context menu
                         setContextMenu({
                           visible: true,
                           x: e.pageX,
@@ -433,6 +434,7 @@ export default function AdminControl() {
                           selectedClient: item,
                         });
                       }}
+                      
                     >
                       <p
                         className={`text-sm truncate ${
@@ -481,7 +483,7 @@ export default function AdminControl() {
         
 
         {/* Context Menu */}
-        {/* {contextMenu.visible && (
+        {contextMenu.visible && (
           <div
             className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -499,8 +501,30 @@ export default function AdminControl() {
               </span>
               <span className="text-gray-400 text-xs ml-4">Del</span>
             </button>
+            <button
+              className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-b border-gray-200"
+              onClick={() => {
+                if (contextMenu.selectedClient) {
+                  // ✅ Set selected client as active
+                  sessionStorage.setItem(
+                    ACTIVE_CLIENT_KEY,
+                    String(contextMenu.selectedClient.id)
+                  );
+
+                  // ✅ Force UI update
+                  setSelectedClient((prev) => ({ ...prev }));
+                  setFormStatus(`Active Client: ${contextMenu.selectedClient.firstName} ${contextMenu.selectedClient.lastName}`);
+                }
+                setContextMenu({ ...contextMenu, visible: false });
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4" /> Set Active Client
+              </span>
+              
+            </button>
           </div>
-        )} */}
+        )}
 
         {/* Client editor */}
         <div className="h-1/2 overflow-auto my-0.5" ref={editorFormRef}>

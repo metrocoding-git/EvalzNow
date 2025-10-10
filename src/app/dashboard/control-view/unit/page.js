@@ -674,13 +674,27 @@ const filteredCandidates = unitRosterData
 
   const handleDuplicate = (unit) => {
     if (!unit) return;
+
+      // ✅ Clean up any IDs or timestamps to avoid conflicts
+  const unitToCopy = {
+    ...unit,
+    staffAssignments: unit.staffAssignments
+      ? unit.staffAssignments.map(sa => ({
+          roleType: sa.roleType,
+          staff: { ...sa.staff } // Copy staff details
+        }))
+      : [],
+  };
   
     // Pass the unit to duplicate form
-    setUnitToDuplicate(unit);
+  
+
+    
   
     // Close context menu if visible
     setContextMenu(prev => ({ ...prev, visible: false }));
-  
+    setUnitToDuplicate(unitToCopy);
+    console.log("staff data check:: -->", unitToCopy);
     // Show the Add/Duplicate form
     setShowAdd(true);
     setFormStatus("Creating...");
