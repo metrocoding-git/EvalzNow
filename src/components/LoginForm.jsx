@@ -20,7 +20,7 @@ export default function LoginForm() {
     const token = localStorage.getItem("token");
     if (token) {
       // Optional: validate token with backend before redirect
-      router.push("/dashboard/control-view/admin");
+      router.push("/welcome");
     }
   }, [router]);
 
@@ -41,7 +41,7 @@ export default function LoginForm() {
       // Save logged-in user data in localStorage
     localStorage.setItem("user", JSON.stringify(res.user));
 
-    router.push("/dashboard/control-view/admin");
+    router.push("/welcome");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Login failed");
       setError(err.response?.data?.message || err.message || "Login failed");

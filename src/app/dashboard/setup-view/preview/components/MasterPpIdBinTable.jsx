@@ -62,7 +62,21 @@ const MasterPpIdBinTable = ({ data }) => {
   }, [unitId]);
 
   // Sort by ppId
-  const sortedBlocks = [...assessmentBlocks].sort((a, b) => a.ppId - b.ppId);
+  const sortedBlocks = [...assessmentBlocks].sort((a, b) => {
+    const numA = Number(a.ppId);
+    const numB = Number(b.ppId);
+
+    // Negatives first
+    if (numA < 0 && numB > 0) return -1;
+    if (numA > 0 && numB < 0) return 1;
+
+    // Within negatives: descending (-1, -2, -3)
+    if (numA < 0 && numB < 0) return numB - numA;
+
+    // Within positives: ascending (1, 2, 3)
+    return numA - numB;
+  });
+
   
 
   // Determine current competencies based on unitType
@@ -70,57 +84,57 @@ const MasterPpIdBinTable = ({ data }) => {
   const currentCompetencies = competencyTypes[currentUnitType] || [];
 
   // Transform rows before rendering
-const transformedBlocks = sortedBlocks.map((row) => {
-  const newRow = { ...row };
+  const transformedBlocks = sortedBlocks.map((row) => {
+    const newRow = { ...row };
 
-  // Decide by competency
-  if (row.unitType === "Theory & Practice") {
-    if (row.competency === "Theory") {
-      newRow.attainedTheory = row.totalAttained;
-      newRow.maxTheory = row.totalMax;
+    // Decide by competency
+    if (row.unitType === "Theory & Practice") {
+      if (row.competency === "Theory") {
+        newRow.attainedTheory = row.totalAttained;
+        newRow.maxTheory = row.totalMax;
+      }
+      if (row.competency === "Practice") {
+        newRow.attainedPractice = row.totalAttained;
+        newRow.maxPractice = row.totalMax;
+      }
     }
-    if (row.competency === "Practice") {
-      newRow.attainedPractice = row.totalAttained;
-      newRow.maxPractice = row.totalMax;
-    }
-  }
 
-  if (row.unitType === "Communicative I/O") {
-    if (row.competency === "Listening") {
-      newRow.attainedListening = row.totalAttained;
-      newRow.maxListening = row.totalMax;
+    if (row.unitType === "Communicative I/O") {
+      if (row.competency === "Listening") {
+        newRow.attainedListening = row.totalAttained;
+        newRow.maxListening = row.totalMax;
+      }
+      if (row.competency === "Reading") {
+        newRow.attainedReading = row.totalAttained;
+        newRow.maxReading = row.totalMax;
+      }
+      if (row.competency === "Speaking") {
+        newRow.attainedSpeaking = row.totalAttained;
+        newRow.maxSpeaking = row.totalMax;
+      }
+      if (row.competency === "Writing") {
+        newRow.attainedWriting = row.totalAttained;
+        newRow.maxWriting = row.totalMax;
+      }
     }
-    if (row.competency === "Reading") {
-      newRow.attainedReading = row.totalAttained;
-      newRow.maxReading = row.totalMax;
-    }
-    if (row.competency === "Speaking") {
-      newRow.attainedSpeaking = row.totalAttained;
-      newRow.maxSpeaking = row.totalMax;
-    }
-    if (row.competency === "Writing") {
-      newRow.attainedWriting = row.totalAttained;
-      newRow.maxWriting = row.totalMax;
-    }
-  }
 
-  if (row.unitType === "Third Parameter") {
-    if (row.competency === "Receptive") {
-      newRow.attainedReceptive = row.totalAttained;
-      newRow.maxReceptive = row.totalMax;
+    if (row.unitType === "Third Parameter") {
+      if (row.competency === "Receptive") {
+        newRow.attainedReceptive = row.totalAttained;
+        newRow.maxReceptive = row.totalMax;
+      }
+      if (row.competency === "Productive") {
+        newRow.attainedProductive = row.totalAttained;
+        newRow.maxProductive = row.totalMax;
+      }
+      if (row.competency === "Acuity") {
+        newRow.attainedAcuity = row.totalAttained;
+        newRow.maxAcuity = row.totalMax;
+      }
     }
-    if (row.competency === "Productive") {
-      newRow.attainedProductive = row.totalAttained;
-      newRow.maxProductive = row.totalMax;
-    }
-    if (row.competency === "Acuity") {
-      newRow.attainedAcuity = row.totalAttained;
-      newRow.maxAcuity = row.totalMax;
-    }
-  }
 
-  return newRow;
-});
+    return newRow;
+  });
 
 
   return (

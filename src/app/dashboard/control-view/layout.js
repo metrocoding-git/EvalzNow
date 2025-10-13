@@ -62,13 +62,13 @@ export default function ControlViewLayout({ children }) {
     }
 
     if (isStaff) {
-      if (staff?.accessLevel === "Full Access") {
+      // if (staff?.accessLevel === "Full Access") {
         // Staff Full Access sees Staff, Candidate, Unit
-        return tab.label !== "Admin";
-      } else if (staff?.accessLevel === "Leaders Access") {
+        return tab.label !== "Admin" && tab.label !== "Staff";
+      // } else if (staff?.accessLevel === "Leaders Access") {
         // Staff Leaders Access sees only Candidate + Unit
-        return tab.label === "Unit";
-      }
+      //   return tab.label === "Unit";
+      // }
     }
 
     // Default: hide all tabs

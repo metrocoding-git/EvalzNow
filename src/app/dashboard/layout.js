@@ -12,20 +12,20 @@ export default function DashboardLayout({ children }) {
   const [activeTab, setActiveTab] = useState('');
   const [activeButton, setActiveButton] = useState('');
   const [formStatus, setFormStatus] = useState("Ready...");
-  const [loading, setLoading] = useState(true); // Add loading state
+  // const [loading, setLoading] = useState(true); 
 
-  useEffect(() => {
-    // Simulate data fetching or initialization
-    const timer = setTimeout(() => {
-      setLoading(false); // Hide loading screen when done
-    }, 1000); // Replace with real fetch completion
+  // useEffect(() => {
+  //   // Simulate data fetching or initialization
+  //   const timer = setTimeout(() => {
+  //     setLoading(false); // Hide loading screen when done
+  //   }, 1000); // Replace with real fetch completion
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
-  if (loading) {
-    return <Loading />;
-  }
+  // if (loading) {
+  //   return <Loading />;
+  // }
 
   return (
     <FormStatusContext.Provider value={{ formStatus, setFormStatus }}>
