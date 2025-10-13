@@ -290,6 +290,14 @@ const [formData, setFormData] = useState({
     "competency",
   ];
 
+  // Set local scoring system from unit data when component mounts or unit changes
+useEffect(() => {
+  if (environment === "Workforce" && unit?.scoringSystem) {
+    setScoringSystem(unit.scoringSystem);
+  }
+}, [unit]);
+
+
 // Check if all MC and CC fields are filled (for Workforce)
 const allCriteriaFilled = () => {
   for (let i = 1; i <= 20; i++) {

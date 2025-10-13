@@ -24,20 +24,6 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   const { selectedUnitId, setSelectedUnitId } = useUnit();
   const unitId = selectedUnitId;
 
-  // Filter data based on active tab
-  useEffect(() => {
-    const filtered = ppSummary.filter(row => {
-      // Ensure ppId is treated as a string
-      const ppId = String(row.ppId || "");
-      return activeTab === "Indirect"
-        ? ppId.startsWith("-")
-        : !ppId.startsWith("-");
-    });
-    setFilteredData(filtered);
-    
-    // Reset selection when tab changes
-    setSelectedRow(null);
-  }, [ppSummary, activeTab]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -62,6 +48,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
         setLoading(true);
         const summary = await getPpIdSummary(unitId, candidateId);
         setPpSummary(Array.isArray(summary) ? summary : [summary]);
+        console.log("pp id summary: ->", summary);
       } catch (err) {
         console.error("Failed to fetch PP summary:", err);
         setError("Failed to load PP summary");
@@ -75,6 +62,35 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   }, [unitId, candidateId]); // ✅ re-fetch every time candidateId changes
   
   
+    // Filter data based on active tab
+    useEffect(() => {
+      const filtered = ppSummary
+        .filter((row) => {
+          const ppId = String(row.ppId || "");
+          return activeTab === "Indirect"
+            ? ppId.startsWith("-")
+            : !ppId.startsWith("-");
+        })
+        .sort((a, b) => {
+          const numA = Number(a.ppId);
+          const numB = Number(b.ppId);
+    
+          if (activeTab === "Indirect") {
+            return Math.abs(numA) - Math.abs(numB); // ✅ -1, -2, -3
+          } else {
+            return numA - numB; // ✅ 1, 2, 3
+          }
+        });
+    
+      setFilteredData(filtered);
+      setSelectedRow(null);
+    }, [ppSummary, activeTab]);
+    
+
+    useEffect(() => {
+      console.log("ppSummary from backend:", ppSummary);
+    }, [ppSummary]);
+    
 
   const moveRowUp = () => {
     if (selectedRow === null) {
@@ -138,7 +154,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
           </div>
         </div>
       </div>
-   
+      <div className="flex-1 overflow-auto">
       <table className="min-w-full table-auto text-sm text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
@@ -180,6 +196,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
