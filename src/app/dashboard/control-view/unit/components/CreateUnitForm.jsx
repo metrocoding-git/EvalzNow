@@ -59,6 +59,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
     environment: "",
     signatureProfile: "",
     unitDirector: "",
+    scoringSystem: "",
     passThresholds: {}, // Initialize to avoid undefined errors
     benchmarks: [],
   });
@@ -259,6 +260,7 @@ const THRESHOLD_NAMES = {
         unitType: form.unitType,
         signatureProfile: form.signatureProfile,
         environment: form.environment,
+        scoringSystem: form.scoringSystem,
         benchmarks: benchmarks,
         staffLookup: staffLookup,
         ...form.passThresholds,
