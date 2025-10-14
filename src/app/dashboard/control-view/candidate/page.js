@@ -56,17 +56,23 @@ export default function CandidateControl() {
     // { id: "010", firstName: "Casey", lastName: "Anderson" },
   ]);
 
-   // const [formStatus, setFormStatus] = useState("Ready");
+  // const [formStatus, setFormStatus] = useState("Ready");
 
-   const [candidateIncome, setCandidateIncome] = useState("");
-   const [candidateEthnicity, setCandidateEthnicity] = useState("");
-   const { setFormStatus } = useFormStatus();
-   const controlsRef = useRef(null);
-   const reviewRef = useRef(null);
-   const router = useRouter();
-   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+  const [candidateIncome, setCandidateIncome] = useState("");
+  const [candidateEthnicity, setCandidateEthnicity] = useState("");
+  const { setFormStatus } = useFormStatus();
+  const controlsRef = useRef(null);
+  const reviewRef = useRef(null);
+  const router = useRouter();
+  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   //  const { activeClientId, setActiveClientId } = useClient();
-   const activeClientId = sessionStorage.getItem('activeClientId');
+
+
+  let activeClientId = null;
+  if (typeof window !== "undefined") {
+    const activeClientId = sessionStorage.getItem('activeClientId');
+  }
+
 
   // const [loadingEthnicity, setLoadingEthnicity] = useState(false);
   // const [loadingIncome, setLoadingIncome] = useState(false);
@@ -77,10 +83,10 @@ export default function CandidateControl() {
   const [editingIncome, setEditingIncome] = useState({ idx: null, value: "" });
   const debouncedIncome = useDebounce(editingIncome);
 
-   useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
+
     if (!token || !user) {
       router.replace("/login");
     }
@@ -91,7 +97,7 @@ export default function CandidateControl() {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        
+
         const data = await getAllCandidates(activeClientId);
         const sortedData = Array.isArray(data)
           ? [...data].sort((a, b) => Number(a.id) - Number(b.id))
@@ -150,8 +156,8 @@ export default function CandidateControl() {
   }, []);
 
 
-   // Fetch all candidates on mount
-   useEffect(() => {
+  // Fetch all candidates on mount
+  useEffect(() => {
     const fetchIncomeFromCandidate = async () => {
       try {
         setLoading(true);
@@ -167,10 +173,10 @@ export default function CandidateControl() {
     };
     fetchIncomeFromCandidate();
   }, []);
-  
 
-   // Fetch all candidates on mount
-   useEffect(() => {
+
+  // Fetch all candidates on mount
+  useEffect(() => {
     const fetchEthnicitiesFromCandidate = async () => {
       try {
         setLoading(true);
@@ -186,7 +192,7 @@ export default function CandidateControl() {
     };
     fetchEthnicitiesFromCandidate();
   }, []);
-  
+
 
 
   // Create candidate
@@ -203,7 +209,7 @@ export default function CandidateControl() {
       setSelectedCandidate(created);
       setShowAdd(false);
       // setShowEdit(true);
-      return created; 
+      return created;
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "Failed to create candidate";
       toast.error(errorMessage); // ✅ show toast here
@@ -243,8 +249,8 @@ export default function CandidateControl() {
     });
   };
 
-   // Handle sorting
-   const getSortedData = () => {
+  // Handle sorting
+  const getSortedData = () => {
     return [...dataList].sort((a, b) => {
       let valA = a[sortBy];
       let valB = b[sortBy];
@@ -289,11 +295,11 @@ export default function CandidateControl() {
       }
     };
 
-    if(dataList.length>0){
+    if (dataList.length > 0) {
       setSelectedCandidate(dataList[0]);
       setShowEdit(true);
       setShowAdd(false);
-    }else {
+    } else {
       setSelectedCandidate(null);
       setShowEdit(false);
     }
@@ -302,7 +308,7 @@ export default function CandidateControl() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, [dataList]);
 
-  
+
 
   const handleDelete = async (id) => {
     try {
@@ -322,7 +328,7 @@ export default function CandidateControl() {
     }
   };
 
-  
+
 
   const handleEthnicityChange = (idx, value) => {
     // Just update UI instantly
@@ -332,11 +338,11 @@ export default function CandidateControl() {
       return updated;
     });
   };
-  
+
   const handleEthnicityBlur = async (idx) => {
     const eth = ethnicities[idx];
     const value = eth.name.trim();
-  
+
     try {
       // If empty, delete from both UI and DB
       if (!value) {
@@ -345,12 +351,12 @@ export default function CandidateControl() {
         toast.error("Empty ethnicity removed");
         return;
       }
-  
+
       // Update existing
       if (eth.id) {
         await updateEthinicity(eth.id, { name: value });
         toast.success("Ethnicity updated");
-      } 
+      }
       // Create new
       else {
         const created = await createEthinicity({ name: value, clientId: activeClientId });
@@ -366,7 +372,7 @@ export default function CandidateControl() {
       toast.error("Failed to save ethnicity");
     }
   };
-  
+
 
   // Debounce save
   useEffect(() => {
@@ -404,17 +410,17 @@ export default function CandidateControl() {
     saveEthnicity();
   }, [debouncedEthnicity]);
 
-  
-  
+
+
   const handleEthnicityDelete = async (idx) => {
     const eth = ethnicities[idx];
-  
+
     try {
       // Only delete from backend if it has an ID
       if (eth.id) {
         await deleteEthinicity(eth.id);
       }
-  
+
       // Remove from state
       setEthnicities(ethnicities.filter((_, i) => i !== idx));
     } catch (err) {
@@ -434,11 +440,11 @@ export default function CandidateControl() {
       return updated;
     });
   };
-  
+
   const handleIncomeBlur = async (idx) => {
     const inc = incomes[idx];
     const value = inc.name.trim();
-  
+
     try {
       if (!value) {
         if (inc.id) await deleteIncome(inc.id);
@@ -446,7 +452,7 @@ export default function CandidateControl() {
         toast.error("Empty income removed");
         return;
       }
-  
+
       if (inc.id) {
         await updateIncome(inc.id, { name: value });
         toast.success("Income updated");
@@ -464,12 +470,12 @@ export default function CandidateControl() {
       toast.error("Failed to save income");
     }
   };
-  
-  
+
+
   useEffect(() => {
     const { idx, value } = debouncedIncome;
     if (idx === null || !value?.trim()) return;
-  
+
     const saveIncome = async () => {
       const current = incomes[idx];
       setLoadingIncome(true);
@@ -496,28 +502,28 @@ export default function CandidateControl() {
         setLoadingIncome(false);
       }
     };
-  
+
     saveIncome();
   }, [debouncedIncome]);
-  
 
-  
+
+
   const handleIncomeDelete = async (idx) => {
     const income = incomes[idx];
-  
+
     try {
       // Only delete from backend if it has an ID
       if (income.id) {
         await deleteIncome(income.id);
       }
-  
+
       // Remove from state
       setIncomes(incomes.filter((_, i) => i !== idx));
     } catch (err) {
       console.error("Failed to delete income:", err);
     }
   };
-  
+
   const handleAddIncome = () => {
     setIncomes([...incomes, { name: "" }]); // no id yet
   };
@@ -525,23 +531,23 @@ export default function CandidateControl() {
   console.log("selected Candiate", selectedCandidate);
 
 
-// ✅ Check if an ethnicity is used by any candidate
-const isEthnicityUsed = (eth) => {
-  if (!eth?.name || !Array.isArray(candidateEthnicity)) return false;
-  return candidateEthnicity.some(
-    (usedEth) =>
-      usedEth?.trim().toLowerCase() === eth.name.trim().toLowerCase()
-  );
-};
+  // ✅ Check if an ethnicity is used by any candidate
+  const isEthnicityUsed = (eth) => {
+    if (!eth?.name || !Array.isArray(candidateEthnicity)) return false;
+    return candidateEthnicity.some(
+      (usedEth) =>
+        usedEth?.trim().toLowerCase() === eth.name.trim().toLowerCase()
+    );
+  };
 
 
-const isIncomeUsed = (inc) => {
-  if (!inc?.name || !Array.isArray(candidateIncome)) return false;
-  return candidateIncome.some(
-    (usedInc) =>
-      usedInc?.trim().toLowerCase() === inc.name.trim().toLowerCase()
-  );
-};
+  const isIncomeUsed = (inc) => {
+    if (!inc?.name || !Array.isArray(candidateIncome)) return false;
+    return candidateIncome.some(
+      (usedInc) =>
+        usedInc?.trim().toLowerCase() === inc.name.trim().toLowerCase()
+    );
+  };
 
 
 
@@ -635,11 +641,10 @@ const isIncomeUsed = (inc) => {
                 return (
                   <div
                     key={item.id}
-                    className={`candidate-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                      isSelected
-                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                        : "hover:bg-gray-50"
-                    }`}
+                    className={`candidate-item grid grid-cols-3 gap-2 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${isSelected
+                      ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
+                      : "hover:bg-gray-50"
+                      }`}
                     onClick={() => {
                       setSelectedCandidate(item);
                       setShowEdit(true);
@@ -660,23 +665,20 @@ const isIncomeUsed = (inc) => {
                     }}
                   >
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.lastName}
                     </p>
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.firstName}
                     </p>
                     <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
+                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
+                        }`}
                     >
                       {item.candidateId}
                     </p>
@@ -712,24 +714,23 @@ const isIncomeUsed = (inc) => {
                             type="text"
                             maxLength={25}
                             value={eth.name || ""}
-                            disabled={isEthnicityUsed(eth)} 
+                            disabled={isEthnicityUsed(eth)}
                             onChange={(e) => handleEthnicityChange(idx, e.target.value)}
                             onBlur={() => handleEthnicityBlur(idx)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Ethnicity ${idx + 1}`}
                           />
                           <button
-  type="button"
-  onClick={() => handleEthnicityDelete(idx)}
-  disabled={isEthnicityUsed(eth)}  // ✅ disable if used
-  className={`px-2 py-1 text-xs rounded ${
-    isEthnicityUsed(eth)
-      ? "text-gray-400 cursor-not-allowed"
-      : "text-red-500"
-  }`}
->
-  <Trash2 className="w-4 h-4" />
-</button>
+                            type="button"
+                            onClick={() => handleEthnicityDelete(idx)}
+                            disabled={isEthnicityUsed(eth)}  // ✅ disable if used
+                            className={`px-2 py-1 text-xs rounded ${isEthnicityUsed(eth)
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-red-500"
+                              }`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
 
                         </div>
                       ))}
@@ -757,7 +758,7 @@ const isIncomeUsed = (inc) => {
                             type="text"
                             maxLength={25}
                             value={income.name || ""}
-                            disabled={isIncomeUsed(income)} 
+                            disabled={isIncomeUsed(income)}
                             onChange={(e) => handleIncomeChange(idx, e.target.value)}
                             onBlur={() => handleIncomeBlur(idx)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -767,11 +768,10 @@ const isIncomeUsed = (inc) => {
                             type="button"
                             onClick={() => handleIncomeDelete(idx)}
                             disabled={isIncomeUsed(income)} // ✅ disable if in use
-                            className={`px-2 py-1 text-xs rounded ${
-                              isIncomeUsed(income)
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-red-500 "
-                            }`} 
+                            className={`px-2 py-1 text-xs rounded ${isIncomeUsed(income)
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-red-500 "
+                              }`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -835,48 +835,48 @@ const isIncomeUsed = (inc) => {
 
         {/* Candidate editor Section */}
         <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
-        <CandidateEditor
-          candidate={selectedCandidate}
-          ethnicities={ethnicities}   
-          incomes={incomes}  
-          showForm={showEdit}
-          onSave={(updatedCandidate) => {
-            setDataList((prev) =>
-              prev.map((c) =>
-                c.id === updatedCandidate.id ? updatedCandidate : c
-              )
-            );
-            setSelectedCandidate(updatedCandidate);
-            setFormStatus("Candidate Updated");
+          <CandidateEditor
+            candidate={selectedCandidate}
+            ethnicities={ethnicities}
+            incomes={incomes}
+            showForm={showEdit}
+            onSave={(updatedCandidate) => {
+              setDataList((prev) =>
+                prev.map((c) =>
+                  c.id === updatedCandidate.id ? updatedCandidate : c
+                )
+              );
+              setSelectedCandidate(updatedCandidate);
+              setFormStatus("Candidate Updated");
 
               // Optional: revert back to Ready after 2s
-              
-          }}
-        />
+
+            }}
+          />
 
         </div>
       </div>
 
       {/* Right Panel - Create Candidate */}
       <div className="w-1/2 lg:w-9/12 bg-white">
-        
-          {showAdd && (
-            <div className="h-full flex flex-col w-96" ref={createFormRef}>
-              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} ethnicities={ethnicities}
-    incomes={incomes} />
-            </div>
-          )}
 
-          {showReview && (
-            <div className="h-full overflow-auto" ref={reviewRef}>
-              <ReviewCandidate candidate={selectedCandidate} />
-            </div>
-          )}
+        {showAdd && (
+          <div className="h-full flex flex-col w-96" ref={createFormRef}>
+            <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} ethnicities={ethnicities}
+              incomes={incomes} />
+          </div>
+        )}
 
-       
+        {showReview && (
+          <div className="h-full overflow-auto" ref={reviewRef}>
+            <ReviewCandidate candidate={selectedCandidate} />
+          </div>
+        )}
+
+
       </div>
 
-   
+
     </div>
   );
 }
