@@ -71,8 +71,13 @@ export default function StaffControl() {
 
   console.log("active Client Id on staff:", activeClientId);
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    let token;
+    let user;
+
+    if (typeof window !== "undefined") {
+      token = localStorage.getItem("token");
+      user = localStorage.getItem("user");
+    }
 
     if (!token || !user) {
       router.replace("/login");
@@ -291,8 +296,8 @@ export default function StaffControl() {
                   <div className="flex gap-1 staff-item">
                     <button
                       className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${selectedStaff.accessLevel === "Full Access" && user.role === "staff"
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-400 hover:text-white"
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-400 hover:text-white"
                         }`}
                       onClick={() => handleDelete(selectedStaff.id)}
                       disabled={selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
