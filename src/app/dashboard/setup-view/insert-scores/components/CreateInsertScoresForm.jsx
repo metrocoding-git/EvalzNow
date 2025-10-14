@@ -361,10 +361,15 @@ const isSubmitDisabled = (() => {
       return;
     }
 
+    // ✅ New validation for duration
+    if (parseFloat(formData.durationHrs) === 0) {
+      toast.error("Duration cannot be 0. Please enter a valid duration.");
+      return;
+    }
+
     // Validate against critical date range
     if (!validateCriticalDate(formData.criticalRefDate)) return;
 
-    
   
     for (let field of requiredFields) {
       if (!formData[field] || formData[field].toString().trim() === "") {
