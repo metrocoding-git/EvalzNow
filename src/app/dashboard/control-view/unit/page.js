@@ -86,7 +86,11 @@ export default function UnitControl() {
   const controlsRef = useRef(null);
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
-  const activeClientId = sessionStorage.getItem('activeClientId');
+
+  let activeClientId = null;
+  if (typeof window !== "undefined") {
+    activeClientId = sessionStorage.getItem('activeClientId');
+  }
   const [staff, setStaff] = useState();
 
   useEffect(() => {

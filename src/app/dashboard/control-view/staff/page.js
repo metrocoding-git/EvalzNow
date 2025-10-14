@@ -32,7 +32,7 @@ export default function StaffControl() {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  
+
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -57,9 +57,14 @@ export default function StaffControl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const {formStatus, setFormStatus} = useFormStatus();
+  const { formStatus, setFormStatus } = useFormStatus();
   // const { setFormStatus } = useFormStatus();
-  const activeClientId = sessionStorage.getItem('activeClientId');
+
+  let activeClientId = null;
+  if (typeof window !== "undefined") {
+    activeClientId = sessionStorage.getItem('activeClientId');
+  }
+
   const user = localStorage.getItem('user');
   // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
@@ -68,7 +73,7 @@ export default function StaffControl() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
+
     if (!token || !user) {
       router.replace("/login");
     }
@@ -78,10 +83,10 @@ export default function StaffControl() {
   useEffect(() => {
     const fetchStaffs = async () => {
       try {
-        
+
         setLoading(true);
         const data = await getAllStaffs(activeClientId);
-         // Sort ascending by staffId or id
+        // Sort ascending by staffId or id
         const sortedData = (Array.isArray(data) ? data : []).sort(
           (a, b) => Number(a.id) - Number(b.id)
         );
@@ -117,7 +122,7 @@ export default function StaffControl() {
       const staffEmailExists = dataList.some(
         (staff) => staff.emailAddress === newStaff.emailAddress
       );
-  
+
       if (staffIdExists) {
         toast.error(`Staff ID "${newStaff.staffId}" already exists`);
         return false;
@@ -135,11 +140,11 @@ export default function StaffControl() {
         role: "staff",
       };
       const createdAccount = await createAccount(accountPayload);
-  
+
       const staffWithAccount = {
         ...newStaff,
         accountId: loggedInUser?.id, // ✅ assign accountId
-        clientId: activeClientId, 
+        clientId: activeClientId,
       };
       const createdStaff = await createStaff(staffWithAccount);
       setDataList((prev) => [...prev, createdStaff]);
@@ -213,7 +218,7 @@ export default function StaffControl() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       const isContextMenuClick =
-      contextRef.current && contextRef.current.contains(e.target);
+        contextRef.current && contextRef.current.contains(e.target);
       const isStaffClick = e.target.closest(".staff-item");
       const isFormClick = formRef.current && formRef.current.contains(e.target);
       const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
@@ -244,21 +249,21 @@ export default function StaffControl() {
     try {
       setFormStatus('Processing...')
       await deleteStaff(id); // API call to delete from backend
-      
+
       setDataList((prev) => prev.filter((staff) => staff.id !== id)); // Remove from state
       setFormStatus('Staff Deleted');
       if (selectedStaff?.id === id) {
         setSelectedStaff(null);
         setShowEdit(false);
       }
-  
+
       // console.log("Staff deleted successfully");
     } catch (err) {
       console.error("Failed to delete staff:", err);
       setError("Failed to delete staff. Please try again.");
     }
   };
-  
+
   // console.log("staffs: ", dataList);
 
   return (
@@ -285,13 +290,12 @@ export default function StaffControl() {
                 {selectedStaff && loggedInUser?.role !== "staff" && (
                   <div className="flex gap-1 staff-item">
                     <button
-                      className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${
-                        selectedStaff.accessLevel === "Full Access" && user.role === "staff"
+                      className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${selectedStaff.accessLevel === "Full Access" && user.role === "staff"
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:bg-gray-400 hover:text-white"
-                      }`}
+                        }`}
                       onClick={() => handleDelete(selectedStaff.id)}
-                      disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
+                      disabled={selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
                     >
                       <Trash className="w-3.5 h-3.5" />
                     </button>
@@ -304,7 +308,7 @@ export default function StaffControl() {
                   className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
                   value={searchTerm}                 // ✅ Controlled input
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
@@ -428,21 +432,21 @@ export default function StaffControl() {
         {/* Staff editor Section */}
 
         <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
-        <StaffEditor
-          staff={selectedStaff}
-          showForm={showEdit}
-          onClose={() => setShowEdit(false)}
-          onSave={(updatedStaff) => {
-            setDataList((prev) =>
-              prev.map((item) =>
-                item.id === updatedStaff.id ? updatedStaff : item
-              )
-            );
-            setSelectedStaff(updatedStaff);
-            setFormStatus("Staff Updated");
+          <StaffEditor
+            staff={selectedStaff}
+            showForm={showEdit}
+            onClose={() => setShowEdit(false)}
+            onSave={(updatedStaff) => {
+              setDataList((prev) =>
+                prev.map((item) =>
+                  item.id === updatedStaff.id ? updatedStaff : item
+                )
+              );
+              setSelectedStaff(updatedStaff);
+              setFormStatus("Staff Updated");
 
-          }}
-        />
+            }}
+          />
         </div>
       </div>
 
