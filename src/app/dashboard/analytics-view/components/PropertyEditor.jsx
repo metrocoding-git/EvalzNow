@@ -84,7 +84,7 @@ export default function PropertyEditor({ properties, onChange }) {
     setExpanded((e) => ({ ...e, [section]: !e[section] }));
 
   return (
-    <div className="w-full space-y-6 text-gray-700 text-xs p-1 pt-1 border-1 border-gray-300 bg-white">
+    <div className="w-full space-y-6 text-gray-700 text-xs p-1 pt-1 pb-2 border-1 border-gray-300 bg-white mb-10">
       {/* Standard Section */}
       <div>
         <button

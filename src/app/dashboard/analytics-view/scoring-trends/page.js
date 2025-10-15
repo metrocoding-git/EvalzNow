@@ -50,6 +50,16 @@ export default function ScoringTrends() {
   // if(!selectedUnitId) {
   //   redirect('/dashboard/analytics-view');
   // }
+  // Reset filters function
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+    });
+  };
+
 
   useEffect(() => {
     if (activeCandidateId) {
@@ -284,7 +294,7 @@ export default function ScoringTrends() {
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200  ml-1">
-                {ScoresOpen && <PlotSelections filters={secondaryValues} unitId={selectedUnitId} candidateId={activeCandidateId}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} unitId={selectedUnitId} candidateId={activeCandidateId} onResetFilters={resetFilters}
                  />}
               </div>
             </div>

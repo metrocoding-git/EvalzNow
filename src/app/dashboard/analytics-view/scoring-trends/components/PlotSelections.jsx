@@ -24,8 +24,12 @@ import {
 import PropertyEditor from "../../components/PropertyEditor";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { getAttainedScoreSummary, getMaxScoresSummary, getScoringTrendsSummary } from "@/services/scoringTrendsService";
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
-export default function PlotSelections({ filters, unitId, candidateId }) {
+export default function PlotSelections({ filters, unitId, candidateId, onResetFilters }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
     { id: 2, name: "curve2" },
@@ -92,7 +96,7 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
     useState("Table");
 
   const canvasRef = useRef(null);
-
+  const chartContainerRef = useRef(null);
 
   // Example line chart data
   const data = [
@@ -320,14 +324,204 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
   };
   
   
-  
   const xyData = buildXYChartData(
     scoringData,
     attainedScoreData,
     maxScoreData,
     selectedChart
   );
-  
+
+
+ 
+  // Function to export with image and data in single worksheet
+  const exportToExcel = async () => {
+    if (!chartContainerRef.current || !xyData || xyData.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    try {
+      // Capture chart as image
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        });
+      });
+
+      // Create workbook
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+
+      // Add header section
+      worksheet.addRow(['CHART EXPORT REPORT']);
+      worksheet.getCell('B2').font = { size: 16, bold: true };
+      worksheet.addRow([`Chart: ${selectedChart.name}`]);
+      worksheet.addRow([`Key: ${selectedChart.key}`]);
+      worksheet.addRow([`Export Date: ${new Date().toLocaleString()}`]);
+      worksheet.addRow([]);
+
+      // Add the chart image
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+
+      // Insert image after header (row 6, column A)
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 5 },  // Column A, Row 6
+        br: { col: 8, row: 25 }, // Column I, Row 26
+      });
+
+      // Add data section after the image
+      worksheet.addRow([]);
+      worksheet.addRow(['COORDINATES DATA']);
+      worksheet.getCell(`B${worksheet.rowCount}`).font = { bold: true };
+      
+      const headerRow = worksheet.addRow(['PP Id / Label', 'X Axis Value', 'Y Axis Value']);
+      headerRow.font = { bold: true };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6E6FA' }
+      };
+
+      // Add data rows
+      xyData.forEach((point) => {
+        worksheet.addRow([
+          point.label ?? point.ppId ?? 'N/A',
+          point.x,
+          point.y
+        ]);
+      });
+
+      // Add summary
+      worksheet.addRow([]);
+      worksheet.addRow(['SUMMARY']);
+      worksheet.getCell(`B${worksheet.rowCount}`).font = { bold: true };
+      worksheet.addRow([`Total Data Points: ${xyData.length}`]);
+      worksheet.addRow([`X Value Range: ${Math.min(...xyData.map(p => p.x))} - ${Math.max(...xyData.map(p => p.x))}`]);
+      worksheet.addRow([`Y Value Range: ${Math.min(...xyData.map(p => p.y))} - ${Math.max(...xyData.map(p => p.y))}`]);
+
+      // Set column widths
+      worksheet.columns = [
+        { width: 20 }, { width: 15 }, { width: 15 }
+      ];
+
+      // Generate and save file
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      saveAs(blob, `chart-report-${selectedChart.key}-${new Date().getTime()}.xlsx`);
+
+      
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export: ' + error.message);
+    }
+  };
+
+  // Function to export as PDF with coordinates
+  const exportToPDF = async () => {
+    if (!chartContainerRef.current || !xyData || xyData.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    try {
+      const { jsPDF } = await import('jspdf');
+      
+      // Capture chart as image
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('landscape');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Add chart title
+      pdf.setFontSize(16);
+      pdf.text(`Chart: ${selectedChart.name}`, 20, 20);
+      
+      // Add export date
+      pdf.setFontSize(10);
+      pdf.text(`Exported on: ${new Date().toLocaleString()}`, 20, 30);
+
+      // Add chart image (taking 60% of page height)
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const chartImgHeight = Math.min(imgHeight, pdfHeight * 0.6);
+      pdf.addImage(imgData, 'PNG', 20, 40, pdfWidth - 40, chartImgHeight);
+
+      // Add coordinates table starting after the image
+      let yPosition = 40 + chartImgHeight + 20;
+      
+      // Table header
+      pdf.setFontSize(12);
+      pdf.text('Coordinates Data', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(10);
+      pdf.text('PP Id / Label', 20, yPosition);
+      pdf.text('X Value', 100, yPosition);
+      pdf.text('Y Value', 150, yPosition);
+      yPosition += 8;
+      
+      // Draw line under header
+      pdf.line(20, yPosition, pdfWidth - 20, yPosition);
+      yPosition += 10;
+
+      // Add data rows
+      xyData.forEach((point, index) => {
+        // Check if we need a new page
+        if (yPosition > pdfHeight - 20) {
+          pdf.addPage();
+          yPosition = 20;
+          
+          // Add header on new page
+          pdf.setFontSize(10);
+          pdf.text('PP Id / Label', 20, yPosition);
+          pdf.text('X Value', 100, yPosition);
+          pdf.text('Y Value', 150, yPosition);
+          yPosition += 8;
+          pdf.line(20, yPosition, pdfWidth - 20, yPosition);
+          yPosition += 10;
+        }
+
+        pdf.text(point.label ?? point.ppId ?? 'N/A', 20, yPosition);
+        pdf.text(point.x.toString(), 100, yPosition);
+        pdf.text(point.y.toString(), 150, yPosition);
+        yPosition += 8;
+      });
+
+      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+      
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('Failed to export PDF: ' + error.message);
+    }
+  };
+
+
+   // Update your existing handleDeleteCurve function or create a new one
+   const handleExportGraph = () => {
+    exportToExcel();
+  };
   
   console.log("Scoring Trends Data: ", scoringData);
 
@@ -345,18 +539,23 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { }}
-                title="Create Material"
+                onClick={() => {
+                  if (typeof onResetFilters === "function") {
+                    onResetFilters(); // ✅ reset filters in parent
+                  }
+                  // setScoreAdd(true); 
+                }}
+                title="Reset"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 <RefreshCw
                   className="w-4 h-4 hover:text-green-600"
-                  onClick={() => setScoreAdd(true)}
+                  // onClick={() => setScoreAdd(true)}
                 />
               </button>
               <button
-                onClick={handleDeleteCurve}
-                title="Delete Curve"
+                onClick={handleExportGraph}
+                title="Export Graph"
                 className="text-red-600 hover:text-red-800 cursor-pointer"
               >
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
@@ -481,7 +680,7 @@ export default function PlotSelections({ filters, unitId, candidateId }) {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1">
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 

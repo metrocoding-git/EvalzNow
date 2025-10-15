@@ -85,22 +85,35 @@ export default function UnitControl() {
   // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
-  const activeClientId = sessionStorage.getItem('activeClientId');
+  // const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+  // const activeClientId = sessionStorage.getItem('activeClientId');
   const [staff, setStaff] = useState();
+  const [activeClientId, setActiveClientId] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
   
     if (!token || !user) {
       router.replace("/login");
     }
+
+    setLoggedInUser(JSON.parse(user));
   }, [router]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
+  }, []);
 
   // Fetch all units on mount
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchUnits = async () => {
       try {
         setLoading(true);
@@ -121,7 +134,7 @@ export default function UnitControl() {
     };
 
     fetchUnits();
-  }, []);
+  }, [activeClientId]);
 
   const fetchRosterData = async () => {
     if (!selectedUnit?.id) return;
@@ -159,6 +172,8 @@ export default function UnitControl() {
 
   // Fetch all candidates on mount
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchCandidates = async () => {
       try {
         setLoading(true);
@@ -175,7 +190,7 @@ export default function UnitControl() {
     };
 
     fetchCandidates();
-  }, []);
+  }, [activeClientId]);
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -1082,12 +1097,11 @@ const filteredCandidates = unitRosterData
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={() => {
-                if (contextMenu.selectedUnit) {
-                  setSelectedUnitId(contextMenu.selectedUnit.id);
-                  
-                }
+                const unit = contextMenu.selectedUnit;
+                setSelectedUnit(unit);
+                setSelectedUnitId(unit.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-                router.push(`/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(contextMenu.selectedUnit.id)}&environment=${encodeURIComponent(contextMenu.selectedUnit.environment)}&type=${encodeURIComponent(contextMenu.selectedUnit.unitType)}`);
+                router.push(`/dashboard/setup-view/insert-scores`);
               }}
             >
               <span className="flex items-center gap-2">

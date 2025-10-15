@@ -1,7 +1,7 @@
 "use client";
 import { Children, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const tabs = [
   { label: "Insert Scores", path: "/dashboard/setup-view/insert-scores" },
@@ -14,10 +14,10 @@ export default function SetupViewLayout({ children }) {
   const currentTab = tabs.find(tab => pathname?.startsWith(tab.path))?.label || "Insert Scores";
 
   const [activeTab, setActiveTab] = useState(currentTab);
-  const searchParams = useSearchParams();
-  const unitId = searchParams.get('unitId');
-  const environment = searchParams.get('environment') || '';
-  const type = searchParams.get('type') || '';
+  // const searchParams = useSearchParams();
+  // const unitId = searchParams.get('unitId');
+  // const environment = searchParams.get('environment') || '';
+  // const type = searchParams.get('type') || '';
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -36,11 +36,7 @@ export default function SetupViewLayout({ children }) {
         {/* Tab buttons */}
         <div className="flex space-x-0 px-0 pt-0.5 border-b border-gray-200 bg-gray-100 ">
           {tabs.map((tab, index) => {
-            const href = `${tab.path}?unitId=${encodeURIComponent(
-              unitId
-            )}&environment=${encodeURIComponent(
-              environment
-            )}&type=${encodeURIComponent(type)}`;
+            const href = `${tab.path}`;
 
             return (
               <Link href={href} key={index}>

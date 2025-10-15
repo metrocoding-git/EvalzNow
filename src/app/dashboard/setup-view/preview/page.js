@@ -101,7 +101,7 @@ export default function PreviewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");
 

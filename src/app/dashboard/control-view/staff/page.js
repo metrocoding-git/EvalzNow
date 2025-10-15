@@ -40,7 +40,8 @@ export default function StaffControl() {
     selectedStaff: null,
   });
 
-  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  // const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   // const [dataList, setDataList] = useState([
   //   { id: "001", firstName: "John", lastName: "Doe" },
   //   { id: "002", firstName: "Jane", lastName: "Smith" },
@@ -58,24 +59,38 @@ export default function StaffControl() {
   const [error, setError] = useState(null);
 
   const {formStatus, setFormStatus} = useFormStatus();
-  // const { setFormStatus } = useFormStatus();
-  const activeClientId = sessionStorage.getItem('activeClientId');
-  const user = localStorage.getItem('user');
-  // const { activeClientId, setActiveClientId } = useClient();
+  // const activeClientId = sessionStorage.getItem('activeClientId');
+  // const user = localStorage.getItem('user');
+  const [user, setUser] = useState(null);
   const controlsRef = useRef(null);
+  const [activeClientId, setActiveClientId] = useState(null);
+
 
   console.log("active Client Id on staff:", activeClientId);
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
   
     if (!token || !user) {
       router.replace("/login");
     }
+
+    setLoggedInUser(JSON.parse(user));
+    setUser(user);
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
+  }, []);
 
   // Fetch staff data
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchStaffs = async () => {
       try {
         
@@ -104,7 +119,7 @@ export default function StaffControl() {
     };
 
     fetchStaffs();
-  }, []);
+  }, [activeClientId]);
 
   // Create new staff
   const handleCreate = async (newStaff) => {
