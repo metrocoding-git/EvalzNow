@@ -52,7 +52,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   };
 
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const environment = unit.environment;
 
   const unitId = selectedUnitId;

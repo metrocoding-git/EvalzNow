@@ -186,14 +186,14 @@ const MAIN_CRITERIA = [
 
 export default function Editor({ details, performancePoints, onClose, onUpdate, unit }) {
   const [form, setForm] = useState({});
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const { setFormStatus } = useFormStatus();
   
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const unitId = selectedUnitId;
   const environment = unit?.environment || "";
   const [ppIds, setPpIds] = useState([]);
-  const rawType = searchParams.get("type") || "communicative";
+  // const rawType = searchParams.get("type") || "communicative";
   const type = unit?.unitType?.toLowerCase(); // normalize
   const [criticalRange, setCriticalRange] = useState(null);
   const [customCriteria, setCustomCriteria] = useState([]);

@@ -20,7 +20,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   const [ppSummary, setPpSummary] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const { selectedUnitId, setSelectedUnitId } = useUnit();
   const unitId = selectedUnitId;
 

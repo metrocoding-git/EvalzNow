@@ -39,7 +39,7 @@ const MasterPpIdBinTable = ({ data }) => {
 
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
 
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const { selectedUnitId, setSelectedUnitId } = useUnit();
   const unitId = selectedUnitId;
 

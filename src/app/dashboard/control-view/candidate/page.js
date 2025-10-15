@@ -64,12 +64,15 @@ export default function CandidateControl() {
    const controlsRef = useRef(null);
    const reviewRef = useRef(null);
    const router = useRouter();
-   const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
+  //  const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   //  const { activeClientId, setActiveClientId } = useClient();
-   const activeClientId = sessionStorage.getItem('activeClientId');
+  //  const activeClientId = sessionStorage.getItem('activeClientId');
+   const [activeClientId, setActiveClientId] = useState(null);
+   const [loggedInUser, setLoggedInUser] = useState(null);
 
-  // const [loadingEthnicity, setLoadingEthnicity] = useState(false);
-  // const [loadingIncome, setLoadingIncome] = useState(false);
+
+  const [loadingEthnicity, setLoadingEthnicity] = useState(false);
+  const [loadingIncome, setLoadingIncome] = useState(false);
 
   const [editingEthnicity, setEditingEthnicity] = useState({ idx: null, value: "" });
   const debouncedEthnicity = useDebounce(editingEthnicity);
@@ -77,17 +80,29 @@ export default function CandidateControl() {
   const [editingIncome, setEditingIncome] = useState({ idx: null, value: "" });
   const debouncedIncome = useDebounce(editingIncome);
 
-   useEffect(() => {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
   
     if (!token || !user) {
       router.replace("/login");
     }
+
+    setLoggedInUser(JSON.parse(user));
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
+  }, []);
 
   // Fetch all candidates on mount
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchCandidates = async () => {
       try {
         setLoading(true);
@@ -111,11 +126,14 @@ export default function CandidateControl() {
     };
 
     fetchCandidates();
-  }, []);
+  }, [activeClientId]);
+
 
 
   // Fetch all candidates on mount
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchEthnicity = async () => {
       try {
         setLoading(true);
@@ -129,11 +147,13 @@ export default function CandidateControl() {
       }
     };
     fetchEthnicity();
-  }, []);
+  }, [activeClientId]);
 
 
   // Fetch all candidates on mount
   useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchIncome = async () => {
       try {
         setLoading(true);
@@ -147,11 +167,13 @@ export default function CandidateControl() {
       }
     };
     fetchIncome();
-  }, []);
+  }, [activeClientId]);
 
 
    // Fetch all candidates on mount
    useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchIncomeFromCandidate = async () => {
       try {
         setLoading(true);
@@ -166,11 +188,13 @@ export default function CandidateControl() {
       }
     };
     fetchIncomeFromCandidate();
-  }, []);
+  }, [activeClientId]);
   
 
    // Fetch all candidates on mount
    useEffect(() => {
+    if (!activeClientId) return;
+
     const fetchEthnicitiesFromCandidate = async () => {
       try {
         setLoading(true);
@@ -185,7 +209,7 @@ export default function CandidateControl() {
       }
     };
     fetchEthnicitiesFromCandidate();
-  }, []);
+  }, [activeClientId]);
   
 
 

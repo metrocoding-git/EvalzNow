@@ -243,14 +243,14 @@ const [formData, setFormData] = useState({
   const [ppIds, setPpIds] = useState([]);
   const [assessmentBlocks, setAssessmentBlocks] = useState([]); 
   const [customCriteria, setCustomCriteria] = useState([]);
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const [scoringSystem, setScoringSystem] = useState();
   const { setFormStatus } = useFormStatus();
 
   const { selectedUnitId, setSelectedUnitId } = useUnit(); 
   const unitId = selectedUnitId
   const environment = unit.environment;
-  const rawType = searchParams.get("type") || "communicative";
+  // const rawType = searchParams.get("type") || "communicative";
   const type = unit.unitType.toLowerCase(); // normalize
   const [criticalRange, setCriticalRange] = useState(null);
   // Get the appropriate competencies based on type
