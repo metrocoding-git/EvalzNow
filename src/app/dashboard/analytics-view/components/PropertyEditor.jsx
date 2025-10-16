@@ -128,7 +128,7 @@ export default function PropertyEditor({ properties, onChange }) {
               />
             </label>
 
-            <label className="flex items-center space-x-2">
+            {/* <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={reference}
@@ -138,7 +138,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 }}
               />
               <span>Reference</span>
-            </label>
+            </label> */}
           </div>
         )}
       </div>
@@ -155,7 +155,7 @@ export default function PropertyEditor({ properties, onChange }) {
           ) : (
             <ChevronRight className="w-5 h-5 mr-2" />
           )}
-          Curve Label
+          Curve Labelling
         </button>
         {expanded.curveLabel && (
           <div className="space-y-3 pl-7">
@@ -186,7 +186,7 @@ export default function PropertyEditor({ properties, onChange }) {
               </select>
             </label>
 
-            <label className="flex items-center space-x-2">
+            {/* <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={showLabelPrefix}
@@ -196,9 +196,9 @@ export default function PropertyEditor({ properties, onChange }) {
                 }}
               />
               <span>Show Label Prefix</span>
-            </label>
+            </label> */}
 
-            {showLabelPrefix && (
+            {/* {showLabelPrefix && (
               <label className="flex items-center space-x-2 pl-6">
                 <span>Label Prefix:</span>
                 <input
@@ -211,9 +211,9 @@ export default function PropertyEditor({ properties, onChange }) {
                   className="border rounded px-2 py-1 w-full max-w-xs"
                 />
               </label>
-            )}
+            )} */}
 
-            <label className="flex items-center space-x-2">
+            {/* <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={showLabelSuffix}
@@ -223,9 +223,9 @@ export default function PropertyEditor({ properties, onChange }) {
                 }}
               />
               <span>Show Label Suffix</span>
-            </label>
+            </label> */}
 
-            {showLabelSuffix && (
+            {/* {showLabelSuffix && (
               <label className="flex items-center space-x-2 pl-6">
                 <span>Label Suffix:</span>
                 <input
@@ -238,7 +238,7 @@ export default function PropertyEditor({ properties, onChange }) {
                   className="border rounded px-2 py-1 w-full max-w-xs"
                 />
               </label>
-            )}
+            )} */}
           </div>
         )}
       </div>

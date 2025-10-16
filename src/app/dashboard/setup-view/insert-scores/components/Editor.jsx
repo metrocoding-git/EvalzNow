@@ -306,6 +306,18 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
     fetchCriteria();
   }, [unitId]);
 
+  const requiredFields = [
+    "ppId",
+    "durationHrs",
+    "criticalRefDate",
+    "remarks",
+    "workflowStage",
+    "assessmentType",
+    "scheduleImpact",
+    "engageLevel",
+    "competency",
+  ];
+
   useEffect(() => {
     if (details) {
       setFormData({
@@ -378,6 +390,50 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       setScoringSystem(unit.scoringSystem);
     }
   }, [unit]);
+
+
+  const isSubmitDisabled = (() => {
+    // Check required fields common for both environments
+    const requiredMissing = requiredFields.some(
+      (field) => !formData[field] || formData[field].toString().trim() === ""
+    );
+    if (requiredMissing) return true;
+  
+    if (environment === "Classroom") {
+      return (
+        formData.attainedScore === null ||
+        formData.attainedScore === "" ||
+        formData.maxScore === null ||
+        formData.maxScore === ""
+      );
+    }
+  
+    if (environment === "Workforce") {
+      // Check if at least one MC or CC has a valid numeric value (not empty, not null, not undefined, not NaN)
+      let hasAtLeastOneValue = false;
+  
+      for (let i = 1; i <= 20; i++) {
+        const mcValue = formData[`mc${i}`];
+        const ccValue = formData[`cc${i}`];
+        
+        // Convert to number and check if it's a valid number
+        const mcNum = parseFloat(mcValue);
+        const ccNum = parseFloat(ccValue);
+        
+        const mcHasValue = !isNaN(mcNum) && mcValue !== "" && mcValue !== null && mcValue !== undefined;
+        const ccHasValue = !isNaN(ccNum) && ccValue !== "" && ccValue !== null && ccValue !== undefined;
+        
+        if (mcHasValue || ccHasValue) {
+          hasAtLeastOneValue = true;
+          break; // Found at least one value, no need to check further
+        }
+      }
+  
+      return !hasAtLeastOneValue; // disable if none have value
+    }
+  
+    return false;
+  })();
 
   const handleSubmit = async () => {
     if (!formData.assessmentBlockId || !formData.unitId) {
@@ -840,8 +896,13 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
               <div className="flex justify-end  ">
                 <button
                   type="button"
+                  disabled={isSubmitDisabled || loading}
                   onClick={handleSubmit}
-                  className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+                  className={`px-4 py-1 text-sm transition-colors ${
+                    isSubmitDisabled || loading
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
                   Edit
                 </button>

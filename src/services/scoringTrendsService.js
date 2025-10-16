@@ -13,7 +13,7 @@ export const getScoringTrendsSummary = async (filters) => {
       });
   
       const query = new URLSearchParams(params).toString();
-      const response = await api.get(`${API_ROUTES.SCORING_TRENDS}?${query}`);
+      const response = await api.get(`${API_ROUTES.SCORING_TRENDS}/se?${query}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching scoring trends:", error);

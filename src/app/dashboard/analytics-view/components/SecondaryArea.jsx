@@ -1,16 +1,22 @@
 "use client";
 import { Edit, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, onSubmit }) => {
+const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
 
+  useEffect(() => {
+    setPpIdFrom(-3);
+    setPpIdTo(3);
+    setCriticalDateFrom("");
+    setCriticalDateTo("");
+  }, [resetSignal]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,6 +55,7 @@ const SecondaryInputForm = ({ onClose, onSubmit }) => {
               <label htmlFor="" className="w-1/2">From:</label>
               <input
                 type="number"
+                value={ppIdFrom}
                 onChange={(e) => {
                   const val = e.target.value;
                   setPpIdFrom(val === "" ? "" : parseInt(val));
@@ -62,6 +69,7 @@ const SecondaryInputForm = ({ onClose, onSubmit }) => {
               <label htmlFor="" className="w-1/2">To:</label>
               <input
                 type="number"
+                value={ppIdTo}
                 onChange={(e) => {
                   const val = e.target.value;
                   setPpIdTo(val === "" ? "" : parseInt(val));
