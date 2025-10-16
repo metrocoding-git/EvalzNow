@@ -42,7 +42,7 @@ export default function ScoringTrends() {
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]);  
   const [secondaryValues, setSecondaryValues] = useState(null);
-
+  const [resetSignal, setResetSignal] = useState(0);
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
@@ -58,6 +58,9 @@ export default function ScoringTrends() {
       criticalDateFrom: null,
       criticalDateTo: null,
     });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
   };
 
 
@@ -287,7 +290,7 @@ export default function ScoringTrends() {
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto my-2">
                     <SecondaryArea onClose={() => setShowSecondary(false)} 
-                    onSubmit={(values) => { setSecondaryValues(values); }} />
+                    onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} />
                   </div>
                 )}
               </div>

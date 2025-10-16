@@ -20,6 +20,7 @@ import {
   Legend,
   ResponsiveContainer,
   Label,
+  Area,
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
@@ -67,10 +68,10 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     // Curve Label
     showLabel: false,
     labelType: "X Type",
-    showLabelPrefix: false,
-    labelPrefix: "X File name",
-    showLabelSuffix: false,
-    labelSuffix: "Y subcase",
+    // showLabelPrefix: false,
+    // labelPrefix: "X File name",
+    // showLabelSuffix: false,
+    // labelSuffix: "Y subcase",
 
     // Line Attribute
     lineStyle: "solid",
@@ -81,7 +82,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
     symbolFrequency: 1,
-    symbolScaleSize: 1,
+    symbolScaleSize: 3,
 
     // Shade area
     shadeArea: "#ffffff",
@@ -106,28 +107,28 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
   ];
 
   const [chart, setChart] = useState([
-    { name: "Communication (MC1) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc1", icon: "📉", id: "1" },
-    { name: "Intelligence (MC2) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc2", icon: "📉", id: "2" },
-    { name: "Responsiveness (MC3) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc3", icon: "📉", id: "3" },
-    { name: "Efficiency (MC4) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc4", icon: "📉", id: "4" },
-    { name: "Adaptation (MC5) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc5", icon: "📉", id: "5" },
-    { name: "Accuracy (MC6) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc6", icon: "📉", id: "6" },
-    { name: "Verbal Reasoning (MC7) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc7", icon: "📉", id: "7" },
-    { name: "Spatial Reasoning (MC8) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc8", icon: "📉", id: "8" },
-    { name: "Numerical Reasoning (MC9) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc9", icon: "📉", id: "9" },
-    { name: "Problem Solving (MC10) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc10", icon: "📉", id: "10" },
-    { name: "Memory (MC11) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc11", icon: "📉", id: "11" },
-    { name: "Data Checking (MC12) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc12", icon: "📉", id: "12" },
-    { name: "Work Sampling (MC13) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc13", icon: "📉", id: "13" },
-    { name: "Quality of Work (MC14) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc14", icon: "📉", id: "14" },
-    { name: "Resourcefulness (MC15) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc15", icon: "📉", id: "15" },
-    { name: "Following Instructions (MC16) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc16", icon: "📉", id: "16" },
-    { name: "Working in Teams (MC17) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc17", icon: "📉", id: "17" },
-    { name: "Working Alone (MC18) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc18", icon: "📉", id: "18" },
-    { name: "Initiative (MC19) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc19", icon: "📉", id: "19" },
-    { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter (Workforce Only - Line Graph)", key: "mc20", icon: "📉", id: "20" },
-    { name: "Attained Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)", key: "attained", icon: "📉", id: "21" },
-    { name: "Maximum Score vs. Insert Score Row Counter (Classroom + Workforce - Line Graphs)", key: "max", icon: "📉", id: "22" }
+    { name: "Communication (MC1) vs. Insert Score Row Counter", key: "mc1", icon: "📉", id: "1" },
+    { name: "Intelligence (MC2) vs. Insert Score Row Counter", key: "mc2", icon: "📉", id: "2" },
+    { name: "Responsiveness (MC3) vs. Insert Score Row Counter ", key: "mc3", icon: "📉", id: "3" },
+    { name: "Efficiency (MC4) vs. Insert Score Row Counter ", key: "mc4", icon: "📉", id: "4" },
+    { name: "Adaptation (MC5) vs. Insert Score Row Counter ", key: "mc5", icon: "📉", id: "5" },
+    { name: "Accuracy (MC6) vs. Insert Score Row Counter ", key: "mc6", icon: "📉", id: "6" },
+    { name: "Verbal Reasoning (MC7) vs. Insert Score Row Counter ", key: "mc7", icon: "📉", id: "7" },
+    { name: "Spatial Reasoning (MC8) vs. Insert Score Row Counter ", key: "mc8", icon: "📉", id: "8" },
+    { name: "Numerical Reasoning (MC9) vs. Insert Score Row Counter ", key: "mc9", icon: "📉", id: "9" },
+    { name: "Problem Solving (MC10) vs. Insert Score Row Counter", key: "mc10", icon: "📉", id: "10" },
+    { name: "Memory (MC11) vs. Insert Score Row Counter", key: "mc11", icon: "📉", id: "11" },
+    { name: "Data Checking (MC12) vs. Insert Score Row Counter ", key: "mc12", icon: "📉", id: "12" },
+    { name: "Work Sampling (MC13) vs. Insert Score Row Counter", key: "mc13", icon: "📉", id: "13" },
+    { name: "Quality of Work (MC14) vs. Insert Score Row Counter", key: "mc14", icon: "📉", id: "14" },
+    { name: "Resourcefulness (MC15) vs. Insert Score Row Counter ", key: "mc15", icon: "📉", id: "15" },
+    { name: "Following Instructions (MC16) vs. Insert Score Row Counter ", key: "mc16", icon: "📉", id: "16" },
+    { name: "Working in Teams (MC17) vs. Insert Score Row Counter", key: "mc17", icon: "📉", id: "17" },
+    { name: "Working Alone (MC18) vs. Insert Score Row Counter", key: "mc18", icon: "📉", id: "18" },
+    { name: "Initiative (MC19) vs. Insert Score Row Counter", key: "mc19", icon: "📉", id: "19" },
+    { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter ", key: "mc20", icon: "📉", id: "20" },
+    { name: "Attained Score vs. Insert Score Row Counter ", key: "attained", icon: "📉", id: "21" },
+    { name: "Maximum Score vs. Insert Score Row Counter ", key: "max", icon: "📉", id: "22" }
   ]
   );
   
@@ -160,6 +161,15 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
       setSelectedCurveId(null);
     }
   };
+
+  useEffect(() => {
+    if (chartProperties) {
+
+    }
+  }, [chartProperties.shadeArea] );
+
+
+  console.log("Shade color:", chartProperties.shadeArea);
 
 
   useEffect(() => {
@@ -212,7 +222,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
-        setScoringData(data);
+        setScoringData(data.data);
       } catch (err) {
         console.error("Failed to fetch scoring trends:", err);
       }
@@ -235,7 +245,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
-        setAttainedScoreData(data);
+        setAttainedScoreData(data.data);
       } catch (err) {
         console.error("Failed to fetch scoring trends:", err);
       }
@@ -276,25 +286,28 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     if (!selectedChart) return [];
   
     const key = selectedChart.key;
+    const isMC = key.startsWith("mc");
   
     // Handle Attained Score chart (keep sorting by x)
     if (key === "attained") {
       if (!attainedScoreData) return [];
       return attainedScoreData
         .map((row) => ({
-          x: Number(row.attainedScore ?? 0),
-          y: Number(row.totalRows ?? 0),
+          x: Number(row.serialNo ?? 0),
+          y: Number(row.attainedScore ?? 0),
+          ppId: row.ppId,
         }))
         .sort((a, b) => a.x - b.x);
     }
   
     // Handle Max Score chart (keep sorting by x)
     if (key === "max") {
-      if (!maxScoreData) return [];
-      return maxScoreData
+      if (!attainedScoreData) return [];
+      return attainedScoreData
         .map((row) => ({
-          x: Number(row.maxScore ?? 0),
-          y: Number(row.totalRows ?? 0),
+          x: Number(row.serialNo ?? 0),
+          y: Number(row.maxScore ?? 0),
+          ppId: row.ppId,
         }))
         .sort((a, b) => a.x - b.x);
     }
@@ -310,8 +323,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
         val = row.ccCounts?.[key] ?? 0;
       }
       return {
-        x: Number(val),
-        y: Number(row.totalRows ?? 0),
+        x: row.serialNo,
+        y: isMC ? row.mcValues[key] ?? 0 : row.ccValues[key] ?? 0,
         ppId: row.ppId,
         label: `${row.ppId}`,
       };
@@ -630,7 +643,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
@@ -674,61 +687,139 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                     </table>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
+          style={{ backgroundColor: chartProperties.shadeArea }}>
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
+                key={
+                  chartProperties.lineColor +
+                  chartProperties.lineStyle +
+                  chartProperties.symbolStyle +
+                  chartProperties.symbolScaleSize +
+                  chartProperties.shadeArea
+                }
                 data={xyData}
                 margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
 
+                {/* X Axis */}
                 <XAxis
                   dataKey="x"
                   type="number"
                   domain={[0, "dataMax"]}
                   allowDecimals={false}
                 >
-                  <Label value={`${selectedChart.key} (X)`} offset={-10} position="insideBottom" />
+                   {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                    <Label value={`Total Rows (X)`} offset={-10} position="insideBottom" />
+                  )}
                 </XAxis>
 
+                {/* Y Axis */}
                 <YAxis type="number" dataKey="y">
-                  <Label value="Total Rows (Y)" angle={-90} position="insideLeft" offset={10} />
+                  {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                    <Label
+                      value={`${selectedChart.key} (Y)`}
+                      angle={-90}
+                      position="insideLeft"
+                      offset={10}
+                    />
+                  )}
                 </YAxis>
 
                 <Tooltip
-                  formatter={(value, name) => {
-                    // Recharts Tooltip passes y-value as value because our Line uses dataKey="y"
-                    return [value, name === "y" ? "Total Rows" : name];
-                  }}
+                  formatter={(value, name) => [value, name === "y" ? "Total Rows" : name]}
                   labelFormatter={(label) => `MC/CC value: ${label}`}
-                  // show ppId in tooltip payload
                   contentStyle={{ fontSize: 12 }}
                 />
 
-                {/* <Legend verticalAlign="top" /> */}
+                {/* Shade Area (behind the line) */}
+                {chartProperties.shadeArea !== "#ffffff" && (
+                  <Area
+                    type="monotone"
+                    dataKey="y"
+                    stroke="none"
+                    fill={chartProperties.shadeArea}
+                    fillOpacity={0.2}
+                    hide={!chartProperties.visibility}
+                  />
+                )}
 
+                {/* Line itself */}
                 <Line
                   type="monotone"
                   dataKey="y"
                   name={selectedChart.name}
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
+                  stroke={chartProperties.lineColor}
+                  strokeWidth={chartProperties.lineThickness || 2}
+                  strokeDasharray={
+                    chartProperties.lineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.lineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.lineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
                   isAnimationActive={false}
+                  hide={!chartProperties.visibility}
+                  dot={(dotProps) => {
+                    // Frequency control
+                    const { index, cx, cy } = dotProps;
+                    if (index % chartProperties.symbolFrequency !== 0) return null;
+
+                    // Symbol size
+                    const r = chartProperties.symbolScaleSize;
+
+                    // Symbol shape
+                    switch (chartProperties.symbolStyle) {
+                      case "square":
+                        return (
+                          <rect
+                            x={cx - r}
+                            y={cy - r}
+                            width={2 * r}
+                            height={2 * r}
+                            fill={chartProperties.symbolColor}
+                          />
+                        );
+                      case "triangle":
+                        return (
+                          <polygon
+                            points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
+                            fill={chartProperties.symbolColor}
+                          />
+                        );
+                      case "diamond":
+                        return (
+                          <polygon
+                            points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
+                            fill={chartProperties.symbolColor}
+                          />
+                        );
+                      default:
+                        return (
+                          <circle
+                            cx={cx}
+                            cy={cy}
+                            r={r}
+                            fill={chartProperties.symbolColor}
+                          />
+                        );
+                    }
+                  }}
                 />
-
-
               </LineChart>
             </ResponsiveContainer>
+
           </div>
         </div>
       </div>
