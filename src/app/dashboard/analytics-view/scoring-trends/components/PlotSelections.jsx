@@ -66,7 +66,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     reference: false,
 
     // Curve Label
-    showLabel: false,
+    showLabel: true,
     labelType: "X Type",
     // showLabelPrefix: false,
     // labelPrefix: "X File name",
@@ -81,11 +81,15 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     // Symbol Attribute
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
 
     // Shade area
     shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
   });
 
   const [points, setPoints] = useState(
@@ -137,6 +141,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
   const [customCriteria, setCustomCriteria] = useState([]);
 
   const [scoringData, setScoringData] = useState(null);
+  const [positiveScoringData, setPositiveScoringData] = useState(null);
+  const [negativeScoringData, setNegativeScoringData] = useState(null);
   const [attainedScoreData, setAttainedScoreData] = useState(null);
   const [maxScoreData, setMaxScoreData] = useState(null);
 
@@ -222,7 +228,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
-        setScoringData(data.data);
+        setPositiveScoringData(data.positiveData);
+        setNegativeScoringData(data.negativeData);
       } catch (err) {
         console.error("Failed to fetch scoring trends:", err);
       }
@@ -231,6 +238,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     fetchScoringData();
   }, [unitId, filters, candidateId]);
 
+  console.log("positve score:", positiveScoringData);
+  console.log("ngative score:", negativeScoringData);
 
   useEffect(() => {
     const fetchAttainedScoreData = async () => {
@@ -278,7 +287,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
   }, [unitId, filters, candidateId]);
 
   const buildXYChartData = (
-    scoringData,
+    positiveData,
+    negativeData,
     attainedScoreData,
     maxScoreData,
     selectedChart
@@ -290,7 +300,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
   
     // Handle Attained Score chart (keep sorting by x)
     if (key === "attained") {
-      if (!attainedScoreData) return [];
+      if (!attainedScoreData) return {positive: [], negative: []};
       return attainedScoreData
         .map((row) => ({
           x: Number(row.serialNo ?? 0),
@@ -313,42 +323,102 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     }
   
     // Handle MC/CC charts → sort by ppId
-    if (!scoringData || !key) return [];
+    if ((!positiveData && !negativeData) || !key) return { positive: [], negative: [] };
   
-    const points = scoringData.map((row) => {
-      let val = 0;
-      if (key.startsWith("mc")) {
-        val = row.mcCounts?.[key] ?? 0;
-      } else if (key.startsWith("cc")) {
-        val = row.ccCounts?.[key] ?? 0;
-      }
-      return {
-        x: row.serialNo,
-        y: isMC ? row.mcValues[key] ?? 0 : row.ccValues[key] ?? 0,
-        ppId: row.ppId,
-        label: `${row.ppId}`,
-      };
-    });
+    const buildPoints = (data, type) => {
+      if (!data) return [];
+      return data.map((row) => {
+        let val = 0;
+        if (key.startsWith("mc")) {
+          val = row.mcCounts?.[key] ?? 0;
+        } else if (key.startsWith("cc")) {
+          val = row.ccCounts?.[key] ?? 0;
+        }
+        return {
+          x: row.serialNo,
+          y: isMC ? row.mcValues[key] ?? 0 : row.ccValues[key] ?? 0,
+          ppId: row.ppId,
+          label: `${row.ppId}`,
+          type: type
+        };
+      }).sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
+    };
+
+    const positivePoints = buildPoints(positiveData, "positive");
+    const negativePoints = buildPoints(negativeData, "negative");
   
-    // ✅ Only MC/CC sorted by ppId
-    points.sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
-  
-    return points;
+    return {
+      positive: positivePoints,
+      negative: negativePoints
+    };
   };
   
   
-  const xyData = buildXYChartData(
-    scoringData,
+  const { positive: positiveData, negative: negativeData } = buildXYChartData(
+    positiveScoringData,
+    negativeScoringData,
     attainedScoreData,
     maxScoreData,
     selectedChart
   );
 
+  // For table display - combine both datasets
+  const combinedData = [...positiveData, ...negativeData].sort((a, b) => a.x - b.x);
+
+  // const positiveData = xyData
+  // .filter((p) => p.y >= 0)
+  // .sort((a, b) => a.x - b.x);
+
+  // const negativeData = xyData
+  //   .filter((p) => p.y < 0)
+  //   .sort((a, b) => a.x - b.x);
+
+  // Function to render dot based on symbol style
+  const renderCustomDot = (props, color) => {
+    const { cx, cy } = props;
+    const r = chartProperties.symbolScaleSize;
+
+    switch (chartProperties.symbolStyle) {
+      case "square":
+        return (
+          <rect
+            x={cx - r}
+            y={cy - r}
+            width={2 * r}
+            height={2 * r}
+            fill={color}
+          />
+        );
+      case "triangle":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
+            fill={color}
+          />
+        );
+      case "diamond":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
+            fill={color}
+          />
+        );
+      default:
+        return (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill={color}
+          />
+        );
+    }
+  };
 
  
   // Function to export with image and data in single worksheet
   const exportToExcel = async () => {
-    if (!chartContainerRef.current || !xyData || xyData.length === 0) {
+    if (!chartContainerRef.current || (!positiveData.length && !negativeData.length)) {
       alert("No data available to export");
       return;
     }
@@ -391,8 +461,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
 
       // Insert image after header (row 6, column A)
       worksheet.addImage(imageId, {
-        tl: { col: 0, row: 5 },  // Column A, Row 6
-        br: { col: 8, row: 25 }, // Column I, Row 26
+        tl: { col: 0, row: 5 },
+        br: { col: 8, row: 25 },
       });
 
       // Add data section after the image
@@ -400,7 +470,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
       worksheet.addRow(['COORDINATES DATA']);
       worksheet.getCell(`B${worksheet.rowCount}`).font = { bold: true };
       
-      const headerRow = worksheet.addRow(['PP Id / Label', 'X Axis Value', 'Y Axis Value']);
+      const headerRow = worksheet.addRow(['PP Id / Label', 'X Axis Value', 'Y Axis Value', 'Type']);
       headerRow.font = { bold: true };
       headerRow.fill = {
         type: 'pattern',
@@ -408,12 +478,13 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
         fgColor: { argb: 'FFE6E6FA' }
       };
 
-      // Add data rows
-      xyData.forEach((point) => {
+      // Add data rows for both positive and negative
+      combinedData.forEach((point) => {
         worksheet.addRow([
           point.label ?? point.ppId ?? 'N/A',
           point.x,
-          point.y
+          point.y,
+          point.type?.toUpperCase() || 'N/A'
         ]);
       });
 
@@ -421,13 +492,15 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
       worksheet.addRow([]);
       worksheet.addRow(['SUMMARY']);
       worksheet.getCell(`B${worksheet.rowCount}`).font = { bold: true };
-      worksheet.addRow([`Total Data Points: ${xyData.length}`]);
-      worksheet.addRow([`X Value Range: ${Math.min(...xyData.map(p => p.x))} - ${Math.max(...xyData.map(p => p.x))}`]);
-      worksheet.addRow([`Y Value Range: ${Math.min(...xyData.map(p => p.y))} - ${Math.max(...xyData.map(p => p.y))}`]);
+      worksheet.addRow([`Total Data Points: ${combinedData.length}`]);
+      worksheet.addRow([`Positive Points: ${positiveData.length}`]);
+      worksheet.addRow([`Negative Points: ${negativeData.length}`]);
+      worksheet.addRow([`X Value Range: ${Math.min(...combinedData.map(p => p.x))} - ${Math.max(...combinedData.map(p => p.x))}`]);
+      worksheet.addRow([`Y Value Range: ${Math.min(...combinedData.map(p => p.y))} - ${Math.max(...combinedData.map(p => p.y))}`]);
 
       // Set column widths
       worksheet.columns = [
-        { width: 20 }, { width: 15 }, { width: 15 }
+        { width: 20 }, { width: 15 }, { width: 15 }, { width: 12 }
       ];
 
       // Generate and save file
@@ -438,95 +511,9 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
       
       saveAs(blob, `chart-report-${selectedChart.key}-${new Date().getTime()}.xlsx`);
 
-      
     } catch (error) {
       console.error('Export failed:', error);
       alert('Failed to export: ' + error.message);
-    }
-  };
-
-  // Function to export as PDF with coordinates
-  const exportToPDF = async () => {
-    if (!chartContainerRef.current || !xyData || xyData.length === 0) {
-      alert("No data available to export");
-      return;
-    }
-
-    try {
-      const { jsPDF } = await import('jspdf');
-      
-      // Capture chart as image
-      const canvas = await html2canvas(chartContainerRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('landscape');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Add chart title
-      pdf.setFontSize(16);
-      pdf.text(`Chart: ${selectedChart.name}`, 20, 20);
-      
-      // Add export date
-      pdf.setFontSize(10);
-      pdf.text(`Exported on: ${new Date().toLocaleString()}`, 20, 30);
-
-      // Add chart image (taking 60% of page height)
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-      const chartImgHeight = Math.min(imgHeight, pdfHeight * 0.6);
-      pdf.addImage(imgData, 'PNG', 20, 40, pdfWidth - 40, chartImgHeight);
-
-      // Add coordinates table starting after the image
-      let yPosition = 40 + chartImgHeight + 20;
-      
-      // Table header
-      pdf.setFontSize(12);
-      pdf.text('Coordinates Data', 20, yPosition);
-      yPosition += 10;
-      
-      pdf.setFontSize(10);
-      pdf.text('PP Id / Label', 20, yPosition);
-      pdf.text('X Value', 100, yPosition);
-      pdf.text('Y Value', 150, yPosition);
-      yPosition += 8;
-      
-      // Draw line under header
-      pdf.line(20, yPosition, pdfWidth - 20, yPosition);
-      yPosition += 10;
-
-      // Add data rows
-      xyData.forEach((point, index) => {
-        // Check if we need a new page
-        if (yPosition > pdfHeight - 20) {
-          pdf.addPage();
-          yPosition = 20;
-          
-          // Add header on new page
-          pdf.setFontSize(10);
-          pdf.text('PP Id / Label', 20, yPosition);
-          pdf.text('X Value', 100, yPosition);
-          pdf.text('Y Value', 150, yPosition);
-          yPosition += 8;
-          pdf.line(20, yPosition, pdfWidth - 20, yPosition);
-          yPosition += 10;
-        }
-
-        pdf.text(point.label ?? point.ppId ?? 'N/A', 20, yPosition);
-        pdf.text(point.x.toString(), 100, yPosition);
-        pdf.text(point.y.toString(), 150, yPosition);
-        yPosition += 8;
-      });
-
-      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
-      
-    } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('Failed to export PDF: ' + error.message);
     }
   };
 
@@ -659,8 +646,8 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                         </tr>
                       </thead>
                       <tbody>
-                        {xyData && xyData.length > 0 ? (
-                          xyData.map((row, idx) => (
+                        {combinedData && combinedData.length > 0 ? (
+                          combinedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
                               <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                                 {row.label ?? row.ppId ?? `#${idx + 1}`}
@@ -700,13 +687,13 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
                 key={
-                  chartProperties.lineColor +
+                  chartProperties.positiveLineColor +
+                  chartProperties.negativeLineColor +
                   chartProperties.lineStyle +
                   chartProperties.symbolStyle +
                   chartProperties.symbolScaleSize +
                   chartProperties.shadeArea
                 }
-                data={xyData}
                 margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -718,7 +705,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                   domain={[0, "dataMax"]}
                   allowDecimals={false}
                 >
-                   {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                  {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                     <Label value={`Total Rows (X)`} offset={-10} position="insideBottom" />
                   )}
                 </XAxis>
@@ -736,29 +723,44 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                 </YAxis>
 
                 <Tooltip
-                  formatter={(value, name) => [value, name === "y" ? "Total Rows" : name]}
-                  labelFormatter={(label) => `MC/CC value: ${label}`}
+                  formatter={(value, name) => [value, name === "positive" ? "Positive" : "Negative"]}
+                  labelFormatter={(label) => `Value: ${label}`}
                   contentStyle={{ fontSize: 12 }}
                 />
 
-                {/* Shade Area (behind the line) */}
+                <Legend />
+
+                {/* Shade Area (behind the lines) */}
                 {chartProperties.shadeArea !== "#ffffff" && (
-                  <Area
-                    type="monotone"
-                    dataKey="y"
-                    stroke="none"
-                    fill={chartProperties.shadeArea}
-                    fillOpacity={0.2}
-                    hide={!chartProperties.visibility}
-                  />
+                  <>
+                    <Area
+                      type="linear"
+                      data={positiveData}
+                      dataKey="y"
+                      stroke="none"
+                      fill={chartProperties.shadeArea}
+                      fillOpacity={0.1}
+                      hide={!chartProperties.visibility}
+                    />
+                    <Area
+                      type="linear"
+                      data={negativeData}
+                      dataKey="y"
+                      stroke="none"
+                      fill={chartProperties.shadeArea}
+                      fillOpacity={0.1}
+                      hide={!chartProperties.visibility}
+                    />
+                  </>
                 )}
 
-                {/* Line itself */}
+                {/* Positive Data Line */}
                 <Line
-                  type="monotone"
+                  type="linear"
+                  data={positiveData}
                   dataKey="y"
-                  name={selectedChart.name}
-                  stroke={chartProperties.lineColor}
+                  name="Positive PP IDs"
+                  stroke={chartProperties.positiveLineColor}
                   strokeWidth={chartProperties.lineThickness || 2}
                   strokeDasharray={
                     chartProperties.lineStyle === "dashed"
@@ -771,50 +773,36 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                   }
                   isAnimationActive={false}
                   hide={!chartProperties.visibility}
-                  dot={(dotProps) => {
-                    // Frequency control
-                    const { index, cx, cy } = dotProps;
+                  dot={(props) => {
+                    const { index } = props;
                     if (index % chartProperties.symbolFrequency !== 0) return null;
+                    return renderCustomDot(props, chartProperties.positiveSymbolColor);
+                  }}
+                />
 
-                    // Symbol size
-                    const r = chartProperties.symbolScaleSize;
-
-                    // Symbol shape
-                    switch (chartProperties.symbolStyle) {
-                      case "square":
-                        return (
-                          <rect
-                            x={cx - r}
-                            y={cy - r}
-                            width={2 * r}
-                            height={2 * r}
-                            fill={chartProperties.symbolColor}
-                          />
-                        );
-                      case "triangle":
-                        return (
-                          <polygon
-                            points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
-                            fill={chartProperties.symbolColor}
-                          />
-                        );
-                      case "diamond":
-                        return (
-                          <polygon
-                            points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
-                            fill={chartProperties.symbolColor}
-                          />
-                        );
-                      default:
-                        return (
-                          <circle
-                            cx={cx}
-                            cy={cy}
-                            r={r}
-                            fill={chartProperties.symbolColor}
-                          />
-                        );
-                    }
+                {/* Negative Data Line */}
+                <Line
+                  type="linear"
+                  data={negativeData}
+                  dataKey="y"
+                  name="Negative PP IDs"
+                  stroke={chartProperties.negativeLineColor}
+                  strokeWidth={chartProperties.lineThickness || 2}
+                  strokeDasharray={
+                    chartProperties.lineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.lineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.lineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
+                  isAnimationActive={false}
+                  hide={!chartProperties.visibility}
+                  dot={(props) => {
+                    const { index } = props;
+                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                    return renderCustomDot(props, chartProperties.negativeSymbolColor);
                   }}
                 />
               </LineChart>

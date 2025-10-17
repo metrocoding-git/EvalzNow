@@ -24,6 +24,8 @@ export default function PropertyEditor({ properties, onChange }) {
     symbolAttribute: false,
   });
 
+  const [selectedLineType, setSelectedLineType] = useState("positive");
+
   // Controlled states for all inputs, initialized from props or defaults
   const [visibility, setVisibility] = useState(properties.visibility ?? true);
   const [layer, setLayer] = useState(properties.layer ?? 1);
@@ -46,6 +48,14 @@ export default function PropertyEditor({ properties, onChange }) {
   const [symbolScaleSize, setSymbolScaleSize] = useState(properties.symbolScaleSize || 1);
 
   const [shadeArea, setShadeArea] = useState(properties.shadeArea || "#ffffff");
+
+  // Update line color when selectedLineType changes
+  React.useEffect(() => {
+    const newColor = selectedLineType === "positive" 
+      ? properties.positiveLineColor || "#10b981" 
+      : properties.negativeLineColor || "#ef4444";
+    setLineColor(newColor);
+  }, [selectedLineType, properties.positiveLineColor, properties.negativeLineColor]);
 
   // Helper: update parent on any change
   const updateParent = (newProps) => {
@@ -73,12 +83,34 @@ export default function PropertyEditor({ properties, onChange }) {
 
         shadeArea,
 
+        positiveLineColor: properties.positiveLineColor || "#10b981",
+        negativeLineColor: properties.negativeLineColor || "#ef4444",
+
         ...newProps,
       });
   };
 
   // When each input changes, update local state and notify parent
   // To keep it DRY, define handlers inline
+  // Handle line color change based on selected line type
+  const handleLineColorChange = (color) => {
+    setLineColor(color);
+    if (selectedLineType === "positive") {
+      updateParent({ positiveLineColor: color });
+    } else {
+      updateParent({ negativeLineColor: color });
+    }
+  };
+
+  // Handle line type selection change
+  const handleLineTypeChange = (type) => {
+    setSelectedLineType(type);
+    // Update the color picker to show the current color for the selected type
+    const currentColor = type === "positive" 
+      ? properties.positiveLineColor || "#10b981" 
+      : properties.negativeLineColor || "#ef4444";
+    setLineColor(currentColor);
+  };
 
   const toggleExpand = (section) =>
     setExpanded((e) => ({ ...e, [section]: !e[section] }));
@@ -259,6 +291,16 @@ export default function PropertyEditor({ properties, onChange }) {
         </button>
         {expanded.lineAttribute && (
           <div className="space-y-3 pl-7">
+            <label className="block font-semibold mb-1">Line Type</label>
+            <select
+              value={selectedLineType}
+              onChange={(e) => handleLineTypeChange(e.target.value)}
+              className="w-full border rounded px-2 py-1 mb-3"
+            >
+              <option value="positive">Positive PP IDs</option>
+              <option value="negative">Negative PP IDs</option>
+            </select>
+
             <label className="block font-semibold mb-1">Line Style</label>
             <select
               value={lineStyle}
@@ -275,7 +317,22 @@ export default function PropertyEditor({ properties, onChange }) {
               ))}
             </select>
 
-            <label className="block font-semibold mb-1 mt-3">Line Color</label>
+            <label className="block font-semibold mb-1 mt-3">
+              Line Color ({selectedLineType === "positive" ? "Positive" : "Negative"})
+            </label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={lineColor}
+                onChange={(e) => handleLineColorChange(e.target.value)}
+                className="w-16 h-8 p-0 border rounded cursor-pointer"
+              />
+              <span className="text-xs text-gray-600">
+                {selectedLineType === "positive" ? "Positive" : "Negative"} Line
+              </span>
+            </div>
+
+            {/* <label className="block font-semibold mb-1 mt-3">Line Color</label>
             <input
               type="color"
               value={lineColor}
@@ -284,7 +341,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 updateParent({ lineColor: e.target.value });
               }}
               className="w-16 h-8 p-0 border rounded cursor-pointer"
-            />
+            /> */}
 
             <label className="block font-semibold mb-1 mt-3">Line Thickness</label>
             <input
