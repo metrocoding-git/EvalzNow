@@ -6,7 +6,7 @@ import api from "@/lib/axiosClient";
 
 export const getUnitAndCandidateSummary = async (unitId, candidateId) => {
     try {
-      const response = await api.get(`${API_ROUTES.TABULATION}/${unitId}/${candidateId}`);
+      const response = await api.get(`${API_ROUTES.TABULATION}/ratio?unitId=${unitId}&candidate_id=${candidateId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching scoring criteria:", error);
