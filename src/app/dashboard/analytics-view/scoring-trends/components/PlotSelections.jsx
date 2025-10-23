@@ -293,65 +293,103 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     maxScoreData,
     selectedChart
   ) => {
-    if (!selectedChart) return [];
+    if (!selectedChart) return { positive: [], negative: [] };
   
     const key = selectedChart.key;
     const isMC = key.startsWith("mc");
   
-    // Handle Attained Score chart (keep sorting by x)
     if (key === "attained") {
-      if (!attainedScoreData) return {positive: [], negative: []};
-      return attainedScoreData
+      if (!attainedScoreData) return { positive: [], negative: [] };
+    
+      // Separate by ppId sign
+      const positivePoints = attainedScoreData
+        .filter((row) => (row.ppId ?? 0) > 0)
         .map((row) => ({
           x: Number(row.serialNo ?? 0),
           y: Number(row.attainedScore ?? 0),
           ppId: row.ppId,
+          label: `Row ${row.serialNo}`,
+          type: "attained",
         }))
         .sort((a, b) => a.x - b.x);
+    
+      const negativePoints = attainedScoreData
+        .filter((row) => (row.ppId ?? 0) <= 0)
+        .map((row) => ({
+          x: Number(row.serialNo ?? 0),
+          y: Number(row.attainedScore ?? 0),
+          ppId: row.ppId,
+          label: `Row ${row.serialNo}`,
+          type: "attained",
+        }))
+        .sort((a, b) => a.x - b.x);
+    
+      return { positive: positivePoints, negative: negativePoints };
     }
+    
   
-    // Handle Max Score chart (keep sorting by x)
     if (key === "max") {
-      if (!attainedScoreData) return [];
-      return attainedScoreData
+      if (!maxScoreData && !attainedScoreData)
+        return { positive: [], negative: [] };
+    
+      const source = maxScoreData?.data ?? attainedScoreData ?? [];
+    
+      const positivePoints = source
+        .filter((row) => (row.ppId ?? 0) > 0)
         .map((row) => ({
           x: Number(row.serialNo ?? 0),
           y: Number(row.maxScore ?? 0),
           ppId: row.ppId,
+          label: `Row ${row.serialNo}`,
+          type: "max",
         }))
         .sort((a, b) => a.x - b.x);
+    
+      const negativePoints = source
+        .filter((row) => (row.ppId ?? 0) <= 0)
+        .map((row) => ({
+          x: Number(row.serialNo ?? 0),
+          y: Number(row.maxScore ?? 0),
+          ppId: row.ppId,
+          label: `Row ${row.serialNo}`,
+          type: "max",
+        }))
+        .sort((a, b) => a.x - b.x);
+    
+      return { positive: positivePoints, negative: negativePoints };
     }
+    
   
-    // Handle MC/CC charts → sort by ppId
-    if ((!positiveData && !negativeData) || !key) return { positive: [], negative: [] };
+    // ✅ Handle MC/CC charts normally
+    if ((!positiveData && !negativeData) || !key)
+      return { positive: [], negative: [] };
   
     const buildPoints = (data, type) => {
       if (!data) return [];
-      return data.map((row) => {
-        let val = 0;
-        if (key.startsWith("mc")) {
-          val = row.mcCounts?.[key] ?? 0;
-        } else if (key.startsWith("cc")) {
-          val = row.ccCounts?.[key] ?? 0;
-        }
-        return {
-          x: row.serialNo,
-          y: isMC ? row.mcValues[key] ?? 0 : row.ccValues[key] ?? 0,
-          ppId: row.ppId,
-          label: `${row.ppId}`,
-          type: type
-        };
-      }).sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
+      return data
+        .map((row) => {
+          const val =
+            key.startsWith("mc")
+              ? row.mcValues?.[key] ?? 0
+              : row.ccValues?.[key] ?? 0;
+  
+          return {
+            x: Number(row.serialNo ?? 0),
+            y: Number(val ?? 0),
+            ppId: row.ppId,
+            label: `${row.ppId}`,
+            type,
+          };
+        })
+        .sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
     };
-
+  
     const positivePoints = buildPoints(positiveData, "positive");
     const negativePoints = buildPoints(negativeData, "negative");
   
-    return {
-      positive: positivePoints,
-      negative: negativePoints
-    };
+    return { positive: positivePoints, negative: negativePoints };
   };
+  
   
   
   const { positive: positiveData, negative: negativeData } = buildXYChartData(
