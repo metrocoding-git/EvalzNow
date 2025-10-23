@@ -128,7 +128,9 @@ useEffect(() => {
     try {
       const data = await getUnitAndCandidateSummary(unitId, candidate.id);
 
-      const formattedData = data.map(item => ({
+      const { results, average, stdDev, stdErr } = data;  
+
+      const formattedData = results.map(item => ({
         "PP ID": item.ppId,
         "Critical Reference Date": item.criticalRefDate,
         "Day Count (Days)": item.totalDuration,
@@ -173,8 +175,18 @@ useEffect(() => {
         "PRGT5": item.PRGT5,
         "ARGT5": item.ARGT5,
       }));
+      
+      // Append summary rows at the bottom
+      const summaryRows = ["average", "stdDev", "stdErr"].map(label => {
+        const summaryData = data[label]; // assuming `data` contains average/stdDev/stdErr
+        return {
+          "PP ID": label === "average" ? "Average" : label === "stdDev" ? "StdDev" : "StdErr",
+          ...summaryData,
+        };
+      });
 
-      setTableData(formattedData);
+      setTableData([...formattedData, ...summaryRows]);
+      // setTableData(formattedData);
     } catch (err) {
       console.error("Failed to fetch tabulation data:", err);
       setError("Failed to load table data.");
@@ -288,7 +300,7 @@ useEffect(() => {
                 
                   <div className="flex-1 overflow-auto mx-1">
                     {/* table */}
-                    <table className="w-full text-left text-xs mb-7"> 
+                    <table className="w-full text-left text-xs mb-16"> 
                       <thead className="bg-gray-50">
                           <tr>
                             {Object.entries(headers).map(([header, description]) => (
@@ -306,18 +318,24 @@ useEffect(() => {
                         </thead>
                         <tbody>
                           {tableData.length > 0 ? (
-                            tableData.map((row, rowIndex) => (
-                              <tr key={rowIndex} className="cursor-pointer hover:bg-gray-100">
-                                {Object.keys(headers).map((header) => (
-                                  <td
-                                    key={header}
-                                    className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
-                                  >
-                                    {row[header] ?? '-'}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))
+                            tableData.map((row, rowIndex) => {
+                              const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
+                              return (
+                                <tr
+                                  key={rowIndex}
+                                  className={`cursor-pointer hover:bg-gray-100 ${isSummaryRow ? 'bg-gray-200 font-semibold' : ''}`}
+                                >
+                                  {Object.keys(headers).map((header) => (
+                                    <td
+                                      key={header}
+                                      className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
+                                    >
+                                      {row[header] ?? '-'}
+                                    </td>
+                                  ))}
+                                </tr>
+                              );
+                            })
                           ) : (
                             <tr>
                               <td colSpan={Object.keys(headers).length} className="text-center py-4">
@@ -326,6 +344,7 @@ useEffect(() => {
                             </tr>
                           )}
                         </tbody>
+
 
                     </table>
                   </div>
