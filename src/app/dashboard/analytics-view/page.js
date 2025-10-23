@@ -53,7 +53,7 @@ export default function AnalyticsView({ searchParams }) {
 
   return (
     <div className="flex items-center justify-center h-screen w-full">
-      <Loading /> {/* full-screen loading while redirecting */}
+      {/* <Loading /> full-screen loading while redirecting */}
     </div>
   );
 
