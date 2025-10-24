@@ -16,6 +16,7 @@ const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
     setPpIdTo(3);
     setCriticalDateFrom("");
     setCriticalDateTo("");
+    setThresholdEnabled(false);
   }, [resetSignal]);
 
   const handleSubmit = (e) => {
