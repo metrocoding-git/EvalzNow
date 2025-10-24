@@ -52,9 +52,24 @@ export default function ProficiencyMetrics() {
   //   { id: 10, firstName: "Henry", lastName: "Moore" },
   // ];
 
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [resetSignal, setResetSignal] = useState(0);
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+
+    });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
+  };
 
   useEffect(() => {
     if (activeCandidateId) {
@@ -295,7 +310,9 @@ export default function ProficiencyMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryInputForm onClose={() => setShowSecondary(false)} />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)}
+                      onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal}
+                    />
                   </div>
                 )}
               </div>
@@ -325,7 +342,8 @@ export default function ProficiencyMetrics() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId} unitType={unitData.unitType} />}
+                {ScoresOpen && <PlotSelections selectedSort={selectedSort} filters={secondaryValues} unitId={selectedUnitId} 
+                  candidateId={activeCandidateId} unitType={unitData.unitType} onResetFilters={resetFilters} />}
               </div>
             </div>
             {/* ------- */}

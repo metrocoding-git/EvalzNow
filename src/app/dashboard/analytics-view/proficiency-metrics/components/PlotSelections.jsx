@@ -14,7 +14,7 @@ import {
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary } from '@/services/tabulationTableService';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters}) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -141,10 +141,19 @@ useEffect(() => {
       return;
     }
 
+    console.log("logging data::-> ", filters);
     setLoading(true);
     setError(null);
     try {
-      const data = await getUnitAndCandidateSummary(unitId, candidateId);
+      const data = await getUnitAndCandidateSummary({
+        unitId: unitId,
+        candidate_id: candidateId,       // make sure filters contains candidate_id
+        ppIdFrom: filters?.ppIdFrom ?? undefined,    
+        ppIdTo: filters?.ppIdTo ?? undefined,
+        criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+        criticalRefDateTo: filters?.criticalDateTo ?? undefined
+      });
+
 
       const { results, average, stdDev, stdErr } = data;  
 
@@ -177,7 +186,7 @@ useEffect(() => {
   };
 
   fetchTabulationData();
-}, [unitId, candidateId]);
+}, [unitId, candidateId, filters]);
 
 console.log("table Data: ->", tableData);
 
@@ -207,6 +216,30 @@ console.log("table Data: ->", tableData);
 
   console.log("unit type: ", unitType);
 
+  // ✅ Sort and prepare chart data
+const sortedTableData = [...tableData].sort((a, b) => {
+  if (isNaN(a.ppId)) return 1;
+  if (isNaN(b.ppId)) return -1;
+
+  if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // both negative → descending
+  if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId; // both positive → ascending
+  if (a.ppId < 0 && b.ppId > 0) return -1; // negatives before positives
+  if (a.ppId > 0 && b.ppId < 0) return 1;
+  return 0;
+});
+
+// ✅ Prepare data for the selected chart
+let chartData = [];
+if (selectedChart && sortedTableData.length > 0) {
+  const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1]; // extract "XEP" etc.
+  if (keyName) {
+    chartData = sortedTableData.map(row => ({
+      ppId: row.ppId,
+      value: row[keyName],
+    }));
+  }
+}
+
   if (!visible) return null;
 
   return (
@@ -220,8 +253,14 @@ console.log("table Data: ->", tableData);
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => { }} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+              <button onClick={() => {
+                  if (typeof onResetFilters === "function") {
+                    onResetFilters(); // ✅ reset filters in parent
+                  }
+                  // setScoreAdd(true); 
+                }}
+                title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
@@ -230,7 +269,7 @@ console.log("table Data: ->", tableData);
             </div>
           </div>
 
-          <div className="h-full overflow-hidden w-full my-2">
+          <div className="h-full overflow-auto w-full my-2">
             <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
@@ -341,7 +380,7 @@ console.log("table Data: ->", tableData);
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
@@ -357,17 +396,17 @@ console.log("table Data: ->", tableData);
                         </tr>
                       </thead>
                       <tbody>
-                        {/* {combinedData && combinedData.length > 0 ? (
-                          combinedData.map((row, idx) => (
+                        {chartData && chartData.length > 0 ? (
+                          chartData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
                               <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.label ?? row.ppId ?? `#${idx + 1}`}
+                              {row.ppId ?? `#${idx + 1}`}
                               </td>
                               <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.x}
+                              {row.ppId} {/* X Axis */}
                               </td>
                               <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.y}
+                              {row.value} {/* X Axis */}
                               </td>
                             </tr>
                           ))
@@ -380,7 +419,7 @@ console.log("table Data: ->", tableData);
                               No data available
                             </td>
                           </tr>
-                        )} */}
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -396,62 +435,135 @@ console.log("table Data: ->", tableData);
               {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
             </h2>
             {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
-            {/* margin={{ top: 20, right: 30, left: 0, bottom: 20 } */}
-            <ResponsiveContainer width="100%" height="95%">
+            
+            {/* 📊 DYNAMIC CHART SECTION */}
+            <div className="space-y-8">
               {selectedChart ? (
-                selectedChart.type === "line" ? (
-                  <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name">
-                      <Label value="Time Period (X)" offset={-10} position="insideBottom" />
-                    </XAxis>
-                    <YAxis>
-                      <Label
-                        value="Score / Value (Y/Z)"
-                        angle={-90}
-                        position="insideLeft"
-                        offset={10}
-                      />
-                    </YAxis>
-                    <Tooltip />
-                    <Legend verticalAlign="top" />
-                    <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
-                    <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
-                    <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
-                  </LineChart>
-                ) : selectedChart.type === "scatter" ? (
-                  <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" dataKey="xValue" name="X Axis" />
-                    <YAxis type="number" dataKey="yValue" name="Y Axis" />
-                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                    <Legend verticalAlign="top" />
-                    <Scatter name="Scatter Data" data={floatChartData} fill="#3b82f6" />
-                  </ScatterChart>
-                ) : selectedChart.type === "pie" ? (
-                  <PieChart>
-                    <Tooltip />
-                    <Legend verticalAlign="top" />
-                    <Pie
-                      data={floatChartData.map(d => ({ name: d.name, value: d.zValue }))}
-                      dataKey="value"
-                      nameKey="name"
-                      outerRadius={100}
-                      fill="#10b981"
-                      label
-                    />
-                  </PieChart>
-                ) : (
-                  <div className="flex justify-center items-center h-full text-gray-500">
-                    Unsupported chart type: {selectedChart.type}
-                  </div>
-                )
+                (() => {
+                  const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+                  if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
+
+                  // Split data into positive and negative ppIds
+                  const negativeData = [...tableData]
+                    .filter(row => row.ppId < 0 && !isNaN(row[keyName]))
+                    .sort((a, b) => b.ppId - a.ppId)
+                    .map(row => ({ ppId: row.ppId, value: row[keyName] }));
+
+                  const positiveData = [...tableData]
+                    .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
+                    .sort((a, b) => a.ppId - b.ppId)
+                    .map(row => ({ ppId: row.ppId, value: row[keyName] }));
+
+                  // ✅ Render a combined chart with both datasets
+                  if (selectedChart.type === "line") {
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <ResponsiveContainer width="100%" height={400}>
+                          <LineChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              type="number"
+                              dataKey="ppId"
+                              domain={['auto', 'auto']}
+                              label={{ value: "PP ID", position: "insideBottom", offset: -10 }}
+                            />
+                            <YAxis label={{ value: selectedChart.name, angle: -90, position: "insideLeft" }} />
+                            <Tooltip />
+                            <Legend />
+                            <Line
+                              name="Negative PP IDs"
+                              type="monotone"
+                              dataKey="value"
+                              data={negativeData}
+                              stroke="#ef4444" // red
+                              dot
+                            />
+                            <Line
+                              name="Positive PP IDs"
+                              type="monotone"
+                              dataKey="value"
+                              data={positiveData}
+                              stroke="#3b82f6" // blue
+                              dot
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+
+                  if (selectedChart.type === "scatter") {
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <ResponsiveContainer width="100%" height={400}>
+                          <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" dataKey="ppId" name="PP ID" />
+                            <YAxis type="number" dataKey="value" name={selectedChart.name} />
+                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                            <Legend />
+                            <Scatter
+                              name="Negative PP IDs"
+                              data={negativeData}
+                              fill="#ef4444" // red
+                            />
+                            <Scatter
+                              name="Positive PP IDs"
+                              data={positiveData}
+                              fill="#3b82f6" // blue
+                            />
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+
+                  if (selectedChart.type === "pie") {
+                    // Merge both datasets but label differently
+                    const pieData = [
+                      ...negativeData.map(d => ({ name: `Neg ${d.ppId}`, value: d.value })),
+                      ...positiveData.map(d => ({ name: `Pos ${d.ppId}`, value: d.value })),
+                    ];
+
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <ResponsiveContainer width="100%" height={400}>
+                          <PieChart>
+                            <Tooltip />
+                            <Legend />
+                            <Pie
+                              data={pieData}
+                              dataKey="value"
+                              nameKey="name"
+                              outerRadius={120}
+                              label
+                            >
+                              {pieData.map((entry, index) => (
+                                <cell
+                                  key={`cell-${index}`}
+                                  fill={entry.name.startsWith("Neg") ? "#ef4444" : "#3b82f6"}
+                                />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+
+                  return <div className="text-gray-500">Unsupported chart type</div>;
+                })()
               ) : (
                 <div className="flex justify-center items-center h-full text-gray-400 text-lg">
                   Select a plot to visualize
                 </div>
               )}
-            </ResponsiveContainer>
+            </div>
+
+
           </div>
         </div>
       </div>

@@ -4,9 +4,17 @@ import api from "@/lib/axiosClient";
 // Get insert scores by unit ID
 
 
-export const getUnitAndCandidateSummary = async (unitId, candidateId) => {
+export const getUnitAndCandidateSummary = async (filters) => {
     try {
-      const response = await api.get(`${API_ROUTES.TABULATION}/ratio?unitId=${unitId}&candidate_id=${candidateId}`);
+      const params = {};
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== "" && value !== null) {
+          params[key] = value;
+        }
+      });
+  
+      const query = new URLSearchParams(params).toString();
+      const response = await api.get(`${API_ROUTES.TABULATION}/ratio?${query}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching scoring criteria:", error);

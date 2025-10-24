@@ -133,7 +133,7 @@ useEffect(() => {
       const formattedData = results.map(item => ({
         "PP ID": item.ppId,
         "Critical Reference Date": item.criticalRefDate,
-        "Day Count (Days)": item.totalDuration,
+        "Day Count (Days)": item.cumulativeDuration,
         "Productivity_CSD": item.Productivity_CSD,
         "Productivity_USD": item.Productivity_USD,
         "RRN": item.RRN,
@@ -185,7 +185,23 @@ useEffect(() => {
         };
       });
 
-      setTableData([...formattedData, ...summaryRows]);
+      const sortedFormattedData = [...formattedData].sort((a, b) => {
+        const ppA = a["PP ID"];
+        const ppB = b["PP ID"];
+      
+        // Handle non-numeric rows like Average / StdDev / StdErr
+        if (isNaN(ppA)) return 1;
+        if (isNaN(ppB)) return -1;
+      
+        // Both numeric: negatives first (descending), then positives ascending
+        if (ppA < 0 && ppB < 0) return ppB - ppA;   // both negative → descending
+        if (ppA > 0 && ppB > 0) return ppA - ppB;   // both positive → ascending
+        if (ppA < 0 && ppB > 0) return -1;          // negatives before positives
+        if (ppA > 0 && ppB < 0) return 1;
+        return 0;
+      });
+
+      setTableData([...sortedFormattedData, ...summaryRows]);
       // setTableData(formattedData);
     } catch (err) {
       console.error("Failed to fetch tabulation data:", err);
