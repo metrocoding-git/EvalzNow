@@ -38,6 +38,7 @@ export default function ProficiencyMetrics() {
   const { selectedUnitId, setSelectedUnitId } = useUnit();
   const [unitData, setUnitData] = useState(null);
   const [data, setData] = useState([]);  
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
 
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe" },
@@ -284,10 +285,20 @@ export default function ProficiencyMetrics() {
                             >
                               {selectedSort === "activateUnitLevel" && (
                                 <input
-                                  type="checkbox"
-                                  className="h-4 w-4"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
+                                type="checkbox"
+                                className="h-4 w-4"
+                                checked={selectedCandidateIds.includes(item.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCandidateIds((prev) =>
+                                    e.target.checked
+                                      ? [...prev, item.id]
+                                      : prev.filter((id) => id !== item.id)
+                                  );
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              
                               )}
                               <span className="text-gray-800">
                                 {item.lastName}
@@ -342,8 +353,12 @@ export default function ProficiencyMetrics() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections selectedSort={selectedSort} filters={secondaryValues} unitId={selectedUnitId} 
-                  candidateId={activeCandidateId} unitType={unitData.unitType} onResetFilters={resetFilters} />}
+                {ScoresOpen && <PlotSelections selectedSort={selectedSort} filters={secondaryValues}  unitId={selectedUnitId} 
+                  candidateId={
+                    selectedSort === "activateUnitLevel"
+                      ? selectedCandidateIds.join(",")
+                      : activeCandidateId
+                  } unitType={unitData.unitType} onResetFilters={resetFilters}  />}
               </div>
             </div>
             {/* ------- */}
