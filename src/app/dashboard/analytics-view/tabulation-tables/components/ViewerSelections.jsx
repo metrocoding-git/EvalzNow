@@ -126,7 +126,11 @@ useEffect(() => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getUnitAndCandidateSummary(unitId, candidate.id);
+      const data = await getUnitAndCandidateSummary({unitId: unitId, candidate_id: candidate.id, 
+        ppIdFrom: undefined,    
+        ppIdTo: undefined,
+        criticalRefDateFrom: undefined,
+        criticalRefDateTo: undefined});
 
       const { results, average, stdDev, stdErr } = data;  
 
@@ -240,7 +244,7 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-1 flex-col gap-1">
+          <div className=" h-full overflow-auto w-full my-1 flex-col gap-1 mb-11">
             <div className=" flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {candidate && (
@@ -280,93 +284,60 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className=" flex flex-col flex-1 min-h-55 border border-gray-200 ">
-              <h2 className="text-sm font-semibold mx-1 p-2 text-gray-700">Candidate </h2>
-              {/* <div className="flex space-x-2 border-b p-2">
-                <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Property editor')}
-                >
-                  Property editor
-                </button>
-                <button
-                  className={`px-3 py-1 text-sm rounded-t cursor-pointer ${activeAdjustPropertieTab === 'Table'
-                    ? 'bg-blue-100 text-blue-600 font-semibold'
-                    : 'hover:bg-gray-100'
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Table')}
-                >
-                  Table
-                </button>
-              </div> */}
-
-              {/* Tab Content */}
-              <div className="flex-1 flex flex-col min-h-0">
-                {/* {activeAdjustPropertieTab === 'Property editor' && (
-                  <PropertyEditor
-                    properties={chartProperties}
-                    onChange={setChartProperties}
-                  />
-                )}
-
-                {activeAdjustPropertieTab === 'Table' && ( */}
-                
-                  <div className="flex-1 overflow-auto mx-1">
-                    {/* table */}
-                    <table className="w-full text-left text-xs mb-16"> 
-                      <thead className="bg-gray-50">
-                          <tr>
-                            {Object.entries(headers).map(([header, description]) => (
-                              <th 
+            <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
+              <h2 className="text-sm font-semibold mx-1 p-2 text-gray-700">Candidate</h2>
+              
+              <div className="flex-1 overflow-auto mx-1">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
+                    <tr>
+                      {Object.entries(headers).map(([header, description]) => (
+                        <th
+                          key={header}
+                          className="whitespace-nowrap text-center border border-gray-200 px-2 py-1 group relative bg-gray-50"
+                        >
+                          {header}
+                          <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
+                            {description}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.length > 0 ? (
+                      tableData.map((row, rowIndex) => {
+                        const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
+                        return (
+                          <tr
+                            key={rowIndex}
+                            className={`cursor-pointer hover:bg-gray-100 ${
+                              isSummaryRow ? 'bg-gray-200 font-semibold' : ''
+                            }`}
+                          >
+                            {Object.keys(headers).map((header) => (
+                              <td
                                 key={header}
-                                className="whitespace-nowrap text-center border-1 border-gray-200 px-2 py-1 group relative"
+                                className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
                               >
-                                {header}
-                                <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
-                                  {description}
-                                </div>
-                              </th>
+                                {row[header] ?? '-'}
+                              </td>
                             ))}
                           </tr>
-                        </thead>
-                        <tbody>
-                          {tableData.length > 0 ? (
-                            tableData.map((row, rowIndex) => {
-                              const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
-                              return (
-                                <tr
-                                  key={rowIndex}
-                                  className={`cursor-pointer hover:bg-gray-100 ${isSummaryRow ? 'bg-gray-200 font-semibold' : ''}`}
-                                >
-                                  {Object.keys(headers).map((header) => (
-                                    <td
-                                      key={header}
-                                      className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
-                                    >
-                                      {row[header] ?? '-'}
-                                    </td>
-                                  ))}
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            <tr>
-                              <td colSpan={Object.keys(headers).length} className="text-center py-4">
-                                No data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-
-
-                    </table>
-                  </div>
-                {/* )} */}
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={Object.keys(headers).length} className="text-center py-4">
+                          No data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
+
           </div>
         </div>
 
