@@ -12,7 +12,7 @@ import {
   Pie
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { getUnitAndCandidateSummary } from '@/services/tabulationTableService';
+import { getUnitAndCandidateSummary, getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters}) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -38,7 +38,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [activeTab, setActiveTab] = useState('IndirectPerformancePoint');
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
 
-  const [selectedChart, setSelectedChart] = useState(null);
+  const [selectedChart, setSelectedChart] = useState(0);
   const [tableData, setTableData] = useState([]);
 
   const canvasRef = useRef(null);
@@ -112,12 +112,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   reference: false,
 
   // Curve Label
-  showLabel: false,
+  showLabel: true,
   labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
+  // showLabelPrefix: false,
+  // labelPrefix: "X File name",
+  // showLabelSuffix: false,
+  // labelSuffix: "Y subcase",
 
   // Line Attribute
   lineStyle: "solid",
@@ -127,13 +127,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   // Symbol Attribute
   symbolStyle: "circle",
   symbolColor: "#3b82f6",
+  positiveSymbolColor: "#10b981", // Separate symbol color for positive
+  negativeSymbolColor: "#ef4444",
   symbolFrequency: 1,
-  symbolScaleSize: 1,
+  symbolScaleSize: 3,
 
   // Shade area
   shadeArea: "#ffffff",
+  positiveLineColor: "#10b981", // Green for positive
+  negativeLineColor: "#ef4444",
 });
 
+console.log("candidate IdS::", candidateId);
 useEffect(() => {
   const fetchTabulationData = async () => {
     if (!unitId || !candidateId) {
@@ -145,7 +150,7 @@ useEffect(() => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getUnitAndCandidateSummary({
+      const data = await getUnitAndMultipleCandidateSummary({
         unitId: unitId,
         candidate_id: candidateId,       // make sure filters contains candidate_id
         ppIdFrom: filters?.ppIdFrom ?? undefined,    
@@ -240,6 +245,50 @@ if (selectedChart && sortedTableData.length > 0) {
   }
 }
 
+
+// Function to render dot based on symbol style
+const renderCustomDot = (props, color) => {
+  const { cx, cy } = props;
+  const r = chartProperties.symbolScaleSize;
+
+  switch (chartProperties.symbolStyle) {
+    case "square":
+      return (
+        <rect
+          x={cx - r}
+          y={cy - r}
+          width={2 * r}
+          height={2 * r}
+          fill={color}
+        />
+      );
+    case "triangle":
+      return (
+        <polygon
+          points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
+          fill={color}
+        />
+      );
+    case "diamond":
+      return (
+        <polygon
+          points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
+          fill={color}
+        />
+      );
+    default:
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill={color}
+        />
+      );
+  }
+};
+
+
   if (!visible) return null;
 
   return (
@@ -269,9 +318,9 @@ if (selectedChart && sortedTableData.length > 0) {
             </div>
           </div>
 
-          <div className="h-full overflow-auto w-full my-2">
+          <div className="h-full overflow-hidden w-full my-2">
             <div className="h-1/2 flex flex-col border border-gray-200">
-              <div className="flex-1 overflow-auto p-1">
+              <div className="flex-1 overflow-auto">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
                   
@@ -302,7 +351,8 @@ if (selectedChart && sortedTableData.length > 0) {
                     }).map((chart, index) => (
                       <div
                         key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer `}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer
+                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => {
                           setSelectedChart(chart);
                         }}
@@ -333,7 +383,8 @@ if (selectedChart && sortedTableData.length > 0) {
                     }).map((chart, index) => (
                       <div
                         key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer }`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer 
+                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
                         onClick={() => {
                           setSelectedChart(chart); 
                         }}
@@ -371,7 +422,7 @@ if (selectedChart && sortedTableData.length > 0) {
               </div>
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="flex-1 overflow-auto p-2 h-full mb-8">
                 {activeAdjustPropertieTab === "Property editor" && (
                   <PropertyEditor
                     properties={chartProperties}
@@ -429,11 +480,11 @@ if (selectedChart && sortedTableData.length > 0) {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1 ">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1 " >
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-            </h2>
+            </h2> */}
             {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
             
             {/* 📊 DYNAMIC CHART SECTION */}
@@ -456,63 +507,143 @@ if (selectedChart && sortedTableData.length > 0) {
 
                   // ✅ Render a combined chart with both datasets
                   if (selectedChart.type === "line") {
+                    // Skip rendering if visibility is false
+                    // if (!chartProperties.visibility) {
+                    //   return (
+                    //     <div className="text-gray-400 italic text-center">
+                    //       Chart visibility is turned off
+                    //     </div>
+                    //   );
+                    // }
+                  
+                    // Determine stroke style based on lineStyle
+                    const strokeDasharray =
+                      chartProperties.lineStyle === "dashed"
+                        ? "6 4"
+                        : chartProperties.lineStyle === "dotted"
+                        ? "2 4"
+                        : "0";
+                    
+                  
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm">
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                        <h2 className="text-lg font-semibold mb-2 text-center">
+                          {selectedChart.icon} {selectedChart.name}
+                        </h2>
                         <ResponsiveContainer width="100%" height={400}>
                           <LineChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
                               type="number"
                               dataKey="ppId"
-                              domain={['auto', 'auto']}
-                              label={{ value: "PP ID", position: "insideBottom", offset: -10 }}
-                            />
-                            <YAxis label={{ value: selectedChart.name, angle: -90, position: "insideLeft" }} />
+                              domain={["auto", "auto"]}
+                            >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                              <Label value={`PP ID`} offset={-10} position="insideBottom" />
+                            )}
+                            </XAxis>
+                            <YAxis
+                              // label={{
+                              //   value: selectedChart.name,
+                              //   angle: -90,
+                              //   position: "insideLeft",
+                              // }}
+                            >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                <Label
+                                  value={`${selectedChart.name} (Y)`}
+                                  angle={-90}
+                                  position="insideLeft"
+                                  offset={10}
+                                  dy={90}
+                                />
+                              )}
+                            </YAxis>
                             <Tooltip />
                             <Legend />
-                            <Line
-                              name="Negative PP IDs"
-                              type="monotone"
-                              dataKey="value"
-                              data={negativeData}
-                              stroke="#ef4444" // red
-                              dot
-                            />
-                            <Line
-                              name="Positive PP IDs"
-                              type="monotone"
-                              dataKey="value"
-                              data={positiveData}
-                              stroke="#3b82f6" // blue
-                              dot
-                            />
+                  
+                            {/* 🔴 Negative PP IDs */}
+                            {chartProperties.visibility && (
+                              <Line
+                                name="Negative PP IDs"
+                                type="monotone"
+                                dataKey="value"
+                                data={negativeData}
+                                stroke={chartProperties.negativeLineColor}
+                                strokeWidth={chartProperties.lineThickness}
+                                strokeDasharray={strokeDasharray}
+                                dot={(props) => {
+                                  const { index } = props;
+                                  if (index % chartProperties.symbolFrequency !== 0) return null;
+                                  return renderCustomDot(props, chartProperties.symbolColor);
+                                }}
+                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                              />
+                            )}
+
+                            {/* 🔵 Positive PP IDs */}
+                            {chartProperties.visibility && (
+                              <Line
+                                name="Positive PP IDs"
+                                type="monotone"
+                                dataKey="value"
+                                data={positiveData}
+                                stroke={chartProperties.positiveLineColor}
+                                strokeWidth={chartProperties.lineThickness}
+                                strokeDasharray={strokeDasharray}
+                                dot={(props) => {
+                                  const { index } = props;
+                                  if (index % chartProperties.symbolFrequency !== 0) return null;
+                                  return renderCustomDot(props, chartProperties.symbolColor);
+                                }}
+                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                              />
+                            )}
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
                     );
                   }
+                  
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={400}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" dataKey="ppId" name="PP ID" />
-                            <YAxis type="number" dataKey="value" name={selectedChart.name} />
+                            <XAxis type="number" dataKey="ppId" name="PP ID" >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                <Label value={`PP ID`} offset={-10} position="insideBottom" />
+                              )}
+                            </XAxis>
+                            <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                <Label
+                                  value={`${selectedChart.name} (Y)`}
+                                  angle={-90}
+                                  position="insideLeft"
+                                  offset={10}
+                                  dy={90}
+                                />
+                              )}
+                            </YAxis>
                             <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                             <Legend />
                             <Scatter
                               name="Negative PP IDs"
                               data={negativeData}
-                              fill="#ef4444" // red
+                              fill={chartProperties.negativeLineColor} // red
+                              shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
                             />
                             <Scatter
                               name="Positive PP IDs"
                               data={positiveData}
-                              fill="#3b82f6" // blue
+                              fill={chartProperties.positiveLineColor} // blue
+                              shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
                             />
                           </ScatterChart>
                         </ResponsiveContainer>
