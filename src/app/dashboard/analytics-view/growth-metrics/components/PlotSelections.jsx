@@ -4,17 +4,27 @@ import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-r
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
-  Label
+  Label,
+  PieChart,
+  Pie,
+  Scatter,
+  ScatterChart,
+  ReferenceLine,
+  Cell
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import ProjectionTable from './ProjectionTable';
+import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 
-export default function PlotSelections({ selectedSort }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tableData, setTableData] = useState([]);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -26,33 +36,37 @@ export default function PlotSelections({ selectedSort }) {
   ];
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
-
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
-
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
-
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
-
-  // Shade area
-  shadeArea: "#ffffff",
-});
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
+  
+    // Curve Label
+    showLabel: true,
+    labelType: "X Type",
+    // showLabelPrefix: false,
+    // labelPrefix: "X File name",
+    // showLabelSuffix: false,
+    // labelSuffix: "Y subcase",
+  
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
+  
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
+    symbolFrequency: 1,
+    symbolScaleSize: 3,
+  
+    // Shade area
+    shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
+  });
 
 
   const [points, setPoints] = useState(
@@ -62,7 +76,8 @@ export default function PlotSelections({ selectedSort }) {
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
 
   const [showProjectionTable, setShowProjectionTable] = useState(false);
-
+  const [stabilitySummary, setStabilitySummary] = useState({ stable: 0, unstable: 0 });
+  const [thresholdValue, setThresholdValue] = useState(null);
   const canvasRef = useRef(null);
 
   // Example line chart data
@@ -80,12 +95,26 @@ export default function PlotSelections({ selectedSort }) {
     { id: "acl-5", name: "Performance Ratio (RR)", icon: "📊", type: "line" },
     { id: "acl-6", name: "Performance Ratios (PR)", icon: "📊", type: "line" },
     { id: "acl-7", name: "Performance Ratios (AR)", icon: "📊", type: "line" },
-    { id: "acl-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
-    { id: "acl-9", name: "GT 1 Component", icon: "🧪", type: "line" },
-    { id: "acl-10", name: "GT 2 Component", icon: "🧪", type: "line" },
-    { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
-    { id: "acl-12", name: "GT 4 Component", icon: "🧪", type: "line" },
-    { id: "acl-13", name: "GT 5 Component", icon: "🧪", type: "line" },
+    { id: "acl-8", name: "Stability in Growth (STAG)", icon: "🧭", type: "pie" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 1 (RRGT1)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 2 (RRGT2)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 3 (RRGT3)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 4 (RRGT4)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 5 (RRGT5)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 1 (PRGT1)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 2 (PRGT2)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 3 (PRGT3)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 4 (PRGT4)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 5 (PRGT5)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 1 (ARGT1)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 2 (ARGT2)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 3 (ARGT3)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 4 (ARGT4)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 5 (ARGT5)", icon: "🧪", type: "line" },
+    // { id: "acl-10", name: "GT 2 Component", icon: "🧪", type: "line" },
+    // { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
+    // { id: "acl-12", name: "GT 4 Component", icon: "🧪", type: "line" },
+    // { id: "acl-13", name: "GT 5 Component", icon: "🧪", type: "line" },
     { id: "acl-14", name: "∆RR Growth Projections", icon: "📉", type: "line" },
     { id: "acl-15", name: "∆PR Growth Projections", icon: "📉", type: "line" },
     { id: "acl-16", name: "∆AR Growth Projections", icon: "📉", type: "line" },
@@ -102,7 +131,85 @@ export default function PlotSelections({ selectedSort }) {
       { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
   ];
 
+
+  useEffect(() => {
+    const fetchTabulationData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]); // clear previous table data
+        setStabilitySummary({ stable: 0, unstable: 0 });
+        return;
+      }
+  
+      console.log("logging data::-> ", filters);
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUnitAndMultipleCandidateSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+  
+  
+        const { results, average, stdDev, stdErr } = data;  
+  
+        const formattedData = results.map(row => ({
+          ppId: row.ppId,
+          dayCount: row.totalDuration,
+          ΔGEQ: row.GEQ,
+          ΔRR: row.deltaRRN,
+          ΔPR: row.deltaPRN,
+          ΔAR: row.deltaARN,
+          RR: row.RRN,
+          PR: row.PRN,
+          AR: row.ARN,
+          STAG: row.STAG,
+          RRGT1: row.RRGT1, 
+          PRGT1: row.PRGT1,
+          ARGT1: row.ARGT1, 
+          RRGT2: row.RRGT2, 
+          PRGT2: row.PRGT2,
+          ARGT2: row.ARGT2, 
+          RRGT3: row.RRGT3, 
+          PRGT3: row.PRGT3,
+          ARGT3: row.ARGT3, 
+          RRGT4: row.RRGT4, 
+          PRGT4: row.PRGT4,
+          ARGT4: row.ARGT4, 
+          RRGT5: row.RRGT5, 
+          PRGT5: row.PRGT5,
+          ARGT5: row.ARGT5,
+        }));
+        
+        
+        setTableData(formattedData);
+  
+        // ✅ Calculate stability counts
+        const stableCount = results.filter(r => r.STAG === "STABLE").length;
+        const unstableCount = results.filter(r => r.STAG === "UNSTABLE").length;
+  
+        setStabilitySummary({ stable: stableCount, unstable: unstableCount });
+  
+        console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+        
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        setStabilitySummary({ stable: 0, unstable: 0 });
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchTabulationData();
+  }, [unitId, candidateId, filters]);
+
   const [selectedChart, setSelectedChart] = useState(null);
+  console.log("graph data:", tableData);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -117,6 +224,47 @@ export default function PlotSelections({ selectedSort }) {
   };
 
 
+  // Function to render dot based on symbol style
+  const renderCustomDot = (props, color) => {
+    const { cx, cy } = props;
+    const r = chartProperties.symbolScaleSize;
+
+    switch (chartProperties.symbolStyle) {
+      case "square":
+        return (
+          <rect
+            x={cx - r}
+            y={cy - r}
+            width={2 * r}
+            height={2 * r}
+            fill={color}
+          />
+        );
+      case "triangle":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
+            fill={color}
+          />
+        );
+      case "diamond":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
+            fill={color}
+          />
+        );
+      default:
+        return (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill={color}
+          />
+        );
+    }
+  };
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -166,13 +314,13 @@ export default function PlotSelections({ selectedSort }) {
                     activateCandidateLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer `}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => {
                           setSelectedChart(chart);
                         }}
                       > 
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index +1}</div>
                       </div>
                     ))
                   )}
@@ -276,56 +424,236 @@ export default function PlotSelections({ selectedSort }) {
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
-          <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+        <div className="h-full overflow-auto m-5">
+            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-          </h2>
-          <div className="h-full overflow-auto m-5">
-            <ResponsiveContainer width="100%" height="95%">
-              <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+            </h2> */}
+            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
+            
+            {/* 📊 DYNAMIC CHART SECTION */}
+            <div className="space-y-8">
+              {selectedChart ? (
+                (() => {
+                  const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+                  if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
 
-                <XAxis dataKey="name">
-                  <Label value="Time Period (X)" offset={-10} position="insideBottom" />
-                </XAxis>
+                  const negativeData = [...tableData]
+                  .filter(row => row.ppId < 0 && !isNaN(row[keyName]))
+                  .sort((a, b) => b.dayCount - a.dayCount)
+                  .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
 
-                <YAxis>
-                  <Label
-                    value="Score / Value (Y/Z)"
-                    angle={-90}
-                    position="insideLeft"
-                    offset={10}
-                  />
-                </YAxis>
+                  const positiveData = [...tableData]
+                    .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
+                    .sort((a, b) => a.dayCount - b.dayCount)
+                    .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
 
-                <Tooltip />
-                <Legend verticalAlign="top" />
 
-                <Line
-                  type="monotone"
-                  dataKey="xValue"
-                  name="X Axis Value"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="yValue"
-                  name="Y Axis Value"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="zValue"
-                  name="Z Axis Value"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot
-                />
-              </LineChart>
-            </ResponsiveContainer>
+                  // ✅ Render a combined chart with both datasets
+                  if (selectedChart.type === "line") {
+                    // Skip rendering if visibility is false
+                    // if (!chartProperties.visibility) {
+                    //   return (
+                    //     <div className="text-gray-400 italic text-center">
+                    //       Chart visibility is turned off
+                    //     </div>
+                    //   );
+                    // }
+                  
+                    // Determine stroke style based on lineStyle
+                    const strokeDasharray =
+                      chartProperties.lineStyle === "dashed"
+                        ? "6 4"
+                        : chartProperties.lineStyle === "dotted"
+                        ? "2 4"
+                        : "0";
+                    
+                  
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                        <h2 className="text-lg font-semibold mb-2 text-center">
+                          {selectedChart.icon} {selectedChart.name}
+                        </h2>
+                        <ResponsiveContainer width="100%" height={400}>
+                          <LineChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              type="number"
+                              dataKey="dayCount"
+                              domain={["auto", "auto"]}
+                            >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                <Label value="Day Count" offset={-10} position="insideBottom" />
+                              )}
+                            </XAxis>
+
+                            <YAxis
+                              // label={{
+                              //   value: selectedChart.name,
+                              //   angle: -90,
+                              //   position: "insideLeft",
+                              // }}
+                            >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                <Label
+                                  value={`${selectedChart.name} (Y)`}
+                                  angle={-90}
+                                  position="insideLeft"
+                                  offset={10}
+                                  dy={90}
+                                />
+                              )}
+                            </YAxis>
+                            <Tooltip />
+                            <Legend />
+
+                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                              <ReferenceLine
+                                y={thresholdValue[keyName]}
+                                stroke="#000000"        // Amber (you can change this)
+                                strokeWidth={2}
+                                strokeDasharray="7 4 1 4"
+                                label={{
+                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                  position: "right",
+                                  fill: "#f59e0b",
+                                  fontSize: 12,
+                                }}
+                              />
+                            )}
+                  
+                            {/* 🔴 Negative PP IDs */}
+                            {chartProperties.visibility && (
+                              <Line
+                                name="Negative PP IDs"
+                                type="linear"
+                                dataKey="value"
+                                data={negativeData}
+                                stroke={chartProperties.negativeLineColor}
+                                strokeWidth={chartProperties.lineThickness}
+                                strokeDasharray={strokeDasharray}
+                                dot={(props) => {
+                                  const { index } = props;
+                                  if (index % chartProperties.symbolFrequency !== 0) return null;
+                                  return renderCustomDot(props, chartProperties.symbolColor);
+                                }}
+                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                              />
+                            )}
+
+                            {/* 🔵 Positive PP IDs */}
+                            {chartProperties.visibility && (
+                              <Line
+                                name="Positive PP IDs"
+                                type="linear"
+                                dataKey="value"
+                                data={positiveData}
+                                stroke={chartProperties.positiveLineColor}
+                                strokeWidth={chartProperties.lineThickness}
+                                strokeDasharray={strokeDasharray}
+                                dot={(props) => {
+                                  const { index } = props;
+                                  if (index % chartProperties.symbolFrequency !== 0) return null;
+                                  return renderCustomDot(props, chartProperties.symbolColor);
+                                }}
+                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                              />
+                            )}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+                  
+
+                  if (selectedChart.type === "scatter") {
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <ResponsiveContainer width="100%" height={400}>
+                          <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" dataKey="dayCount" name="PP ID" >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                <Label value={`Day Count`} offset={-10} position="insideBottom" />
+                              )}
+                            </XAxis>
+                            <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                <Label
+                                  value={`${selectedChart.name} (Y)`}
+                                  angle={-90}
+                                  position="insideLeft"
+                                  offset={10}
+                                  dy={90}
+                                />
+                              )}
+                            </YAxis>
+                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                            <Legend />
+                            <Scatter
+                              name="Negative PP IDs"
+                              data={negativeData}
+                              fill={chartProperties.negativeLineColor} // red
+                              shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
+                            />
+                            <Scatter
+                              name="Positive PP IDs"
+                              data={positiveData}
+                              fill={chartProperties.positiveLineColor} // blue
+                              shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
+                            />
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+
+                  if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
+                    // Create data from stabilitySummary state
+                    const pieData = [
+                      { name: "STABLE", value: stabilitySummary.stable },
+                      { name: "UNSTABLE", value: stabilitySummary.unstable },
+                    ];
+                  
+                    return (
+                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                  
+                        <ResponsiveContainer width="100%" height={400}>
+                          <PieChart>
+                            <Tooltip />
+                            <Legend verticalAlign="bottom" />
+                            <Pie
+                              data={pieData}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={120}
+                              label={({ name, value }) => `${name}: ${value}`}
+                            >
+                              <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
+                              <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+                  
+
+                  return <div className="text-gray-500">Unsupported chart type</div>;
+                })()
+              ) : (
+                <div className="flex justify-center items-center h-full text-gray-400 text-lg">
+                  Select a plot to visualize
+                </div>
+              )}
+            </div>
+
+
           </div>
         </div>
       </div>
