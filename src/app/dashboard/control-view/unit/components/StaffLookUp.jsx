@@ -94,7 +94,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
             </tr>
           </thead>
           <tbody>
-            {filteredStaffs.map((c) => (
+            {staffs.map((c) => (
               <tr
                 key={c.id}
                 onClick={() => handleRowClick(c.id)}
