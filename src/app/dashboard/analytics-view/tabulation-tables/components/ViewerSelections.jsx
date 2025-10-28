@@ -137,6 +137,7 @@ useEffect(() => {
       const formattedData = results.map(item => ({
         "PP ID": item.ppId,
         "Critical Reference Date": item.criticalRefDate,
+        "unitType": item.unitType,
         "Day Count (Days)": item.cumulativeDuration,
         "Productivity_CSD": item.Productivity_CSD,
         "Productivity_USD": item.Productivity_USD,
@@ -219,7 +220,35 @@ useEffect(() => {
   fetchTabulationData();
 }, [unitId, candidate?.id]);
 
-   
+console.log("unit type check", tableData);
+
+   // Determine which performance columns to show based on unitType
+  const getVisibleColumns = (unitType) => {
+    const allColumns = Object.keys(headers);
+
+    // Define which ratio columns belong to which type
+    const ratioColumns = {
+      "Communicative I/O": ["XLR", "XRR", "XSR", "XWR"],
+      "Theory & Practice": ["XTR", "XPR"],
+      "Third Parameter": ["XRVSR", "XPVSR", "XAVSR"],
+    };
+
+    // Determine columns to keep visible
+    const selectedRatios = ratioColumns[unitType] || [];
+
+    // Keep all non-ratio columns + selected ratios
+    return allColumns.filter(
+      (col) =>
+        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR"].includes(col) ||
+        selectedRatios.includes(col)
+    );
+  };
+
+  const currentUnitType = tableData.find(row => row.unitType)?.unitType;
+
+  // Compute visible headers based on that
+  const visibleHeaders = getVisibleColumns(currentUnitType);
+
 
   if (!visible) return null;
 
@@ -291,19 +320,20 @@ useEffect(() => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      {Object.entries(headers).map(([header, description]) => (
+                      {visibleHeaders.map((header) => (
                         <th
                           key={header}
                           className="whitespace-nowrap text-center border border-gray-200 px-2 py-1 group relative bg-gray-50"
                         >
                           {header}
                           <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
-                            {description}
+                            {headers[header]}
                           </div>
                         </th>
                       ))}
                     </tr>
                   </thead>
+
                   <tbody>
                     {tableData.length > 0 ? (
                       tableData.map((row, rowIndex) => {
@@ -315,7 +345,7 @@ useEffect(() => {
                               isSummaryRow ? 'bg-gray-200 font-semibold' : ''
                             }`}
                           >
-                            {Object.keys(headers).map((header) => (
+                            {visibleHeaders.map((header) => (
                               <td
                                 key={header}
                                 className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
@@ -328,12 +358,13 @@ useEffect(() => {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={Object.keys(headers).length} className="text-center py-4">
+                        <td colSpan={visibleHeaders.length} className="text-center py-4">
                           No data available
                         </td>
                       </tr>
                     )}
                   </tbody>
+
                 </table>
               </div>
             </div>
@@ -341,13 +372,7 @@ useEffect(() => {
           </div>
         </div>
 
-
       </div>
-
-
-
-
-
 
       {ScoreAdd && (
         <div className="overflow-auto my-2">
