@@ -65,7 +65,7 @@ export default function ProficiencyMetrics() {
       ppIdTo: null,
       criticalDateFrom: null,
       criticalDateTo: null,
-
+      thresholdEnabled: false,
     });
 
     // 🔁 trigger reset for SecondaryArea inputs

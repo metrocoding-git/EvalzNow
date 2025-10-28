@@ -1,13 +1,14 @@
 "use client";
 import { Edit, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
-  const [criticalDate, setCriticalDate] = useState("");
+  const [criticalDateFrom, setCriticalDateFrom] = useState("");
+  const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
 
   const [startDate, setStartDate] = useState(null);
@@ -18,11 +19,29 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
     productive: { cumulative: 2.345, average: 1.123 },
     acuity: { cumulative: 0.987, average: 0.456 },
   };
+
+  useEffect(() => {
+    setPpIdFrom(-3);
+    setPpIdTo(3);
+    setCriticalDateFrom("");
+    setCriticalDateTo("");
+    setThresholdEnabled(false);
+  }, [resetSignal]);
   
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
+
+    const values = {
+      ppIdFrom,
+      ppIdTo,
+      criticalDateFrom,
+      criticalDateTo,
+      thresholdEnabled,
+    };
+
+    onSubmit(values);
+    // console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
     // You can add fetch or state update logic here
   };
 
@@ -49,7 +68,10 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
               <input
                 type="number"
                 value={ppIdFrom}
-                onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPpIdFrom(val === "" ? "" : parseInt(val));
+                }}
                 className="border px-2 py-1 w-full"
                 placeholder="From (e.g., -3)"
               />
@@ -60,7 +82,10 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
               <input
                 type="number"
                 value={ppIdTo}
-                onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPpIdTo(val === "" ? "" : parseInt(val));
+                }} 
                 className="border px-2 py-1 w-full"
                 placeholder="To (e.g., 3)"
               />
@@ -81,8 +106,8 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
               <label htmlFor="" className="w-1/2">From:</label>
               <input
                 type="date"
-                value={criticalDate}
-                onChange={(e) => setCriticalDate(e.target.value)}
+                value={criticalDateFrom}
+                onChange={(e) => setCriticalDateFrom(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
 
@@ -90,8 +115,8 @@ const SecondaryInputForm = ({ onClose, selectedSort }) => {
               <label htmlFor="" className="w-1/2">To:</label>
               <input
                 type="date"
-                value={criticalDate}
-                onChange={(e) => setCriticalDate(e.target.value)}
+                value={criticalDateTo}
+                onChange={(e) => setCriticalDateTo(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
           </div>

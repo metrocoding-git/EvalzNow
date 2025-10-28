@@ -9,10 +9,13 @@ import {
   ScatterChart,
   Scatter,
   PieChart,
-  Pie
+  Pie,
+  ReferenceLine,
+  Cell
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary, getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
+import { getUnitById } from '@/services/unitService';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters}) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -31,6 +34,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
 
+  const [stabilitySummary, setStabilitySummary] = useState({ stable: 0, unstable: 0 });
+
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
@@ -40,6 +45,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const [selectedChart, setSelectedChart] = useState(0);
   const [tableData, setTableData] = useState([]);
+  const [thresholdValue, setThresholdValue] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -71,38 +77,38 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   const activateCandidateLevel = [
     { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📈", type: "line" },
-    { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
-    { id: "3", name: "Reading Ratio (XRR)", icon: "📘", type: "line"  },
-    { id: "4", name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
-    { id: "5", name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
-    { id: "6", name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
-    { id: "7", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
-    { id: "8", name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
-    { id: "9", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
-    { id: "10", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
-    { id: "11", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
-    { id: "12", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
-    { id: "13", name: "Band Proficiency (BXP)", icon: "🎼", type: "line" },
-    { id: "14", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
-    { id: "15", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
+    { id: "2", name: "Reading Ratio (XRR)", icon: "📘", type: "line"  },
+    { id: "3", name: "Listening Ratio (XLR)", icon: "🎧", type: "line" },
+    { id: "4", name: "Speaking Ratio (XSR)", icon: "🎤", type: "line" },
+    { id: "5", name: "Writing Ratio (XWR)", icon: "✍️", type: "line" },
+    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "line" },
+    { id: "7", name: "Practical Ratio (XPR)", icon: "🛠️", type: "line" },
+    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "line" },
+    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "line" },
+    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "line" },
+    { id: "11", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
+    { id: "12", name: "Band Proficiency (XBP)", icon: "🎼", type: "line" },
+    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
+    { id: "14", name: "Stability in Proficiency (STAP)", icon: "🧭", type: "pie" },
   ];
 
   const activateUnitLevel = [
     { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📊", type: "scatter" },
-    { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
-    { id: "3", name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
-    { id: "4", name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
-    { id: "5", name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
-    { id: "6", name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
-    { id: "7", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
-    { id: "8", name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
-    { id: "9", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
-    { id: "10", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
+    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
+    { id: "2", name: "Reading Ratio (XRR)", icon: "📘", type: "scatter" },
+    { id: "3", name: "Listening Ratio (XLR)", icon: "🎧", type: "scatter" },
+    { id: "4", name: "Speaking Ratio (XSR)", icon: "🎤", type: "scatter" },
+    { id: "5", name: "Writing Ratio (XWR)", icon: "✍️", type: "scatter" },
+    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "📚", type: "scatter" },
+    { id: "7", name: "Practical Ratio (XPR)", icon: "🛠️", type: "scatter" },
+    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📥", type: "scatter" },
+    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "📤", type: "scatter" },
     { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🧠", type: "scatter" },
     { id: "11", name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
-    { id: "12", name: "Band Proficiency (BXP)", icon: "🎼", type: "scatter" },
+    { id: "12", name: "Band Proficiency (XBP)", icon: "🎼", type: "scatter" },
     { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
-    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "14", name: "Stability in Proficiency (STAP)", icon: "🧭", type: "pie" },
   ];
   
   const [chartProperties, setChartProperties] = useState({
@@ -143,6 +149,7 @@ useEffect(() => {
   const fetchTabulationData = async () => {
     if (!unitId || !candidateId) {
       setTableData([]); // clear previous table data
+      setStabilitySummary({ stable: 0, unstable: 0 });
       return;
     }
 
@@ -176,14 +183,25 @@ useEffect(() => {
         XPVSR: row.XPVSR,
         XAVSR: row.XAVSR,
         XCP: row.XCP,
-        MSIP: row.MSIP
+        MSIP: row.MSIP,
+        STAP: row.STAP,
       }));
       
       
       setTableData(formattedData);
+
+      // ✅ Calculate stability counts
+      const stableCount = results.filter(r => r.STAP === "STABLE").length;
+      const unstableCount = results.filter(r => r.STAP === "UNSTABLE").length;
+
+      setStabilitySummary({ stable: stableCount, unstable: unstableCount });
+
+      console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+      
     } catch (err) {
       console.error("Failed to fetch tabulation data:", err);
       setError("Failed to load table data.");
+      setStabilitySummary({ stable: 0, unstable: 0 });
       setTableData([]);
     } finally {
       setLoading(false);
@@ -193,7 +211,46 @@ useEffect(() => {
   fetchTabulationData();
 }, [unitId, candidateId, filters]);
 
-console.log("table Data: ->", tableData);
+useEffect(() => {
+  const fetchThreshold = async () => {
+    if (!unitId) {
+      setThresholdValue(null);
+      return;
+    }
+
+    try {
+      const data = await getUnitById(unitId);
+
+      // Safely extract only threshold ratio fields
+      const extractedThresholds = {
+        XEP: parseFloat(data?.XEP) ?? null,
+        XRR: parseFloat(data?.XRR) ?? null,
+        XLR: parseFloat(data?.XLR) ?? null,
+        XSR: parseFloat(data?.XSR) ?? null,
+        XWR: parseFloat(data?.XWR) ?? null,
+        XTR: parseFloat(data?.XTR) ?? null,
+        XPR: parseFloat(data?.XPR) ?? null,
+        XRVSR: parseFloat(data?.XRVSR) ?? null,
+        XPVSR: parseFloat(data?.XPVSR) ?? null,
+        XAVSR: parseFloat(data?.XAVSR) ?? null,
+        XCP: parseFloat(data?.XCP) ?? null,
+        XBP: parseFloat(data?.XBP) ?? null,
+        MSIP: parseFloat(data?.MSIP) ?? null,
+      };
+
+      setThresholdValue(extractedThresholds);
+
+      console.log("✅ Extracted Threshold Values:", extractedThresholds);
+    } catch (error) {
+      console.error("❌ Failed to fetch threshold values:", error);
+      setThresholdValue(null);
+    }
+  };
+
+  fetchThreshold();
+}, [unitId]);
+
+
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -333,7 +390,7 @@ const renderCustomDot = (props, color) => {
                   {selectedSort === 'activateCandidateLevel' && (
                     activateCandidateLevel.filter(chart => {
                       // Common charts for all
-                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (BXP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
+                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
                       if (commonCharts.includes(chart.name)) return true;
               
                       // Unit-specific charts
@@ -365,7 +422,7 @@ const renderCustomDot = (props, color) => {
                   {selectedSort === 'activateUnitLevel' && (
                     activateUnitLevel.filter(chart => {
                       // Common charts for all
-                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (BXP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
+                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (BXP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
                       if (commonCharts.includes(chart.name)) return true;
               
                       // Unit-specific charts
@@ -442,7 +499,7 @@ const renderCustomDot = (props, color) => {
                             X Axis Value
                           </th>
                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Y Axis Value
+                            {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
                           </th>
                         </tr>
                       </thead>
@@ -561,12 +618,27 @@ const renderCustomDot = (props, color) => {
                             </YAxis>
                             <Tooltip />
                             <Legend />
+
+                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                              <ReferenceLine
+                                y={thresholdValue[keyName]}
+                                stroke="#000000"        // Amber (you can change this)
+                                strokeWidth={2}
+                                strokeDasharray="7 4 1 4"
+                                label={{
+                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                  position: "right",
+                                  fill: "#f59e0b",
+                                  fontSize: 12,
+                                }}
+                              />
+                            )}
                   
                             {/* 🔴 Negative PP IDs */}
                             {chartProperties.visibility && (
                               <Line
                                 name="Negative PP IDs"
-                                type="monotone"
+                                type="linear"
                                 dataKey="value"
                                 data={negativeData}
                                 stroke={chartProperties.negativeLineColor}
@@ -586,7 +658,7 @@ const renderCustomDot = (props, color) => {
                             {chartProperties.visibility && (
                               <Line
                                 name="Positive PP IDs"
-                                type="monotone"
+                                type="linear"
                                 dataKey="value"
                                 data={positiveData}
                                 stroke={chartProperties.positiveLineColor}
@@ -651,39 +723,39 @@ const renderCustomDot = (props, color) => {
                     );
                   }
 
-                  if (selectedChart.type === "pie") {
-                    // Merge both datasets but label differently
+                  if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
+                    // Create data from stabilitySummary state
                     const pieData = [
-                      ...negativeData.map(d => ({ name: `Neg ${d.ppId}`, value: d.value })),
-                      ...positiveData.map(d => ({ name: `Pos ${d.ppId}`, value: d.value })),
+                      { name: "STABLE", value: stabilitySummary.stable },
+                      { name: "UNSTABLE", value: stabilitySummary.unstable },
                     ];
-
+                  
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                  
                         <ResponsiveContainer width="100%" height={400}>
                           <PieChart>
                             <Tooltip />
-                            <Legend />
+                            <Legend verticalAlign="bottom" />
                             <Pie
                               data={pieData}
                               dataKey="value"
                               nameKey="name"
+                              cx="50%"
+                              cy="50%"
                               outerRadius={120}
-                              label
+                              label={({ name, value }) => `${name}: ${value}`}
                             >
-                              {pieData.map((entry, index) => (
-                                <cell
-                                  key={`cell-${index}`}
-                                  fill={entry.name.startsWith("Neg") ? "#ef4444" : "#3b82f6"}
-                                />
-                              ))}
+                              <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
+                              <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
                             </Pie>
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
                     );
                   }
+                  
 
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()

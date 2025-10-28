@@ -293,36 +293,58 @@ const THRESHOLD_NAMES = {
 
    // Populate form if unitData is provided (for editing)
    useEffect(() => {
-    if (!unitData) return;
+  if (!unitData) return;
 
-    setForm({
-      unitName: "",
-      unitId: "",
-      startDate: unitData.unitStartDate || "",
-      endDate: unitData.unitEndDate || "",
-      unitType: unitData.unitType || "",
-      environment: unitData.environment || "",
-      signatureProfile: unitData.signatureProfile || "",
-      unitDirector: unitData.unitDirector || "",
-      passThresholds: unitData.passThresholds || defaultThresholds[unitData.unitType] || {},
-      benchmarks: (unitData.benchmarks || []).map((bm, i) => ({
-        id: String(i + 1),
-        benchmarkId: bm.benchmarkId || "",
-        type: bm.benchmarkType || "",
-        ref: bm.benchmarkRef || "",
-        description: bm.benchmarkDescription || "",
-      })),
-      assignedLeaders: unitData.assignedLeaders || [],
-      assignedAssessors: unitData.assignedAssessors || [],
-      scoringSystem: unitData.scoringSystem || "",
-    });
+  // 🧩 Extract assigned leaders & assessors from staffAssignments (if present)
+  let assignedLeaders = [];
+  let assignedAssessors = [];
+  let unitDirectors = [];
 
-    // Update unitDirectors dropdown based on assigned leaders
-    // const directors = staffPool.filter(s => unitData.assignedLeaders?.includes(s.id));
-    // setUnitDirectors(directors);
-  }, [unitData]);
-  
-  console.log("unit dta -->", unitData);
+  if (unitData.staffAssignments && Array.isArray(unitData.staffAssignments)) {
+    assignedLeaders = unitData.staffAssignments
+      .filter(sa => sa.roleType === "Leader")
+      .map(sa => sa.staff?.id || sa.staffId || "");
+
+    assignedAssessors = unitData.staffAssignments
+      .filter(sa => sa.roleType === "Assessor")
+      .map(sa => sa.staff?.id || sa.staffId || "");
+
+    // Optionally infer director if any Leader matches current unitDirector
+    unitDirectors = unitData.staffAssignments
+      .filter(sa => sa.roleType === "Leader")
+      .map(sa => sa.staff)
+      .filter(Boolean);
+  }
+
+  setForm({
+    unitName: "",
+    unitId: "", // 🔄 always blank when duplicating
+    startDate: unitData.unitStartDate || "",
+    endDate: unitData.unitEndDate || "",
+    unitType: unitData.unitType || "",
+    environment: unitData.environment || "",
+    signatureProfile: unitData.signatureProfile || "",
+    unitDirector: unitData.unitDirector || "",
+    passThresholds:
+      unitData.passThresholds ||
+      defaultThresholds[unitData.unitType] ||
+      {},
+    benchmarks: (unitData.benchmarks || []).map((bm, i) => ({
+      id: String(i + 1),
+      benchmarkId: bm.benchmarkId || "",
+      type: bm.benchmarkType || "",
+      ref: bm.benchmarkRef || "",
+      description: bm.benchmarkDescription || "",
+    })),
+    assignedLeaders,
+    assignedAssessors,
+    scoringSystem: unitData.scoringSystem || "",
+  });
+
+  // ✅ Update dropdown directors (so director select shows populated options)
+  setUnitDirectors(unitDirectors);
+}, [unitData]);
+
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">

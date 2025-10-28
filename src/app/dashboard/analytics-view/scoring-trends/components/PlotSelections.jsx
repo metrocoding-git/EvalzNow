@@ -720,7 +720,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name.replace(/\s*vs\. Insert Score Row Counter.*$/i, "").trim()}</h2>
 
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
@@ -814,7 +814,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                   dot={(props) => {
                     const { index } = props;
                     if (index % chartProperties.symbolFrequency !== 0) return null;
-                    return renderCustomDot(props, chartProperties.positiveSymbolColor);
+                    return renderCustomDot(props, chartProperties.symbolColor);
                   }}
                 />
 
@@ -840,7 +840,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                   dot={(props) => {
                     const { index } = props;
                     if (index % chartProperties.symbolFrequency !== 0) return null;
-                    return renderCustomDot(props, chartProperties.negativeSymbolColor);
+                    return renderCustomDot(props, chartProperties.symbolColor);
                   }}
                 />
               </LineChart>
