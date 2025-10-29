@@ -350,7 +350,35 @@ console.log("unit type check", tableData);
                                 key={header}
                                 className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
                               >
-                                {row[header] ?? '-'}
+                                {(() => {
+  const value = row[header];
+
+  // columns that should NEVER be formatted (keep exactly as backend sends)
+  const skipFormatting = [
+    "PP ID",
+    "Critical Reference Date",
+    "Day Count (Days)",
+    "unitType",
+    "IC" // ✅ IC stays exactly as-is (even if it has numbers)
+  ];
+
+  if (skipFormatting.includes(header)) {
+    return value ?? '-';
+  }
+
+  // check if value is a float (not an integer or text)
+  const num = parseFloat(value);
+  const isFloat = !isNaN(num) && value.toString().includes('.');
+
+  if (isFloat) {
+    return num.toFixed(3);
+  }
+
+  // default case: show as-is
+  return value ?? '-';
+})()}
+
+
                               </td>
                             ))}
                           </tr>

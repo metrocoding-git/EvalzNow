@@ -669,47 +669,68 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
 
                 {activeAdjustPropertieTab === "Table" && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
-                    <table className="table-auto w-full text-sm border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            PP Id / Label
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            X Axis Value
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Y Axis Value
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {combinedData && combinedData.length > 0 ? (
-                          combinedData.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-blue-50">
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.label ?? row.ppId ?? `#${idx + 1}`}
-                              </td>
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.x}
-                              </td>
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                {row.y}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan={3}
-                              className="text-center text-gray-500 border border-gray-300 px-3 py-2"
-                            >
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                    {(() => {
+                      const positiveRows = combinedData.filter((r) => (r.ppId ?? 0) > 0);
+                      const negativeRows = combinedData.filter((r) => (r.ppId ?? 0) <= 0);
+
+                      const renderTable = (title, rows, color) => (
+                        <div className="mb-6">
+                          <h3
+                            className={`text-sm font-semibold mb-2 px-2 py-1 rounded ${color} text-gray-400`}
+                          >
+                            {title}
+                          </h3>
+                          <table className="table-auto w-full text-sm border border-gray-300">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  PP Id / Label
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  X Axis Value
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  Y Axis Value
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {rows.length > 0 ? (
+                                rows.map((row, idx) => (
+                                  <tr key={idx} className="hover:bg-blue-50">
+                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      {row.label ?? row.ppId ?? `#${idx + 1}`}
+                                    </td>
+                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      {row.x}
+                                    </td>
+                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      {row.y}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td
+                                    colSpan={3}
+                                    className="text-center text-gray-500 border border-gray-300 px-3 py-2"
+                                  >
+                                    No data available
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+
+                      return (
+                        <>
+                          {renderTable("Positive PP ID", positiveRows)}
+                          {renderTable("Negative PP ID", negativeRows )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
