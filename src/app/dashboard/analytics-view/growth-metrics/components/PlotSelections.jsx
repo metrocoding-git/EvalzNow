@@ -15,6 +15,7 @@ import {
 import PropertyEditor from '../../components/PropertyEditor';
 import ProjectionTable from './ProjectionTable';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
+import { getUnitById } from '@/services/unitService';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -193,7 +194,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   
         setStabilitySummary({ stable: stableCount, unstable: unstableCount });
   
-        console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+        // console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -208,8 +209,48 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
+
+  useEffect(() => {
+    const fetchThreshold = async () => {
+      if (!unitId) {
+        setThresholdValue(null);
+        return;
+      }
+  
+      try {
+        const data = await getUnitById(unitId);
+  
+        // Safely extract only threshold ratio fields
+        const extractedThresholds = {
+          XEP: parseFloat(data?.XEP) ?? null,
+          XRR: parseFloat(data?.XRR) ?? null,
+          XLR: parseFloat(data?.XLR) ?? null,
+          XSR: parseFloat(data?.XSR) ?? null,
+          XWR: parseFloat(data?.XWR) ?? null,
+          XTR: parseFloat(data?.XTR) ?? null,
+          XPR: parseFloat(data?.XPR) ?? null,
+          XRVSR: parseFloat(data?.XRVSR) ?? null,
+          XPVSR: parseFloat(data?.XPVSR) ?? null,
+          XAVSR: parseFloat(data?.XAVSR) ?? null,
+          XCP: parseFloat(data?.XCP) ?? null,
+          XBP: parseFloat(data?.XBP) ?? null,
+          MSIP: parseFloat(data?.MSIP) ?? null,
+        };
+  
+        setThresholdValue(extractedThresholds);
+  
+        console.log("✅ Extracted Threshold Values:", extractedThresholds);
+      } catch (error) {
+        console.error("❌ Failed to fetch threshold values:", error);
+        setThresholdValue(null);
+      }
+    };
+  
+    fetchThreshold();
+  }, [unitId]);
+
   const [selectedChart, setSelectedChart] = useState(null);
-  console.log("graph data:", tableData);
+  console.log("filter data:", filters);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -290,7 +331,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+                <RefreshCw className="w-4 h-4 hover:text-green-600" 
+                  onClick={() => {
+                    if (typeof onResetFilters === "function") {
+                      onResetFilters(); // ✅ reset filters in parent
+                    }
+                  }} />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
@@ -328,13 +374,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                     activateUnitLevel.map((chart, index) => (
                       <div
                         key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer }`}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1  cursor-pointer ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => {
                           setSelectedChart(chart); 
                         }}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
                       </div>
                     ))
                   )}
@@ -343,7 +389,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
             </div>
         
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-1/2 flex flex-col border border-gray-200 ">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -390,30 +436,65 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
                 {activeAdjustPropertieTab === 'Table' && (
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-16">
+                    <table className="table-auto w-full text-sm border-collapse">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Month</th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">X Axis Value</th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Y Axis Value</th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Z Axis Value</th>
+                        <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
+                          <th className="border border-gray-300 px-3 py-2 text-center">X Value (Day Count)</th>
+                          <th className="border border-gray-300 px-3 py-2 text-center">Y Value</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.name}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.xValue}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.yValue}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.zValue}</td>
-                          </tr>
-                        ))}
+                      {selectedChart && tableData.length > 0 ? (
+                        (() => {
+                          // Extract key name inside parentheses — e.g., "ΔRR (deltaRRN)" → "deltaRRN"
+                          const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1] ?? null;
+                          if (!keyName) {
+                            return (
+                              <tr>
+                                <td colSpan="3" className="text-center text-gray-400 py-4 italic">
+                                  Invalid chart selection
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          // Create a dynamic list using the key name
+                          const combinedData = tableData
+                            .filter(row => row[keyName] !== undefined && !isNaN(row[keyName]) && row.ppId > 0)
+                            .map(row => ({
+                              ppId: row.ppId,
+                              dayCount: row.dayCount,
+                              value: row[keyName],
+                            }));
+
+                          return combinedData.length > 0 ? (
+                            combinedData.map((row, idx) => (
+                              <tr key={idx} className="hover:bg-blue-50">
+                                <td className="border border-gray-300 px-3 py-2 text-center">{row.ppId}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-center">{row.dayCount}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-center">{row.value}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="text-center text-gray-400 py-4 italic">
+                                No data available for {selectedChart.name}
+                              </td>
+                            </tr>
+                          );
+                        })()
+                      ) : (
+                        <tr>
+                          <td colSpan="3" className="text-center text-gray-400 py-4 italic">
+                            {selectedChart ? "No data available" : "Select a chart to display data"}
+                          </td>
+                        </tr>
+                      )}
                       </tbody>
                     </table>
                   </div>
-
-
                 )}
 
                 
@@ -437,14 +518,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                   const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
                   if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
 
-                  const negativeData = [...tableData]
-                  .filter(row => row.ppId < 0 && !isNaN(row[keyName]))
-                  .sort((a, b) => b.dayCount - a.dayCount)
-                  .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
+                  // const negativeData = [ { dayCount: 0, value: 0 }, ...tableData]
+                  // .filter(row => row.ppId < 0 && !isNaN(row[keyName]))
+                  // .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
 
-                  const positiveData = [...tableData]
+                  const positiveData = [ { dayCount: 0, value: 0 }, ...tableData]
                     .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
-                    .sort((a, b) => a.dayCount - b.dayCount)
                     .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
 
 
@@ -479,7 +558,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             <XAxis
                               type="number"
                               dataKey="dayCount"
-                              domain={["auto", "auto"]}
+                              domain={[0, "auto"]}
+                              allowDataOverflow={true} 
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                                 <Label value="Day Count" offset={-10} position="insideBottom" />
@@ -492,6 +572,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                               //   angle: -90,
                               //   position: "insideLeft",
                               // }}
+                              domain={[0, "auto"]}
+                              allowDataOverflow={true} 
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
@@ -522,7 +604,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             )}
                   
                             {/* 🔴 Negative PP IDs */}
-                            {chartProperties.visibility && (
+                            {/* {chartProperties.visibility && (
                               <Line
                                 name="Negative PP IDs"
                                 type="linear"
@@ -539,12 +621,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                                 // activeDot={getSymbolShape(chartProperties.symbolStyle)}
                                 // shape={getSymbolShape(chartProperties.symbolStyle)} 
                               />
-                            )}
+                            )} */}
 
                             {/* 🔵 Positive PP IDs */}
                             {chartProperties.visibility && (
                               <Line
-                                name="Positive PP IDs"
+                                
                                 type="linear"
                                 dataKey="value"
                                 data={positiveData}
@@ -592,18 +674,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             </YAxis>
                             <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                             <Legend />
-                            <Scatter
+                            {/* <Scatter
                               name="Negative PP IDs"
                               data={negativeData}
                               fill={chartProperties.negativeLineColor} // red
                               shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
-                            />
+                            /> */}
+                            {chartProperties.visibility && (
                             <Scatter
                               name="Positive PP IDs"
                               data={positiveData}
                               fill={chartProperties.positiveLineColor} // blue
                               shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
                             />
+                            )}
                           </ScatterChart>
                         </ResponsiveContainer>
                       </div>
