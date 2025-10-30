@@ -137,6 +137,17 @@ const MasterPpIdBinTable = ({ data }) => {
   });
 
 
+  // Helper function to generate abbreviation
+const abbreviateLabel = (label) => {
+  if (!label) return "";
+  return label
+    .split(" ")
+    .map(word => word[0]?.toUpperCase())
+    .join("");
+};
+
+
+
   return (
     <div className="overflow-x-auto border-1 border-gray-200 shadow-sm h-full">
       <table className="w-full table-auto text-sm text-left border-collapse">
@@ -150,8 +161,8 @@ const MasterPpIdBinTable = ({ data }) => {
 
             {currentCompetencies.map((comp, idx) => (
               <React.Fragment key={idx}>
-                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{comp.attained}</th>
-                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{comp.max}</th>
+                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{abbreviateLabel(comp.attained)}</th>
+                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{abbreviateLabel(comp.max)}</th>
               </React.Fragment>
             ))}
 
