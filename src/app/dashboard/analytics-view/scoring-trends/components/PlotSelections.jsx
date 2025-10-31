@@ -298,10 +298,10 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
     const key = selectedChart.key;
     const isMC = key.startsWith("mc");
   
+    // ✅ Attained Score Chart
     if (key === "attained") {
       if (!attainedScoreData) return { positive: [], negative: [] };
-    
-      // Separate by ppId sign
+  
       const positivePoints = attainedScoreData
         .filter((row) => (row.ppId ?? 0) > 0)
         .map((row) => ({
@@ -312,7 +312,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           type: "attained",
         }))
         .sort((a, b) => a.x - b.x);
-    
+  
       const negativePoints = attainedScoreData
         .filter((row) => (row.ppId ?? 0) <= 0)
         .map((row) => ({
@@ -323,17 +323,15 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           type: "attained",
         }))
         .sort((a, b) => a.x - b.x);
-    
+  
       return { positive: positivePoints, negative: negativePoints };
     }
-    
   
+    // ✅ Max Score Chart
     if (key === "max") {
-      if (!maxScoreData && !attainedScoreData)
-        return { positive: [], negative: [] };
-    
       const source = maxScoreData?.data ?? attainedScoreData ?? [];
-    
+      if (!source) return { positive: [], negative: [] };
+  
       const positivePoints = source
         .filter((row) => (row.ppId ?? 0) > 0)
         .map((row) => ({
@@ -344,7 +342,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           type: "max",
         }))
         .sort((a, b) => a.x - b.x);
-    
+  
       const negativePoints = source
         .filter((row) => (row.ppId ?? 0) <= 0)
         .map((row) => ({
@@ -355,12 +353,11 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
           type: "max",
         }))
         .sort((a, b) => a.x - b.x);
-    
+  
       return { positive: positivePoints, negative: negativePoints };
     }
-    
   
-    // ✅ Handle MC/CC charts normally
+    // ✅ Handle MC/CC Charts (normal case)
     if ((!positiveData && !negativeData) || !key)
       return { positive: [], negative: [] };
   
@@ -381,7 +378,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
             type,
           };
         })
-        .sort((a, b) => (a.ppId ?? 0) - (b.ppId ?? 0));
+        .sort((a, b) => a.x - b.x); // ✅ SORT BY X VALUE HERE
     };
   
     const positivePoints = buildPoints(positiveData, "positive");
@@ -389,6 +386,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
   
     return { positive: positivePoints, negative: negativePoints };
   };
+  
   
   
   
@@ -680,7 +678,7 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                           >
                             {title}
                           </h3>
-                          <table className="table-auto w-full text-sm border border-gray-300">
+                          <table className="table-auto w-full text-sm ">
                             <thead className="bg-gray-100">
                               <tr>
                                 <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
