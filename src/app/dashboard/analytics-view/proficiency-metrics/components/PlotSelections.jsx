@@ -171,20 +171,20 @@ useEffect(() => {
 
       const formattedData = results.map(row => ({
         ppId: row.ppId,
-        XEP: row.XEP,
-        XBP: row.XBP,
-        XRR: row.XRR,
-        XLR: row.XLR,
-        XSR: row.XSR,
-        XWR: row.XWR,
-        XTR: row.XTR,
-        XPR: row.XPR,
-        XRVSR: row.XRVSR,
-        XPVSR: row.XPVSR,
-        XAVSR: row.XAVSR,
-        XCP: row.XCP,
-        MSIP: row.MSIP,
-        STAP: row.STAP,
+        XEP: row.XEP || 0,
+        XBP: row.XBP || 0,
+        XRR: row.XRR || 0,
+        XLR: row.XLR || 0,
+        XSR: row.XSR || 0,
+        XWR: row.XWR || 0,
+        XTR: row.XTR || 0,
+        XPR: row.XPR || 0,
+        XRVSR: row.XRVSR || 0,
+        XPVSR: row.XPVSR || 0,
+        XAVSR: row.XAVSR || 0,
+        XCP: row.XCP || 0,
+        MSIP: row.MSIP || 0, 
+        STAP: row.STAP || 0,
       }));
       
       
@@ -488,50 +488,107 @@ const renderCustomDot = (props, color) => {
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3">
-                    <table className="table-auto w-full text-sm border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            PP Id / Label
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            X Axis Value
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {chartData && chartData.length > 0 ? (
-                          chartData.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-blue-50">
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.ppId ?? `#${idx + 1}`}
-                              </td>
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.ppId} {/* X Axis */}
-                              </td>
-                              <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                              {row.value} {/* X Axis */}
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3 space-y-10">
+
+                    {/* ✅ Positive PP IDs Table */}
+                    <div>
+                      <h3 className="text-gray-400 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                      <table className="table-auto w-full text-sm border border-gray-300">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              PP Id / Label
+                            </th>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              X Axis Value
+                            </th>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {chartData.filter(row => row.ppId > 0).length > 0 ? (
+                            chartData
+                              .filter(row => row.ppId > 0)
+                              .map((row, idx) => (
+                                <tr key={idx} className="hover:bg-blue-50">
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.ppId}
+                                  </td>
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.ppId} {/* X Axis */}
+                                  </td>
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.value}
+                                  </td>
+                                </tr>
+                              ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={3}
+                                className="text-center text-gray-500 border border-gray-300 px-3 py-2"
+                              >
+                                No positive data available
                               </td>
                             </tr>
-                          ))
-                        ) : (
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* ✅ Negative PP IDs Table */}
+                    <div>
+                      <h3 className="text-gray-400 font-semibold mb-2 ml-2">Negative PP IDs</h3>
+                      <table className="table-auto w-full text-sm border border-gray-300">
+                        <thead className="bg-gray-100">
                           <tr>
-                            <td
-                              colSpan={3}
-                              className="text-center text-gray-500 border border-gray-300 px-3 py-2"
-                            >
-                              No data available
-                            </td>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              PP Id / Label
+                            </th>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              X Axis Value
+                            </th>
+                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                              {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                            </th>
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {chartData.filter(row => row.ppId < 0).length > 0 ? (
+                            chartData
+                              .filter(row => row.ppId < 0)
+                              .map((row, idx) => (
+                                <tr key={idx} className="hover:bg-blue-50">
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.ppId}
+                                  </td>
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.ppId} {/* X Axis */}
+                                  </td>
+                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                    {row.value}
+                                  </td>
+                                </tr>
+                              ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={3}
+                                className="text-center text-gray-500 border border-gray-300 px-3 py-2"
+                              >
+                                No negative data available
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
                   </div>
                 )}
+
               </div>
             </div>
           </div>
