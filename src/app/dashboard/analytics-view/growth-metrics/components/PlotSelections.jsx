@@ -168,6 +168,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           PR: row.PRN || 0,
           AR: row.ARN || 0,
           STAG: row.STAG || 0,
+          IC: row.IC || 0,
           RRGT1: row.RRGT1 || 0, 
           PRGT1: row.PRGT1 || 0,
           ARGT1: row.ARGT1 || 0, 
@@ -746,6 +747,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
       <ProjectionTable
         visible={showProjectionTable}
+        projectionData={tableData}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}
