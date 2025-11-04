@@ -62,6 +62,8 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
     scoringSystem: "",
     passThresholds: {}, // Initialize to avoid undefined errors
     benchmarks: [],
+    assignedLeaders: [], // ✅ Initialize
+    assignedAssessors: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const handleChange = (field, value) => {
@@ -147,7 +149,7 @@ const THRESHOLD_NAMES = {
         "Case 1: Solid Balanced",
         "Case 2: Rigorous Balanced",
         "Case 3a: Productive-Weighted",
-        "Case 3b: Receptive-Weighed",
+        "Case 3b: Receptive-Weighted",
       ];
     }
     if (unitType === "Third Parameter") {
@@ -291,59 +293,91 @@ const THRESHOLD_NAMES = {
 
 
 
-   // Populate form if unitData is provided (for editing)
-   useEffect(() => {
-  if (!unitData) return;
+  // Populate form if unitData is provided (for editing)
+  useEffect(() => {
+    if (!unitData) return;
 
-  // 🧩 Extract assigned leaders & assessors from staffAssignments (if present)
-  let assignedLeaders = [];
-  let assignedAssessors = [];
-  let unitDirectors = [];
+    let assignedLeaders = [];
+    let assignedAssessors = [];
+    let unitDirectors = [];
 
-  if (unitData.staffAssignments && Array.isArray(unitData.staffAssignments)) {
-    assignedLeaders = unitData.staffAssignments
-      .filter(sa => sa.roleType === "Leader")
-      .map(sa => sa.staff?.id || sa.staffId || "");
+    // ✅ Check both staffAssignments and staffMembers
+    const staffSource = unitData.staffAssignments?.length > 0 
+      ? unitData.staffAssignments 
+      : unitData.staffMembers || [];
 
-    assignedAssessors = unitData.staffAssignments
-      .filter(sa => sa.roleType === "Assessor")
-      .map(sa => sa.staff?.id || sa.staffId || "");
+    console.log("Staff source data:", staffSource); // Debug log
 
-    // Optionally infer director if any Leader matches current unitDirector
-    unitDirectors = unitData.staffAssignments
-      .filter(sa => sa.roleType === "Leader")
-      .map(sa => sa.staff)
-      .filter(Boolean);
-  }
+    if (Array.isArray(staffSource) && staffSource.length > 0) {
+      // If using staffAssignments (has roleType directly)
+      if (staffSource[0]?.roleType) {
+        assignedLeaders = staffSource
+          .filter(sa => sa.roleType === "Leader")
+          .map(sa => sa.staff?.id || sa.staffId || sa.id || "");
 
-  setForm({
-    unitName: "",
-    unitId: "", // 🔄 always blank when duplicating
-    startDate: unitData.unitStartDate || "",
-    endDate: unitData.unitEndDate || "",
-    unitType: unitData.unitType || "",
-    environment: unitData.environment || "",
-    signatureProfile: unitData.signatureProfile || "",
-    unitDirector: unitData.unitDirector || "",
-    passThresholds:
-      unitData.passThresholds ||
-      defaultThresholds[unitData.unitType] ||
-      {},
-    benchmarks: (unitData.benchmarks || []).map((bm, i) => ({
-      id: String(i + 1),
-      benchmarkId: bm.benchmarkId || "",
-      type: bm.benchmarkType || "",
-      ref: bm.benchmarkRef || "",
-      description: bm.benchmarkDescription || "",
-    })),
-    assignedLeaders,
-    assignedAssessors,
-    scoringSystem: unitData.scoringSystem || "",
-  });
+        assignedAssessors = staffSource
+          .filter(sa => sa.roleType === "Assessor")
+          .map(sa => sa.staff?.id || sa.staffId || sa.id || "");
 
-  // ✅ Update dropdown directors (so director select shows populated options)
-  setUnitDirectors(unitDirectors);
-}, [unitData]);
+        unitDirectors = staffSource
+          .filter(sa => sa.roleType === "Leader")
+          .map(sa => sa.staff || sa)
+          .filter(Boolean);
+      } 
+      // If using staffMembers (roleType is inside StaffLookup property)
+      else if (staffSource[0]?.StaffLookup?.roleType) {
+        assignedLeaders = staffSource
+          .filter(staff => staff.StaffLookup?.roleType === "Leader")
+          .map(staff => staff.id);
+
+        assignedAssessors = staffSource
+          .filter(staff => staff.StaffLookup?.roleType === "Assessor")
+          .map(staff => staff.id);
+
+        unitDirectors = staffSource
+          .filter(staff => staff.StaffLookup?.roleType === "Leader");
+      }
+      // Fallback: treat all as leaders
+      else {
+        assignedLeaders = staffSource.map(staff => staff.id);
+        unitDirectors = staffSource;
+      }
+    }
+
+    setForm({
+      unitName: "",
+      unitId: "",
+      startDate: unitData.unitStartDate || "",
+      endDate: unitData.unitEndDate || "",
+      unitType: unitData.unitType || "",
+      environment: unitData.environment || "",
+      signatureProfile: unitData.signatureProfile || "",
+      unitDirector: unitData.unitDirector || "",
+      passThresholds:
+        unitData.passThresholds ||
+        defaultThresholds[unitData.unitType] ||
+        {},
+      benchmarks: (unitData.benchmarks || []).map((bm, i) => ({
+        id: String(i + 1),
+        benchmarkId: bm.benchmarkId || "",
+        type: bm.benchmarkType || "",
+        ref: bm.benchmarkRef || "",
+        description: bm.benchmarkDescription || "",
+      })),
+      assignedLeaders, // ✅ Set from unitData
+      assignedAssessors, // ✅ Set from unitData
+      scoringSystem: unitData.scoringSystem || "",
+    });
+
+    setUnitDirectors(unitDirectors);
+    
+    // ✅ Add console log to verify
+    console.log("Populated form with staff:", {
+      assignedLeaders,
+      assignedAssessors,
+      unitDirector: unitData.unitDirector
+    });
+  }, [unitData]);
 
 
   return (
