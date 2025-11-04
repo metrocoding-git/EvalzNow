@@ -90,9 +90,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
   const activateCandidateLevel = [
     { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📈", type: "line" },
-    { id: "acl-2", name: "Receptive Growth Differentials (∆RR)", icon: "📈", type: "line" },
-    { id: "acl-3", name: "Productive Growth Differentials (∆PR)", icon: "📈", type: "line" },
-    { id: "acl-4", name: "Acuity Growth Differentials (∆AR)", icon: "📈", type: "line" },
+    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", icon: "📈", type: "line" },
+    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", icon: "📈", type: "line" },
+    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", icon: "📈", type: "line" },
     { id: "acl-5", name: "Performance Ratio (RR)", icon: "📊", type: "line" },
     { id: "acl-6", name: "Performance Ratios (PR)", icon: "📊", type: "line" },
     { id: "acl-7", name: "Performance Ratios (AR)", icon: "📊", type: "line" },
@@ -168,6 +168,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           PR: row.PRN || 0,
           AR: row.ARN || 0,
           STAG: row.STAG || 0,
+          IC: row.IC || 0,
           RRGT1: row.RRGT1 || 0, 
           PRGT1: row.PRGT1 || 0,
           ARGT1: row.ARGT1 || 0, 
@@ -209,7 +210,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
-
+  console.log("values: ", tableData);
   useEffect(() => {
     const fetchThreshold = async () => {
       if (!unitId) {
@@ -222,19 +223,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   
         // Safely extract only threshold ratio fields
         const extractedThresholds = {
-          XEP: parseFloat(data?.XEP) ?? null,
-          XRR: parseFloat(data?.XRR) ?? null,
-          XLR: parseFloat(data?.XLR) ?? null,
-          XSR: parseFloat(data?.XSR) ?? null,
-          XWR: parseFloat(data?.XWR) ?? null,
-          XTR: parseFloat(data?.XTR) ?? null,
-          XPR: parseFloat(data?.XPR) ?? null,
-          XRVSR: parseFloat(data?.XRVSR) ?? null,
-          XPVSR: parseFloat(data?.XPVSR) ?? null,
-          XAVSR: parseFloat(data?.XAVSR) ?? null,
-          XCP: parseFloat(data?.XCP) ?? null,
-          XBP: parseFloat(data?.XBP) ?? null,
-          MSIP: parseFloat(data?.MSIP) ?? null,
+          
+          ΔGEQ: parseFloat(data?.ΔGEQ) ?? null,
+          ΔRR: parseFloat(data?.ΔRRN) ?? null,
+          ΔPR: parseFloat(data?.ΔRRN) ?? null,
+          ΔAR: parseFloat(data?.ΔARN) ?? null,
         };
   
         setThresholdValue(extractedThresholds);
@@ -746,6 +739,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
       <ProjectionTable
         visible={showProjectionTable}
+        projectionData={tableData}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}

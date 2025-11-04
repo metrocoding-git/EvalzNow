@@ -51,7 +51,8 @@ export default function PlotSelections() {
 
  const [chartProperties, setChartProperties] = useState({
   // Standard
-  visibility: true,
+  positiveVisibility: true,
+  negativeVisibility: true,
   layer: 1,
   reference: false,
 

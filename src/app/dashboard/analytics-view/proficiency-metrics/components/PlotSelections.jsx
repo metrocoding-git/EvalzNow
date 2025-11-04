@@ -113,7 +113,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   const [chartProperties, setChartProperties] = useState({
   // Standard
-  visibility: true,
+  positiveVisibility: true,
+  negativeVisibility: true,
   layer: 1,
   reference: false,
 
@@ -692,15 +693,23 @@ const renderCustomDot = (props, color) => {
                             )}
                   
                             {/* 🔴 Negative PP IDs */}
-                            {chartProperties.visibility && (
+                            {chartProperties.negativeVisibility && (
                               <Line
                                 name="Negative PP IDs"
                                 type="linear"
                                 dataKey="value"
                                 data={negativeData}
                                 stroke={chartProperties.negativeLineColor}
-                                strokeWidth={chartProperties.lineThickness}
-                                strokeDasharray={strokeDasharray}
+                                strokeDasharray={
+                                  chartProperties.negativeLineStyle === "dashed"
+                                    ? "6 4"
+                                    : chartProperties.negativeLineStyle === "dotted"
+                                    ? "2 4"
+                                    : chartProperties.negativeLineStyle === "dashdot"
+                                    ? "8 4 2 4"
+                                    : "0"
+                                }
+                                strokeWidth={chartProperties.negativeLineThickness}
                                 dot={(props) => {
                                   const { index } = props;
                                   if (index % chartProperties.symbolFrequency !== 0) return null;
@@ -712,15 +721,23 @@ const renderCustomDot = (props, color) => {
                             )}
 
                             {/* 🔵 Positive PP IDs */}
-                            {chartProperties.visibility && (
+                            {chartProperties.positiveVisibility && (
                               <Line
                                 name="Positive PP IDs"
                                 type="linear"
                                 dataKey="value"
                                 data={positiveData}
                                 stroke={chartProperties.positiveLineColor}
-                                strokeWidth={chartProperties.lineThickness}
-                                strokeDasharray={strokeDasharray}
+                                strokeDasharray={
+                                  chartProperties.positiveLineStyle === "dashed"
+                                    ? "6 4"
+                                    : chartProperties.positiveLineStyle === "dotted"
+                                    ? "2 4"
+                                    : chartProperties.positiveLineStyle === "dashdot"
+                                    ? "8 4 2 4"
+                                    : "0"
+                                }
+                                strokeWidth={chartProperties.positiveLineThickness}
                                 dot={(props) => {
                                   const { index } = props;
                                   if (index % chartProperties.symbolFrequency !== 0) return null;
