@@ -91,7 +91,6 @@ export function calculateProjectionValues(
   // };
 }
 
-
 export default function ProjectionTable({ visible, onClose, projectionData = [] }) {
   if (!visible) return null;
 
@@ -119,12 +118,10 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
     { Callout: "Overshoot ", PP_ID: 0, RRN: 0, PRN: 0, ARN: 0, IC: 0, ΔRRN: 0, ΔPRN: 0, ΔARN: 0, DayCount: 0 },
     { Callout: "Undershoot ", PP_ID: 0, RRN: 0, PRN: 0, ARN: 0, IC: 0, ΔRRN: 0, ΔPRN: 0, ΔARN: 0, DayCount: 0 },
     { Callout: "Average ", PP_ID: 0, RRN: 0, PRN: 0, ARN: 0, IC: 0, ΔRRN: 0, ΔPRN: 0, ΔARN: 0, DayCount: 0 },
-
   ]);
 
   const safeNum = (val) => (isNaN(parseFloat(val)) ? 0 : parseFloat(val));
 
-  // ✅ Extract sorted, unique ppIds > 0
   const allPpIds = useMemo(
     () =>
       Array.from(new Set(projectionData.map((d) => Number(d.ppId))))
@@ -133,10 +130,9 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
     [projectionData]
   );
 
-  // ✅ Handle dropdown selection
   const handlePPChange = (idx, value) => {
     const selectedData = projectionData.find((d) => Number(d.ppId) === Number(value));
-  
+
     setRows((prev) => {
       const updated = prev.map((row, i) => {
         if (i === idx && selectedData) {
@@ -154,7 +150,6 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
           };
         }
         if (i === idx && Number(value) === 0) {
-          // Reset
           return {
             ...row,
             PP_ID: 0,
@@ -170,8 +165,7 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
         }
         return row;
       });
-  
-      // ✅ Update Termination Point
+
       const third = updated[2];
       const terminationRowIndex = 3;
       updated[terminationRowIndex] = {
@@ -186,107 +180,104 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
         ΔARN: 0,
         DayCount: (third.DayCount ?? 0) + 31,
       };
-  
-      // ✅ Only proceed when 3 PPs are selected
+
       const first = updated[0];
       const second = updated[1];
-      // if (first.PP_ID && second.PP_ID && third.PP_ID) {
-        const dayCount = 15; // As per your rule
-  
-        // 🔹 ΔRRN Projection
-        const [underRRN, overRRN] = calculateProjectionValues(
-          first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN, // last repeated (no 4th)
-          first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1, // dummy x4
-          dayCount
-        );
-  
-        // 🔹 ΔPRN Projection
-        const [underPRN, overPRN] = calculateProjectionValues(
-          first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
-          first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1,
-          dayCount
-        );
-  
-        // 🔹 ΔARN Projection
-        const [underARN, overARN] = calculateProjectionValues(
-          first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
-          first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1,
-          dayCount
-        );
-  
-        const safeNum = (val) => (isNaN(parseFloat(val)) ? 0 : parseFloat(val));
+      const dayCount = 15;
 
-        // ✅ Update Overshoot (row 4)
-        updated[4] = {
-          ...updated[4],
-          PP_ID: `${dayCount} days`,
-          DayCount: third.DayCount + 15,
-          ΔRRN: overRRN.toFixed(3),
-          ΔPRN: overPRN.toFixed(3),
-          ΔARN: overARN.toFixed(3),
-          RRN: (safeNum(third.RRN) + safeNum(overRRN)).toFixed(3),
-          PRN: (safeNum(third.PRN) + safeNum(overPRN)).toFixed(3),
-          ARN: (safeNum(third.ARN) + safeNum(overARN)).toFixed(3),
-        };
+      // 15-day projections (undershoot & overshoot)
+      const [underRRN, overRRN] = calculateProjectionValues(
+        first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        dayCount
+      );
+      const [underPRN, overPRN] = calculateProjectionValues(
+        first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        dayCount
+      );
+      const [underARN, overARN] = calculateProjectionValues(
+        first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        dayCount
+      );
 
-        // ✅ Update Undershoot (row 5)
-        updated[5] = {
-          ...updated[5],
-          PP_ID: `${dayCount} days`,
-          DayCount: third.DayCount + 15,
-          ΔRRN: underRRN.toFixed(3),
-          ΔPRN: underPRN.toFixed(3),
-          ΔARN: underARN.toFixed(3),
-          RRN: (safeNum(third.RRN) + safeNum(underRRN)).toFixed(3),
-          PRN: (safeNum(third.PRN) + safeNum(underPRN)).toFixed(3),
-          ARN: (safeNum(third.ARN) + safeNum(underARN)).toFixed(3),
-        };
+      // Update Overshoot (row 4)
+      updated[4] = {
+        ...updated[4],
+        PP_ID: `${dayCount} days`,
+        DayCount: third.DayCount + 15,
+        ΔRRN: overRRN.toFixed(3),
+        ΔPRN: overPRN.toFixed(3),
+        ΔARN: overARN.toFixed(3),
+        RRN: (safeNum(third.RRN) + safeNum(overRRN)).toFixed(3),
+        PRN: (safeNum(third.PRN) + safeNum(overPRN)).toFixed(3),
+        ARN: (safeNum(third.ARN) + safeNum(overARN)).toFixed(3),
+      };
 
-  
-        // ✅ Average row (row 6)
-        updated[6] = {
-          ...updated[6],
-          PP_ID: dayCount + ' days',
-          DayCount: third.DayCount + 15,
-          ΔRRN: ((parseFloat(overRRN) + parseFloat(underRRN)) / 2).toFixed(3),
-          ΔPRN: ((parseFloat(overPRN) + parseFloat(underPRN)) / 2).toFixed(3),
-          ΔARN: ((parseFloat(overARN) + parseFloat(underARN)) / 2).toFixed(3),
-          RRN: ((safeNum(first.RRN) + safeNum(second.RRN) + safeNum(third.RRN)) / 3).toFixed(3),
-          PRN: ((safeNum(first.PRN) + safeNum(second.PRN) + safeNum(third.PRN)) / 3).toFixed(3),
-          ARN: ((safeNum(first.ARN) + safeNum(second.ARN) + safeNum(third.ARN)) / 3).toFixed(3),
-        };
-      // }
+      // Update Undershoot (row 5)
+      updated[5] = {
+        ...updated[5],
+        PP_ID: `${dayCount} days`,
+        DayCount: third.DayCount + 15,
+        ΔRRN: underRRN.toFixed(3),
+        ΔPRN: underPRN.toFixed(3),
+        ΔARN: underARN.toFixed(3),
+        RRN: (safeNum(third.RRN) + safeNum(underRRN)).toFixed(3),
+        PRN: (safeNum(third.PRN) + safeNum(underPRN)).toFixed(3),
+        ARN: (safeNum(third.ARN) + safeNum(underARN)).toFixed(3),
+      };
 
+      // ------------- FIXED: 15-day Average (use mean of undershoot & overshoot) -------------
+      // Δ averages
+      const avgDeltaRRN_15 = ((parseFloat(overRRN) + parseFloat(underRRN)) / 2);
+      const avgDeltaPRN_15 = ((parseFloat(overPRN) + parseFloat(underPRN)) / 2);
+      const avgDeltaARN_15 = ((parseFloat(overARN) + parseFloat(underARN)) / 2);
 
-      // 🔹 30-day projections
+      // RRN/PRN/ARN averages: mean of overshoot final and undershoot final
+      const overshootRow15 = updated[4];
+      const undershootRow15 = updated[5];
+
+      const avgRRN_15 = (safeNum(overshootRow15.RRN) + safeNum(undershootRow15.RRN)) / 2;
+      const avgPRN_15 = (safeNum(overshootRow15.PRN) + safeNum(undershootRow15.PRN)) / 2;
+      const avgARN_15 = (safeNum(overshootRow15.ARN) + safeNum(undershootRow15.ARN)) / 2;
+
+      updated[6] = {
+        ...updated[6],
+        PP_ID: `${dayCount} days`,
+        DayCount: third.DayCount + 15,
+        ΔRRN: avgDeltaRRN_15.toFixed(3),
+        ΔPRN: avgDeltaPRN_15.toFixed(3),
+        ΔARN: avgDeltaARN_15.toFixed(3),
+        RRN: avgRRN_15.toFixed(3),
+        PRN: avgPRN_15.toFixed(3),
+        ARN: avgARN_15.toFixed(3),
+      };
+
+      // ---------------- 30-day projections ----------------
       const dayCount30 = 30;
 
-      // Use 15-day Δs as base
+      const [underRRN30, overRRN30] = calculateProjectionValues(
+        first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        dayCount30
+      );
+      const [underPRN30, overPRN30] = calculateProjectionValues(
+        first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        dayCount30
+      );
+      const [underARN30, overARN30] = calculateProjectionValues(
+        first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
+        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        dayCount30
+      );
+
+      // Prev overshoot/undershoot (15-day) used to compute final RRN/PRN/ARN for 30-day overshoot/undershoot
       const prevOvershoot15 = updated[4];
       const prevUndershoot15 = updated[5];
 
-      // ΔRRN Projection for 30 days
-      const [underRRN30, overRRN30] = calculateProjectionValues(
-        first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1,
-        dayCount30
-      );
-
-      // ΔPRN Projection for 30 days
-      const [underPRN30, overPRN30] = calculateProjectionValues(
-        first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1,
-        dayCount30
-      );
-
-      // ΔARN Projection for 30 days
-      const [underARN30, overARN30] = calculateProjectionValues(
-        first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + 1,
-        dayCount30
-      );
-
-      // ✅ Overshoot (30 days) - row 7
+      // Overshoot (30 days) - row 7
       updated[7] = {
         ...updated[7],
         PP_ID: `${dayCount30} days`,
@@ -299,7 +290,7 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
         ARN: (safeNum(prevOvershoot15.ARN) + safeNum(overARN30)).toFixed(3),
       };
 
-      // ✅ Undershoot (30 days) - row 8
+      // Undershoot (30 days) - row 8
       updated[8] = {
         ...updated[8],
         PP_ID: `${dayCount30} days`,
@@ -312,45 +303,47 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
         ARN: (safeNum(prevUndershoot15.ARN) + safeNum(underARN30)).toFixed(3),
       };
 
-      // ✅ Average (30 days) - row 9
+      // ---------------- FIXED: 30-day Average (mean of undershoot & overshoot) ----------------
+      const avgDeltaRRN_30 = ((parseFloat(overRRN30) + parseFloat(underRRN30)) / 2);
+      const avgDeltaPRN_30 = ((parseFloat(overPRN30) + parseFloat(underPRN30)) / 2);
+      const avgDeltaARN_30 = ((parseFloat(overARN30) + parseFloat(underARN30)) / 2);
+
+      const overshootRow30 = updated[7];
+      const undershootRow30 = updated[8];
+
+      const avgRRN_30 = (safeNum(overshootRow30.RRN) + safeNum(undershootRow30.RRN)) / 2;
+      const avgPRN_30 = (safeNum(overshootRow30.PRN) + safeNum(undershootRow30.PRN)) / 2;
+      const avgARN_30 = (safeNum(overshootRow30.ARN) + safeNum(undershootRow30.ARN)) / 2;
+
       updated[9] = {
         ...updated[9],
         PP_ID: `${dayCount30} days`,
         DayCount: third.DayCount + 30,
-        ΔRRN: ((parseFloat(overRRN30) + parseFloat(underRRN30)) / 2).toFixed(3),
-        ΔPRN: ((parseFloat(overPRN30) + parseFloat(underPRN30)) / 2).toFixed(3),
-        ΔARN: ((parseFloat(overARN30) + parseFloat(underARN30)) / 2).toFixed(3),
-        RRN: ((safeNum(first.RRN) + safeNum(second.RRN) + safeNum(third.RRN)) / 3).toFixed(3),
-        PRN: ((safeNum(first.PRN) + safeNum(second.PRN) + safeNum(third.PRN)) / 3).toFixed(3),
-        ARN: ((safeNum(first.ARN) + safeNum(second.ARN) + safeNum(third.ARN)) / 3).toFixed(3),
+        ΔRRN: avgDeltaRRN_30.toFixed(3),
+        ΔPRN: avgDeltaPRN_30.toFixed(3),
+        ΔARN: avgDeltaARN_30.toFixed(3),
+        RRN: avgRRN_30.toFixed(3),
+        PRN: avgPRN_30.toFixed(3),
+        ARN: avgARN_30.toFixed(3),
       };
 
-  
       return updated;
     });
   };
 
+  const availableByIndex = useMemo(() => {
+    const usedPpIds = rows.slice(0, 3)
+      .map(r => Number(r.PP_ID))
+      .filter(id => id > 0);
 
+    return rows.map((row, idx) => {
+      if (idx >= 3) return [];
 
-  // ✅ Available PP IDs logic
-  // ✅ Available PP IDs logic
-const availableByIndex = useMemo(() => {
-  // Collect all PP IDs already used in any of the first three rows
-  const usedPpIds = rows.slice(0, 3)
-    .map(r => Number(r.PP_ID))
-    .filter(id => id > 0);
-
-  return rows.map((row, idx) => {
-    if (idx >= 3) return [];
-
-    return allPpIds.filter(id => {
-      // Show only IDs that are NOT used in other selections
-      // But allow the current row's own selection to stay visible
-      return !usedPpIds.includes(id) || id === Number(row.PP_ID);
+      return allPpIds.filter(id => {
+        return !usedPpIds.includes(id) || id === Number(row.PP_ID);
+      });
     });
-  });
-}, [rows, allPpIds]);
-
+  }, [rows, allPpIds]);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">

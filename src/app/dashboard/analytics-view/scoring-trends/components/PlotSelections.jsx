@@ -30,7 +30,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 
-export default function PlotSelections({ filters, unitId, candidateId, onResetFilters }) {
+export default function PlotSelections({ filters, unitId, environment, candidateId, onResetFilters }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
     { id: 2, name: "curve2" },
@@ -610,25 +610,34 @@ export default function PlotSelections({ filters, unitId, candidateId, onResetFi
                       <div className="col-span-2 py-1 text-left font-medium">ID</div>
                     </div>
                     
-                    {/* Table Body - Scrollable */}
                     <div className="flex-1 overflow-y-auto">
-                      {chart.map((item, index) => (
-                        <div 
-                          key={index} 
-                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${selectedChart.name === item.name ? "bg-gray-100" : ""}`}
-                          onClick={() => setSelectedChart(item)}
-                        >
-                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
-                            <div className="flex items-center">
-                              
-                              <span className="truncate">📉 {item.name}</span>
+                      {chart
+                        .filter((item) => {
+                          // 🔹 If environment is Workforce → show everything
+                          if (environment === "Workforce") return true;
+
+                          // 🔹 For other types (like Classroom) → show only Attained & Max
+                          return ["attained", "max"].includes(item.key);
+                        })
+                        .map((item, index) => (
+                          <div
+                            key={index}
+                            className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${
+                              selectedChart.name === item.name ? "bg-gray-100" : ""
+                            }`}
+                            onClick={() => setSelectedChart(item)}
+                          >
+                            <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                              <div className="flex items-center">
+                                <span className="truncate">📉 {item.name}</span>
+                              </div>
+                            </div>
+                            <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                              {item.id}
                             </div>
                           </div>
-                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                            {item.id}
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                      }
                     </div>
                   </div>
               </div>

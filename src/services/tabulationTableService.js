@@ -14,7 +14,7 @@ export const getUnitAndCandidateSummary = async (filters) => {
       });
   
       const query = new URLSearchParams(params).toString();
-      const response = await api.get(`${API_ROUTES.TABULATION}/ratio?${query}`);
+      const response = await api.get(`${API_ROUTES.TABULATION}/proficiency?${query}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching scoring criteria:", error);

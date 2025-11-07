@@ -297,7 +297,7 @@ export default function ScoringTrends() {
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200  ml-1">
-                {ScoresOpen && <PlotSelections filters={secondaryValues} unitId={selectedUnitId} candidateId={activeCandidateId} onResetFilters={resetFilters}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} unitId={selectedUnitId} environment={unitData.environment} candidateId={activeCandidateId} onResetFilters={resetFilters}
                  />}
               </div>
             </div>
