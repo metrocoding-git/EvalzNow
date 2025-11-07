@@ -182,13 +182,18 @@ useEffect(() => {
       }));
       
       // Append summary rows at the bottom
-      const summaryRows = ["average", "stdDev", "stdErr"].map(label => {
-        const summaryData = data[label]; // assuming `data` contains average/stdDev/stdErr
+      const summaryRows = [
+        { label: "Average", key: "averages" },
+        { label: "StdDev", key: "stdDevs" },
+        { label: "StdErr", key: "stdErrs" },
+      ].map(({ label, key }) => {
+        const summaryData = data[key]?.[0] || {};
         return {
-          "PP ID": label === "average" ? "Average" : label === "stdDev" ? "StdDev" : "StdErr",
+          "PP ID": label,
           ...summaryData,
         };
       });
+      
 
       const sortedFormattedData = [...formattedData].sort((a, b) => {
         const ppA = a["PP ID"];
@@ -351,32 +356,32 @@ console.log("unit type check", tableData);
                                 className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
                               >
                                 {(() => {
-  const value = row[header];
+                                const value = row[header];
 
-  // columns that should NEVER be formatted (keep exactly as backend sends)
-  const skipFormatting = [
-    "PP ID",
-    "Critical Reference Date",
-    "Day Count (Days)",
-    "unitType",
-    "IC" // ✅ IC stays exactly as-is (even if it has numbers)
-  ];
+                                // columns that should NEVER be formatted (keep exactly as backend sends)
+                                const skipFormatting = [
+                                  "PP ID",
+                                  "Critical Reference Date",
+                                  "Day Count (Days)",
+                                  "unitType",
+                                  "IC" // ✅ IC stays exactly as-is (even if it has numbers)
+                                ];
 
-  if (skipFormatting.includes(header)) {
-    return value ?? '-';
-  }
+                                if (skipFormatting.includes(header)) {
+                                  return value ?? '-';
+                                }
 
-  // check if value is a float (not an integer or text)
-  const num = parseFloat(value);
-  const isFloat = !isNaN(num) && value.toString().includes('.');
+                                // check if value is a float (not an integer or text)
+                                const num = parseFloat(value);
+                                const isFloat = !isNaN(num) && value.toString().includes('.');
 
-  if (isFloat) {
-    return num.toFixed(3);
-  }
+                                if (isFloat) {
+                                  return num.toFixed(3);
+                                }
 
-  // default case: show as-is
-  return value ?? '-';
-})()}
+                                // default case: show as-is
+                                return value ?? '-';
+                              })()}
 
 
                               </td>

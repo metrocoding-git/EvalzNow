@@ -1,10 +1,11 @@
 "use client";
+import { getUnitAndMultipleCandidateSummary } from "@/services/tabulationTableService";
 import { Edit, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
@@ -13,12 +14,15 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal }) =>
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [growthMetrics, setGrowthMetrics] = useState({
+    receptive: { cumulative: 0, average: 0 },
+    productive: { cumulative: 0, average: 0 },
+    acuity: { cumulative: 0, average: 0 },
+  });
 
-  const growthMetrics = {
-    receptive: { cumulative: 1.234, average: 0.567 },
-    productive: { cumulative: 2.345, average: 1.123 },
-    acuity: { cumulative: 0.987, average: 0.456 },
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setPpIdFrom(-3);
@@ -41,9 +45,67 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal }) =>
     };
 
     onSubmit(values);
+    setSecondaryValues(values);
     // console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
     // You can add fetch or state update logic here
   };
+
+  useEffect(() => {
+    const fetchCumalativeData = async () => {
+      if (!unitId || !candidateId) return;
+
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const data = await getUnitAndMultipleCandidateSummary({
+          unitId,
+          candidate_id: candidateId,
+          ppIdFrom,
+          ppIdTo,
+          criticalRefDateFrom: criticalDateFrom || undefined,
+          criticalRefDateTo: criticalDateTo || undefined,
+        });
+  
+  
+        const { cumulativeAverages, cumulativeSums } = data;
+        
+        
+         // 🧠 Pick candidate-specific values (assuming one candidate at a time)
+         const avg = cumulativeAverages?.find(a => a.candidateId == candidateId);
+         const sum = cumulativeSums?.find(s => s.candidateId == candidateId);
+ 
+         // ✅ Map to your local state structure
+         setGrowthMetrics({
+           receptive: {
+             cumulative: sum?.deltaRRN ?? 0,
+             average: avg?.deltaRRN ?? 0,
+           },
+           productive: {
+             cumulative: sum?.deltaPRN ?? 0,
+             average: avg?.deltaPRN ?? 0,
+           },
+           acuity: {
+             cumulative: sum?.deltaARN ?? 0,
+             average: avg?.deltaARN ?? 0,
+           },
+         });
+  
+  
+        // console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+        
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCumalativeData();
+  }, [unitId, candidateId, secondaryValues]);
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -149,139 +211,64 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal }) =>
         </div>
 
 
+        {/* Candidate Level Section */}
         {selectedSort === "activateCandidateLevel" && (
-        
-        <div className="mt-2 flex flex-col gap-3">
+          <div className="mt-2 flex flex-col gap-3">
             <div>
-                <strong>Cumulative Growth For Receptive Ratio:</strong> {/* PP ID Range */}
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
-              </div>
-            <div>
-                <strong>Average Growth For Receptive Ratio:</strong> 
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
+              <strong>Cumulative Growth For Receptive Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.receptive.cumulative}
+                className="border px-2 py-1 w-full"
+              />
             </div>
-            <div>
-                <strong>Cumulative Growth For Productive Ratio:</strong>
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
-            </div>
-            <div>
-                <strong>Average Growth For Productive Ratio:</strong> 
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
-            </div>
-            <div>
-                <strong>Cumulative Growth For Acuity Ratio:</strong>
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
-            </div>
-            <div>
-                <strong>Average Growth For Acuity Ratio:</strong> 
-                <div className="gap-1 text-xs p-2">
-                  <input
-                    type="number"
-                    readOnly
-                    value={ppIdFrom}
-                    onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
-                    className=" border px-2 py-1 w-full"
-                    placeholder="From (e.g., -3)"
-                  />
-                  {/* <input
-                    readOnly
-                    type="number"
-                    value={ppIdTo}
-                    onChange={(e) => setPpIdTo(parseInt(e.target.value))}
-                    className="border px-2 py-1 w-1/2"
-                    placeholder="To (e.g., 3)"
-                  /> */}
-                </div>
-            </div>
-        </div>
 
+            <div>
+              <strong>Average Growth For Receptive Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.receptive.average}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+
+            <div>
+              <strong>Cumulative Growth For Productive Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.productive.cumulative}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+
+            <div>
+              <strong>Average Growth For Productive Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.productive.average}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+
+            <div>
+              <strong>Cumulative Growth For Acuity Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.acuity.cumulative}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+
+            <div>
+              <strong>Average Growth For Acuity Ratio:</strong>
+              <input
+                readOnly
+                value={growthMetrics.acuity.average}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+          </div>
         )}
-
 
         
 

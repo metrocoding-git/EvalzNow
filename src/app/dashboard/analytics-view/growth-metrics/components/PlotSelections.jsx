@@ -12,10 +12,129 @@ import {
   ReferenceLine,
   Cell
 } from 'recharts';
-import PropertyEditor from '../../components/PropertyEditor';
+import PropertyEditor from './PropertyEditor';
 import ProjectionTable from './ProjectionTable';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import { getUnitById } from '@/services/unitService';
+
+//This script is used to plot the undershoot curves, the overshoot curves, and the vertical projection lines
+//on the Growth Projection graph -> Candidate Analysis: Growth Projections (Data Analytics)
+//------------------------------------------------------------------------------------------------------
+//spline 2nd derivative at x2
+const calculateZ2 = (m1, m2, m3, x1, x2, x3, x4) => {
+  let numerator =
+    m3 * x2 +
+    m2 * x3 -
+    m3 * x3 +
+    2 * m2 * x4 +
+    2 * m1 * x2 -
+    2 * m1 * x4 -
+    3 * m2 * x2;
+  let denominator = 4 * (x1 * x2 + x3 * x4 - x1 * x4) - Math.pow(x2 + x3, 2);
+  let result = 6 * (numerator / denominator);
+  return result;
+};
+
+//spline 2nd derivative at x3
+const calculateZ3 = (m1, m2, m3, x1, x2, x3, x4) => {
+  let numerator =
+    m2 * x2 +
+    m1 * x3 -
+    m1 * x2 +
+    2 * m2 * x1 +
+    2 * m3 * x3 -
+    2 * m3 * x1 -
+    3 * m2 * x3;
+  let denominator = 4 * (x1 * x2 + x3 * x4 - x1 * x4) - Math.pow(x2 + x3, 2);
+  let result = 6 * (numerator / denominator);
+  return result;
+};
+
+export function calculateProjectionValues(
+  y1, //Growth differentials for ΔRRN/ΔPRN/ΔARN of selected performance points
+  y2,
+  y3,
+  y4, //Value always equal to 0
+  x1, //Daycounts associated with selected performance points
+  x2,
+  x3,
+  x4 //Projection termination point, so x4 = x3 + 31
+) {
+  let m1 = (y2 - y1) / (x2 - x1); //piecewise linear slopes
+  let m2 = (y3 - y2) / (x3 - x2);
+  let m3 = (y4 - y3) / (x4 - x3);
+  let z2 = calculateZ2(m1, m2, m3, x1, x2, x3, x4); //spline 2nd derivative at x2
+  let z3 = calculateZ3(m1, m2, m3, x1, x2, x3, x4); //spline 2nd derivative at x3
+  let a1 = z2 / (6 * (x1 - x2)); //cubic coefficients
+  let a2 = (2 * z2 + z3) / (6 * (x2 - x3));
+  let a3 = z3 / (3 * (x3 - x4));
+  let b1 = (2 * z2) / (6 * (x2 - x1));
+  let b2 = (2 * z3 + z2) / (6 * (x3 - x2));
+  let b3 = z3 / (6 * (x4 - x3));
+
+  let curves = [];
+
+  // s is the overshoot value for ΔRRN/ΔPRN/ΔARN
+  // l is the undershoot value for ΔRRN/ΔPRN/ΔARN
+  // c is the correction factor
+
+  // Curves for Segment #1
+
+  //l1 ,l2,l3 means blue lines
+  //s1,s2,s3 means red lines
+
+  for (let i = x1; i <= x2 + 0.1; i = i + 0.1) {
+    let l1 = m1 * (i - x1) + y1;
+    let c1 =
+      a1 * Math.pow(i - x2, 2) * (i - x1) + b1 * (i - x2) * Math.pow(i - x1, 2);
+    let s1 = l1 + c1;
+
+
+    // blue.push({ l1 });
+    // red.push({ s1 });
+ 
+    curves.push({ l1, s1, i });
+   
+  }
+
+  // Curves for Segment #2
+
+  for (let j = x2; j <= x3 + 0.1; j = j + 0.1) {
+    let l2 = m2 * (j - x2) + y2;
+    let c2 =
+      a2 * Math.pow(j - x3, 2) * (j - x2) + b2 * (j - x3) * Math.pow(j - x2, 2);
+    let s2 = l2 + c2;
+
+    /// blue.push({ l2 });
+    /// red.push({ s2 });
+
+ 
+    curves.push({ l2, s2, j });
+
+  }
+
+  // Curves for Segment #3
+
+  for (let k = x3; k <= x4 + 0.1; k = k + 0.1) {
+    let l3 = m3 * (k - x4) + y4;
+    let c3 =
+      a3 * Math.pow(k - x4, 2) * (k - x3) + b3 * (k - x4) * Math.pow(k - x3, 2);
+    let s3 = l3 + c3;
+
+    // blue.push({ l3 });
+    // red.push({ s3 });
+
+
+    curves.push({ l3, s3, k });
+
+  }
+
+  // Vertical line for the 15-day projection (i = x3 + 15) and the 30-day projection (i = x3 + 30)
+  // curves.push({ blue, red });
+
+  return curves;
+}
+
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -155,7 +274,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         });
   
   
-        const { results, average, stdDev, stdErr } = data;  
+        const { results, cumulativeSums, average, stdDev, stdErr } = data;  
   
         const formattedData = results.map(row => ({
           ppId: row.ppId,
