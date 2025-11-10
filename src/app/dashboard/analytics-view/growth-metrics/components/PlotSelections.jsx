@@ -217,19 +217,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     { id: "acl-7", name: "Performance Ratios (AR)", icon: "📊", type: "line" },
     { id: "acl-8", name: "Stability in Growth (STAG)", icon: "🧭", type: "pie" },
     { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 1 (RRGT1)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 2 (RRGT2)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 3 (RRGT3)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 4 (RRGT4)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 5 (RRGT5)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 1 (PRGT1)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 2 (PRGT2)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 3 (PRGT3)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 4 (PRGT4)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 5 (PRGT5)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 1 (ARGT1)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 2 (RRGT2)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 2 (PRGT2)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 2 (ARGT2)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 3 (RRGT3)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 3 (PRGT3)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 3 (ARGT3)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 4 (RRGT4)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 4 (PRGT4)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 4 (ARGT4)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 5 (RRGT5)", icon: "🧪", type: "line" },
+    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 5 (PRGT5)", icon: "🧪", type: "line" },
     { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 5 (ARGT5)", icon: "🧪", type: "line" },
     // { id: "acl-10", name: "GT 2 Component", icon: "🧪", type: "line" },
     // { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
@@ -858,6 +858,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
       <ProjectionTable
         visible={showProjectionTable}
+        unitId= {unitId}
+        candidateId= {candidateId}
         projectionData={tableData}
         onClose={() => {
           setShowProjectionTable(false) 

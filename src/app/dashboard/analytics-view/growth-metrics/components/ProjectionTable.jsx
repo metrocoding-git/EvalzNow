@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import { createProjection, getProjection } from "@/services/projectionService";
+import React, { useState, useMemo, useEffect } from "react";
 
 
 // This script is used to calculate the values in the Growth Projection table for the Tabulations of Candidate Analysis
@@ -91,7 +92,7 @@ export function calculateProjectionValues(
   // };
 }
 
-export default function ProjectionTable({ visible, onClose, projectionData = [] }) {
+export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [] }) {
   if (!visible) return null;
 
   const columns = [
@@ -106,6 +107,9 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
     "ΔARN",
     "Day Count",
   ];
+
+  const [loading, setLoading] = useState(false);
+  const [existingSessionId, setExistingSessionId] = useState(null);
 
   const [rows, setRows] = useState([
     { Callout: "First PP Selection", PP_ID: 0, RRN: 0, PRN: 0, ARN: 0, IC: 0, ΔRRN: 0, ΔPRN: 0, ΔARN: 0, DayCount: 0 },
@@ -129,6 +133,8 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
         .sort((a, b) => a - b),
     [projectionData]
   );
+
+
 
   const handlePPChange = (idx, value) => {
     const selectedData = projectionData.find((d) => Number(d.ppId) === Number(value));
@@ -345,6 +351,105 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
     });
   }, [rows, allPpIds]);
 
+  useEffect(() => {
+    const fetchProjectionData = async () => {
+      try {
+        setLoading(true);
+        const response = await getProjection(unitId, candidateId);
+  
+        if (response && Array.isArray(response) && response.length > 0) {
+          const latestSession = response[0]; // use most recent session
+          const savedPoints = latestSession.points || [];
+  
+          setExistingSessionId(latestSession.id);
+
+          if (savedPoints.length > 0) {
+            setRows((prevRows) =>
+              prevRows.map((r, idx) => {
+                const matched = savedPoints[idx];
+                if (matched) {
+                  return {
+                    ...r,
+                    PP_ID: matched.ppId ?? r.PP_ID,
+                    Callout: matched.callout ?? r.Callout,
+                    RRN: parseFloat(matched.RRN ?? r.RRN),
+                    PRN: parseFloat(matched.PRN ?? r.PRN),
+                    ARN: parseFloat(matched.ARN ?? r.ARN),
+                    IC: matched.IC ?? r.IC,
+                    ΔRRN: parseFloat(matched.deltaRRN ?? r["ΔRRN"]),
+                    ΔPRN: parseFloat(matched.deltaPRN ?? r["ΔPRN"]),
+                    ΔARN: parseFloat(matched.deltaARN ?? r["ΔARN"]),
+                    DayCount: parseFloat(matched.dayCount ?? r.DayCount),
+                  };
+                }
+                return r;
+              })
+            );
+          }
+        } else {
+          setExistingSessionId(null);
+          console.log("ℹ️ No previous projection found — starting new.");
+        }
+      } catch (error) {
+        console.error("❌ Failed to fetch projection:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    if (unitId && candidateId) {
+      fetchProjectionData();
+    }
+  }, [unitId, candidateId]);
+
+
+
+  
+
+
+  // ✅ Create Projection API call
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      // Filter out only valid points (ignore rows with "-")
+      const points = rows
+        .filter((r) => typeof r.DayCount === "number" && r.DayCount > 0)
+        .map((r, index) => ({
+          ppId: String(r.PP_ID || `AUTO-${index + 1}`),
+          callout: r.Callout,
+          RRN: safeNum(r.RRN),
+          PRN: safeNum(r.PRN),
+          ARN: safeNum(r.ARN),
+          IC: r.IC || "",
+          deltaRRN: safeNum(r["ΔRRN"]),
+          deltaPRN: safeNum(r["ΔPRN"]),
+          deltaARN: safeNum(r["ΔARN"]),
+          dayCount: r.DayCount,
+        }));
+
+      const payload = {
+        unitId,
+        candidateId,
+        points,
+      };
+
+      console.log("📤 Sending payload:", payload);
+
+      const response = await createProjection(payload);
+
+      alert("✅ Projection session created successfully!");
+      console.log("✅ Projection API response:", response);
+
+      onClose(); // close modal
+    } catch (error) {
+      console.error("❌ Error creating projection:", error);
+      alert("Failed to create projection session.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-5xl p-4 overflow-auto max-h-[90vh]">
@@ -408,6 +513,13 @@ export default function ProjectionTable({ visible, onClose, projectionData = [] 
               })}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex justify-end items-center my-2">
+        
+          <button onClick={handleSubmit} className="text-gray-700 hover:bg-gray-300 bg-gray-200 p-1 rounded">
+            Submit 
+          </button>
         </div>
       </div>
     </div>
