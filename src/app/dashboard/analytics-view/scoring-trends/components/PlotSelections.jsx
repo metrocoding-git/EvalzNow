@@ -633,7 +633,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                               </div>
                             </div>
                             <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                              {item.id}
+                              {index + 1}
                             </div>
                           </div>
                         ))

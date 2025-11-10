@@ -16,5 +16,6 @@ export const API_ROUTES = {
     SCORING_TRENDS: "/scoring-trends",
     TABULATION: "/tabulation",
     ACCOUNT: "/account",
-    BENCHMARK: "/benchmark"
+    BENCHMARK: "/benchmark",
+    PROJECTION: "/projection"
 };
