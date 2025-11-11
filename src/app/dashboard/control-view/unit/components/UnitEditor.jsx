@@ -7,8 +7,6 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import StaffLookup from "./StaffLookUp";
 import { getAllStaffs } from "@/services/staffService";
 
-
-
 const PERIOD_TYPES = [
   "Audit/Survey",
   "Blended - Instructor",
@@ -94,6 +92,27 @@ const BENCHMARK_TYPES = [
   "Trial & Error",
 ];
 
+// Threshold names mapping
+const THRESHOLD_NAMES = {
+  XEP: "Equivalent Proficiency",
+  XRR: "Reading Ratio",
+  XLR: "Listening Ratio",
+  XSR: "Speaking Ratio",
+  XWR: "Writing Ratio",
+  XCP: "Composite Proficiency",
+  XBP: "Band Proficiency",
+  MSIP: "Butler Interaction Proficiency",
+  ΔRRN: "Receptive Growth Differential",
+  ΔPRN: "Productive Growth Differential",
+  ΔARN: "Acuity Growth Differential",
+  ΔGEQ: "Equivalent Growth Differential",
+  IC: "Interaction Class",
+  XTR: "Theory-Based Ratio",
+  XPR: "Practice Ratio",
+  XRVSR: "Receptive Variable Scoring Ratio",
+  XPVSR: "Productive Variable Scoring Ratio",
+  XAVSR: "Acuity Value Score Ratio"
+};
 
 const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock, onBlockUpdate, onBlockSubmitStatus }) => {
   const [unit, setUnit] = useState({
@@ -108,7 +127,8 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     scoringSystem: "",
     benchmarks: [],
     assignedLeaders: [],
-    assignedAssessors: []
+    assignedAssessors: [],
+    passThresholds: {}
   });
   const [unitDirectors, setUnitDirectors] = useState([]);
   const staffLookupRef = useRef(null);
@@ -127,6 +147,50 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 
   const { setFormStatus } = useFormStatus();
 
+  // Default thresholds by unit type
+  const defaultThresholds = {
+    "Communicative I/O": {
+      XEP: 0.700,
+      XRR: 0.700,
+      XLR: 0.700,
+      XSR: 0.700,
+      XWR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
+      ΔRRN: 0.0,
+      ΔPRN: 0.0,
+      ΔGEQ: 0.0,
+      IC: 2,
+    },
+    "Theory & Practice": {
+      XEP: 0.700,
+      XTR: 0.700,
+      XPR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
+      ΔRRN: 0.0,
+      ΔPRN: 0.0,
+      ΔGEQ: 0.0,
+      IC: 2,
+    },
+    "Third Parameter": {
+      XEP: 0.700,
+      XRVSR: 0.700,
+      XPVSR: 0.700,
+      XAVSR: 0.700,
+      XCP: 0.700,
+      XBP: 0.700,
+      MSIP: 0.450,
+      ΔRRN: 0.0,
+      ΔPRN: 0.0,
+      ΔARN: 0.0,
+      ΔGEQ: 0.0,
+      IC: 2,
+    },
+  };
+
   // Fetch unit data when unitId changes
   useEffect(() => {
     const fetchUnitData = async () => {
@@ -136,17 +200,29 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         setIsLoading(true);
         const unitData = await getUnitById(unitId);
         console.log("unit data fetched -->", unitData);
-        // Transform API data to match form state
 
-
-         // Transform staffAssignments into assignedLeaders and assignedAssessors
         const assignedLeaders = (unitData.staffAssignments || [])
-        .filter(sa => sa.roleType === "Leader")
-        .map(sa => sa.staff.id);
+          .filter(sa => sa.roleType === "Leader")
+          .map(sa => sa.staff.id);
 
         const assignedAssessors = (unitData.staffAssignments || [])
-        .filter(sa => sa.roleType === "Assessor")
-        .map(sa => sa.staff.id);
+          .filter(sa => sa.roleType === "Assessor")
+          .map(sa => sa.staff.id);
+
+        // Extract pass thresholds from unitData
+        const passThresholds = {};
+        const thresholdKeys = Object.keys(defaultThresholds[unitData.unitType] || {});
+        
+        thresholdKeys.forEach(key => {
+          if (unitData[key] !== undefined && unitData[key] !== null) {
+            // Convert to number and store
+            passThresholds[key] = typeof unitData[key] === 'number' 
+              ? unitData[key] 
+              : parseFloat(unitData[key]);
+          }
+        });
+
+        console.log("Extracted passThresholds:", passThresholds); // Debug log
 
         setUnit({
           unitName: unitData.unitName,
@@ -166,10 +242,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
             benchmarkDescription: bm.benchmarkDescription || ""
           })),
           assignedLeaders,
-          assignedAssessors
+          assignedAssessors,
+          passThresholds: Object.keys(passThresholds).length > 0 
+            ? passThresholds 
+            : (defaultThresholds[unitData.unitType] || {})
         });
 
-          // Set unitDirectors dropdown to match selected leaders
         if (assignedLeaders.length > 0) {
           const leaderStaffs = await getAllStaffs(sessionStorage.getItem("activeClientId"));
           const selectedLeaders = leaderStaffs.filter(s => assignedLeaders.includes(s.id));
@@ -185,8 +263,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 
     fetchUnitData();
   }, [unitId]);
-
- 
 
   useEffect(() => {
     if (selectedBlock) {
@@ -204,7 +280,16 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setUnit((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Staff select handler
+  const handleThresholdChange = (key, value) => {
+    setUnit(prev => ({
+      ...prev,
+      passThresholds: {
+        ...prev.passThresholds,
+        [key]: parseFloat(value)
+      }
+    }));
+  };
+
   const handleStaffSelect = (selectedStaffArray) => {
     if (lookupFor === "leaders") {
       const leaderIds = selectedStaffArray.map((s) => s.id);
@@ -230,7 +315,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setLookupFor(null);
   };
  
-  // Handle benchmark field change
   const handleBenchmarkChange = (index, field, value) => {
     setUnit(prevUnit => {
       const updated = [...prevUnit.benchmarks];
@@ -239,13 +323,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     });
   };
 
-  console.log('selected Unit-->', unitId);
   const addBenchmark = () => {
     setUnit(prev => {
-      // Get the current benchmarks
       const benchmarks = prev.benchmarks || [];
-  
-      // Find the last benchmarkId (fallback to 0 if none)
       let lastId = 0;
       if (benchmarks.length > 0) {
         const lastBenchmark = benchmarks[benchmarks.length - 1];
@@ -254,42 +334,36 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
           lastId = lastBenchmarkId;
         }
       }
-  
-      // Create new benchmark with incremented benchmarkId
+
       const newBenchmark = {
         id: null,
-        benchmarkId: (lastId + 1).toString(), // auto increment for UX
+        benchmarkId: (lastId + 1).toString(),
         benchmarkType: "",
         benchmarkRef: "",
         benchmarkDescription: "",
       };
-  
+
       return {
         ...prev,
         benchmarks: [...benchmarks, newBenchmark],
       };
     });
   };
-  
 
-  // Delete a benchmark at a specific index
   const deleteBenchmark = (index) => {
     setUnit(prevUnit => {
       const updated = prevUnit.benchmarks.filter((_, i) => i !== index);
-      // Reassign sequential IDs (1, 2, 3, ...)
-    const reordered = updated.map((bm, i) => ({
-      ...bm,
-      benchmarkId: (i + 1).toString(),
-    }));
+      const reordered = updated.map((bm, i) => ({
+        ...bm,
+        benchmarkId: (i + 1).toString(),
+      }));
 
-    return {
-      ...prevUnit,
-      benchmarks: reordered,
-    };
+      return {
+        ...prevUnit,
+        benchmarks: reordered,
+      };
     });
   };
-  
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -298,29 +372,25 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     setError(null);
 
     try {
+      const staffLookup = [
+        ...(unit.assignedLeaders || []).map((id) => ({
+          staffId: id,
+          roleType: "Leader",
+        })),
+        ...(unit.assignedAssessors || []).map((id) => ({
+          staffId: id,
+          roleType: "Assessor",
+        })),
+        ...(unit.unitDirector
+          ? [
+              {
+                staffId: unit.unitDirector,
+                roleType: "Director",
+              },
+            ]
+          : []),
+      ];
 
-      // Prepare staffLookup array (same as create)
-    const staffLookup = [
-      ...(unit.assignedLeaders || []).map((id) => ({
-        staffId: id,
-        roleType: "Leader",
-      })),
-      ...(unit.assignedAssessors || []).map((id) => ({
-        staffId: id,
-        roleType: "Assessor",
-      })),
-      ...(unit.unitDirector
-        ? [
-            {
-              staffId: unit.unitDirector,
-              roleType: "Director",
-            },
-          ]
-        : []),
-    ];
-
-
-      // Prepare the data for API
       const updatedUnit = {
         unitName: unit.unitName,
         unitId: unit.unitId,
@@ -332,13 +402,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         environment: unit.environment,
         scoringSystem: unit.scoringSystem,
         benchmarks: unit.benchmarks,
-        staffLookup: staffLookup, 
+        staffLookup: staffLookup,
+        ...unit.passThresholds, // Include thresholds in the update
       };
 
-      // Call API to update
       const savedUnit = await updateUnit(unitId, updatedUnit);
       
-      // Notify parent component
       onSave(savedUnit);
       console.log(savedUnit);
       onClose();
@@ -551,6 +620,40 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 </>
               )}
             </div>
+
+
+             {/* Pass/Fail Thresholds Section */}
+             {unit.unitType && unit.passThresholds && Object.keys(unit.passThresholds).length > 0 && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <h3 className="pb-2 font-semibold text-gray-800 text-base">Pass/Fail Thresholds</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(unit.passThresholds).map(([k, v]) => (
+                    <div key={k} className="space-y-1 relative group">
+                      {/* Tooltip */}
+                      <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
+                        {THRESHOLD_NAMES[k] || k}
+                      </div>
+
+                      <label className="block text-gray-700 font-medium text-xs">
+                        {k}:
+                      </label>
+                      <input
+                        type="number"
+                        step="0.001"
+                        value={typeof v === "number" ? v.toFixed(3) : ""}
+                        disabled={k === "IC"}
+                        onFocus={() => setFormStatus("Editing...")}
+                        onBlur={() => setFormStatus("Ready...")}
+                        onChange={(e) => handleThresholdChange(k, e.target.value)}
+                        className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${
+                          k === "IC" ? "bg-gray-100" : "bg-white"
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Benchmarks Section - Now using table format like irregularities */}
             <div className="mt-6 pt-4 border-t border-gray-200">

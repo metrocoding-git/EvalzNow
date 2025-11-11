@@ -91,9 +91,9 @@ const headers = {
   'MSIP': 'Margins of Interaction Proficiency',
   'STA/P': 'Stability in Proficiency',
   'IC': 'Interaction Class Based on Performance Point',
-  'ΔRRN': 'Receptive Ratio Growth Differential',
-  'ΔPRN': 'Productive Ratio Growth Differential',
-  'ΔARN': 'Acuity Ratio Growth Differential',
+  'deltaRRN': 'Receptive Ratio Growth Differential',
+  'deltaPRN': 'Productive Ratio Growth Differential',
+  'deltaARN': 'Acuity Ratio Growth Differential',
   'GEQ': 'Equivalent Growth',
   'STA/G': 'Stability in Growth',
   'RRGT1': 'Projected Receptive Ratio Component for Growth Target 1',
@@ -136,7 +136,7 @@ useEffect(() => {
 
       const formattedData = results.map(item => ({
         "PP ID": item.ppId,
-        "Critical Reference Date": item.criticalRefDate,
+        "Critical Reference Date": item.criticalRefDate ? new Date(item.criticalRefDate).toLocaleDateString("en-CA") : "-",
         "unitType": item.unitType,
         "Day Count (Days)": item.cumulativeDuration,
         "Productivity_CSD": item.Productivity_CSD,
@@ -157,11 +157,11 @@ useEffect(() => {
         "XCP": item.XCP,
         "XBP": item.XBP,
         "MSIP": item.MSIP,
-        "STA/P": item["STAP"],
+        "STA/P": item.STAP,
         "IC": item.IC,
-        "ΔRRN": item["deltaRRN"],
-        "ΔPRN": item["deltaPRN"],
-        "ΔARN": item["deltaARN"],
+        "deltaRRN": item.deltaRRN,
+        "deltaPRN": item.deltaPRN,
+        "deltaARN": item.deltaARN,
         "GEQ": item.GEQ,
         "STA/G": item.STAG,
         "RRGT1": item.RRGT1,
@@ -188,9 +188,15 @@ useEffect(() => {
         { label: "StdErr", key: "stdErrs" },
       ].map(({ label, key }) => {
         const summaryData = data[key]?.[0] || {};
+        const fixedData = {
+          ...summaryData,
+          "STA/P": summaryData.STAP ?? summaryData["STA/P"],
+          "STA/G": summaryData.STAG ?? summaryData["STA/G"],
+        };
+      
         return {
           "PP ID": label,
-          ...summaryData,
+          ...fixedData,
         };
       });
       
@@ -235,7 +241,7 @@ console.log("unit type check", tableData);
     const ratioColumns = {
       "Communicative I/O": ["XLR", "XRR", "XSR", "XWR"],
       "Theory & Practice": ["XTR", "XPR"],
-      "Third Parameter": ["XRVSR", "XPVSR", "XAVSR"],
+      "Third Parameter": ["XRVSR", "XPVSR", "XAVSR", "ARN", "deltaARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"],
     };
 
     // Determine columns to keep visible
@@ -244,12 +250,13 @@ console.log("unit type check", tableData);
     // Keep all non-ratio columns + selected ratios
     return allColumns.filter(
       (col) =>
-        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR"].includes(col) ||
+        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR", "ARN", "deltaARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"].includes(col) ||
         selectedRatios.includes(col)
     );
   };
 
   const currentUnitType = tableData.find(row => row.unitType)?.unitType;
+  console.log("unit type:->", currentUnitType);
 
   // Compute visible headers based on that
   const visibleHeaders = getVisibleColumns(currentUnitType);
@@ -364,7 +371,8 @@ console.log("unit type check", tableData);
                                   "Critical Reference Date",
                                   "Day Count (Days)",
                                   "unitType",
-                                  "IC" // ✅ IC stays exactly as-is (even if it has numbers)
+                                  "IC",
+                                  "STA/P"
                                 ];
 
                                 if (skipFormatting.includes(header)) {

@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
+import { createProjection, getProjection } from "@/services/projectionService";
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
@@ -146,6 +147,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   const [error, setError] = useState(null);
   const [tableData, setTableData] = useState([]);
 
+  const [ppIds, setPpIds] = useState([]);
+
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -251,6 +254,62 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
       { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
   ];
 
+  useEffect(() => {
+    const fetchProjectionData = async () => {
+      try {
+        setLoading(true);
+        const response = await getProjection(unitId, candidateId);
+  
+         // Extract PP IDs from the response
+         if (response && response.length > 0) {
+          const latestSession = response[0];
+          if (latestSession.points) {
+            extractPPIds(latestSession.points);
+          }
+        }
+        
+      } catch (error) {
+        console.error("❌ Failed to fetch projection:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    if (unitId && candidateId) {
+      fetchProjectionData();
+    }
+  }, [unitId, candidateId]);
+
+
+  const extractPPIds = (points) => {
+    const growthMetricData = [];
+
+    points.forEach(point => {
+      if (point.callout === "First PP Selection" || 
+          point.callout === "Second PP Selection" || 
+          point.callout === "Third PP Selection") {
+            growthMetricData.push({
+              ppId: point.ppId,
+              dayCount: point.dayCount,
+              deltaRRN: point.deltaRRN,
+              deltaPRN: point.deltaPRN,
+              deltaARN: point.deltaARN,
+              callout: point.callout
+            });
+      }
+    });
+
+    growthMetricData.sort((a, b) => {
+      const order = { "First PP Selection": 1, "Second PP Selection": 2, "Third PP Selection": 3 };
+      return order[a.callout] - order[b.callout];
+    });
+
+    setPpIds(growthMetricData);
+    console.log("📊 Extracted growth metrics data:", growthMetricData);
+  };
+
+  console.log("pp id extract : ", ppIds);
+
 
   useEffect(() => {
     const fetchTabulationData = async () => {
@@ -272,7 +331,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
-  
   
         const { results, cumulativeSums, average, stdDev, stdErr } = data;  
   
@@ -304,7 +362,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           PRGT5: row.PRGT5 || 0,
           ARGT5: row.ARGT5 || 0,
         }));
-        
         
         setTableData(formattedData);
   
@@ -499,7 +556,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                 </div>
               </div>
             </div>
-        
 
             <div className="h-1/2 flex flex-col border border-gray-200 ">
               {/* Tab Buttons */}
@@ -608,8 +664,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                     </table>
                   </div>
                 )}
-
-                
+  
               </div>
             </div>
           </div>
@@ -657,7 +712,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                         : chartProperties.lineStyle === "dotted"
                         ? "2 4"
                         : "0";
-                    
                   
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
@@ -760,7 +814,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                     );
                   }
                   
-
                   if (selectedChart.type === "scatter") {
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
@@ -838,7 +891,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                       </div>
                     );
                   }
-                  
 
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()
@@ -849,12 +901,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
               )}
             </div>
 
-
           </div>
         </div>
       </div>
-
-
 
       <ProjectionTable
         visible={showProjectionTable}
@@ -865,10 +914,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}
       />
-
-
-
-
 
     </>
   );
