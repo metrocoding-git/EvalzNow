@@ -12,18 +12,17 @@ export const createProjection = async (projectionData) => {
   }
 };
 
-// projectionService.js
-export const updateProjectionPoints = async (id, points) => {
-    try {
-      const response = await api.put(`${API_ROUTES.PROJECTION}/update/${id}`, { points });
-      return response.data;
-    } catch (error) {
-      console.error("Error updating projection points:", error);
-      throw error;
-    }
+// Update projection points for existing session
+export const updateProjection = async (sessionId, projectionData) => {
+  try {
+    const response = await api.put(`${API_ROUTES.PROJECTION}/${sessionId}/points`, projectionData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating projection:", error);
+    throw error;
+  }
 };
   
-
 // Delete unit
 
 

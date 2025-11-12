@@ -17,6 +17,7 @@ import PropertyEditor from './PropertyEditor';
 import ProjectionTable from './ProjectionTable';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import { getUnitById } from '@/services/unitService';
+import { GrowthProjectionChart } from './ProjectionGraph';
 
 //This script is used to plot the undershoot curves, the overshoot curves, and the vertical projection lines
 //on the Growth Projection graph -> Candidate Analysis: Growth Projections (Data Analytics)
@@ -147,16 +148,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   const [error, setError] = useState(null);
   const [tableData, setTableData] = useState([]);
 
-  const [ppIds, setPpIds] = useState([]);
+  const [growthMetric, setGrowthMetric] = useState([]);
 
-  const floatChartData = [
-    { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
-    { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
-    { name: "Mar", xValue: 1.5, yValue: 2.9, zValue: 2.2 },
-    { name: "Apr", xValue: 3.1, yValue: 3.0, zValue: 2.7 },
-    { name: "May", xValue: 2.0, yValue: 1.8, zValue: 3.1 },
-    { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
-  ];
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -167,10 +160,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     // Curve Label
     showLabel: true,
     labelType: "X Type",
-    // showLabelPrefix: false,
-    // labelPrefix: "X File name",
-    // showLabelSuffix: false,
-    // labelSuffix: "Y subcase",
+    
   
     // Line Attribute
     lineStyle: "solid",
@@ -304,12 +294,63 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
       return order[a.callout] - order[b.callout];
     });
 
-    setPpIds(growthMetricData);
+    setGrowthMetric(growthMetricData);
     console.log("📊 Extracted growth metrics data:", growthMetricData);
   };
 
-  console.log("pp id extract : ", ppIds);
+  console.log("pp id extract : ", growthMetric);
 
+
+  // Update the useEffect that calculates projections
+useEffect(() => {
+  if (growthMetric.length === 3) {
+    // Extract dayCounts
+    const [x1, x2, x3] = growthMetric.map(m => m.dayCount);
+    const x4 = x3 + 31; // Projection termination (31 days later)
+
+    // ∆RR Growth Projections
+    const [y1_RR, y2_RR, y3_RR] = growthMetric.map(m => parseFloat(m.deltaRRN));
+    const rrCurves = calculateProjectionValues(y1_RR, y2_RR, y3_RR, 0, x1, x2, x3, x4);
+
+    // ∆PR Growth Projections
+    const [y1_PR, y2_PR, y3_PR] = growthMetric.map(m => parseFloat(m.deltaPRN));
+    const prCurves = calculateProjectionValues(y1_PR, y2_PR, y3_PR, 0, x1, x2, x3, x4);
+
+    // ∆AR Growth Projections
+    const [y1_AR, y2_AR, y3_AR] = growthMetric.map(m => parseFloat(m.deltaARN));
+    const arCurves = calculateProjectionValues(y1_AR, y2_AR, y3_AR, 0, x1, x2, x3, x4);
+
+    // Normalize the data to sequential day counts starting from 1
+    const normalizeCurves = (curves) => {
+      return curves.map((item, index) => {
+        // Get the x value from whichever segment property exists
+        const xValue = item.i || item.j || item.k;
+        // Get the linear and spline values from whichever segment property exists
+        const linearValue = item.l1 || item.l2 || item.l3 || 0;
+        const splineValue = item.s1 || item.s2 || item.s3 || 0;
+        
+        return {
+          dayCount: index + 1, // Sequential day count starting from 1
+          originalX: xValue,   // Keep original x for reference
+          l: linearValue,
+          s: splineValue
+        };
+      });
+    };
+
+    setCurves({
+      rr: normalizeCurves(rrCurves),
+      pr: normalizeCurves(prCurves),
+      ar: normalizeCurves(arCurves),
+    });
+
+    console.log("📈 Normalized ∆RR Projections:", normalizeCurves(rrCurves));
+    console.log("📈 Normalized ∆PR Projections:", normalizeCurves(prCurves).slice(0, 10));
+    console.log("📈 Normalized ∆AR Projections:", normalizeCurves(arCurves).slice(0, 10));
+    console.log("📈 Normalized ∆RR Projections curves->:", curves);
+  }
+}, [growthMetric]);
+  
 
   useEffect(() => {
     const fetchTabulationData = async () => {
@@ -672,39 +713,48 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
-        <div className="h-full overflow-auto m-5">
-            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-            </h2> */}
-            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
-            
-            {/* 📊 DYNAMIC CHART SECTION */}
+          <div className="h-full overflow-auto m-5">
             <div className="space-y-8">
               {selectedChart ? (
                 (() => {
+                  const projectionCharts = [
+                    "∆RR Growth Projections",
+                    "∆PR Growth Projections",
+                    "∆AR Growth Projections",
+                  ];
+
+                  const isProjectionChart = projectionCharts.includes(selectedChart.name);
+
+                  // 🆕 SEPARATE HANDLING FOR GROWTH PROJECTION CHARTS
+                  if (isProjectionChart) {
+                    let curveData = [];
+                    let chartTitle = selectedChart.name;
+
+                    if (selectedChart.name === "∆RR Growth Projections") {
+                      curveData = curves.rr || [];
+                    } else if (selectedChart.name === "∆PR Growth Projections") {
+                      curveData = curves.pr || [];
+                    } else if (selectedChart.name === "∆AR Growth Projections") {
+                      curveData = curves.ar || [];
+                    }
+
+                    return (
+                      <GrowthProjectionChart
+                        data={curveData}
+                        title={chartTitle}
+                      />
+                    );
+                  }
+
+                  // ✅ Existing chart handling for non-projection charts
                   const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
                   if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
 
-                  // const negativeData = [ { dayCount: 0, value: 0 }, ...tableData]
-                  // .filter(row => row.ppId < 0 && !isNaN(row[keyName]))
-                  // .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
-
-                  const positiveData = [ { dayCount: 0, value: 0 }, ...tableData]
+                  const positiveData = [{ dayCount: 0, value: 0 }, ...tableData]
                     .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
                     .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
 
-
-                  // ✅ Render a combined chart with both datasets
                   if (selectedChart.type === "line") {
-                    // Skip rendering if visibility is false
-                    // if (!chartProperties.visibility) {
-                    //   return (
-                    //     <div className="text-gray-400 italic text-center">
-                    //       Chart visibility is turned off
-                    //     </div>
-                    //   );
-                    // }
-                  
                     // Determine stroke style based on lineStyle
                     const strokeDasharray =
                       chartProperties.lineStyle === "dashed"
@@ -712,20 +762,23 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                         : chartProperties.lineStyle === "dotted"
                         ? "2 4"
                         : "0";
-                  
+
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
                         <ResponsiveContainer width="100%" height={400}>
-                          <LineChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                          <LineChart 
+                            data={positiveData}
+                            margin={{ top: 20, right: 30, left: 0, bottom: 40 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
                               type="number"
                               dataKey="dayCount"
                               domain={[0, "auto"]}
-                              allowDataOverflow={true} 
+                              allowDataOverflow={true}
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                                 <Label value="Day Count" offset={-10} position="insideBottom" />
@@ -733,13 +786,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             </XAxis>
 
                             <YAxis
-                              // label={{
-                              //   value: selectedChart.name,
-                              //   angle: -90,
-                              //   position: "insideLeft",
-                              // }}
                               domain={[0, "auto"]}
-                              allowDataOverflow={true} 
+                              allowDataOverflow={true}
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
@@ -757,45 +805,22 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                               <ReferenceLine
                                 y={thresholdValue[keyName]}
-                                stroke="#000000"        // Amber (you can change this)
+                                stroke="#000000"
                                 strokeWidth={2}
                                 strokeDasharray="7 4 1 4"
                                 label={{
-                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
                                   position: "right",
                                   fill: "#f59e0b",
                                   fontSize: 12,
                                 }}
                               />
                             )}
-                  
-                            {/* 🔴 Negative PP IDs */}
-                            {/* {chartProperties.visibility && (
-                              <Line
-                                name="Negative PP IDs"
-                                type="linear"
-                                dataKey="value"
-                                data={negativeData}
-                                stroke={chartProperties.negativeLineColor}
-                                strokeWidth={chartProperties.lineThickness}
-                                strokeDasharray={strokeDasharray}
-                                dot={(props) => {
-                                  const { index } = props;
-                                  if (index % chartProperties.symbolFrequency !== 0) return null;
-                                  return renderCustomDot(props, chartProperties.symbolColor);
-                                }}
-                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
-                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
-                              />
-                            )} */}
 
                             {/* 🔵 Positive PP IDs */}
                             {chartProperties.visibility && (
                               <Line
-                                
                                 type="linear"
                                 dataKey="value"
-                                data={positiveData}
                                 stroke={chartProperties.positiveLineColor}
                                 strokeWidth={chartProperties.lineThickness}
                                 strokeDasharray={strokeDasharray}
@@ -804,8 +829,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                                   if (index % chartProperties.symbolFrequency !== 0) return null;
                                   return renderCustomDot(props, chartProperties.symbolColor);
                                 }}
-                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
-                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
                               />
                             )}
                           </LineChart>
@@ -813,7 +836,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                       </div>
                     );
                   }
-                  
+
                   if (selectedChart.type === "scatter") {
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
@@ -839,19 +862,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                             </YAxis>
                             <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                             <Legend />
-                            {/* <Scatter
-                              name="Negative PP IDs"
-                              data={negativeData}
-                              fill={chartProperties.negativeLineColor} // red
-                              shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
-                            /> */}
                             {chartProperties.visibility && (
-                            <Scatter
-                              name="Positive PP IDs"
-                              data={positiveData}
-                              fill={chartProperties.positiveLineColor} // blue
-                              shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
-                            />
+                              <Scatter
+                                name="Positive PP IDs"
+                                data={positiveData}
+                                fill={chartProperties.positiveLineColor}
+                                shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
+                              />
                             )}
                           </ScatterChart>
                         </ResponsiveContainer>
@@ -860,16 +877,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                   }
 
                   if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
-                    // Create data from stabilitySummary state
                     const pieData = [
                       { name: "STABLE", value: stabilitySummary.stable },
                       { name: "UNSTABLE", value: stabilitySummary.unstable },
                     ];
-                  
+
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
-                  
                         <ResponsiveContainer width="100%" height={400}>
                           <PieChart>
                             <Tooltip />
@@ -883,8 +898,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                               outerRadius={120}
                               label={({ name, value }) => `${name}: ${value}`}
                             >
-                              <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
-                              <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
+                              <Cell key="stable" fill="#10b981" />
+                              <Cell key="unstable" fill="#ef4444" />
                             </Pie>
                           </PieChart>
                         </ResponsiveContainer>
@@ -900,7 +915,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>

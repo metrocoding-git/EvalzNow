@@ -1,5 +1,5 @@
 "use client";
-import { createProjection, getProjection } from "@/services/projectionService";
+import { createProjection, getProjection, updateProjection, updateProjectionPoints } from "@/services/projectionService";
 import React, { useState, useMemo, useEffect } from "react";
 
 
@@ -134,8 +134,6 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     [projectionData]
   );
 
-
-
   const handlePPChange = (idx, value) => {
     const selectedData = projectionData.find((d) => Number(d.ppId) === Number(value));
 
@@ -172,20 +170,82 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         return row;
       });
 
-      const third = updated[2];
-      const terminationRowIndex = 3;
-      updated[terminationRowIndex] = {
-        ...updated[terminationRowIndex],
-        PP_ID: "-",
-        RRN: "-",
-        PRN: "-",
-        ARN: "-",
-        IC: "-",
-        ΔRRN: 0,
-        ΔPRN: 0,
-        ΔARN: 0,
-        DayCount: (third.DayCount ?? 0) + 31,
-      };
+      // If changing First PP, clear Second and Third if they are invalid
+    if (idx === 0 && value > 0) {
+      const firstPP = Number(value);
+      const secondPP = Number(updated[1].PP_ID);
+      const thirdPP = Number(updated[2].PP_ID);
+      
+      // If Second PP is less than or equal to First PP, clear it
+      if (secondPP > 0 && secondPP <= firstPP) {
+        updated[1] = {
+          ...updated[1],
+          PP_ID: 0,
+          RRN: 0,
+          PRN: 0,
+          ARN: 0,
+          IC: 0,
+          ΔRRN: 0,
+          ΔPRN: 0,
+          ΔARN: 0,
+          DayCount: 0,
+        };
+      }
+      
+      // If Third PP is less than or equal to First PP, clear it
+      if (thirdPP > 0 && thirdPP <= firstPP) {
+        updated[2] = {
+          ...updated[2],
+          PP_ID: 0,
+          RRN: 0,
+          PRN: 0,
+          ARN: 0,
+          IC: 0,
+          ΔRRN: 0,
+          ΔPRN: 0,
+          ΔARN: 0,
+          DayCount: 0,
+        };
+      }
+    }
+
+    // If changing Second PP, clear Third if it's invalid
+    if (idx === 1 && value > 0) {
+      const secondPP = Number(value);
+      const thirdPP = Number(updated[2].PP_ID);
+      
+      // If Third PP is less than or equal to Second PP, clear it
+      if (thirdPP > 0 && thirdPP <= secondPP) {
+        updated[2] = {
+          ...updated[2],
+          PP_ID: 0,
+          RRN: 0,
+          PRN: 0,
+          ARN: 0,
+          IC: 0,
+          ΔRRN: 0,
+          ΔPRN: 0,
+          ΔARN: 0,
+          DayCount: 0,
+        };
+      }
+    }
+
+    // Rest of your existing projection calculation code...
+    const third = updated[2];
+    const terminationRowIndex = 3;
+    updated[terminationRowIndex] = {
+      ...updated[terminationRowIndex],
+      PP_ID: "-",
+      RRN: "-",
+      PRN: "-",
+      ARN: "-",
+      IC: "-",
+      ΔRRN: 0,
+      ΔPRN: 0,
+      ΔARN: 0,
+      DayCount: (third.DayCount ?? 0) + 31,
+    };
 
       const first = updated[0];
       const second = updated[1];
@@ -337,20 +397,76 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     });
   };
 
-  const availableByIndex = useMemo(() => {
-    const usedPpIds = rows.slice(0, 3)
-      .map(r => Number(r.PP_ID))
-      .filter(id => id > 0);
+  const validatePPSelection = (idx, newValue, currentRows) => {
+    const firstPP = Number(currentRows[0].PP_ID);
+    const secondPP = Number(currentRows[1].PP_ID);
+    const thirdPP = Number(currentRows[2].PP_ID);
+    
+    const newPP = Number(newValue);
+    
+    if (newPP === 0) return true; // Allow clearing selection
+    
+    // First PP: Cannot be greater than or equal to Second or Third
+    if (idx === 0) {
+      if (secondPP > 0 && newPP >= secondPP) return false;
+      if (thirdPP > 0 && newPP >= thirdPP) return false;
+    }
+    
+    // Second PP: Must be greater than First and less than Third
+    if (idx === 1) {
+      if (firstPP > 0 && newPP <= firstPP) return false;
+      if (thirdPP > 0 && newPP >= thirdPP) return false;
+    }
+    
+    // Third PP: Must be greater than First and Second
+    if (idx === 2) {
+      if (firstPP > 0 && newPP <= firstPP) return false;
+      if (secondPP > 0 && newPP <= secondPP) return false;
+    }
+    
+    return true;
+  };
 
+  const availableByIndex = useMemo(() => {
+    const firstPP = Number(rows[0].PP_ID);
+    const secondPP = Number(rows[1].PP_ID);
+    const thirdPP = Number(rows[2].PP_ID);
+  
     return rows.map((row, idx) => {
       if (idx >= 3) return [];
-
-      return allPpIds.filter(id => {
-        return !usedPpIds.includes(id) || id === Number(row.PP_ID);
+  
+      const availablePpIds = allPpIds.filter(id => {
+        // First PP Selection: Show ppIds less than both Second and Third (if selected)
+        if (idx === 0) {
+          if (secondPP > 0 && id >= secondPP) return false;
+          if (thirdPP > 0 && id >= thirdPP) return false;
+          return true;
+        }
+        
+        // Second PP Selection: Show ppIds greater than First AND less than Third
+        if (idx === 1) {
+          if (firstPP > 0 && id <= firstPP) return false;
+          if (thirdPP > 0 && id >= thirdPP) return false;
+          return true;
+        }
+        
+        // Third PP Selection: Show ppIds greater than Second (if selected), otherwise greater than First
+        if (idx === 2) {
+          if (secondPP > 0) {
+            return id > secondPP;
+          }
+          if (firstPP > 0) {
+            return id > firstPP;
+          }
+          return true;
+        }
+        
+        return true;
       });
+  
+      return availablePpIds;
     });
   }, [rows, allPpIds]);
-
   useEffect(() => {
     const fetchProjectionData = async () => {
       try {
@@ -407,48 +523,63 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
   
 
 
-  // ✅ Create Projection API call
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
+  // ✅ Create or Update Projection API call
+const handleSubmit = async () => {
+  try {
+    setLoading(true);
 
-      // Filter out only valid points (ignore rows with "-")
-      const points = rows
-        .filter((r) => typeof r.DayCount === "number" && r.DayCount > 0)
-        .map((r, index) => ({
-          ppId: String(r.PP_ID || `AUTO-${index + 1}`),
-          callout: r.Callout,
-          RRN: safeNum(r.RRN),
-          PRN: safeNum(r.PRN),
-          ARN: safeNum(r.ARN),
-          IC: r.IC || "",
-          deltaRRN: safeNum(r["ΔRRN"]),
-          deltaPRN: safeNum(r["ΔPRN"]),
-          deltaARN: safeNum(r["ΔARN"]),
-          dayCount: r.DayCount,
-        }));
+    // Filter out only valid points (ignore rows with "-")
+    const points = rows
+      .filter((r) => typeof r.DayCount === "number" && r.DayCount > 0)
+      .map((r, index) => ({
+        ppId: String(r.PP_ID || `AUTO-${index + 1}`),
+        callout: r.Callout,
+        RRN: safeNum(r.RRN),
+        PRN: safeNum(r.PRN),
+        ARN: safeNum(r.ARN),
+        IC: r.IC || "",
+        deltaRRN: safeNum(r["ΔRRN"]),
+        deltaPRN: safeNum(r["ΔPRN"]),
+        deltaARN: safeNum(r["ΔARN"]),
+        dayCount: r.DayCount,
+      }));
 
-      const payload = {
-        unitId,
-        candidateId,
-        points,
-      };
+    const payload = {
+      unitId,
+      candidateId,
+      points,
+    };
 
-      console.log("📤 Sending payload:", payload);
+    console.log("📤 Sending payload:", payload);
 
-      const response = await createProjection(payload);
+    let response;
 
-      alert("✅ Projection session created successfully!");
-      console.log("✅ Projection API response:", response);
-
-      onClose(); // close modal
-    } catch (error) {
-      console.error("❌ Error creating projection:", error);
-      alert("Failed to create projection session.");
-    } finally {
-      setLoading(false);
+    // ✅ If session exists, UPDATE; otherwise CREATE
+    if (existingSessionId) {
+      console.log(`🔄 Updating existing session ID: ${existingSessionId}`);
+      response = await updateProjection(existingSessionId, payload);
+      alert("✅ Projection updated successfully!");
+    } else {
+      console.log("🆕 Creating new projection session");
+      response = await createProjection(payload);
+      alert("✅ Projection created successfully!");
+      
+      // Store the new session ID for future updates
+      if (response?.session?.id) {
+        setExistingSessionId(response.session.id);
+      }
     }
-  };
+
+    console.log("✅ Projection API response:", response);
+
+    onClose(); // close modal
+  } catch (error) {
+    console.error("❌ Error submitting projection:", error);
+    alert("Failed to save projection session.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
