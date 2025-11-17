@@ -4,17 +4,136 @@ import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-r
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
-  Label
+  Label,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
+import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
+import Plot from "react-plotly.js";
 
-export default function PlotSelections({ selectedSort, onInteractionClassSelect }) {
+
+const renderScatter = (tableData, xKey, yKey, xLabel, yLabel) => (
+  <ResponsiveContainer width="100%" height="95%">
+    <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+      <CartesianGrid />
+      <XAxis dataKey={xKey} name={xLabel}>
+        <Label
+          value={xLabel}
+          position="bottom"
+          offset={-2}
+          style={{ fontSize: "14px", fontWeight: "500" }}
+        />
+      </XAxis>
+
+      <YAxis dataKey={yKey} name={yLabel}>
+        <Label
+          value={yLabel}
+          angle={-90}
+          position="left"
+          offset={-7}
+          style={{ fontSize: "14px", fontWeight: "500" }}
+        />
+      </YAxis>
+      <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+      <Scatter data={tableData} fill="#3b82f6" />
+    </ScatterChart>
+  </ResponsiveContainer>
+);
+
+const render3DScatter = (tableData) => (
+  <Plot
+    data={[
+      {
+        x: tableData.map(r => r.RRN),
+        y: tableData.map(r => r.PRN),
+        z: tableData.map(r => r.ARN),
+        type: "scatter3d",
+        mode: "markers",
+        marker: { size: 4 }
+      }
+    ]}
+    layout={{
+      autosize: true,
+      scene: {
+        xaxis: { title: "RR" },
+        yaxis: { title: "PR" },
+        zaxis: { title: "AR" },
+      },
+      margin: { l: 0, r: 0, b: 0, t: 0 }
+    }}
+    style={{ width: "100%", height: "100%" }}
+  />
+);
+
+
+const getICValue = (unitType, signatureProfile, icString) => {
+  if (!icString) return 0;
+
+  // ---------- CASE 1 / CASE 2 ----------
+  if (
+    unitType === "Communicative I/O" ||
+    unitType === "Theory & Practice"
+  ) {
+    if (
+      signatureProfile === "Case 1: Solid Balanced" ||
+      signatureProfile === "Case 2: Rigorous Balanced"
+    ) {
+      const map = {
+        "0R0P": 0, "1R1P": 1, "2R2P": 2,
+        "3R3P": 3, "4R4P": 4, "5R5P": 5
+      };
+      return map[icString] ?? 0;
+    }
+
+    // ---------- CASE 3a: PRODUCTIVE ----------
+    if (signatureProfile === "Case 3a: Productive-Weighted") {
+      const map = {
+        "0R0P": 0,   "0R1P": 0.5, "0R2P": 1,
+        "1R2P": 1.5, "2R2P": 2,   "2R3P": 2.5,
+        "3R3P": 3,   "3R4P": 3.5, "4R4P": 4,
+        "5R5P": 5
+      };
+      return map[icString] ?? 0;
+    }
+
+    // ---------- CASE 3b: RECEPTIVE ----------
+    if (signatureProfile === "Case 3b: Receptive-Weighed") {
+      const map = {
+        "0R0P": 0, "1R0P": 0.5, "2R0P": 1,
+        "2R1P": 1.5, "2R2P": 2, "3R2P": 2.5,
+        "3R3P": 3, "4R3P": 3.5, "4R4P": 4,
+        "5R5P": 5
+      };
+      return map[icString] ?? 0;
+    }
+  }
+
+  // ---------- TPRM ----------
+  if (unitType === "Third Parameter") {
+    const map = {
+      "0R0P": 0, "1R1P": 1, "2R2P": 2,
+      "3R3P": 3, "4R4P": 4, "5R5P": 5
+    };
+    return map[icString] ?? 0;
+  }
+
+  return 0;
+};
+
+
+
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, unitSignature, onInteractionClassSelect }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [isSelectedInteractionClass, setIsSelectedInteractionClass] = useState(false);
+  const [tableData, setTableData] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -81,25 +200,25 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
       id: "1"
     },
     {
-      name: "PR vs. RR Cross Plot",
+      name: "Productive Ratio (PR) vs.Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "2"
     },
     {
-      name: "AR vs. RR Cross Plot",
+      name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "3"
     },
     {
-      name: "PR vs. AR Cross Plot",
+      name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "4"
     },
     {
-      name: "AR vs. PR vs. RR Cross Plot",
+      name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
       icon: "📈",
       type: "scatter-3d", // Z, Y, X
       id: "5"
@@ -115,32 +234,80 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
       id: "1"
     },
     {
-      name: "PR vs. RR Cross Plot",
+      name: "Productive Ratio (PR) vs.Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "2",
     },
     {
-      name: "AR vs. RR Cross Plot",
+      name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "3"
     },
     {
-      name: "PR vs. AR Cross Plot",
+      name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "4"
     },
     {
-      name: "AR vs. PR vs. RR Cross Plot",
+      name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
       icon: "📈",
       type: "scatter-3d", // Z, Y, X
       id: "5"
     },
   ];
 
-
+  const getTableColumns = () => {
+    switch (selectedChart?.id) {
+      case "1": // IC vs PP ID
+        return {
+          xKey: "ppId",
+          xLabel: "PP ID",
+          yKey: "IC",
+          yLabel: "Interaction Class"
+        };
+  
+      case "2": // PR vs RR
+        return {
+          xKey: "RRN",
+          xLabel: "RR",
+          yKey: "PRN",
+          yLabel: "PR"
+        };
+  
+      case "3": // AR vs RR
+        return {
+          xKey: "RRN",
+          xLabel: "RR",
+          yKey: "ARN",
+          yLabel: "AR"
+        };
+  
+      case "4": // PR vs AR
+        return {
+          xKey: "PRN",
+          xLabel: "PR",
+          yKey: "ARN",
+          yLabel: "AR"
+        };
+  
+      case "5": // 3D
+        return {
+          xKey: "RRN",
+          xLabel: "RR",
+          yKey: "PRN",
+          yLabel: "PR",
+          zKey: "ARN",
+          zLabel: "AR"
+        };
+  
+      default:
+        return null;
+    }
+  };
+  
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -166,6 +333,114 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
     }
   };
 
+  console.log("signatire proudile -", unitSignature);
+
+  console.log('unit type - ', unitType);
+
+  useEffect(() => {
+    const fetchTabulationData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]); // clear previous table data
+      
+        return;
+      }
+      
+      
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUnitAndMultipleCandidateSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          // ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          // ppIdTo: filters?.ppIdTo ?? undefined,
+          // criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          // criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+
+        console.log("real hybrid: ", data);
+  
+        const { results, average, stdDev, stdErr } = data;  
+  
+        const formattedData = results.map(row => ({
+          ppId: row.ppId,
+          IC: getICValue(unitType, unitSignature, row.IC),
+          RRN: row.RRN || 0,
+          PRN: row.PRN || 0,
+          ARN: row.ARN || 0,
+        }));
+        
+        
+        setTableData(formattedData);
+
+        // console.log("hybrid data: ", tableData);
+        
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        // setStabilitySummary({ stable: 0, unstable: 0 });
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchTabulationData();
+  }, [unitId, candidateId]);
+
+  console.log("table data: ", tableData);
+
+  const renderSelectedChart = () => {
+    if (!selectedChart) return null;
+  
+    switch (selectedChart.id) {
+  
+      case "1":  // Interaction Class vs PP ID (Line)
+        const positives = tableData.filter(r => r.ppId > 0);
+        const negatives = tableData.filter(r => r.ppId < 0);
+  
+        return (
+          <ResponsiveContainer width="100%" height="95%">
+            <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" type="number">
+                <Label value="PP ID" position="bottom" offset={0} />
+              </XAxis>
+
+              <YAxis dataKey="IC">
+                <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-7} />
+              </YAxis>
+
+              <Tooltip />
+              <Legend />
+  
+              <Line data={positives} dataKey="IC" name="Positive PP IDs"
+                type="linear" stroke="#3b82f6" dot />
+  
+              <Line data={negatives} dataKey="IC" name="Negative PP IDs"
+                type="linear" stroke="#ef4444" dot />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+  
+      case "2": // PR vs RR
+        return renderScatter(tableData, "RRN", "PRN", "RR (X)", "PR (Y)");
+  
+      case "3": // AR vs RR
+        return renderScatter(tableData, "RRN", "ARN", "RR (X)", "AR (Y)");
+  
+      case "4": // PR vs AR
+        return renderScatter(tableData, "PRN", "ARN", "AR (X)", "PR (Y)");
+  
+      case "5": // AR vs PR vs RR — 3D
+        return render3DScatter(tableData);
+
+  
+      default:
+        return null;
+    }
+  };
+  
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -215,7 +490,8 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
                     activateCandidateLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer
+                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -226,7 +502,8 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
                     activateUnitLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer
+                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -276,33 +553,39 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
                   />
                 )}
 
-                {activeAdjustPropertieTab === 'Table' && (
+{activeAdjustPropertieTab === "Table" && (() => {
+  const cols = getTableColumns();
+  if (!cols) return <div className="text-center text-gray-500">Select a chart</div>;
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Month</th>
-                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">X Axis Value</th>
-                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Y Axis Value</th>
-                           <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">Z Axis Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.name}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.xValue}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.yValue}</td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">{row.zValue}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+  return (
+    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+      <table className="table-auto w-full text-sm border border-gray-300">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="border px-3 py-2">{cols.xLabel}</th>
+            <th className="border px-3 py-2">{cols.yLabel}</th>
+            {cols.zKey && (
+              <th className="border px-3 py-2">{cols.zLabel}</th>
+            )}
+          </tr>
+        </thead>
 
+        <tbody>
+          {tableData.map((row, idx) => (
+            <tr key={idx} className="hover:bg-blue-50">
+              <td className="border px-3 py-2 text-center">{row[cols.xKey]}</td>
+              <td className="border px-3 py-2 text-center">{row[cols.yKey]}</td>
+              {cols.zKey && (
+                <td className="border px-3 py-2 text-center">{row[cols.zKey]}</td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+})()}
 
-                )}
 
 
               </div>
@@ -312,11 +595,15 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
-          <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+          <h2 className="text-lg text-center font-semibold text-gray-700 my-2 ">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
           </h2>
 
-          <div className="h-full overflow-auto m-5">
+          <div className="h-full overflow-auto mb-9 p-3">
+            {renderSelectedChart()}
+          </div>
+
+          {/* <div className="h-full overflow-auto m-5">
             <ResponsiveContainer width="100%" height="95%">
               <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -363,7 +650,7 @@ export default function PlotSelections({ selectedSort, onInteractionClassSelect 
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </div> */}
         </div>
       </div>
 
