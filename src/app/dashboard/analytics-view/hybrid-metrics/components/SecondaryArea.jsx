@@ -1,11 +1,12 @@
 "use client";
 import { Edit } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass, onSubmit, resetSignal }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
-  const [criticalDate, setCriticalDate] = useState("");
+  const [criticalDateFrom, setCriticalDateFrom] = useState("");
+  const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
   const [showGrowthTarget, setShowGrowthTarget] = useState(false);
   const [selectedPpId, setSelectedPpId] = useState(null);
@@ -14,17 +15,29 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
   // sample PP IDs
   const ppIds = [-3, -2, -1, 1, 2, 3];
 
+  useEffect(() => {
+    setPpIdFrom(-3);
+    setPpIdTo(3);
+    setCriticalDateFrom("");
+    setCriticalDateTo("");
+    setThresholdEnabled(false);
+  }, [resetSignal]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted:", {
+
+    const values = {
       ppIdFrom,
       ppIdTo,
-      criticalDate,
+      criticalDateFrom,
+      criticalDateTo,
       thresholdEnabled,
-      showGrowthTarget,
-      selectedPpId,
-      unitMode
-    });
+    };
+
+    onSubmit(values);
+    // setSecondaryValues(values);
+    // console.log("Submitted:", { ppIdFrom, ppIdTo, criticalDate });
+    // You can add fetch or state update logic here
   };
 
   return (
@@ -50,7 +63,10 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               <input
                 type="number"
                 value={ppIdFrom}
-                onChange={(e) => setPpIdFrom(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPpIdFrom(val === "" ? "" : parseInt(val));
+                }}
                 className="border px-2 py-1 w-full"
                 placeholder="From (e.g., -3)"
               />
@@ -61,7 +77,10 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               <input
                 type="number"
                 value={ppIdTo}
-                onChange={(e) => setPpIdTo(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPpIdTo(val === "" ? "" : parseInt(val));
+                }} 
                 className="border px-2 py-1 w-full"
                 placeholder="To (e.g., 3)"
               />
@@ -82,8 +101,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               <label htmlFor="" className="w-1/2">From:</label>
               <input
                 type="date"
-                value={criticalDate}
-                onChange={(e) => setCriticalDate(e.target.value)}
+                value={criticalDateFrom}
+                onChange={(e) => setCriticalDateFrom(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
 
@@ -91,8 +110,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass 
               <label htmlFor="" className="w-1/2">To:</label>
               <input
                 type="date"
-                value={criticalDate}
-                onChange={(e) => setCriticalDate(e.target.value)}
+                value={criticalDateTo}
+                onChange={(e) => setCriticalDateTo(e.target.value)}
                 className="border px-2 py-1 w-full" />
             </div>
           </div>

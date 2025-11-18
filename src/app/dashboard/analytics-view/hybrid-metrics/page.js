@@ -58,6 +58,9 @@ export default function HybridMetrics() {
   //   { id: 10, firstName: "Henry", lastName: "Moore" },
   // ];
 
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [resetSignal, setResetSignal] = useState(0);
+
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
@@ -113,6 +116,19 @@ export default function HybridMetrics() {
 
     fetchRoster();
   }, [selectedUnitId]);
+
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+      thresholdEnabled: false,
+    });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
+  };
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -313,7 +329,8 @@ export default function HybridMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}  isSelectedInteractionClass={isSelectedInteractionClass}   />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}  isSelectedInteractionClass={isSelectedInteractionClass} 
+                    onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal}  />
                   </div>
                 )}
               </div>
@@ -346,7 +363,7 @@ export default function HybridMetrics() {
                     selectedSort === "activateUnitLevel"
                       ? selectedCandidateIds.join(",")
                       : activeCandidateId
-                  } onInteractionClassSelect={setIsSelectedInteractionClass} />}
+                  } onInteractionClassSelect={setIsSelectedInteractionClass} filters={secondaryValues} onResetFilters={resetFilters} />}
               </div>
             </div>
             {/* ------- */}
