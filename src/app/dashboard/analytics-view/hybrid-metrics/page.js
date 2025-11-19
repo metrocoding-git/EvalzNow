@@ -124,6 +124,9 @@ export default function HybridMetrics() {
       criticalDateFrom: null,
       criticalDateTo: null,
       thresholdEnabled: false,
+      unitMode: null,
+      selectedPpId: null,
+      showGrowthTarget: false,
     });
 
     // 🔁 trigger reset for SecondaryArea inputs

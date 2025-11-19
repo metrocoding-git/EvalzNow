@@ -21,6 +21,9 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
     setCriticalDateFrom("");
     setCriticalDateTo("");
     setThresholdEnabled(false);
+    setSelectedPpId("");
+    setUnitMode("");
+    setShowGrowthTarget(false)
   }, [resetSignal]);
 
   const handleSubmit = (e) => {
@@ -32,6 +35,9 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
       criticalDateFrom,
       criticalDateTo,
       thresholdEnabled,
+      unitMode,
+      selectedPpId,
+      showGrowthTarget
     };
 
     onSubmit(values);
@@ -160,8 +166,6 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
                 />
               </div>
             </div>
-
-
           </>
         )}
 
@@ -184,7 +188,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
             </div>
 
 
-
+            {unitMode === "target" && (
             <div className="p-2">
               <label className="block font-medium text-gray-700 mb-1">
                 Enter Target PP ID
@@ -197,6 +201,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
                 placeholder="Enter -/+ PP ID"
               />
             </div>
+            )}
 
           </>
         )}
