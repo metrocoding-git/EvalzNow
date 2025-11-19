@@ -6,7 +6,8 @@ import {
   ResponsiveContainer,
   Label,
   ScatterChart,
-  Scatter
+  Scatter,
+  ReferenceLine
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
@@ -15,6 +16,13 @@ import IcCurve from './IcCurveData';
 import { ReceptiveBias } from './ReceptiveBias';
 import { BalancedPlane } from './BalancedPlane';
 import { ProductivePlane } from './ProductivePlane';
+import { Interaction1 } from './Interaction1';
+import { Interaction2 } from './Interaction2';
+import { Interaction3 } from './Interaction3';
+import { Interaction4 } from './Interaction4';
+import { Interaction5 } from './Interaction5';
+import { getUnitById } from '@/services/unitService';
+import { getProjection } from '@/services/projectionService';
 
 
 const getICValue = (unitType, signatureProfile, icString) => {
@@ -95,11 +103,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [isSelectedInteractionClass, setIsSelectedInteractionClass] = useState(false);
   const [tableData, setTableData] = useState([]);
-
+  const [averageData, setAverageData] = useState([]);
+  const [projectionData, setProjectionData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("filtres: ", filters);
+  const [thresholdValue, setThresholdValue] = useState(null);
+
+  // console.log("filtres: ", filters);
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -195,7 +206,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     {
       name: "Interaction Class (IC) vs. PP ID",
       icon: "🔀",
-      type: "line", // Separate lines for -PP IDs and +PP IDs
+      type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
     {
@@ -287,6 +298,81 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   };
 
+  const renderReferenceLinesForLineChart = () => {
+    if (!thresholdValue || !filters?.thresholdEnabled) return null;
+
+    return Object.entries(thresholdValue).map(([key, value]) => {
+      if (value === null || value === undefined) return null;
+      
+      return (
+        <ReferenceLine
+          key={key}
+          y={value}
+          stroke="#000000" //
+          strokeWidth={2}
+          strokeDasharray="7 4 1 4"
+          label={{
+            value: `Threshold (${key}: ${value})`,
+            position: "right",
+            fill: "#000000",
+            fontSize: 12,
+          }}
+        />
+      );
+    });
+  };
+
+  // Function to render reference lines for Scatter charts
+  const renderReferenceLinesForScatter = (xKey, yKey) => {
+    if (!thresholdValue || !filters?.thresholdEnabled) return null;
+
+    return Object.entries(thresholdValue).map(([key, value]) => {
+      if (value === null || value === undefined) return null;
+      
+      // Determine if this threshold applies to X or Y axis
+      const axisKey = key.toUpperCase();
+      const isXAxis = ['RRN', 'PRN', 'ARN'].includes(axisKey) && xKey.toUpperCase().includes(axisKey);
+      const isYAxis = ['RRN', 'PRN', 'ARN'].includes(axisKey) && yKey.toUpperCase().includes(axisKey);
+      const isIC = key === 'IC' && (xKey === 'IC' || yKey === 'IC');
+
+      if (isXAxis) {
+        return (
+          <ReferenceLine
+            key={key}
+            x={value}
+            stroke="#f59e0b"
+            strokeWidth={2}
+            strokeDasharray="7 4 1 4"
+            label={{
+              value: `Threshold (${key}: ${value})`,
+              position: "top",
+              fill: "#f59e0b",
+              fontSize: 12,
+            }}
+          />
+        );
+      } else if (isYAxis || isIC) {
+        return (
+          <ReferenceLine
+            key={key}
+            y={value}
+            stroke="#f59e0b"
+            strokeWidth={2}
+            strokeDasharray="7 4 1 4"
+            label={{
+              value: `Threshold (${key}: ${value})`,
+              position: "right",
+              fill: "#f59e0b",
+              fontSize: 12,
+            }}
+          />
+        );
+      }
+      
+      return null;
+    });
+  };
+
   const handleChartSelect = (chart) => {
     setSelectedChart(chart);
 
@@ -299,9 +385,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   };
 
-  console.log("signatire proudile -", unitSignature);
+  // console.log("signatire proudile -", unitSignature);
 
-  console.log('unit type - ', unitType);
+  // console.log('unit type - ', unitType);
 
   useEffect(() => {
     const fetchTabulationData = async () => {
@@ -324,9 +410,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
 
-        console.log("real hybrid: ", data);
+        // console.log("real hybrid: ", data);
   
-        const { results, average, stdDev, stdErr } = data;  
+        const { results, averages, stdDev, stdErr } = data;  
   
         const formattedData = results.map(row => ({
           ppId: row.ppId,
@@ -335,11 +421,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           PRN: row.PRN || 0,
           ARN: row.ARN || 0,
         }));
-        
-        
+
         setTableData(formattedData);
 
-        // console.log("hybrid data: ", tableData);
+        const averageData = averages.map(item => ({
+          ppId: item.ppId,
+          RRN: item.RRN,
+          PRN: item.PRN,
+          ARN: item.ARN
+        }))
+        
+        setAverageData(averageData);
+
+        console.log("average data: ", averageData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -354,8 +448,97 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
-  console.log("table data: ", tableData);
+  console.log("average datas: ", averageData);
 
+
+  useEffect(() => {
+    const fetchThreshold = async () => {
+      if (!unitId) {
+        setThresholdValue(null);
+        return;
+      }
+  
+      try {
+        const data = await getUnitById(unitId);
+  
+        // Safely extract only threshold ratio fields
+        const extractedThresholds = {
+          IC: parseFloat(data?.IC) ?? null,
+        };
+  
+        setThresholdValue(extractedThresholds);
+  
+        console.log("✅ Extracted Threshold Values:", extractedThresholds);
+      } catch (error) {
+        console.error("❌ Failed to fetch threshold values:", error);
+        setThresholdValue(null);
+      }
+    };
+  
+    fetchThreshold();
+  }, [unitId]);
+
+  useEffect(() => {
+    const fetchProjection = async () => {
+      if (!unitId || !candidateId) {
+        setProjectionData([]);
+        return;
+      }
+  
+      try {
+        const data = await getProjection(unitId, candidateId);
+        
+        console.log("projection data:", data);
+        
+        // Check if data is an array of sessions
+        if (data && Array.isArray(data)) {
+          // Collect all projection points from all sessions
+          const allProjectionPoints = [];
+          
+          data.forEach(session => {
+            if (session.points && Array.isArray(session.points)) {
+              // Filter for 15 days or 30 days with Average callout (trim values to handle spaces)
+              const sessionProjectionPoints = session.points.filter(item => {
+                const trimmedPpId = item.ppId ? item.ppId.trim() : '';
+                const trimmedCallout = item.callout ? item.callout.trim() : '';
+                
+                return (
+                  (trimmedPpId === '15 days' || trimmedPpId === '30 days') && 
+                  trimmedCallout === 'Average'
+                );
+              });
+              
+              allProjectionPoints.push(...sessionProjectionPoints);
+            }
+          });
+          
+          // Extract RRN, PRN, ARN values
+          const formattedProjection = allProjectionPoints.map(item => ({
+            RRN: parseFloat(item.RRN) || 0,
+            PRN: parseFloat(item.PRN) || 0,
+            ARN: parseFloat(item.ARN) || 0,
+            ppId: item.ppId ? item.ppId.trim() : '', // Trim ppId in output too
+            callout: item.callout ? item.callout.trim() : '', // Trim callout in output too
+            dayCount: item.dayCount,
+            sessionId: item.sessionId
+          }));
+          
+          setProjectionData(formattedProjection);
+          
+          console.log("Filtered projection data (15 & 30 days, Average):", formattedProjection);
+        } else {
+          console.log("Invalid data structure - expected array of sessions");
+          setProjectionData([]);
+        }
+        
+      } catch (error) {
+        console.error("❌ Failed to fetch projection data:", error);
+        setProjectionData([]);
+      }
+    };
+  
+    fetchProjection();
+  }, [unitId, candidateId]);
 
   const renderBiasLines = (unitType, chartType, xKey, yKey) => {
     // Only show bias lines for specific unit types
@@ -481,115 +664,91 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
 
 
-  const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => (
-    <ResponsiveContainer width="100%" height="95%">
-      <ScatterChart 
-        data={tableData} // Provide base data for the chart
-        margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
-      >
-        <CartesianGrid />
-        <XAxis 
-          dataKey={xKey} 
-          type="number"
-          name={xLabel}
+  const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
+    // Check if we should show averages
+    const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+    
+    return (
+      <ResponsiveContainer width="100%" height="95%">
+        <ScatterChart 
+          data={tableData}
+          margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
         >
-          <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
-        </XAxis>
-        <YAxis 
-          dataKey={yKey} 
-          type="number"
-          name={yLabel}
-        >
-          <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
-        </YAxis>
-        <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-        <Legend />
-        
-        {/* Original data */}
-        <Scatter 
-          data={tableData} 
-          dataKey={yKey} 
-          fill="#3b82f6" 
-          name="Data Points" 
-        />
-        
-         {/* IC Curves */}
-        {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
-
-        {/* Bias Lines */}
-        {renderBiasLines(unitType, "scatter", xKey, yKey)}
-      </ScatterChart>
-    </ResponsiveContainer>
-  );
+          <CartesianGrid />
+          <XAxis 
+            dataKey={xKey} 
+            type="number"
+            name={xLabel}
+          >
+            <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
+          </XAxis>
+          <YAxis 
+            dataKey={yKey} 
+            type="number"
+            name={yLabel}
+          >
+            <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
+          </YAxis>
+          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+          <Legend />
+          
+          {/* Reference Lines */}
+          {renderReferenceLinesForScatter(xKey, yKey)}
+          
+          {/* Original data */}
+          <Scatter 
+            data={tableData} 
+            dataKey={yKey} 
+            fill="#3b82f6" 
+            name="Data Points" 
+          />
+          
+          {/* Average data points */}
+          {showAverages && (
+            <Scatter 
+              data={averageData} 
+              dataKey={yKey} 
+              fill="#ff6b6b" 
+              name="Average Points"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={6} 
+                  fill="#ff6b6b" 
+                  stroke="#000000"
+                  strokeWidth={2}
+                />
+              )}
+            />
+          )}
+          
+          {/* IC Curves */}
+          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+  
+          {/* Bias Lines */}
+          {renderBiasLines(unitType, "scatter", xKey, yKey)}
+        </ScatterChart>
+      </ResponsiveContainer>
+    );
+  };
 
   const render3DScatter = (tableData, unitType) => {
+    // Check if we should show averages
+    const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+    
     // Get plane data
     const receptiveData = ReceptiveBias();
     const balancedData = BalancedPlane();
     const productiveData = ProductivePlane();
-  
-    // Convert the coordinate arrays to mesh format for Plotly
-    const createMeshData = (x, y, z, color, name) => {
-      // Check if arrays have consistent lengths
-      if (x.length !== y.length || x.length !== z.length) {
-        console.warn(`Mesh data inconsistent for ${name}: x=${x.length}, y=${y.length}, z=${z.length}`);
-        return null;
-      }
-  
-      const i = [];
-      const j = [];
-      const k = [];
-      
-      // Determine grid size based on data pattern
-      // For ReceptiveBias and BalancedPlane: 41×41 grid (1681 points)
-      // For ProductivePlane: might be different structure
-      let gridSize;
-      if (x.length === 1681) {
-        gridSize = 41; // 41×41 grid
-      } else {
-        // Try to detect grid size for other patterns
-        gridSize = Math.sqrt(x.length);
-        if (!Number.isInteger(gridSize)) {
-          console.warn(`Cannot determine grid size for ${name} with ${x.length} points`);
-          return null;
-        }
-      }
-      
-      console.log(`Creating mesh for ${name}: ${x.length} points, gridSize=${gridSize}`);
-      
-      for (let row = 0; row < gridSize - 1; row++) {
-        for (let col = 0; col < gridSize - 1; col++) {
-          const idx = row * gridSize + col;
-          
-          // First triangle
-          i.push(idx);
-          j.push(idx + 1);
-          k.push(idx + gridSize);
-          
-          // Second triangle
-          i.push(idx + 1);
-          j.push(idx + gridSize + 1);
-          k.push(idx + gridSize);
-        }
-      }
-      
-      return {
-        type: "mesh3d",
-        x: x,
-        y: y, 
-        z: z,
-        i: i,
-        j: j,
-        k: k,
-        opacity: 0.5,
-        color: color,
-        name: name,
-        flatshading: true
-      };
-    };
+    
+    const interaction1 = Interaction1();
+    const interaction2 = Interaction2();
+    const interaction3 = Interaction3();
+    const interaction4 = Interaction4();
+    const interaction5 = Interaction5();
   
     const plotData = [
-      // Main scatter plot data
       {
         x: tableData.map(r => r.RRN),
         y: tableData.map(r => r.PRN),
@@ -604,95 +763,156 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       }
     ];
   
+    // Add average points if enabled
+    if (showAverages) {
+      plotData.push({
+        x: averageData.map(avg => avg.RRN),
+        y: averageData.map(avg => avg.PRN),
+        z: averageData.map(avg => avg.ARN),
+        type: "scatter3d",
+        mode: "markers",
+        marker: { 
+          size: 8,
+          color: '#ff6b6b',
+          symbol: 'diamond'
+        },
+        name: "Average Points"
+      });
+    }
+  
     // Add surfaces only for Third Parameter unit type
     if (unitType === "Third Parameter") {
-      // Receptive Bias Plane
-      const receptiveMesh = createMeshData(
-        receptiveData.Px1, 
-        receptiveData.Py1, 
-        receptiveData.Pz1,
-        '#ff6b6b',
-        "Receptive Bias"
-      );
-      if (receptiveMesh) plotData.push(receptiveMesh);
-  
-      // Balanced Plane
-      const balancedMesh = createMeshData(
-        balancedData.Px2, 
-        balancedData.Py2, 
-        balancedData.Pz2,
-        '#4ecdc4', 
-        "Balanced Plane"
-      );
-      if (balancedMesh) plotData.push(balancedMesh);
-  
-      // Productive Bias Plane - handle the inconsistent data
-      console.log("Productive Plane data:", {
-        Px3_length: productiveData.Px3?.length,
-        Py3_length: productiveData.Py3?.length, 
-        Pz3_length: productiveData.Pz3?.length
-      });
-  
-      // For ProductivePlane, let's try a different approach since the data is inconsistent
-      if (productiveData.Px3 && productiveData.Py3 && productiveData.Pz3) {
-        // Use scatter3d as fallback if mesh fails
-        const productiveMesh = createMeshData(
-          productiveData.Px3,
-          productiveData.Py3,
-          productiveData.Pz3,
-          '#feca57',
-          "Productive Bias"
-        );
-        
-        if (productiveMesh) {
-          plotData.push(productiveMesh);
-        } else {
-          // Fallback: show as points instead of mesh
-          plotData.push({
-            x: productiveData.Px3,
-            y: productiveData.Py3.slice(0, productiveData.Px3.length), // Match lengths
-            z: productiveData.Pz3.slice(0, productiveData.Px3.length), // Match lengths
-            type: "scatter3d",
-            mode: "markers",
-            marker: {
-              size: 2,
-              color: '#feca57',
-              opacity: 0.3
-            },
-            name: "Productive Bias Points"
-          });
+      plotData.push(
+        {
+          x: receptiveData.Px1,
+          y: receptiveData.Py1,
+          z: receptiveData.Pz1,
+          name: "Receptive Bias Plane",
+          type: "scatter3d",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#ff8c1a" },
+          opacity: 0.1,
+        },
+        {
+          x: balancedData.Px2,
+          y: balancedData.Py2,
+          z: balancedData.Pz2,
+          name: "Balanced Plane",
+          type: "scatter3d",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#ff8000" },
+          opacity: 0.1,
+        },
+        {
+          x: productiveData.Px3,
+          y: productiveData.Py3,
+          z: productiveData.Pz3,
+          type: "scatter3d",
+          name: "Productive Bias Plane",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#e67300" },
+          opacity: 0.1,
+        },
+        {
+          x: interaction5.Px4,
+          y: interaction5.Py4,
+          z: interaction5.Pz4,
+          type: "scatter3d",
+          name: "Interaction Surface 5",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#030066" },
+          opacity: 0.1,
+        },
+        {
+          x: interaction4.Px5,
+          y: interaction4.Py5,
+          z: interaction4.Pz5,
+          type: "scatter3d",
+          name: "Interaction Surface 4",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#050099" },
+          opacity: 0.1,
+        },
+        {
+          x: interaction3.Px6,
+          y: interaction3.Py6,
+          z: interaction3.Pz6,
+          type: "scatter3d",
+          name: "Interaction Surface 3",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#0800e6" },
+          opacity: 0.1,
+        },
+        {
+          x: interaction2.Px7,
+          y: interaction2.Py7,
+          z: interaction2.Pz7,
+          type: "scatter3d",
+          name: "Interaction Surface 2",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#524dff" },
+          opacity: 0.1,
+        },
+        {
+          x: interaction1.Px8,
+          y: interaction1.Py8,
+          z: interaction1.Pz8,
+          type: "scatter3d",
+          name: "Interaction Surface 1",
+          mode: "markers",
+          marker: { size: 1 },
+          line: { color: "#b5b3ff" },
+          opacity: 0.1,
         }
-      }
+      );
     }
   
     return (
       <Plot
         data={plotData}
         layout={{
-          autosize: true,
+          height: 800,
+          width: 800,
+          title: "Butler Hybrid Model",
+  
+          // 🔥 All 3D properties must be inside scene
           scene: {
-            xaxis: { 
-              title: "RR",
-              range: [0, 1]
-            },
-            yaxis: { 
-              title: "PR",
-              range: [0, 1]
-            },
-            zaxis: { 
-              title: "AR",
-              range: [0, 1]
-            },
             camera: {
-              eye: { x: 1.5, y: 1.5, z: 1.5 }
-            }
+              eye: { x: 0, y: 0, z: 0 }
+            },
+  
+            aspectratio: { x: 1, y: 1, z: 1 },
+  
+            xaxis: {
+              title: { text: "RECEPTIVE RATIO (RR)" },
+              nticks: 10,
+              range: [0, 1],
+            },
+            yaxis: {
+              title: { text: "PRODUCTIVE RATIO (PR)" },
+              nticks: 10,
+              range: [0, 1],
+            },
+            zaxis: {
+              title: { text: "ACUITY RATIO (AR)" },
+              nticks: 10,
+              range: [0, 1],
+            },
           },
-          margin: { l: 0, r: 0, b: 0, t: 0 },
+  
+          margin: { l: 0, r: 0, b: 0, t: 50 },
           showlegend: true,
           legend: {
             x: 0,
             y: 1,
-            bgcolor: 'rgba(255,255,255,0.8)'
+            bgcolor: "rgba(255,255,255,0.8)"
           }
         }}
         style={{ width: "100%", height: "100%" }}
@@ -704,7 +924,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (!selectedChart) return null;
   
     switch (selectedChart.id) {
-      case "1":  // Interaction Class vs PP ID (Line)
+      case "1":  // Interaction Class vs PP ID (Line) - No averages for this chart
         const positives = tableData.filter(r => r.ppId > 0);
         const negatives = tableData.filter(r => r.ppId < 0);
   
@@ -720,6 +940,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </YAxis>
               <Tooltip />
               <Legend />
+  
+              {/* Reference Lines */}
+              {renderReferenceLinesForLineChart()}
               
               <Line data={positives} dataKey="IC" name="Positive PP IDs" type="linear" stroke="#3b82f6" dot />  
               <Line data={negatives} dataKey="IC" name="Negative PP IDs" type="linear" stroke="#ef4444" dot />
@@ -760,6 +983,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               {unitType === "Third Parameter" && (
                 <div>Showing Bias Planes</div>
               )}
+              {filters?.unitMode === "averages" && averageData.length > 0 && (
+                <div>Showing Average Points (Red)</div>
+              )}
             </div>
           </div>
         );
@@ -794,7 +1020,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => setShowCreateMaterial(true)} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
+                  if (typeof onResetFilters === "function") {
+                    onResetFilters(); // ✅ reset filters in parent
+                  }
+                }} />
               </button>
               <button onClick={handleDeleteCurve} title="Export" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
