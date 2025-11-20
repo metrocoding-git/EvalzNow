@@ -9,6 +9,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
   const [showGrowthTarget, setShowGrowthTarget] = useState(false);
+  const [showProjectionPoints, setShowProjectionPoints] = useState(false);
   const [selectedPpId, setSelectedPpId] = useState(null);
   const [unitMode, setUnitMode] = useState("averages"); // "averages" or "target"
 
@@ -21,23 +22,25 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
     setCriticalDateFrom("");
     setCriticalDateTo("");
     setThresholdEnabled(false);
-    setSelectedPpId("");
+    setSelectedPpId(null);
     setUnitMode("");
-    setShowGrowthTarget(false)
+    setShowGrowthTarget(false);
+    setShowProjectionPoints(false);
   }, [resetSignal]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const values = {
-      ppIdFrom,
-      ppIdTo,
+      ppIdFrom: selectedPpId === null ? ppIdFrom : null, 
+      ppIdTo: selectedPpId === null ? ppIdTo : null,
       criticalDateFrom,
       criticalDateTo,
       thresholdEnabled,
       unitMode,
-      selectedPpId,
-      showGrowthTarget
+      selectedPpId: selectedPpId !== null ? selectedPpId : null,
+      showGrowthTarget,
+      showProjectionPoints
     };
 
     onSubmit(values);
@@ -146,7 +149,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
 
         {/* Candidate Level Options */}
         {selectedSort === "activateCandidateLevel" && !isSelectedInteractionClass && (
-          <>
+          <div className="flex flex-col gap-2">
             {/* Growth Target Toggle */}
             <div className="flex items-center justify-between p-2">
               <label className="font-medium text-gray-800">
@@ -166,7 +169,28 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
                 />
               </div>
             </div>
-          </>
+
+
+            {/* Performance Points Projection Toggle */}
+            <div className="flex items-center justify-between p-2">
+              <label className="font-medium text-gray-800">
+                Performance Points Projection
+              </label>
+              <div
+                onClick={() => setShowProjectionPoints(!showProjectionPoints)}
+                className="relative w-12 h-6 cursor-pointer"
+              >
+                <div
+                  className={`absolute inset-0 rounded-full transition-colors duration-300 ${showProjectionPoints ? "bg-gray-600" : "bg-gray-300"
+                    }`}
+                />
+                <div
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${showProjectionPoints ? "translate-x-6" : "translate-x-0"
+                    }`}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Unit Level Options */}
@@ -196,7 +220,9 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
               <input
                 type="number"
                 value={selectedPpId ?? ""}
-                onChange={(e) => setSelectedPpId(parseInt(e.target.value))}
+                onChange={(e) =>
+                  setSelectedPpId(e.target.value === "" ? null : parseInt(e.target.value))
+                }                
                 className="border px-2 py-1 w-full"
                 placeholder="Enter -/+ PP ID"
               />
