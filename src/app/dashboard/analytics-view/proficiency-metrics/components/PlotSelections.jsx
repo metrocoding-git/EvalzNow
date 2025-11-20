@@ -423,7 +423,7 @@ const renderCustomDot = (props, color) => {
                   {selectedSort === 'activateUnitLevel' && (
                     activateUnitLevel.filter(chart => {
                       // Common charts for all
-                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (BXP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
+                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
                       if (commonCharts.includes(chart.name)) return true;
               
                       // Unit-specific charts
@@ -779,6 +779,22 @@ const renderCustomDot = (props, color) => {
                             </YAxis>
                             <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                             <Legend />
+
+                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                              <ReferenceLine
+                                y={thresholdValue[keyName]}
+                                stroke="#000000"        // Amber (you can change this)
+                                strokeWidth={2}
+                                strokeDasharray="7 4 1 4"
+                                label={{
+                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                  position: "right",
+                                  fill: "#f59e0b",
+                                  fontSize: 12,
+                                }}
+                              />
+                            )}
+                            
                             <Scatter
                               name="Negative PP IDs"
                               data={negativeData}
