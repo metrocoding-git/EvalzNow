@@ -111,7 +111,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const [thresholdValue, setThresholdValue] = useState(null);
 
-  
+  const chartContainerRef = useRef(null);
+
   // console.log("filtres: ", filters);
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -123,34 +124,38 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   ];
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
+    // Standard
+    positiveVisibility: true,
+    negativeVisibility: true,
+    layer: 1,
+    reference: false,
 
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
+    // Curve Label
+    showLabel: true,
+    labelType: "X Type",
+    // showLabelPrefix: false,
+    // labelPrefix: "X File name",
+    // showLabelSuffix: false,
+    // labelSuffix: "Y subcase",
 
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
 
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
+    symbolFrequency: 1,
+    symbolScaleSize: 3,
 
-  // Shade area
-  shadeArea: "#ffffff",
-});
-
+    // Shade area
+    shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
+  });
 
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
@@ -286,7 +291,52 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         return null;
     }
   };
+
+  const applyChartStyling = {
+    lineStrokeDasharray: (style) => {
+      switch (style) {
+        case "dashed": return "5 5";
+        case "dotted": return "2 2";
+        default: return ""; // solid
+      }
+    },
   
+    symbolShape: (style, props, color, size) => {
+      switch (style) {
+        case "square":
+          return (
+            <rect
+              x={props.cx - size}
+              y={props.cy - size}
+              width={size * 2}
+              height={size * 2}
+              fill={color}
+              stroke="#000"
+            />
+          );
+        case "triangle":
+          return (
+            <polygon
+              points={`
+                ${props.cx},${props.cy - size}
+                ${props.cx - size},${props.cy + size}
+                ${props.cx + size},${props.cy + size}
+              `}
+              fill={color}
+            />
+          );
+        default: // circle
+          return (
+            <circle
+              cx={props.cx}
+              cy={props.cy}
+              r={size}
+              fill={color}
+            />
+          );
+      }
+    }
+  };  
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -809,8 +859,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           <Scatter 
             data={tableData} 
             dataKey={yKey} 
-            fill="#3b82f6" 
             name="Data Points" 
+            shape={(props) =>
+              applyChartStyling.symbolShape(
+                chartProperties.symbolStyle,
+                props,
+                chartProperties.symbolColor,
+                chartProperties.symbolScaleSize
+              )
+            }
           />
           
           {/* Average data points */}
@@ -844,10 +901,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 <circle 
                   cx={props.cx} 
                   cy={props.cy} 
-                  r={8} 
+                  r={6} 
                   fill="#10b981" 
-                  stroke="#000000"
-                  strokeWidth={1}
+                 
                 />
               )}
             />
@@ -1149,6 +1205,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" type="number">
+             
                 <Label value="PP ID" position="bottom" offset={0} />
               </XAxis>
               <YAxis dataKey="IC">
@@ -1160,8 +1217,52 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               {/* Reference Lines */}
               {renderReferenceLinesForLineChart()}
               
-              <Line data={positives} dataKey="IC" name="Positive PP IDs" type="linear" stroke="#3b82f6" dot />  
-              <Line data={negatives} dataKey="IC" name="Negative PP IDs" type="linear" stroke="#ef4444" dot />
+              <Line data={positives} dataKey="IC"  type="linear" name="Positive PP IDs"
+  stroke={chartProperties.positiveLineColor}
+  strokeDasharray={
+    chartProperties.positiveLineStyle === "dashed"
+      ? "6 4"
+      : chartProperties.positiveLineStyle === "dotted"
+      ? "2 4"
+      : chartProperties.positiveLineStyle === "dashdot"
+      ? "8 4 2 4"
+      : "0"
+  }
+  strokeWidth={chartProperties.positiveLineThickness}
+  isAnimationActive={false}
+  hide={!chartProperties.positiveVisibility}
+                dot={(props) =>
+                  applyChartStyling.symbolShape(
+                    chartProperties.symbolStyle,
+                    props,
+                    chartProperties.positiveSymbolColor,
+                    chartProperties.symbolScaleSize
+                  )
+                } 
+              />  
+              <Line data={negatives} dataKey="IC"  type="linear"  name="Negative PP IDs"
+  stroke={chartProperties.negativeLineColor}
+  strokeDasharray={
+    chartProperties.negativeLineStyle === "dashed"
+      ? "6 4"
+      : chartProperties.negativeLineStyle === "dotted"
+      ? "2 4"
+      : chartProperties.negativeLineStyle === "dashdot"
+      ? "8 4 2 4"
+      : "0"
+  }
+  strokeWidth={chartProperties.negativeLineThickness}
+  isAnimationActive={false}
+  hide={!chartProperties.negativeVisibility}
+                dot={(props) =>
+                  applyChartStyling.symbolShape(
+                    chartProperties.symbolStyle,
+                    props,
+                    chartProperties.negativeSymbolColor,
+                    chartProperties.symbolScaleSize
+                  )
+                }
+              />
               
               {/* IC Curves for line chart */}
               {renderICCurves(unitSignature, unitType, "line")}
@@ -1327,6 +1428,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   <PropertyEditor
                     properties={chartProperties}
                     onChange={setChartProperties}
+                    
                   />
                 )}
 
