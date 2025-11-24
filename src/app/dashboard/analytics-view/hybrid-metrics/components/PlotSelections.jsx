@@ -816,6 +816,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
+
+    const containerStyle = {
+      backgroundColor: chartProperties.shadeArea,
+      width: '100%',
+      height: '100%',
+      padding: '10px',
+      borderRadius: '8px'
+    };
+
     // Check if we should show averages
     const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
     // Check if we should show projection data
@@ -829,114 +838,117 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     console.log("📊 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
   
     return (
-      <ResponsiveContainer width="100%" height="95%">
-        <ScatterChart 
-          data={tableData}
-          margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
-        >
-          <CartesianGrid />
-          <XAxis 
-            dataKey={xKey} 
-            type="number"
-            name={xLabel}
+      <div style={containerStyle}>
+        <ResponsiveContainer width="100%" height="95%">
+          <ScatterChart 
+            data={tableData}
+            margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
           >
-            <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
-          </XAxis>
-          <YAxis 
-            dataKey={yKey} 
-            type="number"
-            name={yLabel}
-          >
-            <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
-          </YAxis>
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Legend />
-          
-          {/* Reference Lines */}
-          {renderReferenceLinesForScatter(xKey, yKey)}
-          
-          {/* Original data */}
-          <Scatter 
-            data={tableData} 
-            dataKey={yKey} 
-            name="Data Points" 
-            shape={(props) =>
-              applyChartStyling.symbolShape(
-                chartProperties.symbolStyle,
-                props,
-                chartProperties.symbolColor,
-                chartProperties.symbolScaleSize
-              )
-            }
-          />
-          
-          {/* Average data points */}
-          {showAverages && (
-            <Scatter 
-              data={averageData} 
+            <CartesianGrid />
+            <XAxis 
+              dataKey={xKey} 
+              type="number"
+              name={xLabel}
+            >
+              <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
+            </XAxis>
+            <YAxis 
               dataKey={yKey} 
-              fill="#ff6b6b" 
-              name="Average Points"
-              shape={(props) => (
-                <circle 
-                  cx={props.cx} 
-                  cy={props.cy} 
-                  r={6} 
-                  fill="#ff6b6b" 
-                  stroke="#000000"
-                  strokeWidth={1}
-                />
-              )}
-            />
-          )}
-          
-          {/* Projection data points (Performance Points) */}
-          {showProjection && (
+              type="number"
+              name={yLabel}
+            >
+              <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
+            </YAxis>
+            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+            <Legend />
+            
+            {/* Reference Lines */}
+            {renderReferenceLinesForScatter(xKey, yKey)}
+            
+            {/* Original data */}
             <Scatter 
-              data={projectionData} 
+              data={tableData} 
               dataKey={yKey} 
-              fill="#10b981" 
-              name="Performance Points"
-              shape={(props) => (
-                <circle 
-                  cx={props.cx} 
-                  cy={props.cy} 
-                  r={6} 
-                  fill="#10b981" 
-                 
-                />
-              )}
+              name="Data Points" 
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.symbolStyle,
+                  props,
+                  chartProperties.symbolColor,
+                  chartProperties.symbolScaleSize
+                )
+              }
             />
-          )}
+            
+            {/* Average data points */}
+            {showAverages && (
+              <Scatter 
+                data={averageData} 
+                dataKey={yKey} 
+                fill="#ff6b6b" 
+                name="Average Points"
+                shape={(props) => (
+                  <circle 
+                    cx={props.cx} 
+                    cy={props.cy} 
+                    r={6} 
+                    fill="#ff6b6b" 
+                    stroke="#000000"
+                    strokeWidth={1}
+                  />
+                )}
+              />
+            )}
+            
+            {/* Projection data points (Performance Points) */}
+            {showProjection && (
+              <Scatter 
+                data={projectionData} 
+                dataKey={yKey} 
+                fill="#10b981" 
+                name="Performance Points"
+                shape={(props) => (
+                  <circle 
+                    cx={props.cx} 
+                    cy={props.cy} 
+                    r={6} 
+                    fill="#10b981" 
+                  
+                  />
+                )}
+              />
+            )}
+            
+            {/* Growth Target data points */}
           
-          {/* Growth Target data points */}
-         
-          {showGrowthTarget && growthTargetPoints.length > 0 && (
-            <Scatter 
-              data={growthTargetPoints} 
-              dataKey={yKey}  // This will now work because the points have RRN/PRN/ARN keys
-              fill="#8b5cf6" 
-              name="Growth Targets"
-              shape={(props) => (
-                <rect 
-                  x={props.cx - 5} 
-                  y={props.cy - 5} 
-                  width={10} 
-                  height={10} 
-                  fill="#8b5cf6" 
-                  stroke="#000000"
-                  strokeWidth={1}
-                />
-              )}
-            />
-          )}
-          {/* IC Curves */}
-          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
-  
-          {/* Bias Lines */}
-          {renderBiasLines(unitType, "scatter", xKey, yKey)}
-        </ScatterChart>
-      </ResponsiveContainer>
+            {showGrowthTarget && growthTargetPoints.length > 0 && (
+              <Scatter 
+                data={growthTargetPoints} 
+                dataKey={yKey}  // This will now work because the points have RRN/PRN/ARN keys
+                fill="#8b5cf6" 
+                name="Growth Targets"
+                shape={(props) => (
+                  <rect 
+                    x={props.cx - 5} 
+                    y={props.cy - 5} 
+                    width={10} 
+                    height={10} 
+                    fill="#8b5cf6" 
+                    stroke="#000000"
+                    strokeWidth={1}
+                  />
+                )}
+              />
+            )}
+            {/* IC Curves */}
+            {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+    
+            {/* Bias Lines */}
+            {renderBiasLines(unitType, "scatter", xKey, yKey)}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+      
     );
   };
   
@@ -1194,6 +1206,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   const renderSelectedChart = () => {
     if (!selectedChart) return null;
+
+    const containerStyle = {
+      backgroundColor: chartProperties.shadeArea,
+      width: '100%',
+      height: '100%',
+      padding: '10px',
+      borderRadius: '8px'
+    };
   
     switch (selectedChart.id) {
       case "1":  // Interaction Class vs PP ID (Line) - No averages or projections for this chart
@@ -1201,76 +1221,78 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const negatives = tableData.filter(r => r.ppId < 0);
   
         return (
-          <ResponsiveContainer width="100%" height="95%">
-            <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" type="number">
-             
-                <Label value="PP ID" position="bottom" offset={0} />
-              </XAxis>
-              <YAxis dataKey="IC">
-                <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-7} />
-              </YAxis>
-              <Tooltip />
-              <Legend />
-  
-              {/* Reference Lines */}
-              {renderReferenceLinesForLineChart()}
+          <div style={containerStyle}>
+            <ResponsiveContainer width="100%" height="95%">
+              <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ppId" type="number">
               
-              <Line data={positives} dataKey="IC"  type="linear" name="Positive PP IDs"
-  stroke={chartProperties.positiveLineColor}
-  strokeDasharray={
-    chartProperties.positiveLineStyle === "dashed"
-      ? "6 4"
-      : chartProperties.positiveLineStyle === "dotted"
-      ? "2 4"
-      : chartProperties.positiveLineStyle === "dashdot"
-      ? "8 4 2 4"
-      : "0"
-  }
-  strokeWidth={chartProperties.positiveLineThickness}
-  isAnimationActive={false}
-  hide={!chartProperties.positiveVisibility}
-                dot={(props) =>
-                  applyChartStyling.symbolShape(
-                    chartProperties.symbolStyle,
-                    props,
-                    chartProperties.positiveSymbolColor,
-                    chartProperties.symbolScaleSize
-                  )
-                } 
-              />  
-              <Line data={negatives} dataKey="IC"  type="linear"  name="Negative PP IDs"
-  stroke={chartProperties.negativeLineColor}
-  strokeDasharray={
-    chartProperties.negativeLineStyle === "dashed"
-      ? "6 4"
-      : chartProperties.negativeLineStyle === "dotted"
-      ? "2 4"
-      : chartProperties.negativeLineStyle === "dashdot"
-      ? "8 4 2 4"
-      : "0"
-  }
-  strokeWidth={chartProperties.negativeLineThickness}
-  isAnimationActive={false}
-  hide={!chartProperties.negativeVisibility}
-                dot={(props) =>
-                  applyChartStyling.symbolShape(
-                    chartProperties.symbolStyle,
-                    props,
-                    chartProperties.negativeSymbolColor,
-                    chartProperties.symbolScaleSize
-                  )
-                }
-              />
-              
-              {/* IC Curves for line chart */}
-              {renderICCurves(unitSignature, unitType, "line")}
-  
-              {/* Bias Lines for line chart */}
-              {renderBiasLines(unitType, "line")}
-            </LineChart>
-          </ResponsiveContainer>
+                  <Label value="PP ID" position="bottom" offset={0} />
+                </XAxis>
+                <YAxis dataKey="IC">
+                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-7} />
+                </YAxis>
+                <Tooltip />
+                <Legend />
+    
+                {/* Reference Lines */}
+                {renderReferenceLinesForLineChart()}
+                
+                <Line data={positives} dataKey="IC"  type="linear" name="Positive PP IDs"
+                  stroke={chartProperties.positiveLineColor}
+                  strokeDasharray={
+                    chartProperties.positiveLineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.positiveLineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.positiveLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
+                  strokeWidth={chartProperties.positiveLineThickness}
+                  isAnimationActive={false}
+                  hide={!chartProperties.positiveVisibility}
+                  dot={(props) =>
+                    applyChartStyling.symbolShape(
+                      chartProperties.symbolStyle,
+                      props,
+                      chartProperties.positiveSymbolColor,
+                      chartProperties.symbolScaleSize
+                    )
+                  } 
+                />  
+                <Line data={negatives} dataKey="IC"  type="linear"  name="Negative PP IDs"
+                  stroke={chartProperties.negativeLineColor}
+                  strokeDasharray={
+                    chartProperties.negativeLineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.negativeLineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.negativeLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
+                  strokeWidth={chartProperties.negativeLineThickness}
+                  isAnimationActive={false}
+                  hide={!chartProperties.negativeVisibility}
+                  dot={(props) =>
+                    applyChartStyling.symbolShape(
+                      chartProperties.symbolStyle,
+                      props,
+                      chartProperties.negativeSymbolColor,
+                      chartProperties.symbolScaleSize
+                    )
+                  }
+                />
+                
+                {/* IC Curves for line chart */}
+                {renderICCurves(unitSignature, unitType, "line")}
+    
+                {/* Bias Lines for line chart */}
+                {renderBiasLines(unitType, "line")}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         );
   
       case "2": // PR vs RR

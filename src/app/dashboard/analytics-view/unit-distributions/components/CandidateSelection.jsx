@@ -1,8 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useUnit } from "@/context/UnitContext";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
+import { getInsertScoresByUnitId } from "@/services/insertScoreService";
 
 export default function CandidateSelectionTable({ onClose }) {
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [data, setData] = useState([]);
   const ppIdOptions = ["1", "2", "3", "4", "5"];
 
   const [rows, setRows] = useState([
@@ -11,6 +20,72 @@ export default function CandidateSelectionTable({ onClose }) {
     { id: 3, lastName: "Brown", firstName: "Alice", candidateId: "C003", value: "Omit", ppListings: "", isSelected: false },
     { id: 4, lastName: "Johnson", firstName: "Mike", candidateId: "C004", value: "Omit", ppListings: "", isSelected: false },
   ]);
+
+  useEffect(() => {
+    if (!selectedUnitId) return;
+  
+    const fetchCandidates = async () => {
+      try {
+        setLoading(true);
+  
+        const roster = await getInsertScoresByUnitId(selectedUnitId);
+  
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setRows([]);
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+  
+        // --- 1. UNIQUE CANDIDATES ---
+        const candidateMap = new Map();
+        roster.forEach((item) => {
+          candidateMap.set(item.candidate.id, item.candidate);
+        });
+  
+        const uniqueCandidates = [...candidateMap.values()].sort(
+          (a, b) => a.id - b.id
+        );
+  
+        // --- 2. UNIQUE POSITIVE PP IDs ---
+        const ppMap = {}; // key = candidateId, value = [unique ppIDs]
+  
+        roster.forEach((item) => {
+          const cid = item.candidate.id;
+  
+          if (!ppMap[cid]) ppMap[cid] = [];
+  
+          const pp = Number(item.subPpId);
+  
+          // Only include POSITIVE PP IDs
+          if (pp > 0 && !ppMap[cid].includes(pp)) {
+            ppMap[cid].push(pp);
+          }
+        });
+  
+        // --- 3. BUILD FINAL ROWS ---
+        const finalRows = uniqueCandidates.map((c) => ({
+          id: c.id,
+          lastName: c.lastName,
+          firstName: c.firstName,
+          candidateId: c.candidateId,
+          value: "Omit",
+          ppListings: "",
+          isSelected: false,
+          availablePP: ppMap[c.id] || []
+        }));
+  
+        setRows(finalRows);
+      } catch (err) {
+        console.error("Error loading roster:", err);
+        setError("Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, [selectedUnitId]);
+  
 
   const handleValueChange = (id, newValue) => {
     setRows((prev) =>
@@ -46,7 +121,15 @@ export default function CandidateSelectionTable({ onClose }) {
 
   const handleCloseClick = () => {
     const selectedRows = rows.filter((row) => row.isSelected);
-    onClose(selectedRows); // pass selected rows to parent
+    
+    // Extract candidate IDs from selected rows
+    const candidateIds = selectedRows.map(row => row.id);
+    
+    // Pass both the selected rows and the candidate IDs array
+    onClose({
+      selectedRows: selectedRows,
+      candidateIds: candidateIds
+    });
   };
 
   const selectedCount = rows.filter(row => row.isSelected).length;
@@ -102,15 +185,22 @@ export default function CandidateSelectionTable({ onClose }) {
                         onChange={(e) => handlePPChange(row.id, e.target.value)}
                       >
                         <option value="">Select PP ID</option>
-                        {ppIdOptions.map((pp) => (
-                          <option key={pp} value={pp}>{pp}</option>
-                        ))}
+
+                        {row.availablePP.length > 0 ? (
+                          row.availablePP.map((pp) => (
+                            <option key={pp} value={pp}>{pp}</option>
+                          ))
+                        ) : (
+                          <option disabled>No PP IDs</option>
+                        )}
                       </select>
                     )}
+
                     {row.value === "Candidate Average" && (
                       <span className="block text-center">{row.ppListings}</span>
                     )}
                   </td>
+
                 </tr>
               ))}
             </tbody>

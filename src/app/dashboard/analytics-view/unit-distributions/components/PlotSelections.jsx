@@ -22,8 +22,9 @@ import {
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
+import { getNormalDistributionData } from "@/services/unitDistributionService";
 
-export default function PlotSelections({ onCandidatesSelected }) {
+export default function PlotSelections({ onCandidatesSelected, unitId }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
     { id: 2, name: "curve2" },
@@ -42,6 +43,11 @@ export default function PlotSelections({ onCandidatesSelected }) {
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
+  const [candidateId, setCandidateId] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  // console.log("selected candidates:->", onCandidatesSelected);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -88,6 +94,7 @@ export default function PlotSelections({ onCandidatesSelected }) {
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] =
     useState("Table");
 
+  const [tableData, setTableData] = useState([]);
   const canvasRef = useRef(null);
 
   // Example line chart data
@@ -96,60 +103,109 @@ export default function PlotSelections({ onCandidatesSelected }) {
     { name: "B", uv: 300, pv: 139 },
     { name: "C", uv: 200, pv: 980 },
   ];
-
   const chart = [
     { id: 1, name: "Normal Distribution - RR", icon: "📈", type: "line" },
     { id: 2, name: "Normal Distribution - PR", icon: "📈", type: "line" },
     { id: 3, name: "Normal Distribution - AR", icon: "📈", type: "line" },
-    { id: 4, name: "Normal Distribution - ∆RR", icon: "📈", type: "line" },
-    { id: 5, name: "Normal Distribution - ∆PR", icon: "📈", type: "line" },
-    { id: 6, name: "Normal Distribution - ∆AR", icon: "📈", type: "line" },
+    { id: 4, name: "Normal Distribution - XEQ", icon: "📈", type: "line" },
+    { id: 5, name: "Normal Distribution - XCP", icon: "📈", type: "line" },
+    { id: 6, name: "Normal Distribution - XBP", icon: "📈", type: "line" },
+    { id: 7, name: "Normal Distribution - ∆RR", icon: "📈", type: "line" },
+    { id: 8, name: "Normal Distribution - ∆PR", icon: "📈", type: "line" },
+    { id: 9, name: "Normal Distribution - ∆AR", icon: "📈", type: "line" },
+    { id: 10, name: "Normal Distribution - ∆GEQ", icon: "📈", type: "line" },
   
-    { id: 7, name: "T Distribution - RR", icon: "📉", type: "line" },
-    { id: 8, name: "T Distribution - PR", icon: "📉", type: "line" },
-    { id: 9, name: "T Distribution - AR", icon: "📉", type: "line" },
-    { id: 10, name: "T Distribution - ∆RR", icon: "📉", type: "line" },
-    { id: 11, name: "T Distribution - ∆PR", icon: "📉", type: "line" },
-    { id: 12, name: "T Distribution - ∆AR", icon: "📉", type: "line" },
+    { id: 11, name: "T Distribution - RR", icon: "📉", type: "line" },
+    { id: 12, name: "T Distribution - PR", icon: "📉", type: "line" },
+    { id: 13, name: "T Distribution - AR", icon: "📉", type: "line" },
+    { id: 14, name: "T Distribution - XEQ", icon: "📉", type: "line" },
+    { id: 15, name: "T Distribution - ∆RR", icon: "📉", type: "line" },
+    { id: 16, name: "T Distribution - ∆PR", icon: "📉", type: "line" },
+    { id: 17, name: "T Distribution - ∆AR", icon: "📉", type: "line" },
+    { id: 18, name: "T Distribution - ∆GEQ", icon: "📉", type: "line" },
   
-    { id: 13, name: "Exponential Distribution - RR", icon: "📈", type: "line" },
-    { id: 14, name: "Exponential Distribution - PR", icon: "📈", type: "line" },
-    { id: 15, name: "Exponential Distribution - AR", icon: "📈", type: "line" },
-    { id: 16, name: "Exponential Distribution - ∆RR", icon: "📈", type: "line" },
-    { id: 17, name: "Exponential Distribution - ∆PR", icon: "📈", type: "line" },
-    { id: 18, name: "Exponential Distribution - ∆AR", icon: "📈", type: "line" },
+    { id: 19, name: "Exponential Distribution - RR", icon: "📈", type: "line" },
+    { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line" },
+    { id: 21, name: "Exponential Distribution - AR", icon: "📈", type: "line" },
+    { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line" },
+    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line" },
   
-    { id: 19, name: "Chi-Square - RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { id: 20, name: "Chi-Square - PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { id: 21, name: "Chi-Square - AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { id: 22, name: "Chi-Square - ∆RR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { id: 23, name: "Chi-Square - ∆PR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
-    { id: 24, name: "Chi-Square - ∆AR (α 1%, 5%, 10%)", icon: "📊", type: "area" },
+    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📊", type: "area" },
   
-    { id: 25, name: "F Distribution - RR & PR", icon: "📉", type: "line" },
-    { id: 26, name: "F Distribution - PR & AR", icon: "📉", type: "line" },
-    { id: 27, name: "F Distribution - RR & AR", icon: "📉", type: "line" },
-    { id: 28, name: "F Distribution - ∆RR & ∆PR", icon: "📉", type: "line" },
-    { id: 29, name: "F Distribution - ∆PR & ∆AR", icon: "📉", type: "line" },
-    { id: 30, name: "F Distribution - ∆RR & ∆AR", icon: "📉", type: "line" },
+    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📉", type: "line" },
   
-    { id: 31, name: "Beta Distribution - STA_P", icon: "🧪", type: "line" },
-    { id: 32, name: "Beta Distribution - STA_G", icon: "🧪", type: "line" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line" },
   
-    { id: 33, name: "Uniform Distribution - STA_P", icon: "🔢", type: "bar" },
-    { id: 34, name: "Uniform Distribution - STA_G", icon: "🔢", type: "bar" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar" },
   
-    { id: 35, name: "Weibull CDF - RR vs Days", icon: "⏳", type: "area" },
-    { id: 36, name: "Weibull CDF - PR vs Days", icon: "⏳", type: "area" },
-    { id: 37, name: "Weibull CDF - AR vs Days", icon: "⏳", type: "area" },
-    { id: 38, name: "Weibull CDF - ∆RR vs Days", icon: "⏳", type: "area" },
-    { id: 39, name: "Weibull CDF - ∆PR vs Days", icon: "⏳", type: "area" },
-    { id: 40, name: "Weibull CDF - ∆AR vs Days", icon: "⏳", type: "area" },
+    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "⏳", type: "area" },
+    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "⏳", type: "area" },
+    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "⏳", type: "area" },
+    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "⏳", type: "area" },
+    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "⏳", type: "area" },
+  
+    { id: 35, name: "Weibull Distribution - PDF - RR", icon: "📈", type: "line" },
+    { id: 36, name: "Weibull Distribution - PDF - PR", icon: "📈", type: "line" },
+    { id: 37, name: "Weibull Distribution - PDF - AR", icon: "📈", type: "line" },
+    { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "📈", type: "line" },
+    { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "📈", type: "line" },
+  
+    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "⚠️", type: "line" },
+    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "⚠️", type: "line" },
+    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "⚠️", type: "line" },
+    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "⚠️", type: "line" },
+    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "⚠️", type: "line" },
   ];
+  
   
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
   
+
+  useEffect(() => {
+    const fetchNormalDistributionData = async () => {
+      if (!unitId) {
+        console.log("Skipping API call - missing unitId ");
+        setTableData([]);
+        return;
+      }
+
+     
+  
+      console.log("Making API call with:", {
+        unitId,
+        candidateId,
+        candidateIdType: typeof candidateId,
+        isArray: Array.isArray(candidateId),
+        candidateIdLength: candidateId.length
+      });
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getNormalDistributionData({
+          unitId: unitId,
+          candidate_id: candidateId, // This should be an array of IDs
+        });
+  
+        console.log("API response received:", data);
+        setTableData(data);
+        
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchNormalDistributionData();
+  }, [unitId, candidateId]);
+
+  console.log("table data::->", tableData);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -168,13 +224,17 @@ export default function PlotSelections({ onCandidatesSelected }) {
     setShowCandidateTable(true);
   };
 
-  const handleCandidateSubmit = (candidates) => {
+  const handleCandidateSubmit = (selectionData) => {
     setShowCandidateTable(false); // close modal
-    console.log("Selected candidates:", candidates);
-
-    // Pass selected data to parent
+    console.log("Selected candidates:", selectionData.selectedRows);
+    console.log("Candidate IDs:", selectionData.candidateIds);
+  
+    // Set the candidate IDs for the API call
+    setCandidateId(selectionData.candidateIds);
+  
+    // Pass selected data to parent if needed
     if (onCandidatesSelected) {
-      onCandidatesSelected(candidates);
+      onCandidatesSelected(selectionData);
     }
   };
 
@@ -197,7 +257,7 @@ export default function PlotSelections({ onCandidatesSelected }) {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200 p-1">
+        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1">
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -336,7 +396,7 @@ export default function PlotSelections({ onCandidatesSelected }) {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col ml-1 border-2 h-full border-gray-200  bg-gray-100">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
@@ -399,13 +459,7 @@ export default function PlotSelections({ onCandidatesSelected }) {
 
       {showCandidateTable && (
         <CandidateSelectionTable
-          onClose={(selectedCandidates) => {
-            setShowCandidateTable(false); // close modal
-            console.log("Selected candidates:", selectedCandidates);
-            if (onCandidatesSelected) {
-              onCandidatesSelected(selectedCandidates); // pass to parent
-            }
-          }}
+          onClose={handleCandidateSubmit} // Use the correct handler
         />
       )}
 
