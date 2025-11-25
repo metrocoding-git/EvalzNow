@@ -120,17 +120,20 @@ export default function CandidateSelectionTable({ onClose }) {
   };
 
   const handleCloseClick = () => {
-    const selectedRows = rows.filter((row) => row.isSelected);
-    
-    // Extract candidate IDs from selected rows
-    const candidateIds = selectedRows.map(row => row.id);
-    
-    // Pass both the selected rows and the candidate IDs array
-    onClose({
-      selectedRows: selectedRows,
-      candidateIds: candidateIds
-    });
-  };
+  const selectedRows = rows.filter((row) => row.isSelected);
+
+  // Build candidatePpList for API
+  const candidatePpList = selectedRows.map((row) => ({
+    candidateId: row.id,
+    ppId: row.ppListings ? Number(row.ppListings) : null
+  }));
+
+  onClose({
+    selectedRows,
+    candidatePpList
+  });
+};
+
 
   const selectedCount = rows.filter(row => row.isSelected).length;
   const isSubmitEnabled = selectedCount >= 3;

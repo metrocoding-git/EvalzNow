@@ -3,27 +3,19 @@ import api from "@/lib/axiosClient";
 
 // Get insert scores by unit ID
 
-export const getNormalDistributionData = async (filters) => {
+export const getNormalDistributionData = async (payload) => {
   try {
-    const params = {};
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "" && value !== null) {
-        // Handle array of candidate IDs by joining with commas
-        if (key === 'candidate_id' && Array.isArray(value)) {
-          params[key] = value.join(',');
-          console.log("Processing candidate_id array:", value, "->", params[key]);
-        } else {
-          params[key] = value;
-        }
-      }
-    });
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/normal-dist`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};
 
-    console.log("Final API params:", params);
-    const query = new URLSearchParams(params).toString();
-    const url = `${API_ROUTES.UNITDISTRIBUTION}?${query}`;
-    console.log("API URL:", url);
-    
-    const response = await api.get(url);
+export const getTDistributionData = async (payload) => {
+  try {
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/t-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
