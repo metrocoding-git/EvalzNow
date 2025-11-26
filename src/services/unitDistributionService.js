@@ -22,3 +22,34 @@ export const getTDistributionData = async (payload) => {
     throw error;
   }
 };
+
+export const getExponentialDistributionData = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/exponential-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};
+
+export const getChiDistributionData = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/chi-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};
+
+
+export const getFDistributionData = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/f-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};

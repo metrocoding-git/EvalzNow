@@ -20,10 +20,13 @@ import {
   ResponsiveContainer,
   Label,
   ReferenceLine,
+  AreaChart,
+  Area,
+  BarChart,
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
-import { getNormalDistributionData, getTDistributionData } from "@/services/unitDistributionService";
+import { getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData } from "@/services/unitDistributionService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId }) {
   const [distributions, setDistributions] = useState({});
@@ -135,7 +138,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
     { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "exponential" },
     { id: 21, name: "Exponential Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "exponential" },
     { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "exponential" },
-    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "exponential" },
+    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "exponential" },
   
     { id: 24, name: "Chi-Square Distribution - 95%", icon: "📊", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
   
@@ -175,6 +178,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
       if (!unitId) return;
       if (!candidatePpList || candidatePpList.length === 0) return;
 
+      // Extract candidate IDs from candidatePpList
+      const candidateIds = candidatePpList.map(item => item.candidateId);
+
       setLoading(true);
       setError(null);
 
@@ -194,11 +200,27 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
             key: selectedChart.key
           });
         } else if (selectedChart.distribution === "exponential") {
-          data = await getExponentialDistributionData({
-            unitId,
-            candidatePpList,
-            key: selectedChart.key
-          });
+          data = await getExponentialDistributionData(unitId, candidateIds);
+          console.log("exponential data: ", getExponentialDistributionData(unitId, candidateIds));
+        } else if (selectedChart.distribution === "chi-square") {
+          data = await getChiDistributionData(unitId, candidateIds);
+          
+
+          setDistributions(data);
+          setTableData(data);
+          setSelectedKey("CHI_SQUARE");
+          setLoading(false);
+          console.log("selected key:->", selectedKey);
+          return;
+        } else if (selectedChart.distribution === "f") {
+          data = await getChiDistributionData(unitId, candidateIds);
+          
+          setDistributions(data);
+          setTableData(data);
+          setSelectedKey("F_DIST");
+          setLoading(false);
+          console.log("selected key:->", selectedKey);
+          return;
         }
         // Add other distribution API calls here...
         else {
@@ -231,10 +253,16 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
   };
 
   // Prepare chart data based on selected distribution
-  const chartData = distributions[selectedKey]?.table?.map((row) => ({
-    name: row.x, // X-axis values (Z-scores)
-    value: row.y,
-  })) || [];
+  const chartData = selectedChart.distribution === "chi-square" || selectedChart.distribution === "f"
+  ? distributions?.distribution?.table?.map((row) => ({
+      name: row.x,
+      value: row.y,
+    })) || []
+  : distributions[selectedKey]?.table?.map((row) => ({
+      name: row.x,
+      value: row.y,
+    })) || [];
+  
 
   // Render different chart types based on selected chart
   const renderChart = () => {
@@ -251,25 +279,64 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
     }
 
     const distributionParams = distributions[selectedKey]?.params;
-    const mean = distributionParams?.mu || 0;
-    const sigma = distributionParams?.sigma || 1;
-
-    // Calculate reference line positions - only for normal distribution
+    const mean = distributions[selectedKey]?.mean || 0;
+    // Calculate reference line positions
     const getReferenceLines = () => {
-      
-      if (selectedChart.distribution !== "normal") {
-        return [];
+      if (selectedChart.distribution === "normal") {
+        const mean = distributions[selectedKey]?.params?.mu || 0;
+        const sigma = distributions[selectedKey]?.params?.sigma || 1;
+        return [
+          { value: mean, label: 'Mean', color: '#000000', strokeWidth: 2 },
+          { value: +sigma, label: '+σ', color: '#ef4444', strokeWidth: 1 },
+          { value: -sigma, label: '-σ', color: '#ef4444', strokeWidth: 1 },
+          { value: +2 * sigma, label: '+2σ', color: '#f59e0b', strokeWidth: 1 },
+          { value: -2 * sigma, label: '-2σ', color: '#f59e0b', strokeWidth: 1 },
+          { value: +3 * sigma, label: '+3σ', color: '#84cc16', strokeWidth: 1 },
+          { value: -3 * sigma, label: '-3σ', color: '#84cc16', strokeWidth: 1 },
+        ];
       }
-      
-      return [
-        { value: mean, label: 'Mean', color: '#000000', strokeWidth: 2 },
-        { value: +sigma, label: 'μ+σ', color: '#ef4444', strokeWidth: 1 },
-        { value: -sigma, label: 'μ-σ', color: '#ef4444', strokeWidth: 1 },
-        { value: +2 * sigma, label: 'μ+2σ', color: '#f59e0b', strokeWidth: 1 },
-        { value: -2 * sigma, label: 'μ-2σ', color: '#f59e0b', strokeWidth: 1 },
-        { value: +3 * sigma, label: 'μ+3σ', color: '#84cc16', strokeWidth: 1 },
-        { value: -3 * sigma, label: 'μ-3σ', color: '#84cc16', strokeWidth: 1 },
-      ];
+
+      if (selectedChart.distribution === "exponential") {
+        const mean = distributions[selectedKey]?.mean || 0;
+        return [
+          { 
+            value: mean, 
+            label: `Mean (${mean.toFixed(3)})`, 
+            color: '#dc2626', 
+            strokeWidth: 2,
+            strokeDasharray: "3 3"
+          }
+        ];
+      }
+
+      if (selectedChart.distribution === "chi-square") {
+        const xc = distributions?.distribution?.parameters?.xc;
+        const x2Statistic = distributions?.distribution?.parameters?.x2Statistic;
+        const lines = [];
+        
+        if (xc) {
+          lines.push({
+            value: xc,
+            label: `Critical Value (${xc.toFixed(2)})`,
+            color: '#dc2626',
+            strokeWidth: 2,
+            strokeDasharray: "3 3"
+          });
+        }
+        
+        if (x2Statistic) {
+          lines.push({
+            value: x2Statistic,
+            label: `X² Statistic (${x2Statistic.toFixed(2)})`,
+            color: '#3b82f6',
+            strokeWidth: 2
+          });
+        }
+        
+        return lines;
+      }
+
+      return [];
     };
 
     // Render reference lines
@@ -288,7 +355,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
           position: 'top',
           fill: line.color,
           fontSize: 12,
-          fontWeight: line.value === mean ? 'bold' : 'normal'
+          fontWeight: 'bold'
         }}
       />
     ));
@@ -302,21 +369,28 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
     switch (selectedChart.type) {
       case "area":
-        return (
-          <AreaChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name">
-              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
-            </XAxis>
-            <YAxis>
-              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
-            </YAxis>
-            <Tooltip />
-            <Legend />
-            <Area type="monotone" dataKey="yValue" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
-            <Area type="monotone" dataKey="xValue" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
-          </AreaChart>
-        );
+      return (
+        <AreaChart {...commonProps}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name">
+            <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+          </XAxis>
+          <YAxis>
+            <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+          </YAxis>
+          <Tooltip />
+          <Legend />
+          {renderReferenceLines()}
+          <Area
+            type="monotone" 
+            dataKey="value" 
+            stroke="#3b82f6" 
+            fill="#3b82f6" 
+            fillOpacity={0.3} 
+            name="Chi-Square Distribution"
+          />
+        </AreaChart>
+      );
 
       case "bar":
         return (
@@ -349,7 +423,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
           <Tooltip />
           <Legend />
 
-          {selectedChart.distribution === 'normal' && renderReferenceLines()}
+          {renderReferenceLines()}
           
           <Line 
             type="monotone" 
