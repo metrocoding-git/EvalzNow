@@ -171,6 +171,7 @@ useEffect(() => {
       const { results, average, stdDev, stdErr } = data;  
 
       const formattedData = results.map(row => ({
+        candidateId: row.candidateId, 
         ppId: row.ppId,
         XEP: row.XEP || 0,
         XBP: row.XBP || 0,
@@ -346,6 +347,28 @@ const renderCustomDot = (props, color) => {
   }
 };
 
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length > 0) {
+    const point = payload[0].payload;
+
+    // Y-axis label (example: XRR, XEP, XLR)
+    const yAxisCode = selectedChart?.name?.match(/\((.*?)\)/)?.[1] ?? "";
+    const yAxisLabel = selectedChart?.name ?? "Value";
+
+    return (
+      <div className="bg-white p-2 border rounded shadow text-sm">
+        <div><strong>PP ID (X):</strong> {point.ppId}</div>
+        <div>
+          <strong>{yAxisLabel} (Y):</strong> {point.value}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+
+
 
   if (!visible) return null;
 
@@ -490,105 +513,278 @@ const renderCustomDot = (props, color) => {
 
                 {activeAdjustPropertieTab === "Table" && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3 space-y-10">
+                    {selectedSort === 'activateUnitLevel' ? (
+                      // UNIT LEVEL: Separate tables for each candidate
+                      (() => {
+                        if (!selectedChart) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              Select a chart to display data
+                            </div>
+                          );
+                        }
 
-                    {/* ✅ Positive PP IDs Table */}
-                    <div>
-                      <h3 className="text-gray-400 font-semibold mb-2 ml-2">Positive PP IDs</h3>
-                      <table className="table-auto w-full text-sm border border-gray-300">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              PP Id / Label
-                            </th>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              X Axis Value
-                            </th>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {chartData.filter(row => row.ppId > 0).length > 0 ? (
-                            chartData
-                              .filter(row => row.ppId > 0)
-                              .map((row, idx) => (
-                                <tr key={idx} className="hover:bg-blue-50">
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.ppId}
-                                  </td>
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.ppId} {/* X Axis */}
-                                  </td>
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.value}
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={3}
-                                className="text-center text-gray-500 border border-gray-300 px-3 py-2"
-                              >
-                                No positive data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                        // Extract key name from chart selection (e.g., "XEP", "XRR")
+                        const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+                        
+                        if (!keyName) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              Invalid chart selection
+                            </div>
+                          );
+                        }
 
-                    {/* ✅ Negative PP IDs Table */}
-                    <div>
-                      <h3 className="text-gray-400 font-semibold mb-2 ml-2">Negative PP IDs</h3>
-                      <table className="table-auto w-full text-sm border border-gray-300">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              PP Id / Label
-                            </th>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              X Axis Value
-                            </th>
-                            <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {chartData.filter(row => row.ppId < 0).length > 0 ? (
-                            chartData
-                              .filter(row => row.ppId < 0)
-                              .map((row, idx) => (
-                                <tr key={idx} className="hover:bg-blue-50">
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.ppId}
-                                  </td>
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.ppId} {/* X Axis */}
-                                  </td>
-                                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                    {row.value}
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={3}
-                                className="text-center text-gray-500 border border-gray-300 px-3 py-2"
-                              >
-                                No negative data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                        // Group data by candidate ID
+                        const candidateGroups = {};
+                        
+                        tableData.forEach(row => {
+                          const cId = row.candidateId;
+                          
+                          if (!cId) return; // Skip if no candidateId
+                          
+                          // Initialize candidate group if it doesn't exist
+                          if (!candidateGroups[cId]) {
+                            candidateGroups[cId] = [];
+                          }
+                          
+                          // Add all PP IDs with valid metric values
+                          const metricValue = row[keyName];
+                          if (metricValue !== undefined && metricValue !== null && !isNaN(metricValue)) {
+                            candidateGroups[cId].push({
+                              ppId: row.ppId,
+                              value: metricValue,
+                            });
+                          }
+                        });
 
+                        // Sort candidates by ID
+                        const candidateIds = Object.keys(candidateGroups).sort((a, b) => parseInt(a) - parseInt(b));
+
+                        if (candidateIds.length === 0) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              No data available for {selectedChart.name}
+                            </div>
+                          );
+                        }
+
+                        // Create a table for each candidate
+                        return candidateIds.map((cId) => {
+                          // Sort PP IDs: negatives descending, then positives ascending
+                          const sortedData = candidateGroups[cId].sort((a, b) => {
+                            if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // negative: descending
+                            if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId; // positive: ascending
+                            if (a.ppId < 0 && b.ppId > 0) return -1; // negatives first
+                            if (a.ppId > 0 && b.ppId < 0) return 1;
+                            return 0;
+                          });
+
+                          return (
+                            <div key={cId}>
+                              {/* Candidate ID Header */}
+                              <div className=" text-gray-600 px-4 py-1 font-semibold text-md mb-0">
+                                Candidate ID: {cId}
+                              </div>
+
+                              {/* Table for this candidate */}
+                              <table className="table-auto w-full text-sm border border-gray-300">
+                                <thead className="bg-gray-100">
+                                  <tr>
+                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                      PP Id / Label
+                                    </th>
+                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                      X Axis Value
+                                    </th>
+                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                      {keyName}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {sortedData.length > 0 ? (
+                                    sortedData.map((row, idx) => (
+                                      <tr key={idx} className="hover:bg-blue-50">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                          {row.ppId}
+                                        </td>
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                          {row.ppId}
+                                        </td>
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                          {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                        No data available
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      // CANDIDATE LEVEL: Separate tables for Positive and Negative PP IDs
+                      <>
+                        {/* Positive PP IDs Table */}
+                        <div>
+                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                          <table className="table-auto w-full text-sm border border-gray-300">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  PP Id / Label
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  X Axis Value
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                if (!selectedChart) {
+                                  return (
+                                    <tr>
+                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
+                                        Select a chart to display data
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+
+                                const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+                                if (!keyName) {
+                                  return (
+                                    <tr>
+                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
+                                        Invalid chart selection
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+
+                                const positiveData = tableData
+                                  .filter(row => row.ppId > 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
+                                  .sort((a, b) => a.ppId - b.ppId)
+                                  .map(row => ({
+                                    ppId: row.ppId,
+                                    value: row[keyName],
+                                  }));
+
+                                return positiveData.length > 0 ? (
+                                  positiveData.map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-blue-50">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {row.ppId}
+                                      </td>
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {row.ppId}
+                                      </td>
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                      No positive data available
+                                    </td>
+                                  </tr>
+                                );
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Negative PP IDs Table */}
+                        <div>
+                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">Negative PP IDs</h3>
+                          <table className="table-auto w-full text-sm border border-gray-300">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  PP Id / Label
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  X Axis Value
+                                </th>
+                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                  {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                if (!selectedChart) {
+                                  return (
+                                    <tr>
+                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
+                                        Select a chart to display data
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+
+                                const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+                                if (!keyName) {
+                                  return (
+                                    <tr>
+                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
+                                        Invalid chart selection
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+
+                                const negativeData = tableData
+                                  .filter(row => row.ppId < 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
+                                  .sort((a, b) => b.ppId - a.ppId) // Descending for negatives
+                                  .map(row => ({
+                                    ppId: row.ppId,
+                                    value: row[keyName],
+                                  }));
+
+                                return negativeData.length > 0 ? (
+                                  negativeData.map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-blue-50">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {row.ppId}
+                                      </td>
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {row.ppId}
+                                      </td>
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                      No negative data available
+                                    </td>
+                                  </tr>
+                                );
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
+
 
               </div>
             </div>
@@ -674,7 +870,7 @@ const renderCustomDot = (props, color) => {
                                 />
                               )}
                             </YAxis>
-                            <Tooltip />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
@@ -777,7 +973,8 @@ const renderCustomDot = (props, color) => {
                                 />
                               )}
                             </YAxis>
-                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                            <Tooltip content={<CustomTooltip />} />
+
                             <Legend />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (

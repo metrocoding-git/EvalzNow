@@ -161,7 +161,9 @@ const abbreviateLabel = (label) => {
 
             {currentCompetencies.map((comp, idx) => (
               <React.Fragment key={idx}>
-                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{abbreviateLabel(comp.attained)}</th>
+                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
+                  {abbreviateLabel(comp.attained) === 'ASS' ? ('ASP') : (abbreviateLabel(comp.attained)) }
+                </th>
                 <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{abbreviateLabel(comp.max)}</th>
               </React.Fragment>
             ))}

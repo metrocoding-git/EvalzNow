@@ -26,7 +26,7 @@ import {
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
-import { getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData } from "@/services/unitDistributionService";
+import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData } from "@/services/unitDistributionService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId }) {
   const [distributions, setDistributions] = useState({});
@@ -144,8 +144,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
   
     { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📉", type: "line", key: "F_DIST", distribution: "f" },
   
-    { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line", key: "STA_P", distribution: "beta" },
-    { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line", key: "STA_G", distribution: "beta" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line", key: "STAP", distribution: "beta" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line", key: "STAG", distribution: "beta" },
   
     { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar", key: "STA_P", distribution: "uniform" },
     { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar", key: "STA_G", distribution: "uniform" },
@@ -221,9 +221,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
           setLoading(false);
           console.log("selected key:->", selectedKey);
           return;
-        }
-        // Add other distribution API calls here...
-        else {
+        } else if (selectedChart.distribution === "beta") {
+          data = await getBetaDistributionData(unitId, candidateIds);
+        
+        } else {
           // Default to normal distribution if no specific API
           data = await getNormalDistributionData({
             unitId,
