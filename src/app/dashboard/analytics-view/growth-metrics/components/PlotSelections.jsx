@@ -527,6 +527,27 @@ useEffect(() => {
     }
   };
 
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length > 0) {
+      const point = payload[0].payload;
+  
+      // Y-axis label (example: XRR, XEP, XLR)
+      const yAxisCode = selectedChart?.name?.match(/\((.*?)\)/)?.[1] ?? "";
+      const yAxisLabel = selectedChart?.name ?? "Value";
+  
+      return (
+        <div className="bg-white p-2 border rounded shadow text-sm">
+          <div><strong>Day Count (X):</strong> {point.dayCount}</div>
+          <div>
+            <strong>{yAxisLabel} (Y):</strong> {point.value}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (!visible) return null;
 
   return (
@@ -799,7 +820,7 @@ useEffect(() => {
                                 />
                               )}
                             </YAxis>
-                            <Tooltip />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
@@ -860,7 +881,7 @@ useEffect(() => {
                                 />
                               )}
                             </YAxis>
-                            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             {chartProperties.visibility && (
                               <Scatter

@@ -127,6 +127,8 @@ export default function HybridMetrics() {
       unitMode: null,
       selectedPpId: null,
       showGrowthTarget: false,
+      selectedPpId: null,
+      showProjectionPoints: false
     });
 
     // 🔁 trigger reset for SecondaryArea inputs

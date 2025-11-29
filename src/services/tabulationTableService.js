@@ -31,6 +31,8 @@ export const getUnitAndMultipleCandidateSummary = async (filters) => {
       }
     });
 
+    console.log("🌐 API Call Parameters:", params); 
+    
     const query = new URLSearchParams(params).toString();
     const response = await api.get(`${API_ROUTES.TABULATION}/proficiency?${query}`);
     return response.data;

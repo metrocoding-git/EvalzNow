@@ -91,10 +91,10 @@ const headers = {
   'MSIP': 'Margins of Interaction Proficiency',
   'STA/P': 'Stability in Proficiency',
   'IC': 'Interaction Class Based on Performance Point',
-  'deltaRRN': 'Receptive Ratio Growth Differential',
-  'deltaPRN': 'Productive Ratio Growth Differential',
-  'deltaARN': 'Acuity Ratio Growth Differential',
-  'GEQ': 'Equivalent Growth',
+  'ΔRRN': 'Receptive Ratio Growth Differential',
+  'ΔPRN': 'Productive Ratio Growth Differential',
+  'ΔARN': 'Acuity Ratio Growth Differential',
+  'ΔGEQ': 'Equivalent Growth',
   'STA/G': 'Stability in Growth',
   'RRGT1': 'Projected Receptive Ratio Component for Growth Target 1',
   'PRGT1': 'Projected Productive Ratio Component for Growth Target 1',
@@ -159,10 +159,10 @@ useEffect(() => {
         "MSIP": item.MSIP,
         "STA/P": item.STAP,
         "IC": item.IC,
-        "deltaRRN": item.deltaRRN,
-        "deltaPRN": item.deltaPRN,
-        "deltaARN": item.deltaARN,
-        "GEQ": item.GEQ,
+        "ΔRRN": item.deltaRRN,
+        "ΔPRN": item.deltaPRN,
+        "ΔARN": item.deltaARN,
+        "ΔGEQ": item.GEQ,
         "STA/G": item.STAG,
         "RRGT1": item.RRGT1,
         "PRGT1": item.PRGT1,
@@ -197,6 +197,11 @@ useEffect(() => {
         return {
           "PP ID": label,
           ...fixedData,
+
+          "ΔRRN": summaryData.deltaRRN,
+          "ΔPRN": summaryData.deltaPRN,
+          "ΔARN": summaryData.deltaARN,
+          "ΔGEQ": summaryData.GEQ,
         };
       });
       
@@ -372,7 +377,8 @@ console.log("unit type check", tableData);
                                   "Day Count (Days)",
                                   "unitType",
                                   "IC",
-                                  "STA/P"
+                                  "STA/P",
+                                  "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
                                 ];
 
                                 if (skipFormatting.includes(header)) {
