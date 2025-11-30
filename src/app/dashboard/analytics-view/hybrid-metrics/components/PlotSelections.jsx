@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
-import Plot from "react-plotly.js";
+// import Plot from "react-plotly.js";
 import IcCurve from './IcCurveData';
 import { ReceptiveBias } from './ReceptiveBias';
 import { BalancedPlane } from './BalancedPlane';
@@ -23,6 +23,10 @@ import { Interaction4 } from './Interaction4';
 import { Interaction5 } from './Interaction5';
 import { getUnitById } from '@/services/unitService';
 import { getProjection } from '@/services/projectionService';
+
+import dynamic from "next/dynamic";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 
 const getICValue = (unitType, signatureProfile, icString) => {
