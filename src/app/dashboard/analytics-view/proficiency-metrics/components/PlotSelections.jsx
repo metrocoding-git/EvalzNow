@@ -13,6 +13,12 @@ import {
   ReferenceLine,
   Cell
 } from 'recharts';
+
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary, getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import { getUnitById } from '@/services/unitService';
@@ -24,6 +30,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
+
+
+  const chartContainerRef = useRef(null);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -347,6 +356,313 @@ const renderCustomDot = (props, color) => {
   }
 };
 
+
+// Function to export with image and data in single worksheet
+
+
+// Add this function inside your component (after the other functions)
+const exportToExcel = () => {
+  if (!selectedChart) {
+    alert("Please select a chart first.");
+    return;
+  }
+
+  try {
+    // Extract key name from chart selection
+    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+    if (!keyName) {
+      alert("Invalid chart selection.");
+      return;
+    }
+
+    // Prepare data for export
+    const exportData = [];
+
+    // Add header row with metadata
+    exportData.push(["CHART DATA EXPORT", "", ""]);
+    exportData.push(["Chart Name:", selectedChart.name]);
+    exportData.push(["Key Name:", keyName]);
+    exportData.push(["Export Date:", new Date().toLocaleString()]);
+    exportData.push([]);
+    exportData.push(["DATA POINTS", "", ""]);
+
+    // Add column headers
+    exportData.push(["Candidate ID", "PP ID", "X Axis Value", `${selectedChart.name} (Y Value)`]);
+
+    // Add all data points
+    tableData.forEach(row => {
+      if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+        exportData.push([
+          row.candidateId || "N/A",
+          row.ppId,
+          row.ppId, // X Axis value is same as PP ID
+          typeof row[keyName] === 'number' ? row[keyName].toFixed(3) : row[keyName]
+        ]);
+      }
+    });
+
+    // Add summary section
+    exportData.push([]);
+    exportData.push(["SUMMARY STATISTICS", "", ""]);
+    
+    // Calculate statistics
+    const validData = tableData
+      .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+      .map(row => row[keyName]);
+    
+    if (validData.length > 0) {
+      const min = Math.min(...validData);
+      const max = Math.max(...validData);
+      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+      
+      exportData.push(["Total Data Points:", validData.length]);
+      exportData.push(["Minimum Value:", min.toFixed(3)]);
+      exportData.push(["Maximum Value:", max.toFixed(3)]);
+      exportData.push(["Average Value:", avg.toFixed(3)]);
+      exportData.push(["Standard Deviation:", stdDev.toFixed(3)]);
+    } else {
+      exportData.push(["No valid data points available", "", ""]);
+    }
+
+    // Add threshold information if available
+    if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      exportData.push([]);
+      exportData.push(["THRESHOLD INFORMATION", "", ""]);
+      exportData.push(["Threshold Value:", thresholdValue[keyName]]);
+      exportData.push(["Threshold Enabled:", filters?.thresholdEnabled ? "Yes" : "No"]);
+    }
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Convert data to worksheet
+    const ws = XLSX.utils.aoa_to_sheet(exportData);
+    
+    // Apply some styling (merge cells for headers)
+    const merges = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, // Merge first header row
+      { s: { r: 5, c: 0 }, e: { r: 5, c: 3 } }, // Merge "DATA POINTS" header
+    ];
+    
+    // Add summary merge if summary exists
+    const summaryStartRow = exportData.findIndex(row => row[0] === "SUMMARY STATISTICS");
+    if (summaryStartRow > -1) {
+      merges.push({ s: { r: summaryStartRow, c: 0 }, e: { r: summaryStartRow, c: 3 } });
+    }
+    
+    // Add threshold merge if threshold exists
+    const thresholdStartRow = exportData.findIndex(row => row[0] === "THRESHOLD INFORMATION");
+    if (thresholdStartRow > -1) {
+      merges.push({ s: { r: thresholdStartRow, c: 0 }, e: { r: thresholdStartRow, c: 3 } });
+    }
+    
+    ws["!merges"] = merges;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Chart Data");
+
+    // Generate filename
+    const fileName = `chart_data_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    // Write and download
+    XLSX.writeFile(wb, fileName);
+
+    console.log("✅ Excel file exported successfully:", fileName);
+    
+  } catch (error) {
+    console.error("❌ Failed to export Excel:", error);
+    alert("Failed to export Excel file. Please try again.");
+  }
+};
+
+// Alternative version with image capture (if you want to include the chart image)
+// Replace your exportToExcelWithImage function with this:
+
+const exportToExcelWithImage = async () => {
+  if (!selectedChart || !chartContainerRef.current) {
+    alert("Please select a chart first.");
+    return;
+  }
+
+  try {
+    // Extract key name from chart selection
+    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+    if (!keyName) {
+      alert("Invalid chart selection.");
+      return;
+    }
+
+    // 1. Capture chart as image
+    const chartContainer = chartContainerRef.current;
+    const canvas = await html2canvas(chartContainer, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    // Convert canvas to buffer
+    const chartImageBuffer = await new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(new Uint8Array(reader.result));
+        reader.readAsArrayBuffer(blob);
+      }, 'image/png');
+    });
+
+    // 2. Create workbook with ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Chart Report');
+
+    // Set column widths
+    worksheet.columns = [
+      { width: 15 }, // Column A
+      { width: 15 }, // Column B
+      { width: 15 }, // Column C
+      { width: 15 }, // Column D
+    ];
+
+    // 3. Add header section
+    const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+    headerRow.font = { size: 14, bold: true };
+    headerRow.height = 30;
+    worksheet.mergeCells('A1:D1');
+    worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+    worksheet.addRow(['Chart Name:', selectedChart.name]);
+    worksheet.addRow(['Key Name:', keyName]);
+    worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+    worksheet.addRow([]); // Empty row
+
+    // 4. Add the chart image
+    // Skip some rows for the image
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+
+    const imageId = workbook.addImage({
+      buffer: chartImageBuffer,
+      extension: 'png',
+    });
+
+    // Insert image at specific position
+    worksheet.addImage(imageId, {
+      tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+      br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+    });
+
+    // Move down past the image
+    let currentRow = 27;
+
+    // 5. Add data points header
+    worksheet.getRow(currentRow).values = ['DATA POINTS'];
+    worksheet.getRow(currentRow).font = { bold: true };
+    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+    currentRow++;
+
+    const dataHeaderRow = worksheet.getRow(currentRow);
+    dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+    dataHeaderRow.font = { bold: true };
+    dataHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE8F4FF' } // Light blue background
+    };
+    currentRow++;
+
+    // 6. Add all data points
+    tableData.forEach(row => {
+      if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+        const dataRow = worksheet.getRow(currentRow);
+        dataRow.values = [
+          row.candidateId || "N/A",
+          row.ppId,
+          row.ppId,
+          typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+        ];
+        currentRow++;
+      }
+    });
+
+    // 7. Add summary section
+    currentRow++;
+    worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+    worksheet.getRow(currentRow).font = { bold: true };
+    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+    currentRow++;
+
+    // Calculate statistics
+    const validData = tableData
+      .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+      .map(row => row[keyName]);
+
+    if (validData.length > 0) {
+      const min = Math.min(...validData);
+      const max = Math.max(...validData);
+      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+
+      worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+      worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+      worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+      worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+      worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+    } else {
+      worksheet.getRow(currentRow++).values = ['No valid data points available'];
+      worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+    }
+
+    // 8. Add threshold information if available
+    if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+
+      worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+    }
+
+    // 9. Add some formatting
+    // Format numeric cells
+    for (let i = 27; i < currentRow; i++) {
+      const cell = worksheet.getCell(`D${i}`);
+      if (cell.value && typeof cell.value === 'number') {
+        cell.numFmt = '0.000';
+      }
+    }
+
+    // 10. Save the workbook
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    
+    // Generate filename
+    const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    
+    // Download the file
+    saveAs(blob, fileName);
+
+    console.log("✅ Excel file with chart image exported successfully:", fileName);
+
+  } catch (error) {
+    console.error("❌ Failed to export Excel with image:", error);
+    alert("Failed to export Excel file. Please try again. Error: " + error.message);
+  }
+};
+
+// Update your export button to ONLY use this function (remove the simple version)
+const handleExportGraph = () => {
+  exportToExcelWithImage();
+};
+
+// Update your export button to use the function
+
+
+
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length > 0) {
     const point = payload[0].payload;
@@ -392,7 +708,10 @@ const CustomTooltip = ({ active, payload }) => {
                 title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
-              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button 
+                onClick={exportToExcelWithImage}
+                title="Export Graph"
+                 className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
 
@@ -837,7 +1156,7 @@ const CustomTooltip = ({ active, payload }) => {
                     
                   
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
@@ -952,7 +1271,7 @@ const CustomTooltip = ({ active, payload }) => {
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={400}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>

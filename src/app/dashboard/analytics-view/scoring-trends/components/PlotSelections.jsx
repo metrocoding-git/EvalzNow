@@ -798,7 +798,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                 <Legend />
 
                 {/* Shade Area (behind the lines) */}
-                {/* Shade Area (behind the lines) */}
+                
 {chartProperties.shadeArea !== "#ffffff" && (
   <>
     {/* Positive Shade */}
