@@ -26,6 +26,11 @@ import { getProjection } from '@/services/projectionService';
 
 import dynamic from "next/dynamic";
 
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 
@@ -1342,6 +1347,186 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
   
 
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
+      return;
+    }
+  
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
+      }
+  
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
+  
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+  
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
+  
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+  
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+  
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+  
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+  
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+  
+      // Move down past the image
+      let currentRow = 27;
+  
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
+  
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+  
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+  
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+  
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      }
+  
+      // 8. Add threshold information if available
+      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+        currentRow++;
+        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+        worksheet.getRow(currentRow).font = { bold: true };
+        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+        currentRow++;
+  
+        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      }
+  
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+  
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      
+      // Download the file
+      saveAs(blob, fileName);
+  
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+  
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
+  
+  // Update your export button to ONLY use this function (remove the simple version)
+  const handleExportGraph = () => {
+    exportToExcelWithImage();
+  };
+
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
     setCurves(updated);
@@ -1372,7 +1557,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   }
                 }} />
               </button>
-              <button onClick={handleDeleteCurve} title="Export" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={exportToExcelWithImage}
+                title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
            
@@ -1496,7 +1682,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 my-2 ">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
