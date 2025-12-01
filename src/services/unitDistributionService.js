@@ -65,3 +65,14 @@ export const getBetaDistributionData = async (unitId, candidateId) => {
     throw error;
   }
 };
+
+
+export const getUniformDistributionData = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/uniform-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};

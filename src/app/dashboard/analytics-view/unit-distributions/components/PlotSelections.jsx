@@ -23,10 +23,11 @@ import {
   AreaChart,
   Area,
   BarChart,
+  Bar
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
-import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData } from "@/services/unitDistributionService";
+import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData } from "@/services/unitDistributionService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId }) {
   const [distributions, setDistributions] = useState({});
@@ -147,8 +148,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
     { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line", key: "STAP", distribution: "beta" },
     { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line", key: "STAG", distribution: "beta" },
   
-    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar", key: "STA_P", distribution: "uniform" },
-    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar", key: "STA_G", distribution: "uniform" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar", key: "STAP", distribution: "uniform" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar", key: "STAG", distribution: "uniform" },
   
     { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "⏳", type: "area", key: "RR", distribution: "weibull-cdf" },
     { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "⏳", type: "area", key: "PR", distribution: "weibull-cdf" },
@@ -224,6 +225,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
         } else if (selectedChart.distribution === "beta") {
           data = await getBetaDistributionData(unitId, candidateIds);
         
+        } else if (selectedChart.distribution === "uniform") {
+          data = await getUniformDistributionData(unitId, candidateIds);
+          console.log("uniform dis: ", data);
         } else {
           // Default to normal distribution if no specific API
           data = await getNormalDistributionData({
@@ -254,10 +258,16 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
   };
 
   // Prepare chart data based on selected distribution
+ 
   const chartData = selectedChart.distribution === "chi-square" || selectedChart.distribution === "f"
   ? distributions?.distribution?.table?.map((row) => ({
       name: row.x,
       value: row.y,
+    })) || []
+  : selectedChart.distribution === "uniform"
+  ? distributions[selectedKey]?.table?.map((row) => ({
+      name: row.stable,  // Use stable for x-axis
+      value: row.x,      // Use x for y-axis
     })) || []
   : distributions[selectedKey]?.table?.map((row) => ({
       name: row.x,
@@ -310,6 +320,43 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
         ];
       }
 
+      if (selectedChart.distribution === "uniform") {
+        const lines = [];
+        
+        // For bar charts, these will be horizontal lines (Y-axis reference)
+        if (mean !== undefined) {
+          lines.push({
+            value: mean,
+            label: `Mean (${mean.toFixed(3)})`,
+            color: '#dc2626',
+            strokeWidth: 2,
+            strokeDasharray: "3 3"
+          });
+        }
+        
+        if (distributionParams?.a !== undefined) {
+          lines.push({
+            value: distributionParams.a,
+            label: `Min (${distributionParams.a})`,
+            color: '#10b981',
+            strokeWidth: 1,
+            strokeDasharray: "2 2"
+          });
+        }
+        
+        if (distributionParams?.b !== undefined) {
+          lines.push({
+            value: distributionParams.b,
+            label: `Max (${distributionParams.b})`,
+            color: '#10b981',
+            strokeWidth: 1,
+            strokeDasharray: "2 2"
+          });
+        }
+        
+        return lines;
+      }
+
       if (selectedChart.distribution === "chi-square") {
         const xc = distributions?.distribution?.parameters?.xc;
         const x2Statistic = distributions?.distribution?.parameters?.x2Statistic;
@@ -341,26 +388,53 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
     };
 
     // Render reference lines
-  const renderReferenceLines = () => {
-    const lines = getReferenceLines();
+    const renderReferenceLines = () => {
+      const lines = getReferenceLines();
       if (!lines || lines.length === 0) return null;
-    return lines.map((line, index) => (
-      <ReferenceLine
-        key={index}
-        x={line.value}
-        stroke={line.color}
-        strokeWidth={line.strokeWidth}
-        strokeDasharray={line.value === mean ? "0" : "3 3"}
-        label={{
-          value: line.label,
-          position: 'top',
-          fill: line.color,
-          fontSize: 12,
-          fontWeight: 'bold'
-        }}
-      />
-    ));
-  };
+      
+      // Check if we're rendering a bar chart (uniform distribution)
+      const isBarChart = selectedChart.distribution === "uniform" && selectedChart.type === "bar";
+      
+      return lines.map((line, index) => {
+        if (isBarChart) {
+          // For bar charts, use y prop for horizontal lines
+          return (
+            <ReferenceLine
+              key={index}
+              y={line.value}
+              stroke={line.color}
+              strokeWidth={line.strokeWidth}
+              strokeDasharray={line.strokeDasharray}
+              label={{
+                value: line.label,
+                position: 'right',
+                fill: line.color,
+                fontSize: 12,
+                fontWeight: 'bold'
+              }}
+            />
+          );
+        } else {
+          // For line/area charts, use x prop for vertical lines
+          return (
+            <ReferenceLine
+              key={index}
+              x={line.value}
+              stroke={line.color}
+              strokeWidth={line.strokeWidth}
+              strokeDasharray={line.value === mean ? "0" : line.strokeDasharray || "3 3"}
+              label={{
+                value: line.label,
+                position: 'top',
+                fill: line.color,
+                fontSize: 12,
+                fontWeight: 'bold'
+              }}
+            />
+          );
+        }
+      });
+    };
 
 
     const commonProps = {
@@ -394,21 +468,138 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
       );
 
       case "bar":
-        return (
-          <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name">
-              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
-            </XAxis>
-            <YAxis>
-              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
-            </YAxis>
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
-            <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
-          </BarChart>
-        );
+        // For uniform distribution, we need special handling
+        if (selectedChart.distribution === "uniform") {
+          return (
+            <BarChart 
+              width={600} 
+              height={400}
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="name"
+                label={{ 
+                  value: "Stable Status", 
+                  position: "insideBottom", 
+                  offset: -10 
+                }}
+              >
+                <Label 
+                  value="Stable Status" 
+                  position="insideBottom" 
+                  offset={-10} 
+                />
+              </XAxis>
+              <YAxis 
+                label={{ 
+                  value: "X Value", 
+                  angle: -90, 
+                  position: "insideLeft",
+                  offset: 10
+                }}
+              >
+                <Label 
+                  value="X Value" 
+                  angle={-90} 
+                  position="insideLeft" 
+                  offset={10} 
+                />
+              </YAxis>
+              {/* In the uniform distribution bar chart section, update the Tooltip: */}
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const dataPoint = props.payload;
+                  if (dataPoint?.originalValues) {
+                    // Show all original x values for this stable status
+                    return [
+                      `Average X: ${value.toFixed(4)}`,
+                      `Values: ${dataPoint.originalValues.join(', ')}`,
+                      `Count: ${dataPoint.count}`
+                    ];
+                  }
+                  return [`X Value: ${value.toFixed(4)}`];
+                }}
+                labelFormatter={(label) => `Stable: ${label === '1' ? 'Yes' : 'No'}`}
+              />
+              <Legend />
+              
+              {/* Horizontal reference line for mean */}
+              {/* {mean !== undefined && (
+                <ReferenceLine 
+                  y={mean} 
+                  stroke="#dc2626" 
+                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  label={{
+                    value: `Mean: ${mean.toFixed(3)}`,
+                    position: 'right',
+                    fill: '#dc2626',
+                    fontSize: 12
+                  }}
+                />
+              )} */}
+              
+              {/* Horizontal reference line for min (a) */}
+              {/* {distributionParams?.a !== undefined && (
+                <ReferenceLine 
+                  y={distributionParams.a} 
+                  stroke="#10b981" 
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  label={{
+                    value: `Min: ${distributionParams.a}`,
+                    position: 'right',
+                    fill: '#10b981',
+                    fontSize: 10
+                  }}
+                />
+              )} */}
+              
+              {/* Horizontal reference line for max (b) */}
+              {/* {distributionParams?.b !== undefined && (
+                <ReferenceLine 
+                  y={distributionParams.b} 
+                  stroke="#10b981" 
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  label={{
+                    value: `Max: ${distributionParams.b}`,
+                    position: 'right',
+                    fill: '#10b981',
+                    fontSize: 10
+                  }}
+                />
+              )} */}
+              
+              <Bar 
+                dataKey="value" 
+                fill="#3b82f6" 
+                name="X Value"
+                barSize={60}
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          );
+        } else {
+          // For other bar charts (not uniform)
+          return (
+            <BarChart {...commonProps}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name">
+                <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+              </XAxis>
+              <YAxis>
+                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+              </YAxis>
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
+              <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
+            </BarChart>
+          );
+        }
 
       case "line":
       default:
@@ -441,6 +632,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
   // Helper functions for axis labels
   const getXAxisLabel = () => {
+    if (selectedChart.distribution === "uniform") {
+      return "Stable Status";
+    }
     if (selectedChart.distribution.includes("weibull")) {
       return "Time/Value";
     }
@@ -451,6 +645,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
   };
 
   const getYAxisLabel = () => {
+    if (selectedChart.distribution === "uniform") {
+      return "X Value";
+    }
     if (selectedChart.distribution.includes("pdf")) {
       return "Probability Density";
     }
