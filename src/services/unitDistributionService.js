@@ -76,3 +76,36 @@ export const getUniformDistributionData = async (unitId, candidateId) => {
     throw error;
   }
 };
+
+
+export const getWeibullPDFDistributionData = async (unitId, candidateId, key) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-pdf-dist?unitId=${unitId}&candidate_id=${candidateId}&key=${key}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};
+
+
+export const getWeibullCDFDistributionData = async (unitId, candidateId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-cdf-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};
+
+
+export const getWeibullRiskDistributionData = async (unitId, candidateId, key) => {
+  try {
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-risk-dist?unitId=${unitId}&candidate_id=${candidateId}&key=${key}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Distribution:", error);
+    throw error;
+  }
+};

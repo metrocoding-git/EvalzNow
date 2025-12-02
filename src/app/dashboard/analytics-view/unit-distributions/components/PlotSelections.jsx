@@ -27,7 +27,7 @@ import {
 } from "recharts";
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
-import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData } from "@/services/unitDistributionService";
+import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId }) {
   const [distributions, setDistributions] = useState({});
@@ -188,7 +188,52 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
       try {
         // Determine which API to call based on selected distribution type
         let data;
-        if (selectedChart.distribution === "normal") {
+        // In your fetchDistributionData function, update the Weibull handling:
+if (selectedChart.distribution.startsWith("weibull")) {
+  let data;
+  
+  // Call appropriate API based on distribution type
+  if (selectedChart.distribution === "weibull-cdf") {
+    data = await getWeibullCDFDistributionData(unitId, candidateIds);
+  } else if (selectedChart.distribution === "weibull-pdf") {
+    data = await getWeibullPDFDistributionData(unitId, candidateIds);
+  } else if (selectedChart.distribution === "weibull-risk") {
+    // You might need a separate API for risk, or calculate it from CDF data
+    data = await getWeibullRiskDistributionData(unitId, candidateIds);
+  }
+  
+  console.log("weibull data: ", data);
+  
+  // Set the correct key based on the selected Weibull chart
+  let distributionKey;
+  if (selectedChart.key === "XEP") {
+    distributionKey = "XEP";
+  } else if (selectedChart.key === "∆GEQ") {
+    distributionKey = "deltaGEQ";
+  } else {
+    distributionKey = selectedChart.key; // RR, PR, AR
+  }
+  
+  // For risk charts, we need to transform the data
+  if (selectedChart.distribution === "weibull-risk" && data && data.distributions) {
+    const distribution = data.distributions[distributionKey];
+    if (distribution && distribution.table) {
+      // Transform the table to calculate risk
+      distribution.table = distribution.table.map(row => ({
+        ...row,
+        risk: 1 - (row.R || 0)
+      }));
+    }
+  }
+  
+  // Set the distributions and selected key
+  setDistributions(data.distributions || data);
+  setTableData(data);
+  setSelectedKey(distributionKey);
+  setLoading(false);
+  return;
+}
+        else if (selectedChart.distribution === "normal") {
           data = await getNormalDistributionData({
             unitId,
             candidatePpList,
@@ -228,7 +273,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
         } else if (selectedChart.distribution === "uniform") {
           data = await getUniformDistributionData(unitId, candidateIds);
           console.log("uniform dis: ", data);
-        } else {
+        }
+        
+        else {
           // Default to normal distribution if no specific API
           data = await getNormalDistributionData({
             unitId,
@@ -259,20 +306,53 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
   // Prepare chart data based on selected distribution
  
-  const chartData = selectedChart.distribution === "chi-square" || selectedChart.distribution === "f"
-  ? distributions?.distribution?.table?.map((row) => ({
-      name: row.x,
-      value: row.y,
-    })) || []
-  : selectedChart.distribution === "uniform"
-  ? distributions[selectedKey]?.table?.map((row) => ({
-      name: row.stable,  // Use stable for x-axis
-      value: row.x,      // Use x for y-axis
-    })) || []
-  : distributions[selectedKey]?.table?.map((row) => ({
-      name: row.x,
-      value: row.y,
-    })) || [];
+  // In your renderChart function, update the chartData preparation:
+// Update the chartData preparation for Weibull distributions
+const chartData = selectedChart.distribution.startsWith("weibull")
+  ? (() => {
+    // Handle different Weibull distribution types
+    const distribution = distributions[selectedKey];
+    if (!distribution || !distribution.table) return [];
+    
+    if (selectedChart.distribution === "weibull-cdf") {
+      // For CDF/RDF, we need both F (CDF) and R (Reliability)
+      return distribution.table.map((row) => ({
+        name: row.t,
+        cdf: row.F,
+        reliability: row.R,
+        pdf: null // We don't have PDF data here
+      }));
+    } else if (selectedChart.distribution === "weibull-pdf") {
+      // For PDF, use the 'f' value from the table
+      return distribution.table.map((row) => ({
+        name: row.t,
+        pdf: row.f, // This is the PDF value
+        cumulative: row.F || null // Keep CDF if available for reference
+      }));
+    } else if (selectedChart.distribution === "weibull-risk") {
+      // For RISK, calculate risk = 1 - reliability
+      return distribution.table.map((row) => ({
+        name: row.t,
+        risk: row.h, // Calculate risk from reliability
+        reliability: row.R || null // Keep reliability for reference
+      }));
+    }
+    return [];
+      })()
+    : selectedChart.distribution === "chi-square" || selectedChart.distribution === "f"
+    ? distributions?.distribution?.table?.map((row) => ({
+        name: row.x,
+        value: row.y,
+      })) || []
+    : selectedChart.distribution === "uniform"
+    ? distributions[selectedKey]?.table?.map((row) => ({
+        name: row.stable,
+        value: row.x,
+      })) || []
+    : distributions[selectedKey]?.table?.map((row) => ({
+        name: row.x,
+        value: row.y,
+      })) || [];
   
 
   // Render different chart types based on selected chart
@@ -444,6 +524,79 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
     switch (selectedChart.type) {
       case "area":
+        if (selectedChart.distribution === "weibull-cdf") {
+          return (
+            <AreaChart {...commonProps} width={600} height={400}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name">
+                <Label value="Time/Value" position="insideBottom" offset={-10} />
+              </XAxis>
+              <YAxis domain={[0, 1]}>
+                <Label value="Probability" angle={-90} position="insideLeft" offset={10} />
+              </YAxis>
+              <Tooltip 
+                formatter={(value, name) => {
+                  const labels = {
+                    cdf: 'Cumulative Distribution (F)',
+                    reliability: 'Reliability (R)'
+                  };
+                  return [`${value.toFixed(4)}`, labels[name] || name];
+                }}
+                labelFormatter={(label) => `t = ${label}`}
+              />
+              <Legend />
+              
+              {/* Add vertical line at eta value */}
+              {distributions[selectedKey]?.params?.eta && (
+                <ReferenceLine 
+                  x={distributions[selectedKey].params.eta}
+                  stroke="#dc2626"
+                  strokeWidth={2}
+                  label={{
+                    value: `η = ${distributions[selectedKey].params.eta.toFixed(2)}`,
+                    position: 'top',
+                    fill: '#dc2626',
+                    fontSize: 12
+                  }}
+                />
+              )}
+              
+              {/* Add vertical line at 0.700 (if applicable) */}
+              <ReferenceLine 
+                x={0.700}
+                stroke="#10b981"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                label={{
+                  value: '0.700',
+                  position: 'bottom',
+                  fill: '#10b981',
+                  fontSize: 10
+                }}
+              />
+              
+              {/* CDF Area */}
+              <Area
+                type="monotone"
+                dataKey="cdf"
+                stroke="#3b82f6"
+                fill="#3b82f6"
+                fillOpacity={0.3}
+                name="Cumulative Distribution (F)"
+              />
+              
+              {/* Reliability Area */}
+              <Area
+                type="monotone"
+                dataKey="reliability"
+                stroke="#10b981"
+                fill="#10b981"
+                fillOpacity={0.2}
+                name="Reliability (R)"
+              />
+            </AreaChart>
+          );
+        }
       return (
         <AreaChart {...commonProps}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -602,6 +755,192 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
         }
 
       case "line":
+        if (selectedChart.distribution === "weibull-pdf") {
+          return (
+            <LineChart width={600} height={400} data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="name"
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+              />
+              <YAxis 
+                label={{ value: "Probability Density f(t)", angle: -90, position: "insideLeft", offset: 10 }}
+              />
+              <Tooltip 
+                formatter={(value, name) => {
+                  const labels = {
+                    pdf: 'Probability Density f(t)',
+                    cumulative: 'Cumulative F(t)'
+                  };
+                  return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                }}
+                labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
+              />
+              <Legend />
+              
+              {/* Add vertical line at eta value (scale parameter) */}
+              {distributions[selectedKey]?.params?.eta && (
+                <ReferenceLine 
+                  x={distributions[selectedKey].params.eta}
+                  stroke="#dc2626"
+                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  label={{
+                    value: `η = ${distributions[selectedKey].params.eta.toFixed(3)}`,
+                    position: 'top',
+                    fill: '#dc2626',
+                    fontSize: 12
+                  }}
+                />
+              )}
+              
+              {/* Add vertical line at 0.700 if it's within the data range */}
+              {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + (distributions[selectedKey]?.params?.step || 0.05)) && (
+                <ReferenceLine 
+                  x={0.700}
+                  stroke="#10b981"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  label={{
+                    value: '0.700',
+                    position: 'top',
+                    fill: '#10b981',
+                    fontSize: 10
+                  }}
+                />
+              )}
+              
+              {/* Add information about beta (shape parameter) */}
+              {distributions[selectedKey]?.params?.beta && (
+                <ReferenceLine 
+                  x={chartData[chartData.length - 1]?.name * 0.95 || 0}
+                  stroke="transparent"
+                  label={{
+                    value: `β = ${distributions[selectedKey].params.beta}`,
+                    position: 'top',
+                    fill: '#6b7280',
+                    fontSize: 10
+                  }}
+                />
+              )}
+              
+              <Line 
+                type="monotone"
+                dataKey="pdf"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+                name="Weibull PDF f(t)"
+              />
+              
+              {/* Optionally show CDF as a dashed line for reference */}
+              {chartData[0]?.cumulative && (
+                <Line 
+                  type="monotone"
+                  dataKey="cumulative"
+                  stroke="#9ca3af"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  dot={false}
+                  name="CDF F(t) (reference)"
+                />
+              )}
+            </LineChart>
+          );
+        } else if (selectedChart.distribution === "weibull-risk") {
+          return (
+            <LineChart width={600} height={400} data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="name"
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+              />
+              <YAxis 
+                domain={[0, 1]}
+                label={{ value: "Risk (1 - R(t))", angle: -90, position: "insideLeft", offset: 10 }}
+              />
+              <Tooltip 
+                formatter={(value, name) => {
+                  const labels = {
+                    risk: 'Risk (1 - R)',
+                    reliability: 'Reliability R(t)'
+                  };
+                  return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                }}
+                labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
+              />
+              <Legend />
+              
+              {/* Add vertical line at eta value */}
+              {distributions[selectedKey]?.params?.eta && (
+                <ReferenceLine 
+                  x={distributions[selectedKey].params.eta}
+                  stroke="#dc2626"
+                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  label={{
+                    value: `η = ${distributions[selectedKey].params.eta.toFixed(3)}`,
+                    position: 'top',
+                    fill: '#dc2626',
+                    fontSize: 12
+                  }}
+                />
+              )}
+              
+              {/* Add horizontal line at 0.5 (50% risk) */}
+              <ReferenceLine 
+                y={0.5}
+                stroke="#f59e0b"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                label={{
+                  value: '50% Risk',
+                  position: 'right',
+                  fill: '#f59e0b',
+                  fontSize: 10
+                }}
+              />
+              
+              {/* Add information about beta */}
+              {distributions[selectedKey]?.params?.beta && (
+                <ReferenceLine 
+                  x={chartData[chartData.length - 1]?.name * 0.95 || 0}
+                  stroke="transparent"
+                  label={{
+                    value: `β = ${distributions[selectedKey].params.beta}`,
+                    position: 'top',
+                    fill: '#6b7280',
+                    fontSize: 10
+                  }}
+                />
+              )}
+              
+              <Line 
+                type="monotone"
+                dataKey="risk"
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+                name="Risk Function (1 - R(t))"
+              />
+              
+              {/* Optionally show reliability as a dashed line for reference */}
+              {chartData[0]?.reliability !== undefined && (
+                <Line 
+                  type="monotone"
+                  dataKey="reliability"
+                  stroke="#9ca3af"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  dot={false}
+                  name="Reliability R(t) (reference)"
+                />
+              )}
+            </LineChart>
+          );
+        }
       default:
         return (
           <LineChart {...commonProps}>
@@ -631,34 +970,37 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
   };
 
   // Helper functions for axis labels
-  const getXAxisLabel = () => {
-    if (selectedChart.distribution === "uniform") {
-      return "Stable Status";
-    }
-    if (selectedChart.distribution.includes("weibull")) {
-      return "Time/Value";
-    }
-    if (selectedChart.distribution === "chi-square") {
-      return "Chi-Square Value";
-    }
-    return "Z-Score";
-  };
+const getXAxisLabel = () => {
+  if (selectedChart.distribution === "uniform") {
+    return "Stable Status";
+  }
+  if (selectedChart.distribution.includes("weibull")) {
+    return "Time/Value (t)";
+  }
+  if (selectedChart.distribution === "chi-square") {
+    return "Chi-Square Value";
+  }
+  return "Z-Score";
+};
 
-  const getYAxisLabel = () => {
-    if (selectedChart.distribution === "uniform") {
-      return "X Value";
-    }
-    if (selectedChart.distribution.includes("pdf")) {
-      return "Probability Density";
-    }
-    if (selectedChart.distribution.includes("cdf")) {
-      return "Cumulative Probability";
-    }
-    if (selectedChart.distribution === "chi-square") {
-      return "Probability";
-    }
-    return "Standard Distribution";
-  };
+const getYAxisLabel = () => {
+  if (selectedChart.distribution === "uniform") {
+    return "X Value";
+  }
+  if (selectedChart.distribution.includes("weibull-pdf")) {
+    return "Probability Density";
+  }
+  if (selectedChart.distribution.includes("weibull-cdf")) {
+    return "Probability";
+  }
+  if (selectedChart.distribution.includes("weibull-risk")) {
+    return "Risk (1 - R)";
+  }
+  if (selectedChart.distribution === "chi-square") {
+    return "Probability";
+  }
+  return "Standard Distribution";
+};
   
 
   console.log("table data::->", tableData);
