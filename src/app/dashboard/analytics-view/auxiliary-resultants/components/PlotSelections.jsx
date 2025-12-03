@@ -7,8 +7,9 @@ import {
   Label
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
+import { getAuxiliarydata } from '@/services/auxiliaryService';
 
-export default function PlotSelections({ selectedSort }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -59,7 +60,7 @@ export default function PlotSelections({ selectedSort }) {
   );
   const [visible, setVisible] = useState(true);
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
-
+  const [auxData, setAuxData] = useState([]);
 
   const canvasRef = useRef(null);
 
@@ -73,68 +74,6 @@ export default function PlotSelections({ selectedSort }) {
   const [selectedChart, setSelectedChart] = useState(null);
 
   const activateCandidateLevel = [
-    {
-      name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
-      type: "multi-line",
-      id: 1
-    },
-    {
-      name: "Actual Tenure Period (Days) vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 2
-    },
-    {
-      name: "Effective Work Count (Days) vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 3
-    },
-    {
-      name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
-      type: "multi-line",
-      id: 4
-    },
-    {
-      name: "Actual Tenure Period (Days) vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 5
-    },
-    {
-      name: "Effective Work Count (Days) vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 6
-    },
-    {
-      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📈",
-      type: "line",
-      id: 7
-    },
-    {
-      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📈",
-      type: "line",
-      id: 8
-    },
-    {
-      name: "Attendance Tracking",
-      icon: "🥧",
-      type: "pie",
-      id: 9
-    },
-    {
-      name: "Engagement Tracking",
-      icon: "🥧",
-      type: "pie",
-      id: 10
-    },
-  
-    // 👉 Added table-based items for Candidate Level
     {
       name: "Needs Assessment Table",
       icon: "📑",
@@ -158,7 +97,71 @@ export default function PlotSelections({ selectedSort }) {
       icon: "✅",
       type: "table",
       id: 14
-    }
+    },
+    {
+      name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
+      icon: "📈",
+      type: "line",
+      key: 'csd',
+      id: 1
+    },
+    // {
+    //   name: "Actual Tenure Period (Days) vs. PP ID",
+    //   icon: "📊",
+    //   type: "line",
+    //   id: 2
+    // },
+    // {
+    //   name: "Effective Work Count (Days) vs. PP ID",
+    //   icon: "📊",
+    //   type: "line",
+    //   id: 3
+    // },
+    {
+      name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
+      icon: "📈",
+      type: "line",
+      key: 'usd',
+      id: 4
+    },
+    // {
+    //   name: "Actual Tenure Period (Days) vs. PP ID",
+    //   icon: "📊",
+    //   type: "line",
+    //   id: 5
+    // },
+    // {
+    //   name: "Effective Work Count (Days) vs. PP ID",
+    //   icon: "📊",
+    //   type: "line",
+    //   id: 6
+    // },
+    {
+      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
+      icon: "📈",
+      type: "line",
+      id: 7
+    },
+    {
+      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
+      icon: "📈",
+      type: "line",
+      id: 8
+    },
+
+    {
+      name: "Attendance Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 9
+    },
+    {
+      name: "Engagement Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 10
+    },
+    
   ];
   
   const activateUnitLevel = [
@@ -228,7 +231,30 @@ export default function PlotSelections({ selectedSort }) {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAuxiliarydata(unitId, candidateId); // replace with actual unitId/candidateId
+        setAuxData(data.results || []);
+      } catch (err) {
+        console.error("Error fetching auxiliary data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
+  const csdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    csdTenureDays: r.csdTenureDays,
+    duration: r.duration
+  }));
+  
+  const usdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    usdTenureDays: r.usdTenureDays,
+    duration: r.duration
+  }));
+  
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -284,7 +310,41 @@ export default function PlotSelections({ selectedSort }) {
         </div>
       );
     } else {
-      // Render chart for all other types
+
+      if (selectedChart.key === 'csd') {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line type="monotone" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
+              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+    
+      // Multi-line chart for USD
+      if (selectedChart.key === 'usd') {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line type="monotone" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
+              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+    
+      // Default fallback chart
       return (
         <ResponsiveContainer width="100%" height="95%">
           <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -293,39 +353,13 @@ export default function PlotSelections({ selectedSort }) {
               <Label value="Time Period (X)" offset={-10} position="insideBottom" />
             </XAxis>
             <YAxis>
-              <Label
-                value="Score / Value (Y/Z)"
-                angle={-90}
-                position="insideLeft"
-                offset={10}
-              />
+              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" offset={10} />
             </YAxis>
             <Tooltip />
             <Legend verticalAlign="top" />
-            <Line
-              type="monotone"
-              dataKey="xValue"
-              name="X Axis Value"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot
-            />
-            <Line
-              type="monotone"
-              dataKey="yValue"
-              name="Y Axis Value"
-              stroke="#10b981"
-              strokeWidth={2}
-              dot
-            />
-            <Line
-              type="monotone"
-              dataKey="zValue"
-              name="Z Axis Value"
-              stroke="#f59e0b"
-              strokeWidth={2}
-              dot
-            />
+            <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
+            <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
+            <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
           </LineChart>
         </ResponsiveContainer>
       );

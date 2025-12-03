@@ -12,6 +12,8 @@ import SecondaryArea from "./components/SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { useUnit } from "@/context/UnitContext";
 
 export default function AuxiliaryResultants() {
   const tabs = [
@@ -35,29 +37,80 @@ export default function AuxiliaryResultants() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [unitData, setUnitData] = useState(null);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+  const [data, setData] = useState([]);
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [resetSignal, setResetSignal] = useState(0);  
 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+    });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
+  };
 
   useEffect(() => {
     if (activeCandidateId) {
       setScoresOpen(true);
     }
   }, [activeCandidateId]);
+
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted.length > 0 ? sorted[0].id : null);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
 
   const [openMenu, setopenMenu] = useState(true);
 
@@ -95,12 +148,16 @@ export default function AuxiliaryResultants() {
               <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
                 <div className="flex-grow  flex flex-col h-1/2">
                   {/* Header */}
-                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 grid grid-cols-3 text-gray-800 font-semibold text-sm">
+                  <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${selectedSort === "activateUnitLevel"
+                   ? "grid-cols-4 px-4" : "grid-cols-3 px-4"  } text-gray-800 font-semibold text-sm`}>
+
+                   {/* 👇 Header for checkbox column (blank) */}
+                    {selectedSort === "activateUnitLevel" && <div></div>}
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      Last Name
+                      Last <br/> Name
                       {/* {" "}
                       {sortKey === "lastName" ? (
                         sortOrder === "asc" ? (
@@ -164,59 +221,85 @@ export default function AuxiliaryResultants() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
                       {openMenu && (
                         <>
-                          <div className=" items-center justify-center  px-4 ">
-                            <div className="border border-blue-200 p-1 rounded-lg">
-                              <span className="text-sm text-gray-400">
-                                Unit Name: Unit 1
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit ID: UA123
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit Type: Group
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Signature Profile: Signature 1
-                              </span>
-                            </div>
+                        {unitData && (
+                        <div className=" items-center justify-center  px-4 ">
+                          <div className="border border-gray-200 p-1">
+                            <span className="text-sm text-gray-400">
+                              Unit Name: {unitData.unitName}
+                            </span>
+                            <br />
+                            <span className="text-sm text-gray-400">
+                              Unit ID: {unitData.unitId}
+                            </span>
+                            <br />
+                            <span className="text-sm text-gray-400">
+                              Unit Type: {unitData.unitType}
+                            </span>
+                            <br />
+                            <span className="text-sm text-gray-400">
+                              Signature Profile: {unitData.signatureProfile}
+                            </span>
                           </div>
-                          {/* Candidate Data */}
-                          <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
-                            {sortedData.map((item) => (
-                              <div
-                                key={item.id}
-                                className={`grid grid-cols-3 gap-2 items-center text-sm  px-2 py-1 cursor-pointer
-                                ${activeCandidateId === item.id ? "bg-blue-100 border-l-4 border-blue-400"
+                        </div>
+                        )}
+
+                        {/* Candidate Data */}
+                        <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
+                          {sortedData.map((item) => (
+                            <div
+                              key={item.id}
+                              className={`grid ${
+                                  selectedSort === "activateUnitLevel"
+                                    ? "grid-cols-4" // extra column for checkbox
+                                    : "grid-cols-3 px-2"
+                                } gap-2 items-center text-sm  py-1 cursor-pointer
+                                  ${activeCandidateId === item.id && selectedSort === "activateCandidateLevel"
+                                    ? "bg-blue-100 border-l-4 border-blue-400"
                                     : "hover:bg-gray-100"}`}
-                                onClick={() => {
-                                  setShowEdit(true);
-                                  setShowSecondary(true);
+                              onClick={() => {
+                                setShowEdit(true);
+                                setShowSecondary(true);
+                                setActiveCandidateId(item.id); // ✅ mark candidate as active
+                              }}
+                              onDoubleClick={() => {
+                                setScoresOpen(true);
+                                setActiveCandidateId(item.id);
+                              }}
+                            >
+                              {selectedSort === "activateUnitLevel" && (
+                                <input
+                                type="checkbox"
+                                className="h-4 w-4"
+                                checked={selectedCandidateIds.includes(item.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCandidateIds((prev) =>
+                                    e.target.checked
+                                      ? [...prev, item.id]
+                                      : prev.filter((id) => id !== item.id)
+                                  );
                                 }}
-                                onDoubleClick={() => {
-                                  setScoresOpen(true);
-                                  setActiveCandidateId(item.id);
-                                }}
-                              >
-                                <span className="text-gray-800">
-                                  {item.lastName}
-                                </span>
-                                <span className="text-gray-800">
-                                  {item.firstName}
-                                </span>
-                                <span className="text-gray-600">{item.id}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </>
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              
+                              )}
+                              <span className="text-gray-800 ">
+                                {item.lastName}
+                              </span>
+                              <span className="text-gray-800">
+                                {item.firstName}
+                              </span>
+                              <span className="text-gray-600">{item.id}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                       )}
                     </div>
 
@@ -229,7 +312,7 @@ export default function AuxiliaryResultants() {
                   <div className="h-1/2 overflow-auto ">
                     <SecondaryArea 
                       onClose={() => setShowSecondary(false)} 
-                      selectedSort={selectedSort}
+                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal}
                     />
 
                   </div>
@@ -261,7 +344,7 @@ export default function AuxiliaryResultants() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections selectedSort={selectedSort} />}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId} onResetFilters={resetFilters} />}
               </div>
             </div>
             {/* ------- */}

@@ -25,6 +25,10 @@ import {
   BarChart,
   Bar
 } from "recharts";
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 import PropertyEditor from "../../components/PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
@@ -71,31 +75,36 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
-    visibility: true,
+    positiveVisibility: true,
+    negativeVisibility: true,
     layer: 1,
     reference: false,
-
+  
     // Curve Label
-    showLabel: false,
+    showLabel: true,
     labelType: "X Type",
-    showLabelPrefix: false,
-    labelPrefix: "X File name",
-    showLabelSuffix: false,
-    labelSuffix: "Y subcase",
-
+    // showLabelPrefix: false,
+    // labelPrefix: "X File name",
+    // showLabelSuffix: false,
+    // labelSuffix: "Y subcase",
+  
     // Line Attribute
     lineStyle: "solid",
     lineColor: "#3b82f6",
     lineThickness: 2,
-
+  
     // Symbol Attribute
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
-    symbolScaleSize: 1,
-
+    symbolScaleSize: 3,
+  
     // Shade area
     shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
   });
 
   const [points, setPoints] = useState(
@@ -107,6 +116,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
   const [tableData, setTableData] = useState([]);
   const canvasRef = useRef(null);
+
+  const chartContainerRef = useRef(null);
 
   // Example line chart data
   const data = [
@@ -525,6 +536,8 @@ const chartData = selectedChart.distribution.startsWith("weibull")
     switch (selectedChart.type) {
       case "area":
         if (selectedChart.distribution === "weibull-cdf") {
+          const eta = Number(distributions[selectedKey].params.eta.toFixed(3));
+          console.log("eta value:: ", eta);
           return (
             <AreaChart {...commonProps} width={600} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -547,19 +560,22 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Legend />
               
               {/* Add vertical line at eta value */}
-              {distributions[selectedKey]?.params?.eta && (
-                <ReferenceLine 
-                  x={distributions[selectedKey].params.eta}
-                  stroke="#dc2626"
-                  strokeWidth={2}
+              
+              {eta && (
+                <ReferenceLine
+                  x={eta}
+                  stroke="#ff0000" // Changed to RED for visibility
+                  strokeWidth={3} // Thicker
                   label={{
-                    value: `η = ${distributions[selectedKey].params.eta.toFixed(2)}`,
+                    value: `η = ${eta.toFixed(3)}`,
                     position: 'top',
-                    fill: '#dc2626',
-                    fontSize: 12
+                    fill: '#ff0000',
+                    fontSize: 14,
+                    fontWeight: 'bold'
                   }}
                 />
               )}
+           
               
               {/* Add vertical line at 0.700 (if applicable) */}
               <ReferenceLine 
@@ -569,7 +585,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 strokeDasharray="3 3"
                 label={{
                   value: '0.700',
-                  position: 'bottom',
+                  position: 'top',
                   fill: '#10b981',
                   fontSize: 10
                 }}
@@ -678,53 +694,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               />
               <Legend />
               
-              {/* Horizontal reference line for mean */}
-              {/* {mean !== undefined && (
-                <ReferenceLine 
-                  y={mean} 
-                  stroke="#dc2626" 
-                  strokeWidth={2}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: `Mean: ${mean.toFixed(3)}`,
-                    position: 'right',
-                    fill: '#dc2626',
-                    fontSize: 12
-                  }}
-                />
-              )} */}
               
-              {/* Horizontal reference line for min (a) */}
-              {/* {distributionParams?.a !== undefined && (
-                <ReferenceLine 
-                  y={distributionParams.a} 
-                  stroke="#10b981" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  label={{
-                    value: `Min: ${distributionParams.a}`,
-                    position: 'right',
-                    fill: '#10b981',
-                    fontSize: 10
-                  }}
-                />
-              )} */}
-              
-              {/* Horizontal reference line for max (b) */}
-              {/* {distributionParams?.b !== undefined && (
-                <ReferenceLine 
-                  y={distributionParams.b} 
-                  stroke="#10b981" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  label={{
-                    value: `Max: ${distributionParams.b}`,
-                    position: 'right',
-                    fill: '#10b981',
-                    fontSize: 10
-                  }}
-                />
-              )} */}
               
               <Bar 
                 dataKey="value" 
@@ -756,6 +726,8 @@ const chartData = selectedChart.distribution.startsWith("weibull")
 
       case "line":
         if (selectedChart.distribution === "weibull-pdf") {
+          const eta = Number(distributions[selectedKey].params.eta.toFixed(3));	
+          console.log("eta value:: ", eta);
           return (
             <LineChart width={600} height={400} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -778,21 +750,19 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               />
               <Legend />
               
-              {/* Add vertical line at eta value (scale parameter) */}
-              {distributions[selectedKey]?.params?.eta && (
                 <ReferenceLine 
-                  x={distributions[selectedKey].params.eta}
-                  stroke="#dc2626"
-                  strokeWidth={2}
+                  x={eta}
+                  stroke="#10b981"
+                  strokeWidth={1}
                   strokeDasharray="3 3"
                   label={{
-                    value: `η = ${distributions[selectedKey].params.eta.toFixed(3)}`,
+                    value: eta,
                     position: 'top',
-                    fill: '#dc2626',
-                    fontSize: 12
+                    fill: '#10b981',
+                    fontSize: 10
                   }}
                 />
-              )}
+
               
               {/* Add vertical line at 0.700 if it's within the data range */}
               {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + (distributions[selectedKey]?.params?.step || 0.05)) && (
@@ -873,7 +843,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Legend />
               
               {/* Add vertical line at eta value */}
-              {distributions[selectedKey]?.params?.eta && (
+              {selectedChart.distribution === "weibull-risk" && distributions[selectedKey]?.params?.eta && (
                 <ReferenceLine 
                   x={distributions[selectedKey].params.eta}
                   stroke="#dc2626"
@@ -890,13 +860,13 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               
               {/* Add horizontal line at 0.5 (50% risk) */}
               <ReferenceLine 
-                y={0.5}
+                x={0.7}
                 stroke="#f59e0b"
                 strokeWidth={1}
                 strokeDasharray="3 3"
                 label={{
-                  value: '50% Risk',
-                  position: 'right',
+                  value: '0.700',
+                  position: 'top',
                   fill: '#f59e0b',
                   fontSize: 10
                 }}
@@ -941,32 +911,32 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             </LineChart>
           );
         }
-      default:
-        return (
-          <LineChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name">
-            <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
-          </XAxis>
-          <YAxis>
-            <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
-          </YAxis>
-          <Tooltip />
-          <Legend />
+        default:
+          return (
+            <LineChart {...commonProps}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name">
+              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+            </XAxis>
+            <YAxis>
+              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+            </YAxis>
+            <Tooltip />
+            <Legend />
 
-          {renderReferenceLines()}
-          
-          <Line 
-            type="monotone" 
-            dataKey="value" 
-            fill="#3b82f6" 
-            strokeWidth={1} 
-            dot={{ r: 2 }} 
-            name="Distribution"
-          />
-        </LineChart>
-        );
-    }
+            {renderReferenceLines()}
+            
+            <Line 
+              type="monotone" 
+              dataKey="value" 
+              fill="#3b82f6" 
+              strokeWidth={1} 
+              dot={{ r: 2 }} 
+              name="Distribution"
+            />
+          </LineChart>
+          );
+      }
   };
 
   // Helper functions for axis labels
@@ -1032,6 +1002,180 @@ const getYAxisLabel = () => {
     }
   };
   
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
+      return;
+    }
+  
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
+      }
+  
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
+  
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+  
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
+  
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+  
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+  
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+  
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+  
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+  
+      // Move down past the image
+      let currentRow = 27;
+  
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
+  
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+  
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+  
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+  
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      }
+  
+      // 8. Add threshold information if available
+      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+        currentRow++;
+        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+        worksheet.getRow(currentRow).font = { bold: true };
+        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+        currentRow++;
+  
+        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      }
+  
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+  
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      
+      // Download the file
+      saveAs(blob, fileName);
+  
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+  
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -1070,7 +1214,7 @@ const getYAxisLabel = () => {
                 />
               </button>
               <button
-                onClick={handleDeleteCurve}
+                onClick={exportToExcelWithImage}
                 title="Export"
                 className="text-red-600 hover:text-red-800 cursor-pointer"
               >
@@ -1150,52 +1294,47 @@ const getYAxisLabel = () => {
                   />
                 )}
 
-                {activeAdjustPropertieTab === "Table" && (
+                {/* DYNAMIC TABLE SECTION */}
+                {activeAdjustPropertieTab === "Table" && chartData && chartData.length > 0 && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Month
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            X Axis Value
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Y Axis Value
-                          </th>
-                          <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                            Z Axis Value
-                          </th>
+                          {Object.keys(chartData[0]).map((col, i) => (
+                            <th
+                              key={i}
+                              className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center capitalize"
+                            >
+                              {col}
+                            </th>
+                          ))}
                         </tr>
                       </thead>
+
                       <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {row.name}
-                            </td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {row.xValue}
-                            </td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {row.yValue}
-                            </td>
-                            <td className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                              {row.zValue}
-                            </td>
+                        {chartData.map((row, rowIndex) => (
+                          <tr key={rowIndex} className="hover:bg-blue-50">
+                            {Object.values(row).map((value, colIndex) => (
+                              <td
+                                key={colIndex}
+                                className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center"
+                              >
+                                {value !== null && value !== undefined ? value : "-"}
+                              </td>
+                            ))}
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 )}
+
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
