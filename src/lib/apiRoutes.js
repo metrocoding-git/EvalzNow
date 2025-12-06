@@ -18,5 +18,6 @@ export const API_ROUTES = {
     ACCOUNT: "/account",
     BENCHMARK: "/benchmark",
     PROJECTION: "/projection",
-    UNITDISTRIBUTION: "/unit-distribution"
+    UNITDISTRIBUTION: "/unit-distribution",
+    AUXILIARY: "/auxiliary"
 };
