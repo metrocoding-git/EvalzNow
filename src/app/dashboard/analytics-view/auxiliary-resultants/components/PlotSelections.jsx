@@ -4,7 +4,10 @@ import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-r
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
-  Label
+  Label,
+  Pie,
+  PieChart,
+  Cell
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getAuxiliarydata } from '@/services/auxiliaryService';
@@ -61,6 +64,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   const [visible, setVisible] = useState(true);
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
   const [auxData, setAuxData] = useState([]);
+  const [rosterData, setRosterData] = useState([]);
 
   const canvasRef = useRef(null);
 
@@ -102,7 +106,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
       icon: "📈",
       type: "line",
-      key: 'csd',
+      key: 'be-csd',
       id: 1
     },
     // {
@@ -121,7 +125,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
       icon: "📈",
       type: "line",
-      key: 'usd',
+      key: 'be-usd',
       id: 4
     },
     // {
@@ -140,12 +144,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
       icon: "📈",
       type: "line",
+      key: 'bp-csd',
       id: 7
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
       icon: "📈",
       type: "line",
+      key: 'bp-usd',
       id: 8
     },
 
@@ -153,12 +159,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Attendance Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'at',
       id: 9
     },
     {
       name: "Engagement Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'et',
       id: 10
     },
     
@@ -236,6 +244,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       try {
         const data = await getAuxiliarydata(unitId, candidateId); // replace with actual unitId/candidateId
         setAuxData(data.results || []);
+        setRosterData(data.rosterData || []);
       } catch (err) {
         console.error("Error fetching auxiliary data", err);
       }
@@ -255,6 +264,25 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
     duration: r.duration
   }));
   
+  const BpCsdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    productivityCsd: r.Productivity_CSD,
+  }));
+  const BpUsdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    productivityUsd: r.Productivity_USD,
+  }));
+
+  const attendanceTrackData = rosterData.map(r => ({
+    totalTally: r.totalTally,
+    PC: r.presentCount,
+    EA: r.excusedAbsences,
+    UA: r.unexcusedAbsences,
+    ET: r.excusedTardies,
+    UT: r.unexcusedTardies,
+  }));
+
+  console.log("attendance data: ", attendanceTrackData);
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -269,6 +297,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   if (!visible) return null;
 
 
+  const attendanceBreakdown = rosterData.length > 0
+  ? [
+      { name: "Present", value: rosterData[0].presentCount },
+      { name: "Excused Absences", value: rosterData[0].excusedAbsences },
+      { name: "Unexcused Absences", value: rosterData[0].unexcusedAbsences },
+      { name: "Excused Tardies", value: rosterData[0].excusedTardies },
+      { name: "Unexcused Tardies", value: rosterData[0].unexcusedTardies },
+    ]
+  : [];
+
+
+  console.log("attendance tracking: ", attendanceBreakdown);
+  
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -311,38 +352,108 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       );
     } else {
 
-      if (selectedChart.key === 'csd') {
+      if (selectedChart.key === 'be-csd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Line type="monotone" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
-              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
           </ResponsiveContainer>
         );
       }
     
       // Multi-line chart for USD
-      if (selectedChart.key === 'usd') {
+      if (selectedChart.key === 'be-usd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Line type="monotone" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
-              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
           </ResponsiveContainer>
         );
       }
+
+      if (selectedChart.key === "bp-csd") {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line 
+                type="linear" 
+                dataKey="productivityCsd" 
+                name="Productivity CSD" 
+                stroke="#3b82f6"
+                dot 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+      
+
+      if (selectedChart.key === "bp-usd") {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line 
+                type="linear" 
+                dataKey="productivityUsd" 
+                name="Productivity USD" 
+                stroke="#f59e0b"
+                dot 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      if (selectedChart.key === 'at' && attendanceBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={attendanceBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {attendanceBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+      
+      
+      
     
       // Default fallback chart
       return (
@@ -506,7 +617,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
             {selectedChart ? `${selectedChart.name}` : 'Select a plot'}
           </h2>
 
-          <div className="h-full overflow-auto m-5">
+          <div className="h-full overflow-auto mb-16 p-3">
             {renderChartContent()}
           </div>
         </div>

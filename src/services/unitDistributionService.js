@@ -2,7 +2,6 @@ import { API_ROUTES } from "@/lib/apiRoutes";
 import api from "@/lib/axiosClient";
 
 // Get insert scores by unit ID
-
 export const getNormalDistributionData = async (payload) => {
   try {
     const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/normal-dist`, payload);
@@ -78,9 +77,9 @@ export const getUniformDistributionData = async (unitId, candidateId) => {
 };
 
 
-export const getWeibullPDFDistributionData = async (unitId, candidateId, key) => {
+export const getWeibullPDFDistributionData = async (unitId, candidateId, beta) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-pdf-dist?unitId=${unitId}&candidate_id=${candidateId}&key=${key}`);
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-pdf-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -89,9 +88,9 @@ export const getWeibullPDFDistributionData = async (unitId, candidateId, key) =>
 };
 
 
-export const getWeibullCDFDistributionData = async (unitId, candidateId) => {
+export const getWeibullCDFDistributionData = async (unitId, candidateId, beta) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-cdf-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-cdf-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -100,9 +99,9 @@ export const getWeibullCDFDistributionData = async (unitId, candidateId) => {
 };
 
 
-export const getWeibullRiskDistributionData = async (unitId, candidateId, key) => {
+export const getWeibullRiskDistributionData = async (unitId, candidateId, beta) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-risk-dist?unitId=${unitId}&candidate_id=${candidateId}&key=${key}`);
+    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-risk-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);

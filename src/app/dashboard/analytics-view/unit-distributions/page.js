@@ -40,7 +40,9 @@ export default function UnitDistributions() {
   const [data, setData] = useState([]); 
 
   const [selectedCandidates, setSelectedCandidates] = useState([]);
-
+  const [showBetaValue, setShowBetaValue] = useState(false);
+  const [beta, setBeta] = useState(1.5);
+  const [showForm, setShowForm] = useState(false);
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe" },
   //   { id: 2, firstName: "Jane", lastName: "Smith" },
@@ -281,13 +283,20 @@ export default function UnitDistributions() {
                     client={true}
                     showForm={showEdit}
                     selectedCandidates={selectedCandidates}
+                    showBetaValue={showBetaValue}
+                    onSubmit={(betaValue) => {
+                      console.log("Received beta value:", betaValue);
+                      setBeta(betaValue);   // or whatever you want to do
+                      setShowForm(false);
+                    }}
                   />
                 </div>
               </div>
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
-                {ScoresOpen && <PlotSelections onCandidatesSelected={handleSelectedCandidates} unitId={selectedUnitId} />}
+                {ScoresOpen && <PlotSelections onCandidatesSelected={handleSelectedCandidates} unitId={selectedUnitId} onWeibullSelect={setShowBetaValue} 
+                betaValue={beta} />}
               </div>
             </div>
             {/* ------- */}

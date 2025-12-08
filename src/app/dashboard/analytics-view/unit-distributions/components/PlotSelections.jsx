@@ -29,11 +29,11 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
-import PropertyEditor from "../../components/PropertyEditor";
+import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
 
-export default function PlotSelections({ onCandidatesSelected, unitId }) {
+export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue  }) {
   const [distributions, setDistributions] = useState({});
   const [selectedKey, setSelectedKey] = useState("RR");
   const [curves, setCurves] = useState([
@@ -75,18 +75,14 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
-    positiveVisibility: true,
-    negativeVisibility: true,
+    visibility: true,
     layer: 1,
     reference: false,
   
     // Curve Label
     showLabel: true,
     labelType: "X Type",
-    // showLabelPrefix: false,
-    // labelPrefix: "X File name",
-    // showLabelSuffix: false,
-    // labelSuffix: "Y subcase",
+    
   
     // Line Attribute
     lineStyle: "solid",
@@ -199,69 +195,75 @@ export default function PlotSelections({ onCandidatesSelected, unitId }) {
       try {
         // Determine which API to call based on selected distribution type
         let data;
-        // In your fetchDistributionData function, update the Weibull handling:
-if (selectedChart.distribution.startsWith("weibull")) {
-  let data;
-  
-  // Call appropriate API based on distribution type
-  if (selectedChart.distribution === "weibull-cdf") {
-    data = await getWeibullCDFDistributionData(unitId, candidateIds);
-  } else if (selectedChart.distribution === "weibull-pdf") {
-    data = await getWeibullPDFDistributionData(unitId, candidateIds);
-  } else if (selectedChart.distribution === "weibull-risk") {
-    // You might need a separate API for risk, or calculate it from CDF data
-    data = await getWeibullRiskDistributionData(unitId, candidateIds);
-  }
-  
-  console.log("weibull data: ", data);
-  
-  // Set the correct key based on the selected Weibull chart
-  let distributionKey;
-  if (selectedChart.key === "XEP") {
-    distributionKey = "XEP";
-  } else if (selectedChart.key === "∆GEQ") {
-    distributionKey = "deltaGEQ";
-  } else {
-    distributionKey = selectedChart.key; // RR, PR, AR
-  }
-  
-  // For risk charts, we need to transform the data
-  if (selectedChart.distribution === "weibull-risk" && data && data.distributions) {
-    const distribution = data.distributions[distributionKey];
-    if (distribution && distribution.table) {
-      // Transform the table to calculate risk
-      distribution.table = distribution.table.map(row => ({
-        ...row,
-        risk: 1 - (row.R || 0)
-      }));
-    }
-  }
-  
-  // Set the distributions and selected key
-  setDistributions(data.distributions || data);
-  setTableData(data);
-  setSelectedKey(distributionKey);
-  setLoading(false);
-  return;
-}
+        
+        if (selectedChart.distribution.startsWith("weibull")) {
+          let data;
+          onWeibullSelect(true);
+          // Call appropriate API based on distribution type
+          if (selectedChart.distribution === "weibull-cdf") {
+            data = await getWeibullCDFDistributionData(unitId, candidateIds, betaValue);
+          } else if (selectedChart.distribution === "weibull-pdf") {
+            data = await getWeibullPDFDistributionData(unitId, candidateIds, betaValue);
+          } else if (selectedChart.distribution === "weibull-risk") {
+            // You might need a separate API for risk, or calculate it from CDF data
+            data = await getWeibullRiskDistributionData(unitId, candidateIds, betaValue);
+          }
+          
+          console.log("weibull data: ", data);
+          
+          // Set the correct key based on the selected Weibull chart
+          let distributionKey;
+          if (selectedChart.key === "XEP") {
+            distributionKey = "XEP";
+          } else if (selectedChart.key === "∆GEQ") {
+            distributionKey = "deltaGEQ";
+          } else {
+            distributionKey = selectedChart.key; // RR, PR, AR
+          }
+          
+          // For risk charts, we need to transform the data
+          if (selectedChart.distribution === "weibull-risk" && data && data.distributions) {
+            const distribution = data.distributions[distributionKey];
+            if (distribution && distribution.table) {
+              // Transform the table to calculate risk
+              distribution.table = distribution.table.map(row => ({
+                ...row,
+                risk: 1 - (row.R || 0)
+              }));
+            }
+          }
+          
+          // Set the distributions and selected key
+          setDistributions(data.distributions || data);
+          setTableData(data);
+          setSelectedKey(distributionKey);
+          setLoading(false);
+          return;
+        }
         else if (selectedChart.distribution === "normal") {
           data = await getNormalDistributionData({
             unitId,
             candidatePpList,
             key: selectedChart.key
           });
+          onWeibullSelect(false);
+
         } else if (selectedChart.distribution === "t") {
           data = await getTDistributionData({
             unitId,
             candidatePpList,
             key: selectedChart.key
           });
+          onWeibullSelect(false);
+
         } else if (selectedChart.distribution === "exponential") {
           data = await getExponentialDistributionData(unitId, candidateIds);
+          onWeibullSelect(false);
+
           console.log("exponential data: ", getExponentialDistributionData(unitId, candidateIds));
         } else if (selectedChart.distribution === "chi-square") {
           data = await getChiDistributionData(unitId, candidateIds);
-          
+          onWeibullSelect(false);
 
           setDistributions(data);
           setTableData(data);
@@ -271,7 +273,7 @@ if (selectedChart.distribution.startsWith("weibull")) {
           return;
         } else if (selectedChart.distribution === "f") {
           data = await getChiDistributionData(unitId, candidateIds);
-          
+          onWeibullSelect(false);
           setDistributions(data);
           setTableData(data);
           setSelectedKey("F_DIST");
@@ -280,10 +282,13 @@ if (selectedChart.distribution.startsWith("weibull")) {
           return;
         } else if (selectedChart.distribution === "beta") {
           data = await getBetaDistributionData(unitId, candidateIds);
-        
+          onWeibullSelect(false);
+
         } else if (selectedChart.distribution === "uniform") {
           data = await getUniformDistributionData(unitId, candidateIds);
           console.log("uniform dis: ", data);
+          onWeibullSelect(false);
+
         }
         
         else {
@@ -293,6 +298,8 @@ if (selectedChart.distribution.startsWith("weibull")) {
             candidatePpList,
             key: selectedChart.key
           });
+          onWeibullSelect(false);
+
         }
 
         setDistributions(data.distributions);
@@ -308,7 +315,7 @@ if (selectedChart.distribution.startsWith("weibull")) {
     };
 
     fetchDistributionData();
-  }, [unitId, candidatePpList, selectedChart]);
+  }, [unitId, candidatePpList, selectedChart, betaValue]);
 
   const handleChartSelect = (chartItem) => {
     setSelectedChart(chartItem);
@@ -365,6 +372,28 @@ const chartData = selectedChart.distribution.startsWith("weibull")
         value: row.y,
       })) || [];
   
+
+      // Map chartProperties into Recharts-friendly props
+  const getLineStyle = () => {
+    const styleMap = {
+      solid: "",
+      dashed: "5 5",
+      dotted: "2 4"
+    };
+
+    return styleMap[chartProperties.lineStyle] || "";
+  };
+
+  const getSymbolShape = () => {
+    const shapeMap = {
+      circle: "circle",
+      square: "square",
+      triangle: "triangle",
+      diamond: "diamond"
+    };
+    return shapeMap[chartProperties.symbolStyle] || "circle";
+  };
+
 
   // Render different chart types based on selected chart
   const renderChart = () => {
@@ -536,7 +565,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
     switch (selectedChart.type) {
       case "area":
         if (selectedChart.distribution === "weibull-cdf") {
-          const eta = Number(distributions[selectedKey].params.eta.toFixed(3));
+          const eta = Number(distributions[selectedKey].params.eta);
           console.log("eta value:: ", eta);
           return (
             <AreaChart {...commonProps} width={600} height={400}>
@@ -595,9 +624,12 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Area
                 type="monotone"
                 dataKey="cdf"
-                stroke="#3b82f6"
-                fill="#3b82f6"
-                fillOpacity={0.3}
+                stroke={chartProperties.lineColor}
+  strokeWidth={chartProperties.lineThickness}
+  strokeDasharray={getLineStyle()}
+  fill={chartProperties.shadeArea}
+  fillOpacity={0.3}
+  hide={!chartProperties.visibility}
                 name="Cumulative Distribution (F)"
               />
               
@@ -797,10 +829,20 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Line 
                 type="monotone"
                 dataKey="pdf"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
+                stroke={chartProperties.lineColor}
+                strokeWidth={chartProperties.lineThickness}
+                strokeDasharray={getLineStyle()}
+                dot={chartProperties.hideSymbols ? false : {
+                  r: chartProperties.symbolScaleSize,
+                  stroke: chartProperties.symbolColor,
+                  fill: chartProperties.symbolColor
+                }}
+                activeDot={{
+                  r: chartProperties.symbolScaleSize + 1,
+                  stroke: chartProperties.symbolColor,
+                  fill: chartProperties.symbolColor
+                }}
+                hide={!chartProperties.visibility}
                 name="Weibull PDF f(t)"
               />
               
@@ -889,10 +931,20 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Line 
                 type="monotone"
                 dataKey="risk"
-                stroke="#ef4444"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
+                stroke={chartProperties.lineColor}
+                strokeWidth={chartProperties.lineThickness}
+                strokeDasharray={getLineStyle()}
+                dot={chartProperties.hideSymbols ? false : {
+                  r: chartProperties.symbolScaleSize,
+                  stroke: chartProperties.symbolColor,
+                  fill: chartProperties.symbolColor
+                }}
+                activeDot={{
+                  r: chartProperties.symbolScaleSize + 1,
+                  stroke: chartProperties.symbolColor,
+                  fill: chartProperties.symbolColor
+                }}
+                hide={!chartProperties.visibility}
                 name="Risk Function (1 - R(t))"
               />
               
@@ -929,9 +981,20 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <Line 
               type="monotone" 
               dataKey="value" 
-              fill="#3b82f6" 
-              strokeWidth={1} 
-              dot={{ r: 2 }} 
+              stroke={chartProperties.lineColor}
+              strokeWidth={chartProperties.lineThickness}
+              strokeDasharray={getLineStyle()}
+              dot={chartProperties.hideSymbols ? false : {
+                r: chartProperties.symbolScaleSize,
+                stroke: chartProperties.symbolColor,
+                fill: chartProperties.symbolColor
+              }}
+              activeDot={{
+                r: chartProperties.symbolScaleSize + 1,
+                stroke: chartProperties.symbolColor,
+                fill: chartProperties.symbolColor
+              }}
+              hide={!chartProperties.visibility}
               name="Distribution"
             />
           </LineChart>
@@ -1334,7 +1397,7 @@ const getYAxisLabel = () => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1" style={{ backgroundColor: chartProperties.shadeArea }} >
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
