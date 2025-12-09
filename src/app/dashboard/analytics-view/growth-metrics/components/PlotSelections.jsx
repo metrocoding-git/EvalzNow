@@ -155,7 +155,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
   const [growthMetric, setGrowthMetric] = useState([]);
   const chartContainerRef = useRef(null);
-
+  const [unitType, setUnitType] = useState(null);
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -241,9 +241,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
   const activateUnitLevel = [
       { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📊", type: "scatter" },
-      { id: "aul-2", name: "Receptive Growth Differentials (∆RR)", icon: "📊", type: "scatter" },
-      { id: "aul-3", name: "Productive Growth Differentials (∆PR)", icon: "📊", type: "scatter" },
-      { id: "aul-4", name: "Acuity Growth Differentials (∆AR)", icon: "📊", type: "scatter" },
+      { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "📊", type: "scatter" },
+      { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "📊", type: "scatter" },
+      { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "📊", type: "scatter" },
       { id: "aul-5", name: "Performance Ratio (RR)", icon: "📈", type: "scatter" },
       { id: "aul-6", name: "Performance Ratios (PR)", icon: "📈", type: "scatter" },
       { id: "aul-7", name: "Performance Ratios (AR)", icon: "📈", type: "scatter" },
@@ -418,7 +418,7 @@ useEffect(() => {
   
         setStabilitySummary({ stable: stableCount, unstable: unstableCount });
   
-        // console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+        console.log("✅ Stability Summary:", formattedData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -438,6 +438,7 @@ useEffect(() => {
     const fetchThreshold = async () => {
       if (!unitId) {
         setThresholdValue(null);
+        setUnitType(null);
         return;
       }
   
@@ -454,6 +455,7 @@ useEffect(() => {
         };
   
         setThresholdValue(extractedThresholds);
+        setUnitType(data?.unitType || null);
   
         console.log("✅ Extracted Threshold Values:", extractedThresholds);
       } catch (error) {
@@ -774,34 +776,53 @@ const handleExportGraph = () => {
                 
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
-                  {selectedSort === 'activateCandidateLevel' && (
-                    activateCandidateLevel.map((chart, index) => (
-                      <div
-                        key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
-                        onClick={() => {
-                          setSelectedChart(chart);
-                        }}
-                      > 
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index +1}</div>
-                      </div>
-                    ))
-                  )}
-                  {selectedSort === 'activateUnitLevel' && (
-                    activateUnitLevel.map((chart, index) => (
-                      <div
-                        key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1  cursor-pointer ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
-                        onClick={() => {
-                          setSelectedChart(chart); 
-                        }}
-                      >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
-                      </div>
-                    ))
-                  )}
+                {selectedSort === 'activateCandidateLevel' && (
+  <>
+    {activateCandidateLevel
+      .filter(chart => {
+        // Hide AR-related items unless unitType is "Third Parameter"
+        if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
+          return unitType === "Third Parameter";
+        }
+        return true;
+      })
+      .map((chart, index) => (
+        <div
+          key={index}
+          className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+            ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+          onClick={() => setSelectedChart(chart)}
+        >
+          <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+          <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+        </div>
+      ))}
+  </>
+)}
+
+{selectedSort === 'activateUnitLevel' && (
+  <>
+    {activateUnitLevel
+      .filter(chart => {
+        if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
+          return unitType === "Third Parameter";
+        }
+        return true;
+      })
+      .map((chart, index) => (
+        <div
+          key={index}
+          className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+            ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+          onClick={() => setSelectedChart(chart)}
+        >
+          <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+          <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+        </div>
+      ))}
+  </>
+)}
+
                 </div>
               </div>
             </div>

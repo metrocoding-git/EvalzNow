@@ -274,21 +274,21 @@ export default function AuxiliaryResultants() {
                             >
                               {selectedSort === "activateUnitLevel" && (
                                 <input
-                                type="checkbox"
-                                className="h-4 w-4"
-                                checked={selectedCandidateIds.includes(item.id)}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedCandidateIds((prev) =>
-                                    e.target.checked
-                                      ? [...prev, item.id]
-                                      : prev.filter((id) => id !== item.id)
-                                  );
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              
+                                  type="checkbox"
+                                  className="h-4 w-4"
+                                  checked={selectedCandidateIds.includes(item.id)}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCandidateIds((prev) =>
+                                      e.target.checked
+                                        ? [...prev, item.id]
+                                        : prev.filter((id) => id !== item.id)
+                                    );
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               )}
+
                               <span className="text-gray-800 ">
                                 {item.lastName}
                               </span>
@@ -344,7 +344,12 @@ export default function AuxiliaryResultants() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId} onResetFilters={resetFilters} />}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId}
+                 candidateId={
+                  selectedSort === "activateUnitLevel"
+                    ? selectedCandidateIds // pass multiple IDs
+                    : activeCandidateId   // pass single ID
+                } onResetFilters={resetFilters} />}
               </div>
             </div>
             {/* ------- */}

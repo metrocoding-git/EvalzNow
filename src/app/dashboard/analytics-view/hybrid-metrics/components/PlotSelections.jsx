@@ -453,34 +453,60 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   useEffect(() => {
     const fetchTabulationData = async () => {
       if (!unitId || !candidateId) {
-        setTableData([]); // clear previous table data
-      
+        setTableData([]);
         return;
       }
-      
       
       setLoading(true);
       setError(null);
       try {
+        // Log what filters we're receiving
+        console.log("🔍 Received filters:", {
+          ppIdFrom: filters?.ppIdFrom,
+          ppIdTo: filters?.ppIdTo,
+          selectedPpId: filters?.selectedPpId,
+          rawFilters: filters
+        });
+  
+        // Build API filters
         const apiFilters = {
           unitId: unitId,
           candidate_id: candidateId,
-          ppIdFrom: filters?.ppIdFrom ?? undefined,    
-          ppIdTo: filters?.ppIdTo ?? undefined,
-          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
-          criticalRefDateTo: filters?.criticalDateTo ?? undefined,
-          ppId: filters?.selectedPpId ?? undefined, // ✅ This should now be passed correctly
         };
   
-        console.log("🔍 API Filters being sent:", apiFilters);
-        console.log("🔍 Selected PP ID from filters:", filters?.selectedPpId);
+        // Handle PP ID range - special case when both are the same
+        if (filters?.ppIdFrom !== undefined && filters?.ppIdTo !== undefined) {
+          // When both are the same (either positive or negative), we want just that one PP ID
+          if (filters.ppIdFrom === filters.ppIdTo) {
+            apiFilters.ppId = filters.ppIdFrom; // Use single PP ID filter
+            console.log(`🔄 Using single PP ID filter: ${filters.ppIdFrom}`);
+          } else {
+            // Use range filter
+            apiFilters.ppIdFrom = filters.ppIdFrom;
+            apiFilters.ppIdTo = filters.ppIdTo;
+            console.log(`🔄 Using PP ID range: ${filters.ppIdFrom} to ${filters.ppIdTo}`);
+          }
+        }
+  
+        // Handle selectedPpId if present (single selection)
+        if (filters?.selectedPpId !== undefined && filters?.selectedPpId !== null) {
+          apiFilters.ppId = filters.selectedPpId;
+          console.log(`🔄 Using selected PP ID: ${filters.selectedPpId}`);
+        }
+  
+        // Add other filters
+        if (filters?.criticalDateFrom) apiFilters.criticalRefDateFrom = filters.criticalDateFrom;
+        if (filters?.criticalDateTo) apiFilters.criticalRefDateTo = filters.criticalDateTo;
+  
+        console.log("🔍 Final API filters being sent:", apiFilters);
   
         const data = await getUnitAndMultipleCandidateSummary(apiFilters);
-
-        console.log("real hybrid: ", data);
+  
+        console.log("📊 API Response:", data);
   
         const { results, averages, stdDev, stdErr } = data;  
   
+        // Format the data
         const formattedData = results.map(row => ({
           ppId: row.ppId,
           IC: getICValue(unitType, unitSignature, row.IC),
@@ -488,51 +514,59 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           PRN: row.PRN || 0,
           ARN: row.ARN || 0,
         }));
-
+  
+        console.log("📊 Formatted Data:", formattedData);
+        console.log(`📊 Data Count: ${formattedData.length} rows`);
+  
+        // Debug: Show what PP IDs we got
+        const ppIds = formattedData.map(item => item.ppId);
+        console.log("📊 PP IDs in response:", ppIds);
+  
         setTableData(formattedData);
-
-        const averageData = averages.map(item => ({
+  
+        // Handle averages data
+        const averageData = averages?.map(item => ({
           ppId: item.ppId,
           RRN: item.RRN,
           PRN: item.PRN,
           ARN: item.ARN,
-        }));
-
+        })) || [];
+  
         setAverageData(averageData);
-
-        const growthTargetData = results.filter(item => item.ppId > 0).map(item => ({
-          ppId: item.ppId,
-          RRGT1: item.RRGT1 || 0,
-          PRGT1: item.PRGT1 || 0,
-          ARGT1: item.ARGT1 || 0,
-          RRGT2: item.RRGT2 || 0,
-          PRGT2: item.PRGT2 || 0,
-          ARGT2: item.ARGT2 || 0,
-          RRGT3: item.RRGT3 || 0,
-          PRGT3: item.PRGT3 || 0,
-          ARGT3: item.ARGT3 || 0,
-          RRGT4: item.RRGT4 || 0,
-          PRGT4: item.PRGT4 || 0,
-          ARGT4: item.ARGT4 || 0,
-          RRGT5: item.RRGT5 || 0,
-          PRGT5: item.PRGT5 || 0,
-          ARGT5: item.ARGT5 || 0,
-        }));
+  
+        // Handle growth target data
+        const growthTargetData = results
+          .filter(item => item.ppId > 0)
+          .map(item => ({
+            ppId: item.ppId,
+            RRGT1: item.RRGT1 || 0,
+            PRGT1: item.PRGT1 || 0,
+            ARGT1: item.ARGT1 || 0,
+            RRGT2: item.RRGT2 || 0,
+            PRGT2: item.PRGT2 || 0,
+            ARGT2: item.ARGT2 || 0,
+            RRGT3: item.RRGT3 || 0,
+            PRGT3: item.PRGT3 || 0,
+            ARGT3: item.ARGT3 || 0,
+            RRGT4: item.RRGT4 || 0,
+            PRGT4: item.PRGT4 || 0,
+            ARGT4: item.ARGT4 || 0,
+            RRGT5: item.RRGT5 || 0,
+            PRGT5: item.PRGT5 || 0,
+            ARGT5: item.ARGT5 || 0,
+          }));
         
         setGrowthTargetData(growthTargetData);
-
-        console.log("growth Target data: ", growthTargetData);
         
       } catch (err) {
-        console.error("Failed to fetch tabulation data:", err);
+        console.error("❌ Failed to fetch tabulation data:", err);
         setError("Failed to load table data.");
-        // setStabilitySummary({ stable: 0, unstable: 0 });
         setTableData([]);
       } finally {
         setLoading(false);
       }
     };
-  
+    
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
@@ -829,7 +863,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const containerStyle = {
       backgroundColor: chartProperties.shadeArea,
       width: '100%',
-      height: '100%',
+      height: '400px',
       padding: '10px',
       borderRadius: '8px'
     };
@@ -1219,7 +1253,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const containerStyle = {
       backgroundColor: chartProperties.shadeArea,
       width: '100%',
-      height: '100%',
+      height: '400px',
       padding: '10px',
       borderRadius: '8px'
     };
@@ -1295,7 +1329,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 />
                 
                 {/* IC Curves for line chart */}
-                {renderICCurves(unitSignature, unitType, "line")}
+                {/* {renderICCurves(unitSignature, unitType, "line")} */}
     
                 {/* Bias Lines for line chart */}
                 {renderBiasLines(unitType, "line")}
@@ -1315,7 +1349,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
-          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <div style={{ position: 'relative', width: '100%', height: '400px' }}>
             {render3DScatter(tableData, unitType)}
             <div style={{ 
               position: 'absolute', 
@@ -1537,6 +1571,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   };
 
+
+  const sortedData = [...tableData].sort((a, b) => {
+    if (a.ppId < 0 && b.ppId < 0) {
+      return b.ppId - a.ppId; // Descending order for negatives
+    }
+    
+    // Handle positive PP IDs (ascending: 1, 2, 3, ...)
+    if (a.ppId > 0 && b.ppId > 0) {
+      return a.ppId - b.ppId; // Ascending order for positives
+    }
+    
+    // Negative PP IDs come before positive PP IDs
+    if (a.ppId < 0 && b.ppId > 0) {
+      return -1;
+    }
+    if (a.ppId > 0 && b.ppId < 0) {
+      return 1;
+    }
+    
+    return 0;
+  });
+  
+
   if (!visible) return null;
 
   return (
@@ -1653,22 +1710,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       <table className="table-auto w-full text-sm border border-gray-300">
                         <thead className="bg-gray-100">
                           <tr>
+                            <th className="border px-3 py-2">PP ID</th>
                             <th className="border px-3 py-2">{cols.xLabel}</th>
                             <th className="border px-3 py-2">{cols.yLabel}</th>
-                            {cols.zKey && (
-                              <th className="border px-3 py-2">{cols.zLabel}</th>
-                            )}
                           </tr>
                         </thead>
 
                         <tbody>
-                          {tableData.map((row, idx) => (
+                          {sortedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
+                              <td className="border px-3 py-2 text-center">{row.ppId}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.xKey]}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.yKey]}</td>
-                              {cols.zKey && (
-                                <td className="border px-3 py-2 text-center">{row[cols.zKey]}</td>
-                              )}
+                              
                             </tr>
                           ))}
                         </tbody>

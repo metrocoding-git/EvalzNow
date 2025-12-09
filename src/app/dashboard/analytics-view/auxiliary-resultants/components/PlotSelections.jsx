@@ -7,7 +7,9 @@ import {
   Label,
   Pie,
   PieChart,
-  Cell
+  Cell,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getAuxiliarydata } from '@/services/auxiliaryService';
@@ -109,18 +111,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       key: 'be-csd',
       id: 1
     },
-    // {
-    //   name: "Actual Tenure Period (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 2
-    // },
-    // {
-    //   name: "Effective Work Count (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 3
-    // },
+   
     {
       name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
       icon: "📈",
@@ -128,18 +119,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       key: 'be-usd',
       id: 4
     },
-    // {
-    //   name: "Actual Tenure Period (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 5
-    // },
-    // {
-    //   name: "Effective Work Count (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 6
-    // },
+   
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
       icon: "📈",
@@ -174,27 +154,43 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   
   const activateUnitLevel = [
     {
+      name: "Unit Improvements & Optimization",
+      icon: "⚙️",
+      type: "table",
+      id: 7
+    },
+    {
+      name: "Leader Marks",
+      icon: "⭐",
+      type: "table",
+      id: 8
+    },
+    {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
       icon: "📊",
       type: "scatter-2d",
+      key: 'bp-csd',
       id: 1
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
       icon: "📊",
       type: "scatter-2d",
+      key: 'bp-usd',
       id: 2
     },
     {
       name: "Attendance Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'at',
       id: 3
     },
     {
       name: "Engagement Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'et',
       id: 4
     },
     {
@@ -210,18 +206,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       id: 6
     },
   
-    {
-      name: "Unit Improvements & Optimization",
-      icon: "⚙️",
-      type: "table",
-      id: 7
-    },
-    {
-      name: "Leader Marks",
-      icon: "⭐",
-      type: "table",
-      id: 8
-    }
   ];
   
 
@@ -242,15 +226,23 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getAuxiliarydata(unitId, candidateId); // replace with actual unitId/candidateId
+        if (!unitId || !candidateId || (Array.isArray(candidateId) && candidateId.length === 0)) return;
+  
+        // Convert candidateId to comma-separated string if it's an array
+        const candidateParam = Array.isArray(candidateId) ? candidateId.join(",") : candidateId;
+  
+        const data = await getAuxiliarydata(unitId, candidateParam);
         setAuxData(data.results || []);
         setRosterData(data.rosterData || []);
       } catch (err) {
         console.error("Error fetching auxiliary data", err);
       }
     };
+  
     fetchData();
-  }, []);
+  }, [unitId, candidateId]);
+  
+  
 
   const csdChartData = auxData.map(r => ({
     ppId: r.ppId,
@@ -271,6 +263,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   const BpUsdChartData = auxData.map(r => ({
     ppId: r.ppId,
     productivityUsd: r.Productivity_USD,
+  }));
+
+  const engageTrackData = auxData.map(r => ({
+    engageLevel: r.engageLevel,
   }));
 
   const attendanceTrackData = rosterData.map(r => ({
@@ -306,6 +302,24 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       { name: "Unexcused Tardies", value: rosterData[0].unexcusedTardies },
     ]
   : [];
+
+
+  const engagementCounts = auxData.reduce(
+    (acc, r) => {
+      const level = r.engageLevel || "N/A";
+      acc[level] = (acc[level] || 0) + 1;
+      return acc;
+    },
+    { High: 0, Medium: 0, Low: 0, "N/A": 0 }
+  );
+  
+  const engagementBreakdown = [
+    { name: "High", value: engagementCounts.High },
+    { name: "Medium", value: engagementCounts.Medium },
+    { name: "Low", value: engagementCounts.Low },
+    { name: "N/A", value: engagementCounts["N/A"] },
+  ];
+  
 
 
   console.log("attendance tracking: ", attendanceBreakdown);
@@ -352,7 +366,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       );
     } else {
 
-      if (selectedChart.key === 'be-csd') {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-csd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -369,7 +383,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       }
     
       // Multi-line chart for USD
-      if (selectedChart.key === 'be-usd') {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-usd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -385,7 +399,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
         );
       }
 
-      if (selectedChart.key === "bp-csd") {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-csd") {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -407,7 +421,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       }
       
 
-      if (selectedChart.key === "bp-usd") {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-usd") {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -452,7 +466,82 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
         );
       }
       
-      
+
+      if (selectedChart.key === 'et' && engagementBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={engagementBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {engagementBreakdown.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={["#10b981", "#3b82f6", "#f59e0b", "#6b7280"][index]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      // Update your scatter chart rendering logic:
+      if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
+        const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
+        const yLabel = selectedChart.key === "bp-csd" ? "Productivity CSD" : "Productivity USD";
+        const lineColor = selectedChart.key === "bp-csd" ? "#3b82f6" : "#f59e0b";
+        const dataKey = selectedChart.key === "bp-csd" ? "productivityCsd" : "productivityUsd";
+
+        // Sort data by ppId to ensure proper ordering
+        const sortedData = [...scatterData].sort((a, b) => a.ppId - b.ppId);
+        
+        // Use unique ppId values for x-axis
+        const uniquePpIds = [...new Set(sortedData.map(item => item.ppId))];
+        
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="ppId" 
+                label={{ value: "PP ID", position: "insideBottom", offset: -5 }}
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                allowDuplicatedCategory={false}
+              />
+              <YAxis 
+                label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 12 }} 
+                type="number"
+                domain={['dataMin', 'dataMax']}
+              />
+              <Tooltip 
+                cursor={{ strokeDasharray: '3 3' }}
+                formatter={(value, name, props) => [
+                  value, 
+                  `${name}: ${value}`,
+                  `PP ID: ${props.payload.ppId}`
+                ]}
+              />
+              <Legend verticalAlign="top" />
+              <Scatter 
+                name={yLabel} 
+                data={sortedData} 
+                fill={lineColor}
+                dataKey={dataKey}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        );
+      }      
       
     
       // Default fallback chart
@@ -516,7 +605,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                     activateCandidateLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -527,7 +616,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                     activateUnitLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
