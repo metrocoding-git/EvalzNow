@@ -92,21 +92,29 @@ export function calculateProjectionValues(
   // };
 }
 
-export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [] }) {
+export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [], unitType }) {
   if (!visible) return null;
 
-  const columns = [
-    "Callout",
-    "PP ID",
-    "RRN",
-    "PRN",
-    "ARN",
-    "IC",
-    "ΔRRN",
-    "ΔPRN",
-    "ΔARN",
-    "Day Count",
-  ];
+  const columns = useMemo(() => {
+    const base = [
+      "Callout",
+      "PP ID",
+      "RRN",
+      "PRN",
+      "IC",
+      "ΔRRN",
+      "ΔPRN",
+      "Day Count",
+    ];
+  
+    if (unitType === "Third Parameter") {
+      base.splice(4, 0, "ARN");        // After PRN
+      base.splice(8, 0, "ΔARN");       // After ΔPRN
+    }
+  
+    return base;
+  }, [unitType]);
+  
 
   const [loading, setLoading] = useState(false);
   const [existingSessionId, setExistingSessionId] = useState(null);
@@ -249,24 +257,34 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
 
       const first = updated[0];
       const second = updated[1];
+      const fourth = updated[3];
       const dayCount = 15;
+
+
+      console.log("first", first.ΔRRN, first.DayCount);
+      console.log("second", second.ΔRRN, second.DayCount);
+      console.log("third", third.ΔRRN, third.DayCount);
+      console.log("fourth", 0, fourth.DayCount);
+      console.log("daycount", dayCount);
 
       // 15-day projections (undershoot & overshoot)
       const [underRRN, overRRN] = calculateProjectionValues(
-        first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        first.ΔRRN, second.ΔRRN, third.ΔRRN, 0,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount
       );
       const [underPRN, overPRN] = calculateProjectionValues(
-        first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        first.ΔPRN, second.ΔPRN, third.ΔPRN, 0,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount
       );
       const [underARN, overARN] = calculateProjectionValues(
-        first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount,
+        first.ΔARN, second.ΔARN, third.ΔARN, 0,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount
       );
+
+      
 
       // Update Overshoot (row 4)
       updated[4] = {
@@ -325,20 +343,21 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
 
       const [underRRN30, overRRN30] = calculateProjectionValues(
         first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );
       const [underPRN30, overPRN30] = calculateProjectionValues(
         first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );
       const [underARN30, overARN30] = calculateProjectionValues(
         first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
-        first.DayCount, second.DayCount, third.DayCount, third.DayCount + dayCount30,
+        first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );
 
+      
       // Prev overshoot/undershoot (15-day) used to compute final RRN/PRN/ARN for 30-day overshoot/undershoot
       const prevOvershoot15 = updated[4];
       const prevUndershoot15 = updated[5];
@@ -633,12 +652,21 @@ const handleSubmit = async () => {
 
                     <td className="px-2 py-1 border border-gray-300">{row.RRN}</td>
                     <td className="px-2 py-1 border border-gray-300">{row.PRN}</td>
-                    <td className="px-2 py-1 border border-gray-300">{row.ARN}</td>
+
+                    {unitType === "Third Parameter" && (
+                      <td className="px-2 py-1 border border-gray-300">{row.ARN}</td>
+                    )}
+
                     <td className="px-2 py-1 border border-gray-300">{row.IC}</td>
                     <td className="px-2 py-1 border border-gray-300">{row.ΔRRN}</td>
                     <td className="px-2 py-1 border border-gray-300">{row.ΔPRN}</td>
-                    <td className="px-2 py-1 border border-gray-300">{row.ΔARN}</td>
+
+                    {unitType === "Third Parameter" && (
+                      <td className="px-2 py-1 border border-gray-300">{row.ΔARN}</td>
+                    )}
+
                     <td className="px-2 py-1 border border-gray-300">{row.DayCount}</td>
+
                   </tr>
                 );
               })}

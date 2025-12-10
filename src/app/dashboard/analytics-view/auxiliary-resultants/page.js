@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useUnit } from "@/context/UnitContext";
+import CandidateMarksForm from "./components/CandidateMarksForm";
 
 export default function AuxiliaryResultants() {
   const tabs = [
@@ -26,7 +27,8 @@ export default function AuxiliaryResultants() {
 
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
 
-  
+  const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
+
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
   const [showSecondary, setShowSecondary] = useState(true);
@@ -344,12 +346,32 @@ export default function AuxiliaryResultants() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId}
+                {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
                     : activeCandidateId   // pass single ID
-                } onResetFilters={resetFilters} />}
+                } onResetFilters={resetFilters}  oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)} />}
+
+                
+
+                {showCandidateMarksForm && (
+                  <div className="fixed inset-0 z-50 top-1/4 left-1/4">
+
+                    {/* Form container */}
+                    <div className="relative bg-white w-1/2 h-2/3 rounded-lg shadow-2xl border border-gray-300 z-50">
+                      <CandidateMarksForm
+                        entryNumber={1} 
+                        onClose={() => setShowCandidateMarksForm(false)}
+                        onCreate={(data) => {
+                          console.log("new data:", data);
+                          return true;
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
             {/* ------- */}

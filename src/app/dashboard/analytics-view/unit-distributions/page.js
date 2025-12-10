@@ -296,7 +296,7 @@ export default function UnitDistributions() {
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
                 {ScoresOpen && <PlotSelections onCandidatesSelected={handleSelectedCandidates} unitId={selectedUnitId} onWeibullSelect={setShowBetaValue} 
-                betaValue={beta} />}
+                betaValue={beta} unitType={unitData.unitType} />}
               </div>
             </div>
             {/* ------- */}

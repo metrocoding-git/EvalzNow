@@ -776,53 +776,52 @@ const handleExportGraph = () => {
                 
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
-                {selectedSort === 'activateCandidateLevel' && (
-  <>
-    {activateCandidateLevel
-      .filter(chart => {
-        // Hide AR-related items unless unitType is "Third Parameter"
-        if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
-          return unitType === "Third Parameter";
-        }
-        return true;
-      })
-      .map((chart, index) => (
-        <div
-          key={index}
-          className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
-            ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
-          onClick={() => setSelectedChart(chart)}
-        >
-          <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-          <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
-        </div>
-      ))}
-  </>
-)}
+                  {selectedSort === 'activateCandidateLevel' && (
+                    <>
+                      {activateCandidateLevel
+                        .filter(chart => {
+                          // Hide AR-related items unless unitType is "Third Parameter"
+                          if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
+                            return unitType === "Third Parameter";
+                          }
+                          return true;
+                        })
+                        .map((chart, index) => (
+                          <div
+                            key={index}
+                            className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+                              ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+                            onClick={() => setSelectedChart(chart)}
+                          >
+                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+                          </div>
+                        ))}
+                    </>
+                  )}
 
-{selectedSort === 'activateUnitLevel' && (
-  <>
-    {activateUnitLevel
-      .filter(chart => {
-        if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
-          return unitType === "Third Parameter";
-        }
-        return true;
-      })
-      .map((chart, index) => (
-        <div
-          key={index}
-          className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
-            ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
-          onClick={() => setSelectedChart(chart)}
-        >
-          <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-          <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
-        </div>
-      ))}
-  </>
-)}
-
+                  {selectedSort === 'activateUnitLevel' && (
+                    <>
+                      {activateUnitLevel
+                        .filter(chart => {
+                          if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
+                            return unitType === "Third Parameter";
+                          }
+                          return true;
+                        })
+                        .map((chart, index) => (
+                          <div
+                            key={index}
+                            className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+                              ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+                            onClick={() => setSelectedChart(chart)}
+                          >
+                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+                          </div>
+                        ))}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -952,6 +951,13 @@ const handleExportGraph = () => {
                     "∆AR Growth Projections",
                   ];
 
+                  const gtKeys = [
+                    "RRGT1","RRGT2","RRGT3","RRGT4","RRGT5",
+                    "PRGT1","PRGT2","PRGT3","PRGT4","PRGT5",
+                    "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
+                  ];
+                  
+
                   const isProjectionChart = projectionCharts.includes(selectedChart.name);
 
                   // 🆕 SEPARATE HANDLING FOR GROWTH PROJECTION CHARTS
@@ -979,9 +985,17 @@ const handleExportGraph = () => {
                   const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
                   if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
 
-                  const positiveData = [{ dayCount: 0, value: 0 }, ...tableData]
+                  const isGTchart = gtKeys.includes(keyName);
+
+                  const positiveData = [{ 
+                      [isGTchart ? "ppId" : "dayCount"]: 0, 
+                      value: 0 
+                  }, ...tableData]
                     .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
-                    .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
+                    .map(row => ({
+                      [isGTchart ? "ppId" : "dayCount"]: isGTchart ? row.ppId : row.dayCount,
+                      value: row[keyName]
+                    }));
 
                   if (selectedChart.type === "line") {
                     // Determine stroke style based on lineStyle
@@ -1004,14 +1018,18 @@ const handleExportGraph = () => {
                           >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
-                              type="number"
-                              dataKey="dayCount"
-                              domain={[0, "auto"]}
-                              allowDataOverflow={true}
+                            type="number"
+                            dataKey={isGTchart ? "ppId" : "dayCount"}
+                            domain={[0, "auto"]}
+                            allowDataOverflow={true}
                             >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value="Day Count" offset={-10} position="insideBottom" />
-                              )}
+                            {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                              <Label 
+                                value={isGTchart ? "PP ID" : "Day Count"} 
+                                offset={-10} 
+                                position="insideBottom" 
+                              />
+                            )}
                             </XAxis>
 
                             <YAxis
@@ -1153,6 +1171,7 @@ const handleExportGraph = () => {
         unitId= {unitId}
         candidateId= {candidateId}
         projectionData={tableData}
+        unitType={unitType}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}

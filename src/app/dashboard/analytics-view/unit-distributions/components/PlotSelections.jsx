@@ -33,7 +33,7 @@ import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
 
-export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue  }) {
+export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType }) {
   const [distributions, setDistributions] = useState({});
   const [selectedKey, setSelectedKey] = useState("RR");
   const [curves, setCurves] = useState([
@@ -625,11 +625,11 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 type="monotone"
                 dataKey="cdf"
                 stroke={chartProperties.lineColor}
-  strokeWidth={chartProperties.lineThickness}
-  strokeDasharray={getLineStyle()}
-  fill={chartProperties.shadeArea}
-  fillOpacity={0.3}
-  hide={!chartProperties.visibility}
+                strokeWidth={chartProperties.lineThickness}
+                strokeDasharray={getLineStyle()}
+                fill={chartProperties.shadeArea}
+                fillOpacity={0.3}
+                hide={!chartProperties.visibility}
                 name="Cumulative Distribution (F)"
               />
               
@@ -1298,26 +1298,32 @@ const getYAxisLabel = () => {
                     
                     {/* Table Body - Scrollable */}
                     <div className="flex-1 overflow-y-auto">
-                    {chart.map((item, index) => (
-                <div 
-                  key={item.id} 
-                  className={`grid grid-cols-12 hover:bg-gray-100 cursor-pointer ${
-                    selectedChart.id === item.id ? "bg-gray-200" : ""
-                  }`}
-                  onClick={() => handleChartSelect(item)}
-                >
-                  <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
-                    <div className="flex items-center">
-                      <span className="mr-2">{item.icon}</span>
-                      <span className="truncate">{item.name}</span>
-                    </div>
-                  </div>
-                  <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                    {item.id}
-                  </div>
-                </div>
-              ))}
-                      
+                    {chart.filter(item => {
+                        // Hide AR and deltaAR charts unless Third Parameter
+                        if (item.key === "AR" || item.key === "deltaAR") {
+                          return unitType === "Third Parameter";
+                        }
+                        return true;
+                      })
+                      .map((item, index) => (
+                        <div 
+                          key={item.id} 
+                          className={`grid grid-cols-12 hover:bg-gray-100 cursor-pointer ${
+                            selectedChart.id === item.id ? "bg-gray-200" : ""
+                          }`}
+                          onClick={() => handleChartSelect(item)}
+                        >
+                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <span className="mr-2">{item.icon}</span>
+                              <span className="truncate">{item.name}</span>
+                            </div>
+                          </div>
+                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                            {item.id}
+                          </div>
+                        </div>
+                      ))} 
                     </div>
                   </div>
               </div>
