@@ -859,141 +859,172 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
+  const containerStyle = {
+    backgroundColor: chartProperties.shadeArea,
+    width: '100%',
+    height: '400px',
+    padding: '10px',
+    borderRadius: '8px'
+  };
 
-    const containerStyle = {
-      backgroundColor: chartProperties.shadeArea,
-      width: '100%',
-      height: '400px',
-      padding: '10px',
-      borderRadius: '8px'
-    };
-
-    // Check if we should show averages
-    const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
-    // Check if we should show projection data
-    const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
-    // Check if we should show growth target data
-    const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
-    
-    // Get growth target points for the current chart
-    const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
-    
-    console.log("📊 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
+  // Check if we should show averages
+  const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+  // Check if we should show projection data
+  const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
+  // Check if we should show growth target data
+  const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
   
-    return (
-      <div style={containerStyle}>
-        <ResponsiveContainer width="100%" height="95%">
-          <ScatterChart 
-            data={tableData}
-            margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
+  // Get growth target points for the current chart
+  const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
+  
+  console.log("📊 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
+  
+  // Separate positive and negative PP IDs for scatter plots
+  const positiveData = tableData.filter(item => item.ppId > 0);
+  const negativeData = tableData.filter(item => item.ppId < 0);
+  
+  console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
+  console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
+
+  return (
+    <div style={containerStyle}>
+      <ResponsiveContainer width="100%" height="95%">
+        <ScatterChart 
+          data={tableData}
+          margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
+        >
+          <CartesianGrid />
+          <XAxis 
+            dataKey={xKey} 
+            type="number"
+            name={xLabel}
           >
-            <CartesianGrid />
-            <XAxis 
-              dataKey={xKey} 
-              type="number"
-              name={xLabel}
-            >
-              <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
-            </XAxis>
-            <YAxis 
-              dataKey={yKey} 
-              type="number"
-              name={yLabel}
-            >
-              <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
-            </YAxis>
-            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-            <Legend />
-            
-            {/* Reference Lines */}
-            {renderReferenceLinesForScatter(xKey, yKey)}
-            
-            {/* Original data */}
+            <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
+          </XAxis>
+          <YAxis 
+            dataKey={yKey} 
+            type="number"
+            name={yLabel}
+          >
+            <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
+          </YAxis>
+          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+          <Legend 
+            wrapperStyle={{ 
+              paddingTop: "10px",
+              fontSize: "12px"
+            }}
+            iconSize={10}
+          />
+          
+          {/* Reference Lines */}
+          {renderReferenceLinesForScatter(xKey, yKey)}
+          
+          {/* Positive PP IDs (Red) */}
+          {positiveData.length > 0 && (
             <Scatter 
-              data={tableData} 
+              data={positiveData} 
               dataKey={yKey} 
-              name="Data Points" 
+              name="Performance Points (+)"
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  chartProperties.symbolColor,
+                  "#ef4444", // Red color for positive PP IDs
                   chartProperties.symbolScaleSize
                 )
               }
             />
-            
-            {/* Average data points */}
-            {showAverages && (
-              <Scatter 
-                data={averageData} 
-                dataKey={yKey} 
-                fill="#ff6b6b" 
-                name="Average Points"
-                shape={(props) => (
-                  <circle 
-                    cx={props.cx} 
-                    cy={props.cy} 
-                    r={6} 
-                    fill="#ff6b6b" 
-                    stroke="#000000"
-                    strokeWidth={1}
-                  />
-                )}
-              />
-            )}
-            
-            {/* Projection data points (Performance Points) */}
-            {showProjection && (
-              <Scatter 
-                data={projectionData} 
-                dataKey={yKey} 
-                fill="#10b981" 
-                name="Performance Points"
-                shape={(props) => (
-                  <circle 
-                    cx={props.cx} 
-                    cy={props.cy} 
-                    r={6} 
-                    fill="#10b981" 
-                  
-                  />
-                )}
-              />
-            )}
-            
-            {/* Growth Target data points */}
+          )}
           
-            {showGrowthTarget && growthTargetPoints.length > 0 && (
-              <Scatter 
-                data={growthTargetPoints} 
-                dataKey={yKey}  // This will now work because the points have RRN/PRN/ARN keys
-                fill="#8b5cf6" 
-                name="Growth Targets"
-                shape={(props) => (
-                  <rect 
-                    x={props.cx - 5} 
-                    y={props.cy - 5} 
-                    width={10} 
-                    height={10} 
-                    fill="#8b5cf6" 
-                    stroke="#000000"
-                    strokeWidth={1}
-                  />
-                )}
-              />
-            )}
-            {/* IC Curves */}
-            {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
-    
-            {/* Bias Lines */}
-            {renderBiasLines(unitType, "scatter", xKey, yKey)}
-          </ScatterChart>
-        </ResponsiveContainer>
-      </div>
-      
-    );
-  };
+          {/* Negative PP IDs (Green) */}
+          {negativeData.length > 0 && (
+            <Scatter 
+              data={negativeData} 
+              dataKey={yKey} 
+              name="Performance Points (-)"
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.symbolStyle,
+                  props,
+                  "#10b981", // Green color for negative PP IDs
+                  chartProperties.symbolScaleSize
+                )
+              }
+            />
+          )}
+          
+          {/* Average data points */}
+          {showAverages && (
+            <Scatter 
+              data={averageData} 
+              dataKey={yKey} 
+              fill="#ff6b6b" 
+              name="Average Points"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={6} 
+                  fill="#ff6b6b" 
+                  stroke="#000000"
+                  strokeWidth={1}
+                />
+              )}
+            />
+          )}
+          
+          {/* Projection data points (Performance Points G) */}
+          {showProjection && (
+            <Scatter 
+              data={projectionData} 
+              dataKey={yKey} 
+              fill="#10b981" 
+              name="Performance Points (G)"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={6} 
+                  fill="#10b981" 
+                  stroke="#000000"
+                  strokeWidth={1}
+                />
+              )}
+            />
+          )}
+          
+          {/* Growth Target data points */}
+          {showGrowthTarget && growthTargetPoints.length > 0 && (
+            <Scatter 
+              data={growthTargetPoints} 
+              dataKey={yKey}
+              fill="#8b5cf6" 
+              name="Growth Targets"
+              shape={(props) => (
+                <rect 
+                  x={props.cx - 5} 
+                  y={props.cy - 5} 
+                  width={10} 
+                  height={10} 
+                  fill="#8b5cf6" 
+                  stroke="#000000"
+                  strokeWidth={1}
+                />
+              )}
+            />
+          )}
+          
+          {/* IC Curves */}
+          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+
+          {/* Bias Lines */}
+          {renderBiasLines(unitType, "scatter", xKey, yKey)}
+        </ScatterChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
   
   const render3DScatter = (tableData, unitType) => {
     // Check if we should show averages
@@ -1638,7 +1669,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer
-                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
+                          ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -1650,7 +1681,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer
-                          ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
+                          ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>

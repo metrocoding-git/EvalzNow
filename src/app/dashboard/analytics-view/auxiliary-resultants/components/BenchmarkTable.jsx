@@ -70,11 +70,13 @@ export default function BenchmarkTable({ onClose }) {
     );
   };
 
+  
   // close + return selected rows
   const handleCloseClick = () => {
     const selectedRows = rows.filter(row => row.isSelected);
     onClose(selectedRows);
   };
+  
 
   const selectedCount = rows.filter(row => row.isSelected).length;
 

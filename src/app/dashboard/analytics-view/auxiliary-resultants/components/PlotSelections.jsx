@@ -12,11 +12,12 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { getAuxiliarydata } from '@/services/auxiliaryService';
+import { createNeedAssessment, getAuxiliarydata, getCandidateMarks, getNeedAssessment, getUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
+import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, refresh }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -29,7 +30,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [showBenchmarkTable, setShowBenchmarkTable] = useState(false);
   const [showChainForm, setShowChainForm] = useState(false);
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
-
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [refreshBenchmarks, setRefreshBenchmarks] = useState(false);
+  const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -69,7 +72,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   shadeArea: "#ffffff",
 });
 
-
+console.log("candidate id : ", candidateId);
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
@@ -77,7 +80,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
   const [auxData, setAuxData] = useState([]);
   const [rosterData, setRosterData] = useState([]);
-    const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [candidateMarks, setCandidateMarks] = useState([]);
+  const [needAssessment, setNeedAssessment] = useState([]);
+  const [unitImprovement, setUnitImprovement] = useState([]);
 
   const canvasRef = useRef(null);
 
@@ -317,6 +323,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const { results } = data;  
   
         const formattedData = results.map(row => ({
+          assessmentId: row.assessmentId,
           ppId: row.ppId,
           criticalRefDate: row.criticalRefDate || '0',
           ΔRR: row.deltaRRN || 0,
@@ -343,8 +350,102 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     fetchTabulationData();
   }, [unitId, candidateId]);
 
+
+  useEffect(() => {
+    const fetchNeedAssessment = async () => {
+      if (!unitId || !candidateId) {
+        setNeedAssessment([]); // clear previous table data
+        return;
+      }
   
-  console.log("tabulation data: ", tableData);
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getNeedAssessment(unitId, candidateId);  
+        setNeedAssessment(result.data);
+
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setNeedAssessment([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchNeedAssessment();
+  }, [unitId, candidateId, refreshBenchmarks]);
+
+
+  useEffect(() => {
+    const fetchUnitImprovement = async () => {
+      if (!unitId || !candidateId) {
+        setNeedAssessment([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getUnitImprovement(unitId, candidateId);  
+        setUnitImprovement(result.data);
+
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setUnitImprovement([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchUnitImprovement();
+  }, [unitId, candidateId, refreshBenchmarks]);
+
+  useEffect(() => {
+    const fetchCandidateMarks = async () => {
+      if (!unitId || !candidateId) {
+        setCandidateMarks([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getCandidateMarks(unitId, candidateId);  
+        
+        setCandidateMarks(result.data);
+        
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setCandidateMarks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCandidateMarks();
+  }, [unitId, candidateId, refresh]);
+
+
+  // Merge need assessments into tableData by PP ID
+  const mergedTableData = tableData.map(row => {
+    const matchedNeed = needAssessment.find(n => n.ppId === row.ppId);
+
+    return {
+      ...row,
+      benchmarkIds: matchedNeed ? JSON.parse(matchedNeed.benchmarkIds) : [],
+      bIds: matchedNeed ? JSON.parse(matchedNeed.bIds) : [],
+      observation: matchedNeed ? matchedNeed.observation : "-"
+    };
+  });
+
+  
+  console.log("candidate Marks: ", candidateMarks);
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -387,7 +488,72 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   ];
   
 
+  const handleBenchmarkSelection = async (selectedRows) => {
+    setShowBenchmarkTable(false);
+  
+    if (!selectedRow) return; // safety
+  
+    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+  
+    const payload = {
+      unitId,
+      candidateId,
+      ppId: selectedRow.ppId,
+      bIds: [
+        ...(selectedRow.bIds || []),
+        ...selectedBenchmarkIds
+      ],
+      benchmarkIds: [
+        ...(selectedRow.benchmarkIds || []),
+        ...selectedBenchmarkIds
+      ],
+      observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
+    };
+  
+    console.log("Submitting to backend:", payload);
+  
+    try {
+      await createNeedAssessment(payload);
+                       // trigger parent refresh
+    } catch (err) {
+      console.error("Failed to submit need assessment:", err);
+    }
+  };
 
+
+  const handleBenchmarkSelectionUnitLevel  = async (selectedRows) => {
+    setShowBenchmarkTable(false);
+  
+    if (!selectedRow) return; // safety
+  
+    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+  
+    const payload = {
+      unitId,
+      candidateId,
+    
+      bIds: [
+        ...(selectedRow.bIds || []),
+        ...selectedBenchmarkIds
+      ],
+      benchmarkIds: [
+        ...(selectedRow.benchmarkIds || []),
+        ...selectedBenchmarkIds
+      ],
+      lesson: selectedRow.observation 
+    };
+  
+    console.log("Submitting to backend:", payload);
+  
+    try {
+      await createNeedAssessment(payload);
+                       // trigger parent refresh
+    } catch (err) {
+      console.error("Failed to submit need assessment:", err);
+    }
+  };
+  
+  
   console.log("attendance tracking: ", attendanceBreakdown);
   
   const renderChartContent = () => {
@@ -404,11 +570,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         <>
           {showBenchmarkTable && (
             <BenchmarkTable
-              onClose={() => setShowBenchmarkTable(false)}
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelection(selectedBenchmarks);
+                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
+              }}
             />
           )}
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-15">
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
             <table className="table-auto w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
@@ -424,6 +594,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   )}
                   <th className="border border-gray-300 px-3 py-2 text-center">IC</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">BIDs</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">
                     Observations & Goals
                   </th>
@@ -432,7 +603,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </thead>
       
               <tbody>
-                {tableData.map((item, index) => (
+                {mergedTableData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-200">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
@@ -445,15 +616,25 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.IC}</td>
       
-                    {/* ➕ ADD button in Gray-200 */}
+                    {/* ADD button */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                        onClick={() => setShowBenchmarkTable(true)} >
+                        onClick={() => {
+                          setSelectedRow(item);
+                          setShowBenchmarkTable(true);
+                          }
+                        } >
                         + ADD
                       </button>
                     </td>
-      
-                    <td className="border border-gray-300 px-3 py-2 text-center">-</td>
+                    {/* Linked BIDs */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
+                    </td>
+                    {/* Observations */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.observation}
+                    </td>
                     <td className="border border-gray-300 px-3 py-2 text-center">-</td>
                   </tr>
                 ))}
@@ -463,7 +644,135 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         </>
       );
     }
-    
+
+    if (selectedChart.type === "table" && selectedChart.id === 8) {
+      return (
+        <>
+          {showBenchmarkTable && (
+            <BenchmarkTable
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelection(selectedBenchmarks);
+                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
+              }}
+            />
+          )}
+
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+            <table className="table-auto w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Leader Last Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Leader First Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Impact Type</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Identified</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Identity Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Resolved </th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Resolution Date </th>
+                  
+                </tr>
+              </thead>
+      
+              <tbody>
+                {mergedTableData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.PRN}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ARN}</td>         
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.IC}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.bIds.length > 0 ? item.bIds.join(", ") : "-"}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.observation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
+    else if (selectedChart.type === "table" && selectedChart.id === 7) {
+      return (
+        <>
+          {showBenchmarkTable && (
+            <BenchmarkTableUnitLevel
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelectionUnitLevel(selectedBenchmarks);
+                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
+              }}
+            />
+          )}
+
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+            <table className="table-auto w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Lesson Learned & Improvements</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
+                </tr>
+              </thead>
+      
+              <tbody>
+                {unitImprovement.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">Sample {row.lesson}</td>
+      
+                    {/* ADD button */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => {
+                          setSelectedRow(item);
+                          setShowBenchmarkTable(true);
+                          }
+                        } >
+                        + ADD
+                      </button>
+                    </td>
+                    
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+    else if (selectedChart.type === "table" && selectedChart.id === 14) {
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2">
+          <table className="table-auto w-full text-sm border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Identified</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Identity Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Resolved</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Resolution Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {candidateMarks.map((row, index) => (
+                <tr key={index} className="hover:bg-blue-50">
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.entryNumber}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.impactType}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernIdentified}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.identityDate}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernResolved}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.resolutionDate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    } 
     else if (selectedChart.type === "table") {
       return (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
@@ -748,7 +1057,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     activateCandidateLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -759,7 +1068,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     activateUnitLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -844,14 +1153,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     </table>
                   </div>
                 )}
-
-
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.name}` : 'Select a plot'}

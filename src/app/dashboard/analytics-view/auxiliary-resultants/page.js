@@ -44,7 +44,7 @@ export default function AuxiliaryResultants() {
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [refreshMarks, setRefreshMarks] = useState(0);
   const [data, setData] = useState([]);
   const [secondaryValues, setSecondaryValues] = useState(null);
   const [resetSignal, setResetSignal] = useState(0);  
@@ -347,6 +347,7 @@ export default function AuxiliaryResultants() {
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
+                 refresh={refreshMarks}
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
@@ -359,14 +360,11 @@ export default function AuxiliaryResultants() {
                   <div className="fixed inset-0 z-50 top-1/4 left-1/4">
 
                     {/* Form container */}
-                    <div className="relative bg-white w-1/2 h-2/3 rounded-lg shadow-2xl border border-gray-300 z-50">
-                      <CandidateMarksForm
+                    <div className="relative bg-white w-1/2 h-90 rounded-lg shadow-2xl border border-gray-300 z-50">
+                      <CandidateMarksForm unitId={selectedUnitId} candidateId={activeCandidateId}
                         entryNumber={1} 
                         onClose={() => setShowCandidateMarksForm(false)}
-                        onCreate={(data) => {
-                          console.log("new data:", data);
-                          return true;
-                        }}
+                        onSuccess={() => setRefreshMarks(prev => prev + 1)}
                       />
                     </div>
                   </div>

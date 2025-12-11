@@ -790,7 +790,7 @@ const handleExportGraph = () => {
                           <div
                             key={index}
                             className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
-                              ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+                              ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
                             onClick={() => setSelectedChart(chart)}
                           >
                             <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -813,7 +813,7 @@ const handleExportGraph = () => {
                           <div
                             key={index}
                             className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
-                              ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
+                              ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
                             onClick={() => setSelectedChart(chart)}
                           >
                             <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -957,6 +957,7 @@ const handleExportGraph = () => {
                     "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
                   ];
                   
+                  const zeroStartKeys = ["ΔGEQ", "ΔRR", "ΔPR", "ΔAR", "RR", "PR", "AR"]; 
 
                   const isProjectionChart = projectionCharts.includes(selectedChart.name);
 
@@ -987,15 +988,27 @@ const handleExportGraph = () => {
 
                   const isGTchart = gtKeys.includes(keyName);
 
-                  const positiveData = [{ 
-                      [isGTchart ? "ppId" : "dayCount"]: 0, 
-                      value: 0 
-                  }, ...tableData]
+                  const forceZero = zeroStartKeys.includes(keyName);
+
+                  let mappedData = tableData
                     .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
                     .map(row => ({
                       [isGTchart ? "ppId" : "dayCount"]: isGTchart ? row.ppId : row.dayCount,
                       value: row[keyName]
                     }));
+
+                  // If this is one of the 7 charts → add 0-point at the start
+                  if (forceZero) {
+                    mappedData = [
+                      {
+                        [isGTchart ? "ppId" : "dayCount"]: 0,
+                        value: 0
+                      },
+                      ...mappedData
+                    ];
+                  }
+
+                  const positiveData = mappedData;
 
                   if (selectedChart.type === "line") {
                     // Determine stroke style based on lineStyle

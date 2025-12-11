@@ -1,16 +1,20 @@
 "use client";
+import { createCandidateMarks } from "@/services/auxiliaryService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 const impactTypes = ["Negative", "Positive"];
 
-export default function CandidateMarksForm({ onClose, onCreate, entryNumber = 1 }) {
+const concernResolved = ["Yes", "No"];
+
+export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId}) {
   const [form, setForm] = useState({
-    entry: entryNumber,
     impactType: "",
     concernIdentified: "",
     identityDate: "",
+    concernResolved: "",
+    resolutionDate: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,14 +51,21 @@ export default function CandidateMarksForm({ onClose, onCreate, entryNumber = 1 
 
     try {
       const data = {
-        entry: form.entry,
+        unitId: unitId,
+        candidateId: candidateId,
         impactType: form.impactType,
         concernIdentified: form.concernIdentified,
         identityDate: form.identityDate,
+        concernResolved: form.concernResolved,
+        resolutionDate: form.resolutionDate,
       };
 
-      const result = await onCreate(data);
-      if (result !== false) onClose();
+      const response = await createCandidateMarks(data);
+  
+      if (response) {
+        onSuccess();
+        onClose();
+      }
 
     } catch (error) {
       toast.error("Failed to save entry.");
@@ -84,15 +95,6 @@ export default function CandidateMarksForm({ onClose, onCreate, entryNumber = 1 
       {/* CONTENT */}
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
-
-          {/* Entry - Read Only */}
-          <label className="col-span-1 text-gray-700 flex items-center">Entry:</label>
-          <input
-            type="number"
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
-            value={form.entry}
-            readOnly
-          />
 
           {/* Impact Type */}
           <label className="col-span-1 text-gray-700 flex items-center">
@@ -137,7 +139,38 @@ export default function CandidateMarksForm({ onClose, onCreate, entryNumber = 1 
             onChange={(e) => handleChange("identityDate", e.target.value)}
             required
           />
+
+          {/* concern resolved */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Concern Resolved:
+          </label>
+          <select
+            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm"
+            value={form.concernResolved}
+            onChange={(e) => handleChange("concernResolved", e.target.value)}
+            required
+          >
+            <option value="">Select Type</option>
+            {concernResolved.map((type, index) => (
+              <option key={index} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+
+          {/* Resolution Date */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Resolution Date: 
+          </label>
+          <input
+            type="date"
+            max={todayStr}
+            className="col-span-1 border border-gray-300 px-2 py-1 text-sm"
+            value={form.resolutionDate}
+            onChange={(e) => handleChange("resolutionDate", e.target.value)}
+          />
         </div>
+
       </div>
 
       {/* FOOTER */}
@@ -152,7 +185,7 @@ export default function CandidateMarksForm({ onClose, onCreate, entryNumber = 1 
                 : "hover:bg-gray-300"
             }`}
           >
-            Save
+            Close
           </button>
         </div>
       </div>
