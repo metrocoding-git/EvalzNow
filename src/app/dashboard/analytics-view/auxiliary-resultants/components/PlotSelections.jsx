@@ -4,17 +4,35 @@ import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-r
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
-  Label
+  Label,
+  Pie,
+  PieChart,
+  Cell,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { getAuxiliarydata } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
+import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
+import BenchmarkTable from './BenchmarkTable';
+import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [showBenchmarkTable, setShowBenchmarkTable] = useState(false);
+  const [showChainForm, setShowChainForm] = useState(false);
+  const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [refreshBenchmarks, setRefreshBenchmarks] = useState(false);
+  const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -54,13 +72,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   shadeArea: "#ffffff",
 });
 
-
+console.log("candidate id : ", candidateId);
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
   const [visible, setVisible] = useState(true);
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
   const [auxData, setAuxData] = useState([]);
+  const [rosterData, setRosterData] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [candidateMarks, setCandidateMarks] = useState([]);
+  const [leaderMarks, setleaderMarks] = useState([]);
+  const [needAssessment, setNeedAssessment] = useState([]);
+  const [unitImprovement, setUnitImprovement] = useState([]);
 
   const canvasRef = useRef(null);
 
@@ -102,50 +126,30 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
       icon: "📈",
       type: "line",
-      key: 'csd',
+      key: 'be-csd',
       id: 1
     },
-    // {
-    //   name: "Actual Tenure Period (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 2
-    // },
-    // {
-    //   name: "Effective Work Count (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 3
-    // },
+   
     {
       name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
       icon: "📈",
       type: "line",
-      key: 'usd',
+      key: 'be-usd',
       id: 4
     },
-    // {
-    //   name: "Actual Tenure Period (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 5
-    // },
-    // {
-    //   name: "Effective Work Count (Days) vs. PP ID",
-    //   icon: "📊",
-    //   type: "line",
-    //   id: 6
-    // },
+   
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
       icon: "📈",
       type: "line",
+      key: 'bp-csd',
       id: 7
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
       icon: "📈",
       type: "line",
+      key: 'bp-usd',
       id: 8
     },
 
@@ -153,55 +157,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       name: "Attendance Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'at',
       id: 9
     },
     {
       name: "Engagement Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'et',
       id: 10
     },
     
   ];
   
   const activateUnitLevel = [
-    {
-      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 1
-    },
-    {
-      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📊",
-      type: "scatter-2d",
-      id: 2
-    },
-    {
-      name: "Attendance Tracking",
-      icon: "🥧",
-      type: "pie",
-      id: 3
-    },
-    {
-      name: "Engagement Tracking",
-      icon: "🥧",
-      type: "pie",
-      id: 4
-    },
-    {
-      name: "Unit Outcomes",
-      icon: "🥧",
-      type: "pie",
-      id: 5
-    },
-    {
-      name: "Needs Assessment Tracking",
-      icon: "🥧",
-      type: "pie",
-      id: 6
-    },
-  
     {
       name: "Unit Improvements & Optimization",
       icon: "⚙️",
@@ -213,11 +182,51 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       icon: "⭐",
       type: "table",
       id: 8
-    }
+    },
+    {
+      name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
+      icon: "📊",
+      type: "scatter-2d",
+      key: 'bp-csd',
+      id: 1
+    },
+    {
+      name: "Butler Productivity USD - Productivity Rates vs. PP ID",
+      icon: "📊",
+      type: "scatter-2d",
+      key: 'bp-usd',
+      id: 2
+    },
+    {
+      name: "Attendance Tracking",
+      icon: "🥧",
+      type: "pie",
+      key: 'at',
+      id: 3
+    },
+    {
+      name: "Engagement Tracking",
+      icon: "🥧",
+      type: "pie",
+      key: 'et',
+      id: 4
+    },
+    {
+      name: "Unit Outcomes",
+      icon: "🥧",
+      type: "pie",
+      key: 'uo',
+      id: 5
+    },
+    {
+      name: "Needs Assessment Tracking",
+      icon: "🥧",
+      type: "pie",
+      id: 6
+    },
+  
   ];
   
-
-
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -231,17 +240,43 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
     }
   };
 
+  // const handlePlusClick = () => {
+  //   setShowChainForm(true);
+  // };
+
+  const handlePlusClick = () => {
+    oncandidateFormOpen(true);  
+  };
+
+  const handleUnitImprovementsForm = () => {
+    onUnitImprovementFormOpen(true);  // or whatever state your parent expects
+  };
+
+  const handleLeaderMarksForm = () => {
+    onLeaderMarkFormOpen(true);  // or whatever state your parent expects
+  };
+  
+  
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getAuxiliarydata(unitId, candidateId); // replace with actual unitId/candidateId
+        if (!unitId || !candidateId || (Array.isArray(candidateId) && candidateId.length === 0)) return;
+  
+        // Convert candidateId to comma-separated string if it's an array
+        const candidateParam = Array.isArray(candidateId) ? candidateId.join(",") : candidateId;
+  
+        const data = await getAuxiliarydata(unitId, candidateParam);
         setAuxData(data.results || []);
+        setRosterData(data.rosterData || []);
       } catch (err) {
         console.error("Error fetching auxiliary data", err);
       }
     };
+  
     fetchData();
-  }, []);
+  }, [unitId, candidateId]);
+  
 
   const csdChartData = auxData.map(r => ({
     ppId: r.ppId,
@@ -255,6 +290,213 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
     duration: r.duration
   }));
   
+  const BpCsdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    productivityCsd: r.Productivity_CSD,
+  }));
+  const BpUsdChartData = auxData.map(r => ({
+    ppId: r.ppId,
+    productivityUsd: r.Productivity_USD,
+  }));
+
+  const engageTrackData = auxData.map(r => ({
+    engageLevel: r.engageLevel,
+  }));
+
+  const attendanceTrackData = rosterData.map(r => ({
+    totalTally: r.totalTally,
+    PC: r.presentCount,
+    EA: r.excusedAbsences,
+    UA: r.unexcusedAbsences,
+    ET: r.excusedTardies,
+    UT: r.unexcusedTardies,
+  }));
+
+  useEffect(() => {
+    const fetchTabulationData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUnitAndMultipleCandidateSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          // ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          // ppIdTo: filters?.ppIdTo ?? undefined,
+          // criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          // criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
+  
+        const { results } = data;  
+  
+        const formattedData = results.map(row => ({
+          assessmentId: row.assessmentId,
+          ppId: row.ppId,
+          criticalRefDate: row.criticalRefDate || '0',
+          ΔRR: row.deltaRRN || 0,
+          ΔPR: row.deltaPRN || 0,
+          ΔAR: row.deltaARN || 0,
+          RRN: row.RRN || 0,
+          PRN: row.PRN || 0,
+          ARN: row.ARN || 0,
+          IC: row.IC || 0,
+        }));
+        
+        setTableData(formattedData);
+        
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchTabulationData();
+  }, [unitId, candidateId]);
+
+
+  useEffect(() => {
+    const fetchNeedAssessment = async () => {
+      if (!unitId || !candidateId) {
+        setNeedAssessment([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getNeedAssessment(unitId, candidateId);  
+        setNeedAssessment(result.data);
+
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setNeedAssessment([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchNeedAssessment();
+  }, [unitId, candidateId, refreshBenchmarks]);
+
+
+  useEffect(() => {
+    const fetchUnitImprovement = async () => {
+      if (!unitId || !candidateId) {
+        setUnitImprovement([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getUnitImprovement(unitId, candidateId);  
+        setUnitImprovement(
+          result.data.map((row) => ({
+            ...row,
+            bIds: Array.isArray(row.bIds)
+              ? row.bIds
+              : JSON.parse(row.bIds || "[]"),
+            benchmarkIds: Array.isArray(row.benchmarkIds)
+              ? row.benchmarkIds
+              : JSON.parse(row.benchmarkIds || "[]"),
+          }))
+        );
+        
+        console.log("unit improvement data: ", result.data);
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setUnitImprovement([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchUnitImprovement();
+  }, [unitId, candidateId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
+
+  console.log("unit improvement: ", unitImprovement);
+
+  useEffect(() => {
+    const fetchCandidateMarks = async () => {
+      if (!unitId || !candidateId) {
+        setCandidateMarks([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getCandidateMarks(unitId, candidateId);  
+        
+        setCandidateMarks(result.data);
+        
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setCandidateMarks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchCandidateMarks();
+  }, [unitId, candidateId, refresh]);
+
+
+  // Merge need assessments into tableData by PP ID
+  const mergedTableData = tableData.map(row => {
+    const matchedNeed = needAssessment.find(n => n.ppId === row.ppId);
+
+    return {
+      ...row,
+      benchmarkIds: matchedNeed ? JSON.parse(matchedNeed.benchmarkIds) : [],
+      bIds: matchedNeed ? JSON.parse(matchedNeed.bIds) : [],
+      observation: matchedNeed ? matchedNeed.observation : "-"
+    };
+  });
+
+
+  useEffect(() => {
+    const fetchLeaderMarks = async () => {
+      if (!unitId || !candidateId) {
+        setleaderMarks([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getLeaderMarks(unitId, candidateId);  
+        
+        setleaderMarks(result.data);
+        
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setleaderMarks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchLeaderMarks();
+  }, [unitId, candidateId, refreshLeaderMarks]);
+  
+  console.log("candidate Marks: ", candidateMarks);
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -269,6 +511,108 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
   if (!visible) return null;
 
 
+  const attendanceBreakdown = rosterData.length > 0
+  ? [
+      { name: "Present", value: rosterData[0].presentCount },
+      { name: "Excused Absences", value: rosterData[0].excusedAbsences },
+      { name: "Unexcused Absences", value: rosterData[0].unexcusedAbsences },
+      { name: "Excused Tardies", value: rosterData[0].excusedTardies },
+      { name: "Unexcused Tardies", value: rosterData[0].unexcusedTardies },
+    ]
+  : [];
+
+  const unitOutcomeData = rosterData.length > 0
+  ? [
+      { name: "Ongoing", value: rosterData.filter(x => x.unitOutcome === "Ongoing").length },
+      { name: "Pass", value: rosterData.filter(x => x.unitOutcome === "Pass").length },
+      { name: "Fail", value: rosterData.filter(x => x.unitOutcome === "Fail").length },
+    ]
+  : [];
+
+
+  const engagementCounts = auxData.reduce(
+    (acc, r) => {
+      const level = r.engageLevel || "N/A";
+      acc[level] = (acc[level] || 0) + 1;
+      return acc;
+    },
+    { High: 0, Medium: 0, Low: 0, "N/A": 0 }
+  );
+  
+  const engagementBreakdown = [
+    { name: "High", value: engagementCounts.High },
+    { name: "Medium", value: engagementCounts.Medium },
+    { name: "Low", value: engagementCounts.Low },
+    { name: "N/A", value: engagementCounts["N/A"] },
+  ];
+  
+
+  const handleBenchmarkSelection = async (selectedRows) => {
+    setShowBenchmarkTable(false);
+  
+    if (!selectedRow) return; // safety
+  
+    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+  
+    const payload = {
+      unitId,
+      candidateId,
+      ppId: selectedRow.ppId,
+      bIds: [
+        ...(selectedRow.bIds || []),
+        ...selectedBenchmarkIds
+      ],
+      benchmarkIds: [
+        ...(selectedRow.benchmarkIds || []),
+        ...selectedBenchmarkIds
+      ],
+      observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
+    };
+  
+    console.log("Submitting to backend:", payload);
+  
+    try {
+      await createNeedAssessment(payload);
+                       // trigger parent refresh
+    } catch (err) {
+      console.error("Failed to submit need assessment:", err);
+    }
+  };
+
+
+  const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarks) => {
+    if (!selectedRow || selectedBenchmarks.length === 0) return;
+  
+    // Extract only benchmark IDs or BID numbers
+    const newBenchmarkIds = selectedBenchmarks.map(b => b.benchmarkId);
+    const newBIds = selectedBenchmarks.map(b => b.bId);
+
+  
+    const payload = {
+      benchmarkIds: newBenchmarkIds,
+      bIds: newBIds,
+    };
+  
+    try {
+      await updateUnitImprovement(selectedRow.id, payload); // <-- UPDATE API CALL
+  
+      setShowBenchmarkTable(false);
+
+      setRefreshBenchmarksUnitLevel(prev => !prev);
+
+      // call parent refresh if exists
+      if (refreshUnitImprovement) refreshUnitImprovement();
+      
+  
+    } catch (error) {
+      console.error("Failed to update improvement:", error);
+    }
+  };
+  
+  
+  
+  console.log("attendance tracking: ", attendanceBreakdown);
+  
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -278,7 +622,215 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
       );
     }
 
-    if (selectedChart.type === "table") {
+    if (selectedChart.type === "table" && selectedChart.id === 11) {
+      return (
+        <>
+          {showBenchmarkTable && (
+            <BenchmarkTable
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelection(selectedBenchmarks);
+                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
+              }}
+            />
+          )}
+
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+            <table className="table-auto w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">
+                    Critical Reference Date
+                  </th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">RRN</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">PRN</th>
+
+                  {unitType === "Third Parameter" && (
+                    <th className="border border-gray-300 px-3 py-2 text-center">ARN</th>
+                  )}
+                  <th className="border border-gray-300 px-3 py-2 text-center">IC</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">BIDs</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">
+                    Observations & Goals
+                  </th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Action Status</th>
+                </tr>
+              </thead>
+      
+              <tbody>
+                {mergedTableData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.PRN}</td>
+
+                    {unitType === "Third Parameter" && (
+                      <td className="border border-gray-300 px-3 py-2 text-center">{item.ARN}</td>
+                    )}
+
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.IC}</td>
+      
+                    {/* ADD button */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => {
+                          setSelectedRow(item);
+                          setShowBenchmarkTable(true);
+                          }
+                        } >
+                        + ADD
+                      </button>
+                    </td>
+                    {/* Linked BIDs */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
+                    </td>
+                    {/* Observations */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.observation}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.bIds.length === 0
+                        ? "Open"
+                        : item.bIds.length === 5
+                        ? "Closed"
+                        : "Pending"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
+    if (selectedChart.type === "table" && selectedChart.id === 8) {
+      return (
+        <>
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+            <table className="table-auto w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Leader Last Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Leader First Name</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Impact Type</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Identified</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Identity Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Resolved </th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Resolution Date </th>
+                  
+                </tr>
+              </thead>
+      
+              <tbody>
+                {leaderMarks.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.entryNumber}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffFirstName}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffLastName}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.impactType}</td>         
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernIdentified}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.identityDate}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernResolved}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.resolutionDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
+    else if (selectedChart.type === "table" && selectedChart.id === 7) {
+      return (
+        <>
+          {showBenchmarkTable && (
+            <BenchmarkTableUnitLevel
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelectionUnitLevel(selectedBenchmarks);
+                setRefreshBenchmarksUnitLevel(prev => !prev);  // 🔄 trigger re-render
+              }}
+            />
+          )}
+
+
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+            <table className="table-auto w-full border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Lesson Learned & Improvements</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center"> BIDs</th>
+                </tr>
+              </thead>
+      
+              <tbody>
+                {unitImprovement.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-200">
+                    <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.lesson}</td>
+      
+                    {/* ADD button */}
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => {
+                          setSelectedRow(item);
+                          setShowBenchmarkTable(true);
+                          }
+                        } >
+                        + ADD
+                      </button>
+                    </td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.benchmarkIds.length > 0 ? item.benchmarkIds.join(", ") : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+    else if (selectedChart.type === "table" && selectedChart.id === 14) {
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2">
+          <table className="table-auto w-full text-sm border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Identified</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Identity Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Resolved</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Resolution Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {candidateMarks.map((row, index) => (
+                <tr key={index} className="hover:bg-blue-50">
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.entryNumber}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.impactType}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernIdentified}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.identityDate}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernResolved}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.resolutionDate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    } 
+    else if (selectedChart.type === "table") {
       return (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
           <table className="table-auto w-full text-sm border border-gray-300">
@@ -309,40 +861,211 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
           </table>
         </div>
       );
-    } else {
+    } 
+    
+    else {
 
-      if (selectedChart.key === 'csd') {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-csd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Line type="monotone" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
-              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
           </ResponsiveContainer>
         );
       }
     
       // Multi-line chart for USD
-      if (selectedChart.key === 'usd') {
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-usd') {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Line type="monotone" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
-              <Line type="monotone" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
           </ResponsiveContainer>
         );
       }
+
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-csd") {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line 
+                type="linear" 
+                dataKey="productivityCsd" 
+                name="Productivity CSD" 
+                stroke="#3b82f6"
+                dot 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+      
+
+      if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-usd") {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" />
+              <Line 
+                type="linear" 
+                dataKey="productivityUsd" 
+                name="Productivity USD" 
+                stroke="#f59e0b"
+                dot 
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      if (selectedChart.key === 'at' && attendanceBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={attendanceBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {attendanceBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+      
+
+      if (selectedChart.key === 'et' && engagementBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={engagementBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {engagementBreakdown.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={["#10b981", "#3b82f6", "#f59e0b", "#6b7280"][index]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      if (selectedChart.key === 'uo' && attendanceBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={attendanceBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {attendanceBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      // Update your scatter chart rendering logic:
+      if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
+        const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
+        const yLabel = selectedChart.key === "bp-csd" ? "Productivity CSD" : "Productivity USD";
+        const lineColor = selectedChart.key === "bp-csd" ? "#3b82f6" : "#f59e0b";
+        const dataKey = selectedChart.key === "bp-csd" ? "productivityCsd" : "productivityUsd";
+
+        // Sort data by ppId to ensure proper ordering
+        const sortedData = [...scatterData].sort((a, b) => a.ppId - b.ppId);
+        
+        // Use unique ppId values for x-axis
+        const uniquePpIds = [...new Set(sortedData.map(item => item.ppId))];
+        
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="ppId" 
+                label={{ value: "PP ID", position: "insideBottom", offset: -5 }}
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                allowDuplicatedCategory={false}
+              />
+              <YAxis 
+                label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 12 }} 
+                type="number"
+                domain={['dataMin', 'dataMax']}
+              />
+              <Tooltip 
+                cursor={{ strokeDasharray: '3 3' }}
+                formatter={(value, name, props) => [
+                  value, 
+                  `${name}: ${value}`,
+                  `PP ID: ${props.payload.ppId}`
+                ]}
+              />
+              <Legend verticalAlign="top" />
+              <Scatter 
+                name={yLabel} 
+                data={sortedData} 
+                fill={lineColor}
+                dataKey={dataKey}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        );
+      }      
+      
     
       // Default fallback chart
       return (
@@ -378,6 +1101,38 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               
+              {(selectedChart?.id === 12 || selectedChart?.id === 14) &&  (
+                <button 
+                  onClick={handlePlusClick}
+                  title="Add Chain"
+                  className="text-red-600 hover:text-red-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 hover:text-blue-600" />
+                </button>
+              )}
+
+              {/* ADD THIS NEW BUTTON */}
+              {selectedChart?.id === 7 && (
+                <button
+                  onClick={handleUnitImprovementsForm}
+                  title="Add Unit Improvement"
+                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* ADD THIS NEW BUTTON */}
+              {selectedChart?.id === 8 && (
+                <button
+                  onClick={handleLeaderMarksForm}
+                  title="Add Unit Improvement"
+                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
@@ -389,7 +1144,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-          <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -405,7 +1160,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                     activateCandidateLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -416,7 +1171,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                     activateUnitLevel.map((chart) => (
                       <div
                         key={chart.id} // Use id instead of index
-                        className="grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
@@ -455,6 +1210,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                   Table
                 </button>
 
+                <button
+                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Chain'
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
+                    }`}
+                  onClick={() => setActiveAdjustPropertieTab('Chain')}
+                >
+                  Chain
+                </button>
+
               </div>
 
               {/* Tab Content */}
@@ -490,34 +1255,26 @@ export default function PlotSelections({ selectedSort, unitId, candidateId }) {
                       </tbody>
                     </table>
                   </div>
-
-
                 )}
-
-
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.name}` : 'Select a plot'}
           </h2>
 
-          <div className="h-full overflow-auto m-5">
-            {renderChartContent()}
+          <div className="h-full overflow-y-auto overflow-x-auto mb-16 p-3">
+            <div className="min-w-max">
+              {renderChartContent()}
+            </div>
           </div>
+
         </div>
       </div>
-
-
-
-
-
-
-
 
     </>
   );

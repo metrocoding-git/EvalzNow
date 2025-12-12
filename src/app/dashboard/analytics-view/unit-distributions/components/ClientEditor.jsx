@@ -2,14 +2,20 @@
 import { Edit } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
-export default function ClientEditor({ showForm, onClose, selectedCandidates }) {
+export default function ClientEditor({
+  showForm,
+  onClose,
+  selectedCandidates,
+  showBetaValue,
+  onSubmit, // ⬅ NEW CALLBACK
+}) {
   const ppIdOptions = ["1", "2", "3", "4", "5", "6"];
 
   const [candidateData, setCandidateData] = useState([]);
+  const [betaValue, setBetaValue] = useState("");
 
   useEffect(() => {
     if (selectedCandidates?.length) {
-      // Initialize with incoming candidates
       setCandidateData(
         selectedCandidates.map((c) => ({
           ...c,
@@ -32,7 +38,9 @@ export default function ClientEditor({ showForm, onClose, selectedCandidates }) 
 
   const handlePpListingsChange = (index, newValue) => {
     setCandidateData((prev) =>
-      prev.map((c, i) => (i === index ? { ...c, ppListingsValue: newValue } : c))
+      prev.map((c, i) =>
+        i === index ? { ...c, ppListingsValue: newValue } : c
+      )
     );
   };
 
@@ -49,6 +57,7 @@ export default function ClientEditor({ showForm, onClose, selectedCandidates }) 
       <div className="flex-1 overflow-y-auto px-3 py-2 text-sm">
         {candidateData.map((candidate, index) => (
           <div key={candidate.id} className="mb-4 border-b pb-2">
+            
             {/* Read-only candidate info */}
             <div className="flex flex-col gap-1 text-xs p-2">
               <p>Last Name: {candidate.lastName}</p>
@@ -70,7 +79,7 @@ export default function ClientEditor({ showForm, onClose, selectedCandidates }) 
               </select>
             </div>
 
-            {/* Conditional field */}
+            {/* Conditional field: Candidate Average */}
             {candidate.valueOption === "Candidate Average" && (
               <div className="gap-1 text-xs p-2">
                 <label className="block font-medium text-gray-700 mb-1">Average Value</label>
@@ -83,6 +92,7 @@ export default function ClientEditor({ showForm, onClose, selectedCandidates }) 
               </div>
             )}
 
+            {/* Conditional field: Available + PP ID */}
             {candidate.valueOption === "Available + PP ID Listings" && (
               <div className="gap-1 text-xs p-2">
                 <label className="block font-medium text-gray-700 mb-1">Select PP ID</label>
@@ -103,16 +113,46 @@ export default function ClientEditor({ showForm, onClose, selectedCandidates }) 
           </div>
         ))}
 
-        {/* Buttons */}
-        <div className="col-span-2 pt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors"
-            onClick={() => console.log("Form data:", candidateData)}
-          >
-            Edit
-          </button>
-        </div>
+        
+
+        {/* BETA INPUT SECTION */}
+        {showBetaValue === true && (
+          <div className="p-3 mt-4">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Enter Beta Value
+            </label>
+            <input
+              type="number"
+              className="border px-2 py-1 text-xs w-full"
+              value={betaValue}
+              onChange={(e) => setBetaValue(e.target.value)}
+            />
+
+            {/* ADD BUTTON */}
+            <div className="col-span-2 pt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors"
+                onClick={() => onSubmit(betaValue)} // ⬅ SEND betaValue TO MAIN PAGE
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Default Edit Button */}
+        {!showBetaValue && (
+          <div className="col-span-2 pt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors"
+              onClick={() => console.log("Form data:", candidateData)}
+            >
+              Edit
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -155,7 +155,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
   const [growthMetric, setGrowthMetric] = useState([]);
   const chartContainerRef = useRef(null);
-
+  const [unitType, setUnitType] = useState(null);
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -241,9 +241,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
   const activateUnitLevel = [
       { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📊", type: "scatter" },
-      { id: "aul-2", name: "Receptive Growth Differentials (∆RR)", icon: "📊", type: "scatter" },
-      { id: "aul-3", name: "Productive Growth Differentials (∆PR)", icon: "📊", type: "scatter" },
-      { id: "aul-4", name: "Acuity Growth Differentials (∆AR)", icon: "📊", type: "scatter" },
+      { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "📊", type: "scatter" },
+      { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "📊", type: "scatter" },
+      { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "📊", type: "scatter" },
       { id: "aul-5", name: "Performance Ratio (RR)", icon: "📈", type: "scatter" },
       { id: "aul-6", name: "Performance Ratios (PR)", icon: "📈", type: "scatter" },
       { id: "aul-7", name: "Performance Ratios (AR)", icon: "📈", type: "scatter" },
@@ -418,7 +418,7 @@ useEffect(() => {
   
         setStabilitySummary({ stable: stableCount, unstable: unstableCount });
   
-        // console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
+        console.log("✅ Stability Summary:", formattedData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -438,6 +438,7 @@ useEffect(() => {
     const fetchThreshold = async () => {
       if (!unitId) {
         setThresholdValue(null);
+        setUnitType(null);
         return;
       }
   
@@ -454,6 +455,7 @@ useEffect(() => {
         };
   
         setThresholdValue(extractedThresholds);
+        setUnitType(data?.unitType || null);
   
         console.log("✅ Extracted Threshold Values:", extractedThresholds);
       } catch (error) {
@@ -775,32 +777,50 @@ const handleExportGraph = () => {
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' && (
-                    activateCandidateLevel.map((chart, index) => (
-                      <div
-                        key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
-                        onClick={() => {
-                          setSelectedChart(chart);
-                        }}
-                      > 
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index +1}</div>
-                      </div>
-                    ))
+                    <>
+                      {activateCandidateLevel
+                        .filter(chart => {
+                          // Hide AR-related items unless unitType is "Third Parameter"
+                          if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
+                            return unitType === "Third Parameter";
+                          }
+                          return true;
+                        })
+                        .map((chart, index) => (
+                          <div
+                            key={index}
+                            className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+                              ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
+                            onClick={() => setSelectedChart(chart)}
+                          >
+                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+                          </div>
+                        ))}
+                    </>
                   )}
+
                   {selectedSort === 'activateUnitLevel' && (
-                    activateUnitLevel.map((chart, index) => (
-                      <div
-                        key={index}
-                        className={`grid grid-cols-12 items-center gap-2 px-2 py-1  cursor-pointer ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"} `}
-                        onClick={() => {
-                          setSelectedChart(chart); 
-                        }}
-                      >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
-                      </div>
-                    ))
+                    <>
+                      {activateUnitLevel
+                        .filter(chart => {
+                          if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
+                            return unitType === "Third Parameter";
+                          }
+                          return true;
+                        })
+                        .map((chart, index) => (
+                          <div
+                            key={index}
+                            className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  
+                              ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
+                            onClick={() => setSelectedChart(chart)}
+                          >
+                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
+                          </div>
+                        ))}
+                    </>
                   )}
                 </div>
               </div>
@@ -931,6 +951,14 @@ const handleExportGraph = () => {
                     "∆AR Growth Projections",
                   ];
 
+                  const gtKeys = [
+                    "RRGT1","RRGT2","RRGT3","RRGT4","RRGT5",
+                    "PRGT1","PRGT2","PRGT3","PRGT4","PRGT5",
+                    "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
+                  ];
+                  
+                  const zeroStartKeys = ["ΔGEQ", "ΔRR", "ΔPR", "ΔAR", "RR", "PR", "AR"]; 
+
                   const isProjectionChart = projectionCharts.includes(selectedChart.name);
 
                   // 🆕 SEPARATE HANDLING FOR GROWTH PROJECTION CHARTS
@@ -958,9 +986,29 @@ const handleExportGraph = () => {
                   const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
                   if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
 
-                  const positiveData = [{ dayCount: 0, value: 0 }, ...tableData]
+                  const isGTchart = gtKeys.includes(keyName);
+
+                  const forceZero = zeroStartKeys.includes(keyName);
+
+                  let mappedData = tableData
                     .filter(row => row.ppId > 0 && !isNaN(row[keyName]))
-                    .map(row => ({ dayCount: row.dayCount, value: row[keyName] }));
+                    .map(row => ({
+                      [isGTchart ? "ppId" : "dayCount"]: isGTchart ? row.ppId : row.dayCount,
+                      value: row[keyName]
+                    }));
+
+                  // If this is one of the 7 charts → add 0-point at the start
+                  if (forceZero) {
+                    mappedData = [
+                      {
+                        [isGTchart ? "ppId" : "dayCount"]: 0,
+                        value: 0
+                      },
+                      ...mappedData
+                    ];
+                  }
+
+                  const positiveData = mappedData;
 
                   if (selectedChart.type === "line") {
                     // Determine stroke style based on lineStyle
@@ -983,14 +1031,18 @@ const handleExportGraph = () => {
                           >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
-                              type="number"
-                              dataKey="dayCount"
-                              domain={[0, "auto"]}
-                              allowDataOverflow={true}
+                            type="number"
+                            dataKey={isGTchart ? "ppId" : "dayCount"}
+                            domain={[0, "auto"]}
+                            allowDataOverflow={true}
                             >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value="Day Count" offset={-10} position="insideBottom" />
-                              )}
+                            {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                              <Label 
+                                value={isGTchart ? "PP ID" : "Day Count"} 
+                                offset={-10} 
+                                position="insideBottom" 
+                              />
+                            )}
                             </XAxis>
 
                             <YAxis
@@ -1132,6 +1184,7 @@ const handleExportGraph = () => {
         unitId= {unitId}
         candidateId= {candidateId}
         projectionData={tableData}
+        unitType={unitType}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}

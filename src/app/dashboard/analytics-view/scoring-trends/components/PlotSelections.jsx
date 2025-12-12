@@ -749,7 +749,8 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name.replace(/\s*vs\. Insert Score Row Counter.*$/i, "").trim()}</h2>
+            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name.replace(/\s*vs\. Insert Score Row Counter.*$/i, "").trim()}</h2> */}
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
             <ResponsiveContainer width="100%" height="95%">
               <LineChart
@@ -799,83 +800,83 @@ export default function PlotSelections({ filters, unitId, environment, candidate
 
                 {/* Shade Area (behind the lines) */}
                 
-{chartProperties.shadeArea !== "#ffffff" && (
-  <>
-    {/* Positive Shade */}
-    <Area
-      type="linear"
-      data={positiveData}
-      dataKey="y"
-      stroke="none"
-      fill={chartProperties.shadeArea}
-      fillOpacity={0.1}
-      hide={!chartProperties.positiveVisibility}
-    />
+                {chartProperties.shadeArea !== "#ffffff" && (
+                  <>
+                    {/* Positive Shade */}
+                    <Area
+                      type="linear"
+                      data={positiveData}
+                      dataKey="y"
+                      stroke="none"
+                      fill={chartProperties.shadeArea}
+                      fillOpacity={0.1}
+                      hide={!chartProperties.positiveVisibility}
+                    />
 
-    {/* Negative Shade */}
-    <Area
-      type="linear"
-      data={negativeData}
-      dataKey="y"
-      stroke="none"
-      fill={chartProperties.shadeArea}
-      fillOpacity={0.1}
-      hide={!chartProperties.negativeVisibility}
-    />
-  </>
-)}
+                    {/* Negative Shade */}
+                    <Area
+                      type="linear"
+                      data={negativeData}
+                      dataKey="y"
+                      stroke="none"
+                      fill={chartProperties.shadeArea}
+                      fillOpacity={0.1}
+                      hide={!chartProperties.negativeVisibility}
+                    />
+                  </>
+                )}
 
-{/* Positive Data Line */}
-<Line
-  type="linear"
-  data={positiveData}
-  dataKey="y"
-  name="Positive PP IDs"
-  stroke={chartProperties.positiveLineColor}
-  strokeDasharray={
-    chartProperties.positiveLineStyle === "dashed"
-      ? "6 4"
-      : chartProperties.positiveLineStyle === "dotted"
-      ? "2 4"
-      : chartProperties.positiveLineStyle === "dashdot"
-      ? "8 4 2 4"
-      : "0"
-  }
-  strokeWidth={chartProperties.positiveLineThickness}
-  isAnimationActive={false}
-  hide={!chartProperties.positiveVisibility}
-  dot={(props) => {
-    const { index } = props;
-    if (index % chartProperties.symbolFrequency !== 0) return null;
-    return renderCustomDot(props, chartProperties.positiveSymbolColor);
-  }}
-/>
+                {/* Positive Data Line */}
+                <Line
+                  type="linear"
+                  data={positiveData}
+                  dataKey="y"
+                  name="Positive PP IDs"
+                  stroke={chartProperties.positiveLineColor}
+                  strokeDasharray={
+                    chartProperties.positiveLineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.positiveLineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.positiveLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
+                  strokeWidth={chartProperties.positiveLineThickness}
+                  isAnimationActive={false}
+                  hide={!chartProperties.positiveVisibility}
+                  dot={(props) => {
+                    const { index } = props;
+                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                    return renderCustomDot(props, chartProperties.positiveSymbolColor);
+                  }}
+                />
 
-{/* Negative Data Line */}
-<Line
-  type="linear"
-  data={negativeData}
-  dataKey="y"
-  name="Negative PP IDs"
-  stroke={chartProperties.negativeLineColor}
-  strokeDasharray={
-    chartProperties.negativeLineStyle === "dashed"
-      ? "6 4"
-      : chartProperties.negativeLineStyle === "dotted"
-      ? "2 4"
-      : chartProperties.negativeLineStyle === "dashdot"
-      ? "8 4 2 4"
-      : "0"
-  }
-  strokeWidth={chartProperties.negativeLineThickness}
-  isAnimationActive={false}
-  hide={!chartProperties.negativeVisibility}
-  dot={(props) => {
-    const { index } = props;
-    if (index % chartProperties.symbolFrequency !== 0) return null;
-    return renderCustomDot(props, chartProperties.negativeSymbolColor);
-  }}
-/>
+                {/* Negative Data Line */}
+                <Line
+                  type="linear"
+                  data={negativeData}
+                  dataKey="y"
+                  name="Negative PP IDs"
+                  stroke={chartProperties.negativeLineColor}
+                  strokeDasharray={
+                    chartProperties.negativeLineStyle === "dashed"
+                      ? "6 4"
+                      : chartProperties.negativeLineStyle === "dotted"
+                      ? "2 4"
+                      : chartProperties.negativeLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
+                  }
+                  strokeWidth={chartProperties.negativeLineThickness}
+                  isAnimationActive={false}
+                  hide={!chartProperties.negativeVisibility}
+                  dot={(props) => {
+                    const { index } = props;
+                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                    return renderCustomDot(props, chartProperties.negativeSymbolColor);
+                  }}
+                />
 
               </LineChart>
             </ResponsiveContainer>

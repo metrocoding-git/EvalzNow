@@ -151,25 +151,53 @@ const abbreviateLabel = (label) => {
   return (
     <div className="overflow-x-auto border-1 border-gray-200 shadow-sm h-full">
       <table className="w-full table-auto text-sm text-left border-collapse">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
-            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit Name</th>
-            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit ID</th>
-            <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit Type</th>
+      <thead className="bg-gray-100">
+  <tr>
+    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
+    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit Name</th>
+    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit ID</th>
+    <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Unit Type</th>
 
+    {currentCompetencies.map((comp, idx) => (
+      <React.Fragment key={idx}>
+        {/* Attained Header */}
+        <th className="relative group whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 bg-gray-50">
+          {abbreviateLabel(comp.attained) === "ASS" ? "ASP" : abbreviateLabel(comp.attained)}
 
-            {currentCompetencies.map((comp, idx) => (
-              <React.Fragment key={idx}>
-                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">
-                  {abbreviateLabel(comp.attained) === 'ASS' ? ('ASP') : (abbreviateLabel(comp.attained)) }
-                </th>
-                <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">{abbreviateLabel(comp.max)}</th>
-              </React.Fragment>
-            ))}
+          {/* Tooltip */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                          top-full left-1/2 -translate-x-1/2 mt-2
+                          bg-black text-white text-xs px-2 py-1 rounded shadow-lg
+                          whitespace-nowrap z-50">
+            {comp.attained}
 
-          </tr>
-        </thead>
+            {/* Arrow */}
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 
+                            border-4 border-transparent border-b-black"></div>
+          </div>
+        </th>
+
+        {/* Max Header */}
+        <th className="relative group whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 bg-gray-50">
+          {abbreviateLabel(comp.max)}
+
+          {/* Tooltip */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                          top-full left-1/2 -translate-x-1/2 mt-2
+                          bg-black text-white text-xs px-2 py-1 rounded shadow-lg
+                          whitespace-nowrap z-50">
+            {comp.max}
+
+            {/* Arrow */}
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 
+                            border-4 border-transparent border-b-black"></div>
+          </div>
+        </th>
+      </React.Fragment>
+    ))}
+  </tr>
+</thead>
+
         <tbody>
           {transformedBlocks.map((row, index) => (
             <tr key={index}>
