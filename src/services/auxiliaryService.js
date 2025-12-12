@@ -57,7 +57,7 @@ export const getAuxiliarydata = async (unitId, candidateId) => {
       const response = await api.get(`${API_ROUTES.AUXILIARY}/lesson/${unitId}/${candidateId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching candidate marks:", error);
+      console.error("Error fetching unit improvment:", error);
       throw error;
     }
   };
@@ -67,7 +67,38 @@ export const getAuxiliarydata = async (unitId, candidateId) => {
       const response = await api.post(`${API_ROUTES.AUXILIARY}/lesson`, unitImprovement);
       return response.data;
     } catch (error) {
-      console.error("Error fetching candidate marks:", error);
+      console.error("Error fetching unit improvment:", error);
+      throw error;
+    }
+  };
+
+  export const updateUnitImprovement = async (id, unitImprovement) => {
+    try {
+      const response = await api.put(`${API_ROUTES.AUXILIARY}/lesson/${id}`, unitImprovement);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching unit improvment:", error);
+      throw error;
+    }
+  };
+
+
+  export const getLeaderMarks = async (unitId, candidateId) => {
+    try {
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/leader/${unitId}/${candidateId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching unit improvment:", error);
+      throw error;
+    }
+  };
+
+  export const createLeaderMarks = async (leaderMarks) => {
+    try {
+      const response = await api.post(`${API_ROUTES.AUXILIARY}/leader`, leaderMarks);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching unit improvment:", error);
       throw error;
     }
   };

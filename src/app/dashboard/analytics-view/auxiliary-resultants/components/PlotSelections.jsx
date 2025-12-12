@@ -12,12 +12,12 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, getAuxiliarydata, getCandidateMarks, getNeedAssessment, getUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, refresh }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -82,6 +82,7 @@ console.log("candidate id : ", candidateId);
   const [rosterData, setRosterData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [candidateMarks, setCandidateMarks] = useState([]);
+  const [leaderMarks, setleaderMarks] = useState([]);
   const [needAssessment, setNeedAssessment] = useState([]);
   const [unitImprovement, setUnitImprovement] = useState([]);
 
@@ -214,6 +215,7 @@ console.log("candidate id : ", candidateId);
       name: "Unit Outcomes",
       icon: "🥧",
       type: "pie",
+      key: 'uo',
       id: 5
     },
     {
@@ -245,6 +247,15 @@ console.log("candidate id : ", candidateId);
   const handlePlusClick = () => {
     oncandidateFormOpen(true);  
   };
+
+  const handleUnitImprovementsForm = () => {
+    onUnitImprovementFormOpen(true);  // or whatever state your parent expects
+  };
+
+  const handleLeaderMarksForm = () => {
+    onLeaderMarkFormOpen(true);  // or whatever state your parent expects
+  };
+  
   
   
   useEffect(() => {
@@ -381,7 +392,7 @@ console.log("candidate id : ", candidateId);
   useEffect(() => {
     const fetchUnitImprovement = async () => {
       if (!unitId || !candidateId) {
-        setNeedAssessment([]); // clear previous table data
+        setUnitImprovement([]); // clear previous table data
         return;
       }
   
@@ -389,8 +400,19 @@ console.log("candidate id : ", candidateId);
       setError(null);
       try {
         const result = await getUnitImprovement(unitId, candidateId);  
-        setUnitImprovement(result.data);
-
+        setUnitImprovement(
+          result.data.map((row) => ({
+            ...row,
+            bIds: Array.isArray(row.bIds)
+              ? row.bIds
+              : JSON.parse(row.bIds || "[]"),
+            benchmarkIds: Array.isArray(row.benchmarkIds)
+              ? row.benchmarkIds
+              : JSON.parse(row.benchmarkIds || "[]"),
+          }))
+        );
+        
+        console.log("unit improvement data: ", result.data);
       } catch (err) {
         console.error("Failed to  candidate marks data:", err);
         setError("Failed to load table data.");
@@ -402,7 +424,9 @@ console.log("candidate id : ", candidateId);
     };
   
     fetchUnitImprovement();
-  }, [unitId, candidateId, refreshBenchmarks]);
+  }, [unitId, candidateId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
+
+  console.log("unit improvement: ", unitImprovement);
 
   useEffect(() => {
     const fetchCandidateMarks = async () => {
@@ -444,6 +468,33 @@ console.log("candidate id : ", candidateId);
     };
   });
 
+
+  useEffect(() => {
+    const fetchLeaderMarks = async () => {
+      if (!unitId || !candidateId) {
+        setleaderMarks([]); // clear previous table data
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getLeaderMarks(unitId, candidateId);  
+        
+        setleaderMarks(result.data);
+        
+      } catch (err) {
+        console.error("Failed to  candidate marks data:", err);
+        setError("Failed to load table data.");
+        
+        setleaderMarks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchLeaderMarks();
+  }, [unitId, candidateId, refreshLeaderMarks]);
   
   console.log("candidate Marks: ", candidateMarks);
 
@@ -467,6 +518,14 @@ console.log("candidate id : ", candidateId);
       { name: "Unexcused Absences", value: rosterData[0].unexcusedAbsences },
       { name: "Excused Tardies", value: rosterData[0].excusedTardies },
       { name: "Unexcused Tardies", value: rosterData[0].unexcusedTardies },
+    ]
+  : [];
+
+  const unitOutcomeData = rosterData.length > 0
+  ? [
+      { name: "Ongoing", value: rosterData.filter(x => x.unitOutcome === "Ongoing").length },
+      { name: "Pass", value: rosterData.filter(x => x.unitOutcome === "Pass").length },
+      { name: "Fail", value: rosterData.filter(x => x.unitOutcome === "Fail").length },
     ]
   : [];
 
@@ -521,37 +580,35 @@ console.log("candidate id : ", candidateId);
   };
 
 
-  const handleBenchmarkSelectionUnitLevel  = async (selectedRows) => {
-    setShowBenchmarkTable(false);
+  const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarks) => {
+    if (!selectedRow || selectedBenchmarks.length === 0) return;
   
-    if (!selectedRow) return; // safety
-  
-    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+    // Extract only benchmark IDs or BID numbers
+    const newBenchmarkIds = selectedBenchmarks.map(b => b.benchmarkId);
+    const newBIds = selectedBenchmarks.map(b => b.bId);
+
   
     const payload = {
-      unitId,
-      candidateId,
-    
-      bIds: [
-        ...(selectedRow.bIds || []),
-        ...selectedBenchmarkIds
-      ],
-      benchmarkIds: [
-        ...(selectedRow.benchmarkIds || []),
-        ...selectedBenchmarkIds
-      ],
-      lesson: selectedRow.observation 
+      benchmarkIds: newBenchmarkIds,
+      bIds: newBIds,
     };
   
-    console.log("Submitting to backend:", payload);
-  
     try {
-      await createNeedAssessment(payload);
-                       // trigger parent refresh
-    } catch (err) {
-      console.error("Failed to submit need assessment:", err);
+      await updateUnitImprovement(selectedRow.id, payload); // <-- UPDATE API CALL
+  
+      setShowBenchmarkTable(false);
+
+      setRefreshBenchmarksUnitLevel(prev => !prev);
+
+      // call parent refresh if exists
+      if (refreshUnitImprovement) refreshUnitImprovement();
+      
+  
+    } catch (error) {
+      console.error("Failed to update improvement:", error);
     }
   };
+  
   
   
   console.log("attendance tracking: ", attendanceBreakdown);
@@ -635,7 +692,13 @@ console.log("candidate id : ", candidateId);
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       {item.observation}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">-</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.bIds.length === 0
+                        ? "Open"
+                        : item.bIds.length === 5
+                        ? "Closed"
+                        : "Pending"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -648,15 +711,6 @@ console.log("candidate id : ", candidateId);
     if (selectedChart.type === "table" && selectedChart.id === 8) {
       return (
         <>
-          {showBenchmarkTable && (
-            <BenchmarkTable
-              onClose={(selectedBenchmarks) => {
-                handleBenchmarkSelection(selectedBenchmarks);
-                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
-              }}
-            />
-          )}
-
 
           <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
             <table className="table-auto w-full border border-gray-300">
@@ -675,16 +729,16 @@ console.log("candidate id : ", candidateId);
               </thead>
       
               <tbody>
-                {mergedTableData.map((item, index) => (
+                {leaderMarks.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-200">
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.PRN}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ARN}</td>         
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.IC}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.bIds.length > 0 ? item.bIds.join(", ") : "-"}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.observation}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.entryNumber}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffFirstName}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffLastName}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.impactType}</td>         
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernIdentified}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.identityDate}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernResolved}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.resolutionDate}</td>
                   </tr>
                 ))}
               </tbody>
@@ -701,7 +755,7 @@ console.log("candidate id : ", candidateId);
             <BenchmarkTableUnitLevel
               onClose={(selectedBenchmarks) => {
                 handleBenchmarkSelectionUnitLevel(selectedBenchmarks);
-                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
+                setRefreshBenchmarksUnitLevel(prev => !prev);  // 🔄 trigger re-render
               }}
             />
           )}
@@ -714,6 +768,7 @@ console.log("candidate id : ", candidateId);
                   <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">Lesson Learned & Improvements</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-3 py-2 text-center"> BIDs</th>
                 </tr>
               </thead>
       
@@ -721,7 +776,7 @@ console.log("candidate id : ", candidateId);
                 {unitImprovement.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-200">
                     <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">Sample {row.lesson}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">{item.lesson}</td>
       
                     {/* ADD button */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
@@ -734,7 +789,9 @@ console.log("candidate id : ", candidateId);
                         + ADD
                       </button>
                     </td>
-                    
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.benchmarkIds.length > 0 ? item.benchmarkIds.join(", ") : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -936,6 +993,30 @@ console.log("candidate id : ", candidateId);
         );
       }
 
+      if (selectedChart.key === 'uo' && attendanceBreakdown.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={attendanceBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {attendanceBreakdown.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+
       // Update your scatter chart rendering logic:
       if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
@@ -1030,6 +1111,28 @@ console.log("candidate id : ", candidateId);
                 </button>
               )}
 
+              {/* ADD THIS NEW BUTTON */}
+              {selectedChart?.id === 7 && (
+                <button
+                  onClick={handleUnitImprovementsForm}
+                  title="Add Unit Improvement"
+                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* ADD THIS NEW BUTTON */}
+              {selectedChart?.id === 8 && (
+                <button
+                  onClick={handleLeaderMarksForm}
+                  title="Add Unit Improvement"
+                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
@@ -1041,7 +1144,7 @@ console.log("candidate id : ", candidateId);
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-          <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-1/2 flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">

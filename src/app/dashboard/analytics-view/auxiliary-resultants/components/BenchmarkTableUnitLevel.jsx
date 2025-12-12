@@ -26,6 +26,7 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
         // Initialize table rows based on number of benchmark objects
         const initializedRows = benchmarks.map((b, index) => ({
           rowId: index + 1,
+          bId: b.id || "",
           benchmarkId: b.benchmarkId || "",
           benchmarkType: b.benchmarkType || "",
           benchmarkRef: b.benchmarkRef || "",
@@ -41,6 +42,8 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
 
     fetchBenchmarkData();
   }, [selectedUnitId]);
+
+  console.log("Benchmark List:", rows);
 
   // When selecting Benchmark ID from dropdown
   const handleBenchmarkIdChange = (rowId, value) => {

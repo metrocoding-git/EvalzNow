@@ -15,6 +15,8 @@ import { usePathname } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useUnit } from "@/context/UnitContext";
 import CandidateMarksForm from "./components/CandidateMarksForm";
+import UnitImprovementForm from "./components/UnitImprovementForm";
+import LeaderMarksForm from "./components/LeaderMarksForm";
 
 export default function AuxiliaryResultants() {
   const tabs = [
@@ -28,6 +30,8 @@ export default function AuxiliaryResultants() {
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
 
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
+  const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
+  const [showLeaderMarkForm, setShowLeaderMarkForm] = useState(false);
 
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
@@ -45,6 +49,8 @@ export default function AuxiliaryResultants() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshMarks, setRefreshMarks] = useState(0);
+  const [refreshUnitImprovement, setRefreshUnitImprovement] = useState(0);
+  const [refreshLeaderMarks, setRefreshLeaderMarks] = useState(0);
   const [data, setData] = useState([]);
   const [secondaryValues, setSecondaryValues] = useState(null);
   const [resetSignal, setResetSignal] = useState(0);  
@@ -347,12 +353,12 @@ export default function AuxiliaryResultants() {
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
-                 refresh={refreshMarks}
+                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks}
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
                     : activeCandidateId   // pass single ID
-                } onResetFilters={resetFilters}  oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)} />}
+                } onResetFilters={resetFilters}  onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)}   />}
 
                 
 
@@ -365,6 +371,46 @@ export default function AuxiliaryResultants() {
                         entryNumber={1} 
                         onClose={() => setShowCandidateMarksForm(false)}
                         onSuccess={() => setRefreshMarks(prev => prev + 1)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+
+                {showUnitImprovementForm  && (
+                  <div className="fixed inset-0 z-50 top-1/4 left-1/4">
+
+                    {/* Form container */}
+                    <div className="relative bg-white w-1/2 h-auto rounded-lg shadow-2xl border border-gray-300 z-50">
+                      <UnitImprovementForm unitId={selectedUnitId} 
+                        entryNumber={1} 
+                        candidateId={
+                          selectedSort === "activateUnitLevel" 
+                            ? selectedCandidateIds          // <-- multiple selected
+                            : activeCandidateId             // <-- single candidate
+                        }
+                        onClose={() => setShowUnitImprovementForm(false)}
+                        onSuccess={() => setRefreshUnitImprovement(prev => prev + 1)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+
+                {showLeaderMarkForm  && (
+                  <div className="fixed inset-0 z-50 top-1/4 left-1/4">
+
+                    {/* Form container */}
+                    <div className="relative bg-white w-1/2 h-auto rounded-lg shadow-2xl border border-gray-300 z-50">
+                      <LeaderMarksForm unitId={selectedUnitId} 
+                        entryNumber={1} 
+                        candidateId={
+                          selectedSort === "activateUnitLevel" 
+                            ? selectedCandidateIds          // <-- multiple selected
+                            : activeCandidateId             // <-- single candidate
+                        }
+                        onClose={() => setShowLeaderMarkForm(false)}
+                        onSuccess={() => setRefreshLeaderMarks(prev => prev + 1)}
                       />
                     </div>
                   </div>
