@@ -1,15 +1,19 @@
 "use client";
+import { getEffortBu } from "@/services/auxiliaryService";
 import { Edit, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, resetSignal }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
+  const [csdEffort, setCsdEffort] = useState("");
+  const [usdEffort, setUsdEffort] = useState("");
+
 
   useEffect(() => {
     setPpIdFrom(-3);
@@ -20,8 +24,35 @@ const SecondaryInputForm = ({ onClose, selectedSort, resetSignal }) => {
   }, [resetSignal]);
 
   // Sample effort values
-  const csdEffort = "1.234";
-  const usdEffort = "5.678";
+  // const csdEffort = "1.234";
+  // const usdEffort = "5.678";
+
+  useEffect(() => {
+    const fetchEffortData = async () => {
+      try {
+        if (!selectedChartKey) return;
+  
+        // Only fetch for Butler-related charts
+        if (selectedChartKey === "bp-csd" || selectedChartKey === "bp-usd") {
+          const response = await getEffortBu(unitId, candidateId);
+  
+          // based on your API response shape
+          const { data } = response;
+  
+          setCsdEffort(data?.CSD ?? "");
+          setUsdEffort(data?.USD ?? "");
+        }
+      } catch (error) {
+        console.error("Error fetching effort data:", error);
+        setCsdEffort("");
+        setUsdEffort("");
+      }
+    };
+  
+    fetchEffortData();
+  }, [selectedChartKey, unitId, candidateId]);
+  
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,6 +67,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, resetSignal }) => {
     onSubmit(values); // ✅ send values to parent
 
   };
+
+
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -115,67 +148,38 @@ const SecondaryInputForm = ({ onClose, selectedSort, resetSignal }) => {
         </div>
 
         {/* Effort Fields – only show if candidate level */}
-        {selectedSort === "activateCandidateLevel" && (
+        {selectedSort === "activateCandidateLevel" && selectedChartKey && (
           <>
+            {selectedChartKey === "bp-csd"  && (
+              <div className="gap-1 text-xs p-2 w-full">
+                <label className="block font-medium text-gray-700 mb-1">
+                  Effort – CSD
+                </label>
+                <input
+                  type="text"
+                  value={csdEffort}
+                  disabled
+                  className="border px-2 py-1 w-full text-gray-600"
+                />
+              </div>
+            )}
 
-
-            <div className="gap-1 text-xs p-2 w-full">
-              <label className="block font-medium text-gray-700 mb-1">
-                Effort - CSD
-              </label>
-              <input
-                type="text"
-                value={csdEffort}
-                disabled
-                className="border px-2 py-1 w-full text-gray-600"
-              />
-            </div>
-
-
-
-
-
-            <div className="gap-1 text-xs p-2 w-full">
-              <label className="block font-medium text-gray-700 mb-1">
-                Effort - USD
-              </label>
-              <input
-                type="text"
-                value={usdEffort}
-                disabled
-                className="border px-2 py-1 w-full text-gray-600"
-              />
-            </div>
-
-
-
+            {selectedChartKey === "bp-usd" && (
+              <div className="gap-1 text-xs p-2 w-full">
+                <label className="block font-medium text-gray-700 mb-1">
+                  Effort – USD
+                </label>
+                <input
+                  type="text"
+                  value={usdEffort}
+                  disabled
+                  className="border px-2 py-1 w-full text-gray-600"
+                />
+              </div>
+            )}
           </>
         )}
 
-        {/* Threshold Toggle */}
-        {/* <div className="flex items-center justify-between p-2">
-          <label className="font-medium text-gray-800">Enable Thresholds</label>
-
-          Toggle Wrapper
-          <div
-            onClick={() => setThresholdEnabled(!thresholdEnabled)}
-            className="relative w-12 h-6 cursor-pointer"
-          >
-            Background track
-            <div
-              className={`absolute inset-0 rounded-full transition-colors duration-300 ${
-                thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
-              }`}
-            />
-
-            Toggle knob
-            <div
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                thresholdEnabled ? "translate-x-6" : "translate-x-0"
-              }`}
-            />
-          </div>
-        </div> */}
       </div>
       {/* Submit Button */}
       <div className="border-t border-gray-200 p-2 bg-gray-50">

@@ -1,0 +1,285 @@
+"use client";
+import { createAssessmentChain, createCandidateMarks } from "@/services/auxiliaryService";
+import { getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
+import { getUnitAndMultipleCandidateSummary } from "@/services/tabulationTableService";
+import { ListFilterPlus, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+
+const impactTypes = ["Negative", "Positive"];
+
+const concernResolved = ["Yes", "No"];
+
+export default function CreateChainForm({ onClose, onSuccess , unitId, candidateId}) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    selection1: "",
+    selection2: "",
+    selection3: "",
+    selection4: "",
+    selection5: "",
+  });
+  const [tableData, setTableData] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (label, value) => {
+    setForm((prev) => ({ ...prev, [label]: value }));
+  };
+
+  // Validate required fields
+  const isFormValid = () => {
+    return (
+      form.selection1.trim() !== ""
+    );
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]);
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+  
+      try {
+        // 1️⃣ Fetch tabulation data
+        const tabulationRes = await getUnitAndMultipleCandidateSummary({
+          unitId,
+          candidate_id: candidateId,
+        });
+  
+        const tabResults = tabulationRes.results || [];
+        console.log("Tabulation Results:", tabResults);
+  
+        // 2️⃣ Fetch insert score data
+        const insertScoreRes = await getInsertScoreByUnitAndCandidate(unitId, candidateId);
+  
+        const insertResults = insertScoreRes || [];
+        console.log("Insert Score Results:", insertResults);
+        // 3️⃣ Build lookup map: ppId → assessmentBlockId
+        const ppToBlockMap = {};
+        insertResults.forEach(row => {
+          if (row.ppId > 0 && row.assessmentBlockId) {
+            ppToBlockMap[row.ppId] = row.assessmentBlockId;
+          }
+        });
+  
+        // 4️⃣ Merge datasets by ppId
+        const mergedData = tabResults
+          .filter(row => row.ppId > 0 && ppToBlockMap[row.ppId])
+          .map(row => ({
+            ppId: row.ppId,
+            assessmentBlockId: ppToBlockMap[row.ppId], // ✅ FIXED
+            RRN: row.RRN ?? 0,
+            PRN: row.PRN ?? 0,
+            ARN: row.ARN ?? 0,
+            IC: row.IC ?? null,
+          }));
+  
+        setTableData(mergedData);
+  
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("Failed to load data");
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [unitId, candidateId]);
+  
+
+console.log("table data check proper:", tableData)
+  const selectedValues = Object.values(form).filter(Boolean);
+
+
+  const ppIdList = tableData
+  .filter(item => item.ppId > 0)
+  .map(item => ({
+    blockId: item.assessmentBlockId, // ✅ THIS is the key
+    ppId: item.ppId
+  }));
+
+  
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!isFormValid()) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
+
+   
+    setIsSubmitting(true);
+
+    try {
+      const data = {
+        unitId: unitId,
+        candidateId: candidateId,
+        selection1: form.selection1,
+        selection2: form.selection2,
+        selection3: form.selection3,
+        selection4: form.selection4,
+        selection5: form.selection5,
+      };
+
+      const response = await createAssessmentChain(data);
+  
+      if (response) {
+        onSuccess();
+        onClose();
+      }
+
+    } catch (error) {
+      toast.error("Failed to save entry.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="flex flex-col h-full w-full bg-white border shadow-2xl border-gray-200" onSubmit={handleSubmit}>
+      
+      {/* HEADER */}
+      <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
+        <div className="flex items-center gap-2 text-black font-semibold">
+          <ListFilterPlus className="w-5 h-5" />
+          Create Assessment Chain
+        </div>
+
+        <button
+          onClick={onClose}
+          className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
+
+          {/* Selection 1 */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Selection 1: <span className="text-red-500 ml-1">*</span>
+          </label>
+          <select
+            value={form.selection1}
+            onChange={(e) => handleChange("selection1", e.target.value)}
+            required
+            >
+            <option value="">Select PP ID</option>
+            {ppIdList.map((item, index) => (
+                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
+                {item.ppId}
+              </option>
+              
+            ))}
+          </select>
+
+
+          {/* Selection 1 */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Selection 2: <span className="text-red-500 ml-1">*</span>
+          </label>
+          <select
+            value={form.selection2}
+            onChange={(e) => handleChange("selection2", e.target.value)}
+           
+            >
+            <option value="">Select PP ID</option>
+            {ppIdList.map((item, index) => (
+                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
+                {item.ppId}
+              </option>
+              
+            ))}
+          </select>
+
+
+          {/* Selection 1 */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Selection 3: <span className="text-red-500 ml-1">*</span>
+          </label>
+          <select
+            value={form.selection3}
+            onChange={(e) => handleChange("selection3", e.target.value)}
+           
+            >
+            <option value="">Select PP ID</option>
+            {ppIdList.map((item, index) => (
+               <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
+               {item.ppId}
+             </option>
+             
+            ))}
+          </select>
+
+
+          {/* Selection 1 */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Selection 4: <span className="text-red-500 ml-1">*</span>
+          </label>
+          <select
+            value={form.selection4}
+            onChange={(e) => handleChange("selection4", e.target.value)}
+           
+            >
+            <option value="">Select PP ID</option>
+            {ppIdList.map((item, index) => (
+                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
+                {item.ppId}
+              </option>
+              
+            ))}
+          </select>
+
+
+          {/* Selection 1 */}
+          <label className="col-span-1 text-gray-700 flex items-center">
+            Selection 5: <span className="text-red-500 ml-1">*</span>
+          </label>
+          <select
+            value={form.selection5}
+            onChange={(e) => handleChange("selection5", e.target.value)}
+           
+            >
+            <option value="">Select PP ID</option>
+            {ppIdList.map((item, index) => (
+                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
+                {item.ppId}
+              </option>
+              
+            ))}
+          </select>
+
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50">
+        <div className="flex justify-end gap-2">
+          <button
+            type="submit"
+            disabled={!isFormValid() || isSubmitting}
+            className={`px-4 py-1 bg-gray-200 text-sm ${
+              !isFormValid() || isSubmitting
+                ? "cursor-not-allowed"
+                : "hover:bg-gray-300"
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      <Toaster position="top-right" />
+    </form>
+  );
+}

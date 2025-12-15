@@ -8,7 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import SecondaryArea from "./components/SecondaryArea";
+// import SecondaryArea from "./SecondaryArea";
 import PlotSelections from "./components/PlotSelections";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +17,8 @@ import { useUnit } from "@/context/UnitContext";
 import CandidateMarksForm from "./components/CandidateMarksForm";
 import UnitImprovementForm from "./components/UnitImprovementForm";
 import LeaderMarksForm from "./components/LeaderMarksForm";
+import SecondaryInputForm from "./components/SecondaryArea";
+import CreateChainForm from "./components/CreateChainForm";
 
 export default function AuxiliaryResultants() {
   const tabs = [
@@ -32,6 +34,7 @@ export default function AuxiliaryResultants() {
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
   const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
   const [showLeaderMarkForm, setShowLeaderMarkForm] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
@@ -54,6 +57,8 @@ export default function AuxiliaryResultants() {
   const [data, setData] = useState([]);
   const [secondaryValues, setSecondaryValues] = useState(null);
   const [resetSignal, setResetSignal] = useState(0);  
+
+  const [selectedChartKey, setSelectedChartKey] = useState(null);  
 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
@@ -318,8 +323,8 @@ export default function AuxiliaryResultants() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryArea 
-                      onClose={() => setShowSecondary(false)} 
+                    <SecondaryInputForm selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId}
+                      onClose={() => setShowSecondary(false)} selectedChartKey={selectedChartKey}
                       onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal}
                     />
 
@@ -353,12 +358,12 @@ export default function AuxiliaryResultants() {
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
-                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks}
+                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks} onChartSelect={(key) => setSelectedChartKey(key)} 
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
                     : activeCandidateId   // pass single ID
-                } onResetFilters={resetFilters}  onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)}   />}
+                } onResetFilters={resetFilters}  onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} onCreateChainFormOpen={(value) => setShowCreateForm(value)} oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)}   />}
 
                 
 
@@ -376,6 +381,18 @@ export default function AuxiliaryResultants() {
                   </div>
                 )}
 
+                {showCreateForm && (
+                  <div className="fixed inset-0 z-50 top-1/4 left-1/4">
+
+                    {/* Form container */}
+                    <div className="relative bg-white w-1/2 h-90 rounded-lg shadow-2xl border border-gray-300 z-50">
+                      <CreateChainForm unitId={selectedUnitId} candidateId={activeCandidateId}
+                        onClose={() => setShowCreateForm(false)}
+                        onSuccess={() => setRefreshMarks(prev => prev + 1)}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {showUnitImprovementForm  && (
                   <div className="fixed inset-0 z-50 top-1/4 left-1/4">

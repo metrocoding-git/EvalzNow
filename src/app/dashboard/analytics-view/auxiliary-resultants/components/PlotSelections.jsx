@@ -12,12 +12,12 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, onChartSelect, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -33,6 +33,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [selectedRow, setSelectedRow] = useState(null);
   const [refreshBenchmarks, setRefreshBenchmarks] = useState(false);
   const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
+  const [chainData, setChainData] = useState([]);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -244,8 +245,12 @@ console.log("candidate id : ", candidateId);
   //   setShowChainForm(true);
   // };
 
-  const handlePlusClick = () => {
+  const handleCandidateMarkForm = () => {
     oncandidateFormOpen(true);  
+  };
+
+  const handleCreateChainForm = () => {
+    onCreateChainFormOpen(true);  
   };
 
   const handleUnitImprovementsForm = () => {
@@ -325,10 +330,10 @@ console.log("candidate id : ", candidateId);
         const data = await getUnitAndMultipleCandidateSummary({
           unitId: unitId,
           candidate_id: candidateId,       // make sure filters contains candidate_id
-          // ppIdFrom: filters?.ppIdFrom ?? undefined,    
-          // ppIdTo: filters?.ppIdTo ?? undefined,
-          // criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
-          // criticalRefDateTo: filters?.criticalDateTo ?? undefined
+          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
   
         const { results } = data;  
@@ -347,6 +352,8 @@ console.log("candidate id : ", candidateId);
         }));
         
         setTableData(formattedData);
+
+        console.log("tabulation data: ", formattedData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -359,8 +366,28 @@ console.log("candidate id : ", candidateId);
     };
   
     fetchTabulationData();
+  }, [unitId, candidateId, filters, onResetFilters]);
+
+  useEffect(() => {
+    const fetchChainData = async () => {
+      if (!unitId || !candidateId) return;
+  
+      setLoading(true);
+      try {
+        const res = await getAssessmentChain(unitId, candidateId);
+        setChainData(res?.results || []);
+      } catch (err) {
+        console.error("Error fetching assessment chain:", err);
+        setChainData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchChainData();
   }, [unitId, candidateId]);
 
+  console.log("chain data: ", chainData);
 
   useEffect(() => {
     const fetchNeedAssessment = async () => {
@@ -800,6 +827,106 @@ console.log("candidate id : ", candidateId);
         </>
       );
     }
+    else if (selectedChart.type === "table" && selectedChart.id === 12) {
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-6">
+    
+          {chainData.map((chain, chainIndex) => (
+            <div
+              key={chain.chainId}
+              className="border border-gray-300 rounded-md bg-white shadow-sm"
+            >
+    
+              {/* 🔹 Chain Header */}
+              <div className="bg-gray-100 border-b border-gray-300 px-4 py-2">
+                <div className="font-semibold text-gray-800">
+                  Assessment Chain {chainIndex + 1}
+                </div>
+                <div className="text-xs text-gray-600">
+                  Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
+                </div>
+              </div>
+    
+              {/* 🔹 Chain Tables */}
+              <div className="space-y-4 p-4">
+                {chain.selections.map((sel, idx) => (
+                  <div key={idx} className="w-full overflow-x-auto">
+                    <table className="table-auto w-full text-sm border border-gray-300">
+                      <tbody>
+    
+                        {/* Row 1 — PP ID */}
+                        <tr className="hover:bg-gray-50">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2 w-1/2">
+                            PP ID
+                          </td>
+                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                            {sel.ppId}
+                          </td>
+                        </tr>
+    
+                        {/* Row 2 — RRN, PRN, ARN */}
+                        <tr className="hover:bg-gray-50">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                            RRN, PRN, ARN
+                          </td>
+                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                            {[
+                              sel.RRN !== null && `RRN: ${sel.RRN}`,
+                              sel.PRN !== null && `PRN: ${sel.PRN}`,
+                              sel.ARN !== null && `ARN: ${sel.ARN}`,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </td>
+                        </tr>
+    
+                        {/* Row 3 — Benchmark IDs */}
+                        <tr className="hover:bg-gray-50">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                            Benchmark IDs
+                          </td>
+                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                            {sel.benchmarkIds?.length
+                              ? sel.benchmarkIds.join(", ")
+                              : "—"}
+                          </td>
+                        </tr>
+    
+                        {/* Row 4 — Action Status */}
+                        <tr className="hover:bg-gray-50">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                            Action Status
+                          </td>
+                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2 font-semibold text-gray-800">
+                            {sel.actionStatus}
+                          </td>
+                        </tr>
+    
+                        {/* Row 5 — Critical Ref Date */}
+                        <tr className="hover:bg-gray-50">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                            Critical Ref Date
+                          </td>
+                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                            {sel.criticalRefDate
+                              ? new Date(sel.criticalRefDate).toLocaleDateString()
+                              : "—"}
+                          </td>
+                        </tr>
+    
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+    
+            </div>
+          ))}
+    
+        </div>
+      );
+    }
+    
     else if (selectedChart.type === "table" && selectedChart.id === 14) {
       return (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2">
@@ -1101,9 +1228,19 @@ console.log("candidate id : ", candidateId);
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               
-              {(selectedChart?.id === 12 || selectedChart?.id === 14) &&  (
+              { selectedChart?.id === 14 &&  (
                 <button 
-                  onClick={handlePlusClick}
+                  onClick={handleCandidateMarkForm}
+                  title="Add Chain"
+                  className="text-red-600 hover:text-red-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 hover:text-blue-600" />
+                </button>
+              )}
+
+              { selectedChart?.id === 12 &&  (
+                <button 
+                  onClick={handleCreateChainForm}
                   title="Add Chain"
                   className="text-red-600 hover:text-red-800 cursor-pointer"
                 >
@@ -1112,7 +1249,7 @@ console.log("candidate id : ", candidateId);
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              {selectedChart?.id === 7 && (
+              {( selectedSort === 'activateUnitLevel' && selectedChart?.id === 7) && (
                 <button
                   onClick={handleUnitImprovementsForm}
                   title="Add Unit Improvement"
@@ -1123,7 +1260,7 @@ console.log("candidate id : ", candidateId);
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              {selectedChart?.id === 8 && (
+              { (selectedSort === 'activateUnitLevel' && selectedChart?.id) === 8 && (
                 <button
                   onClick={handleLeaderMarksForm}
                   title="Add Unit Improvement"
@@ -1161,7 +1298,10 @@ console.log("candidate id : ", candidateId);
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
-                        onClick={() => setSelectedChart(chart)}
+                        onClick={() => {
+                          setSelectedChart(chart);
+                          onChartSelect?.(chart.key); 
+                        }}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>

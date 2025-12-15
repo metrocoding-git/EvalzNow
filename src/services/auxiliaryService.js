@@ -102,3 +102,34 @@ export const getAuxiliarydata = async (unitId, candidateId) => {
       throw error;
     }
   };
+
+
+  export const getEffortBu = async (unitId, candidateId) => {
+    try {
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/effort/${unitId}/${candidateId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
+  export const createAssessmentChain = async (assessment) => {
+    try {
+      const response = await api.post(`${API_ROUTES.AUXILIARY}/chain`, assessment);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching unit improvment:", error);
+      throw error;
+    }
+  };
+
+  export const getAssessmentChain = async (unitId, candidateId) => {
+    try {
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/chain/${unitId}/${candidateId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching unit improvment:", error);
+      throw error;
+    }
+  };
