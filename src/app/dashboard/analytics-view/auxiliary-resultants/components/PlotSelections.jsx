@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
@@ -12,10 +12,11 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
+import { getInsertScoreByUnitAndCandidate } from '@/services/insertScoreService';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, onChartSelect, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -73,7 +74,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   shadeArea: "#ffffff",
 });
 
-console.log("candidate id : ", candidateId);
+// console.log("candidate id : ", candidateId);
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
@@ -83,8 +84,10 @@ console.log("candidate id : ", candidateId);
   const [rosterData, setRosterData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [candidateMarks, setCandidateMarks] = useState([]);
+  const [insertScores, setInsertScores] = useState([]);
   const [leaderMarks, setleaderMarks] = useState([]);
   const [needAssessment, setNeedAssessment] = useState([]);
+  const [needAssessmentSummary, setNeedAssessmentSummary] = useState([]);
   const [unitImprovement, setUnitImprovement] = useState([]);
 
   const canvasRef = useRef(null);
@@ -223,6 +226,7 @@ console.log("candidate id : ", candidateId);
       name: "Needs Assessment Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'nat',
       id: 6
     },
   
@@ -271,7 +275,7 @@ console.log("candidate id : ", candidateId);
         // Convert candidateId to comma-separated string if it's an array
         const candidateParam = Array.isArray(candidateId) ? candidateId.join(",") : candidateId;
   
-        const data = await getAuxiliarydata(unitId, candidateParam);
+        const data = await getAuxiliarydata(unitId, candidateParam, filters);
         setAuxData(data.results || []);
         setRosterData(data.rosterData || []);
       } catch (err) {
@@ -280,7 +284,7 @@ console.log("candidate id : ", candidateId);
     };
   
     fetchData();
-  }, [unitId, candidateId]);
+  }, [unitId, candidateId, filters, onResetFilters]);
   
 
   const csdChartData = auxData.map(r => ({
@@ -353,7 +357,7 @@ console.log("candidate id : ", candidateId);
         
         setTableData(formattedData);
 
-        console.log("tabulation data: ", formattedData);
+        // console.log("tabulation data: ", formattedData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -387,7 +391,7 @@ console.log("candidate id : ", candidateId);
     fetchChainData();
   }, [unitId, candidateId]);
 
-  console.log("chain data: ", chainData);
+  // console.log("chain data: ", chainData);
 
   useEffect(() => {
     const fetchNeedAssessment = async () => {
@@ -439,7 +443,7 @@ console.log("candidate id : ", candidateId);
           }))
         );
         
-        console.log("unit improvement data: ", result.data);
+        // console.log("unit improvement data: ", result.data);
       } catch (err) {
         console.error("Failed to  candidate marks data:", err);
         setError("Failed to load table data.");
@@ -453,7 +457,7 @@ console.log("candidate id : ", candidateId);
     fetchUnitImprovement();
   }, [unitId, candidateId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
 
-  console.log("unit improvement: ", unitImprovement);
+  // console.log("unit improvement: ", unitImprovement);
 
   useEffect(() => {
     const fetchCandidateMarks = async () => {
@@ -482,6 +486,54 @@ console.log("candidate id : ", candidateId);
     fetchCandidateMarks();
   }, [unitId, candidateId, refresh]);
 
+  useEffect(() => { 
+    
+    const fetchScoresWithAssessment = async () => { 
+      if (!unitId || !candidateId) return; 
+      
+      setLoading(true); 
+      setError(null); 
+      
+      try { 
+        const data = await getInsertScoreByUnitAndCandidate(unitId, candidateId); 
+        
+        if (!Array.isArray(data)) throw new Error("Invalid insert score response"); 
+        console.log("Fetched insert scores:", data); 
+        setInsertScores(data); 
+      } catch (err) { 
+        console.error("Error fetching insert scores:", err); 
+        setError("Failed to load insert scores."); 
+      } finally { 
+        setLoading(false); 
+        
+      } 
+    };
+    fetchScoresWithAssessment();
+  }, [unitId, candidateId]);
+
+
+  const insertScoreMap = useMemo(() => {
+    if (!Array.isArray(insertScores)) return {};
+  
+    return insertScores.reduce((acc, score) => {
+      const key = Number(score.ppId);
+      if (!acc[key]) acc[key] = [];
+  
+      acc[key].push({
+        subPpId: score.subPpId,
+        taskDeclaration: score.remarks || "-",
+        competency: score.competency || "-",
+        attainedScore: Number(score.attainedScore) || 0,
+        maxScore: Number(score.maxScore) || 0,
+        workflowStage: score.workflowStage || "-",
+        assessmentType: score.assessmentType || "-",
+        scheduleImpact: score.scheduleImpact || "-"
+      });
+  
+      return acc;
+    }, {});
+  }, [insertScores]);
+  
 
   // Merge need assessments into tableData by PP ID
   const mergedTableData = tableData.map(row => {
@@ -496,6 +548,32 @@ console.log("candidate id : ", candidateId);
   });
 
 
+  const finalMergedTableData = mergedTableData.map(row => ({
+    ...row,
+    insertScores: insertScoreMap[row.ppId] || []
+  }));
+
+  const sortedFinalTableData = [...finalMergedTableData].sort((a, b) => {
+    const aNeg = a.ppId < 0;
+    const bNeg = b.ppId < 0;
+  
+    // Both negative → sort by absolute value ASC
+    if (aNeg && bNeg) {
+      return Math.abs(a.ppId) - Math.abs(b.ppId);
+    }
+  
+    // Only A is negative → A comes first
+    if (aNeg && !bNeg) return -1;
+  
+    // Only B is negative → B comes first
+    if (!aNeg && bNeg) return 1;
+  
+    // Both positive → normal ascending
+    return a.ppId - b.ppId;
+  });
+  
+  console.log("final merged table data: ", finalMergedTableData);
+  
   useEffect(() => {
     const fetchLeaderMarks = async () => {
       if (!unitId || !candidateId) {
@@ -522,8 +600,45 @@ console.log("candidate id : ", candidateId);
   
     fetchLeaderMarks();
   }, [unitId, candidateId, refreshLeaderMarks]);
+
+
+  useEffect(() => {
+    const fetchNeedAssessmentSummary = async () => {
+      if (!unitId || !candidateId) {
+        setNeedAssessmentSummary([]);
+        return;
+      }
   
-  console.log("candidate Marks: ", candidateMarks);
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const result = await getNeedAssessmentSummary(unitId, candidateId);
+        // console.log("need assessment summary result: ", result);
+        const { statusCounts } = result;
+  
+        const pieData = [
+          { name: "Open", value: statusCounts.Open || 0 },
+          { name: "Pending", value: statusCounts.Pending || 0 },
+          { name: "Closed", value: statusCounts.Closed || 0 }
+        ];
+  
+        setNeedAssessmentSummary(pieData);
+  
+      } catch (err) {
+        console.error("Failed to load need assessment summary:", err);
+        setError("Failed to load table data.");
+        setNeedAssessmentSummary([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchNeedAssessmentSummary();
+  }, [unitId, candidateId]);
+  
+  
+  // console.log("need assesssment summary: ", needAssessmentSummary);
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -574,6 +689,7 @@ console.log("candidate id : ", candidateId);
   ];
   
 
+
   const handleBenchmarkSelection = async (selectedRows) => {
     setShowBenchmarkTable(false);
   
@@ -596,7 +712,7 @@ console.log("candidate id : ", candidateId);
       observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
     };
   
-    console.log("Submitting to backend:", payload);
+    // console.log("Submitting to backend:", payload);
   
     try {
       await createNeedAssessment(payload);
@@ -636,9 +752,100 @@ console.log("candidate id : ", candidateId);
     }
   };
   
+  const getTableConfig = () => {
+  if (!selectedChart) return null;
+
+  // ❌ Not applicable for table-type charts
+  if (selectedChart.type === "table") return null;
+
+  // ---------- LINE CHARTS ----------
+  if (selectedChart.type === "line") {
+    switch (selectedChart.key) {
+      case "be-csd":
+        return {
+          columns: ["PP ID", "CSD Tenure Days", "Cumulative Duration"],
+          rows: csdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.csdTenureDays,
+            b: r.duration
+          }))
+        };
+
+      case "be-usd":
+        return {
+          columns: ["PP ID", "USD Tenure Days", "Cumulative Duration"],
+          rows: usdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.usdTenureDays,
+            b: r.duration
+          }))
+        };
+
+      case "bp-csd":
+        return {
+          columns: ["PP ID", "Productivity CSD"],
+          rows: BpCsdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.productivityCsd
+          }))
+        };
+
+      case "bp-usd":
+        return {
+          columns: ["PP ID", "Productivity USD"],
+          rows: BpUsdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.productivityUsd
+          }))
+        };
+
+      default:
+        return null;
+    }
+  }
+
+  // ---------- SCATTER ----------
+  if (selectedChart.type === "scatter-2d") {
+    const data =
+      selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
+
+    return {
+      columns: ["PP ID", "Value"],
+      rows: data.map(r => ({
+        ppId: r.ppId,
+        a:
+          selectedChart.key === "bp-csd"
+            ? r.productivityCsd
+            : r.productivityUsd
+      }))
+    };
+  }
+
+  // ---------- PIE ----------
+  if (selectedChart.type === "pie") {
+    const dataMap = {
+      at: attendanceBreakdown,
+      et: engagementBreakdown,
+      uo: unitOutcomeData,
+      nat: needAssessmentSummary
+    };
+
+    const data = dataMap[selectedChart.key] || [];
+
+    return {
+      columns: ["Category", "Count"],
+      rows: data.map(r => ({
+        name: r.name,
+        a: r.value
+      }))
+    };
+  }
+
+  return null;
+};
+
   
-  
-  console.log("attendance tracking: ", attendanceBreakdown);
+  // console.log("attendance tracking: ", attendanceBreakdown);
   
   const renderChartContent = () => {
     if (!selectedChart) {
@@ -662,9 +869,9 @@ console.log("candidate id : ", candidateId);
           )}
 
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="bg-gray-100">
+              <thead className="">
                 <tr>
                   <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">
@@ -687,8 +894,8 @@ console.log("candidate id : ", candidateId);
               </thead>
       
               <tbody>
-                {mergedTableData.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                {sortedFinalTableData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
@@ -757,7 +964,7 @@ console.log("candidate id : ", candidateId);
       
               <tbody>
                 {leaderMarks.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.entryNumber}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.staffFirstName}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.staffLastName}</td>
@@ -788,7 +995,7 @@ console.log("candidate id : ", candidateId);
           )}
 
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
@@ -801,7 +1008,7 @@ console.log("candidate id : ", candidateId);
       
               <tbody>
                 {unitImprovement.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.lesson}</td>
       
@@ -842,9 +1049,9 @@ console.log("candidate id : ", candidateId);
                 <div className="font-semibold text-gray-800">
                   Assessment Chain {chainIndex + 1}
                 </div>
-                <div className="text-xs text-gray-600">
+                {/* <div className="text-xs text-gray-600">
                   Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
-                </div>
+                </div> */}
               </div>
     
               {/* 🔹 Chain Tables */}
@@ -926,12 +1133,126 @@ console.log("candidate id : ", candidateId);
         </div>
       );
     }
+
+    else if (selectedChart.type === "table" && selectedChart.id === 13) {
+      const computeActionStatus = (benchmarkIds = []) => {
+        if (!benchmarkIds.length) return "Open";
+        if (benchmarkIds.length < 5) return "Pending";
+        return "Closed";
+      };
+      
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-8">
+    
+          {sortedFinalTableData.map((sel, idx) => (
+            <div
+              key={`${sel.ppId}-${idx}`}
+              className="border border-gray-300 rounded-md bg-white shadow-sm p-4 space-y-6"
+            >
+    
+              {/* ===================== */}
+              {/* TABLE 1 — PP SUMMARY */}
+              {/* ===================== */}
+              <table className="table-auto w-full text-sm border border-gray-300">
+                <tbody>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2 w-1/2">PP ID</td>
+                    <td className="border px-3 py-2">{sel.ppId}</td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">RRN, PRN, ARN</td>
+                    <td className="border px-3 py-2">
+                      {[ 
+                        sel.RRN != null && `RRN: ${sel.RRN}`,
+                        sel.PRN != null && `PRN: ${sel.PRN}`,
+                        sel.ARN != null && `ARN: ${sel.ARN}`
+                      ].filter(Boolean).join(", ")}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Benchmark IDs</td>
+                    <td className="border px-3 py-2">
+                      {sel.benchmarkIds?.length
+                        ? sel.benchmarkIds.join(", ")
+                        : "—"}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Action Status</td>
+                    <td className="border px-3 py-2 font-semibold">
+                      {computeActionStatus(sel.benchmarkIds)}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Critical Ref Date</td>
+                    <td className="border px-3 py-2">
+                      {sel.criticalRefDate
+                        ? new Date(sel.criticalRefDate).toLocaleDateString()
+                        : "—"}
+                    </td>
+                  </tr>
+    
+                </tbody>
+              </table>
+    
+              {/* ============================= */}
+              {/* TABLE 2 — INSERT SCORE DETAIL */}
+              {/* ============================= */}
+              <div className="overflow-x-auto">
+                <table className="table-auto w-full text-sm border border-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="border px-3 py-2">Task Declaration</th>
+                      <th className="border px-3 py-2">Competency</th>
+                      <th className="border px-3 py-2">Attained Score</th>
+                      <th className="border px-3 py-2">Maximum Score</th>
+                      <th className="border px-3 py-2">Workflow Stage</th>
+                      <th className="border px-3 py-2">Assessment Type</th>
+                      <th className="border px-3 py-2">Schedule Impact</th>
+                    </tr>
+                  </thead>
+    
+                  <tbody>
+                    {sel.insertScores.length ? (
+                      sel.insertScores.map((s, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="border px-3 py-2">{s.taskDeclaration}</td>
+                          <td className="border px-3 py-2">{s.competency}</td>
+                          <td className="border px-3 py-2">{s.attainedScore}</td>
+                          <td className="border px-3 py-2">{s.maxScore}</td>
+                          <td className="border px-3 py-2">{s.workflowStage}</td>
+                          <td className="border px-3 py-2">{s.assessmentType}</td>
+                          <td className="border px-3 py-2">{s.scheduleImpact}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="text-center py-3">
+                          No insert score records
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+    
+            </div>
+          ))}
+    
+        </div>
+      );
+    }    
     
     else if (selectedChart.type === "table" && selectedChart.id === 14) {
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2">
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
           <table className="table-auto w-full text-sm border border-gray-300">
-            <thead className="bg-gray-100">
+            <thead className="">
               <tr>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
@@ -943,7 +1264,7 @@ console.log("candidate id : ", candidateId);
             </thead>
             <tbody>
               {candidateMarks.map((row, index) => (
-                <tr key={index} className="hover:bg-blue-50">
+                <tr key={index} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.entryNumber}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.impactType}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernIdentified}</td>
@@ -973,7 +1294,7 @@ console.log("candidate id : ", candidateId);
             </thead>
             <tbody>
               {[1, 2, 3, 4, 5].map((num) => (
-                <tr key={num} className="hover:bg-blue-50">
+                <tr key={num} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Type {num}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern {num}</td>
@@ -1120,12 +1441,12 @@ console.log("candidate id : ", candidateId);
         );
       }
 
-      if (selectedChart.key === 'uo' && attendanceBreakdown.length > 0) {
+      if (selectedChart.key === 'uo' && unitOutcomeData.length > 0) {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={attendanceBreakdown}
+                data={unitOutcomeData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -1133,7 +1454,7 @@ console.log("candidate id : ", candidateId);
                 outerRadius={120}
                 label
               >
-                {attendanceBreakdown.map((entry, index) => (
+                {unitOutcomeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
                 ))}
               </Pie>
@@ -1144,6 +1465,33 @@ console.log("candidate id : ", candidateId);
         );
       }
 
+      if (selectedChart.key === 'nat' && needAssessmentSummary.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={needAssessmentSummary}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {needAssessmentSummary.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={["#3b82f6", "#f59e0b", "#10b981"][index % 3]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+      
       // Update your scatter chart rendering logic:
       if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
@@ -1271,7 +1619,11 @@ console.log("candidate id : ", candidateId);
               )}
 
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
+                    if (typeof onResetFilters === "function") {
+                      onResetFilters(); // ✅ reset filters in parent
+                    }
+                  }}  />
               </button>
               <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
@@ -1350,16 +1702,6 @@ console.log("candidate id : ", candidateId);
                   Table
                 </button>
 
-                <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Chain'
-                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Chain')}
-                >
-                  Chain
-                </button>
-
               </div>
 
               {/* Tab Content */}
@@ -1371,31 +1713,44 @@ console.log("candidate id : ", candidateId);
                   />
                 )}
 
-                {activeAdjustPropertieTab === 'Table' && (
+                {activeAdjustPropertieTab === "Table" && (() => {
+                  const tableConfig = getTableConfig();
+                  if (!tableConfig) return null;
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Month</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">X Axis Value</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Y Axis Value</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Z Axis Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
+                  return (
+                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-15">
+                      <table className="table-auto w-full text-sm border border-gray-300">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            {tableConfig.columns.map(col => (
+                              <th
+                                key={col}
+                                className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                              >
+                                {col}
+                              </th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {tableConfig.rows.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-blue-50">
+                              {Object.values(row).map((cell, i) => (
+                                <td
+                                  key={i}
+                                  className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                                >
+                                  {cell ?? "—"}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+
               </div>
             </div>
           </div>
