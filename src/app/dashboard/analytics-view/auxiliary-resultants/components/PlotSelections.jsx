@@ -12,11 +12,15 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 import { getInsertScoreByUnitAndCandidate } from '@/services/insertScoreService';
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, onChartSelect, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -35,7 +39,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [refreshBenchmarks, setRefreshBenchmarks] = useState(false);
   const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
   const [chainData, setChainData] = useState([]);
-
+  const chartContainerRef = useRef(null);
+  
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -46,33 +51,34 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   ];
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
-
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
-
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
-
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
-
-  // Shade area
-  shadeArea: "#ffffff",
-});
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
+  
+    // Curve Label
+    showLabel: true,
+    labelType: "X Type",
+    
+  
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
+  
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
+    symbolFrequency: 1,
+    symbolScaleSize: 3,
+  
+    // Shade area
+    shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
+  });
 
 // console.log("candidate id : ", candidateId);
   const [points, setPoints] = useState(
@@ -690,67 +696,310 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
 
 
-  const handleBenchmarkSelection = async (selectedRows) => {
-    setShowBenchmarkTable(false);
   
-    if (!selectedRow) return; // safety
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
+      return;
+    }
   
-    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
+      }
   
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
+  
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+  
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
+  
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+  
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+  
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+  
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+  
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+  
+      // Move down past the image
+      let currentRow = 27;
+  
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
+  
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+  
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+  
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+  
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      }
+  
+      // 8. Add threshold information if available
+      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      //   currentRow++;
+      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      //   worksheet.getRow(currentRow).font = { bold: true };
+      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      //   currentRow++;
+  
+      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      // }
+  
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+  
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      
+      // Download the file
+      saveAs(blob, fileName);
+  
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+  
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
+
+// Updated handleBenchmarkSelection function:
+const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
+  setShowBenchmarkTable(false);
+  
+  if (!selectedRow) return;
+
+  try {
+    // Check if a need assessment already exists for this PP ID
+    const existingNeed = needAssessment.find(n => n.ppId === selectedRow.ppId);
+    
+    // Get existing benchmark IDs
+    const existingBIds = existingNeed ? JSON.parse(existingNeed.bIds) : [];
+    const existingBenchmarkIds = existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [];
+    
+    // Determine which benchmarks to KEEP (selected ones)
+    const benchmarksToKeep = selectedBenchmarkIds;
+    
+    // Determine which benchmarks to REMOVE (were previously selected but now unchecked)
+    const benchmarksToRemove = existingBIds.filter(id => !selectedBenchmarkIds.includes(id));
+    
+    // Final list: only keep the selected ones (this removes unchecked ones)
+    const finalBIds = benchmarksToKeep;
+    const finalBenchmarkIds = benchmarksToKeep;
+    
+    console.log("Previous IDs:", existingBIds);
+    console.log("Selected IDs:", selectedBenchmarkIds);
+    console.log("IDs to remove:", benchmarksToRemove);
+    console.log("Final IDs:", finalBIds);
+    
+    // If NO benchmarks are selected AND there was no existing record, don't create empty record
+    if (finalBIds.length === 0 && !existingNeed) {
+      console.log("No benchmarks selected and no existing record - nothing to save");
+      setRefreshBenchmarks(prev => !prev);
+      return;
+    }
+    
+    // If NO benchmarks are selected BUT there was an existing record, delete it
+    if (finalBIds.length === 0 && existingNeed) {
+      console.log("All benchmarks removed - deleting existing record");
+      try {
+        await deleteNeedAssessment(existingNeed.id);
+        setRefreshBenchmarks(prev => !prev);
+        return;
+      } catch (deleteErr) {
+        console.error("Failed to delete need assessment:", deleteErr);
+        alert("Failed to remove all benchmarks. Please try again.");
+        return;
+      }
+    }
+    
+    // Prepare the payload with only selected benchmarks
     const payload = {
       unitId,
       candidateId,
       ppId: selectedRow.ppId,
-      bIds: [
-        ...(selectedRow.bIds || []),
-        ...selectedBenchmarkIds
-      ],
-      benchmarkIds: [
-        ...(selectedRow.benchmarkIds || []),
-        ...selectedBenchmarkIds
-      ],
+      bIds: finalBIds,
+      benchmarkIds: finalBenchmarkIds,
       observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
     };
-  
-    // console.log("Submitting to backend:", payload);
-  
-    try {
+
+    if (existingNeed) {
+      // Update existing need assessment
+      console.log("Updating existing need assessment:", existingNeed.id);
+      await updateNeedAssessment(existingNeed.id, payload);
+    } else {
+      // Create new need assessment
+      console.log("Creating new need assessment");
       await createNeedAssessment(payload);
-                       // trigger parent refresh
-    } catch (err) {
-      console.error("Failed to submit need assessment:", err);
     }
-  };
+    
+    // Trigger refresh to show updated data
+    setRefreshBenchmarks(prev => !prev);
+    
+  } catch (err) {
+    console.error("Failed to submit need assessment:", err);
+    alert("Failed to save benchmark selection. Please try again.");
+  }
+};
 
+const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
+  setShowBenchmarkTable(false);
 
-  const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarks) => {
-    if (!selectedRow || selectedBenchmarks.length === 0) return;
-  
-    // Extract only benchmark IDs or BID numbers
-    const newBenchmarkIds = selectedBenchmarks.map(b => b.benchmarkId);
-    const newBIds = selectedBenchmarks.map(b => b.bId);
+  if (!selectedRow) return;
 
-  
-    const payload = {
-      benchmarkIds: newBenchmarkIds,
-      bIds: newBIds,
-    };
-  
-    try {
-      await updateUnitImprovement(selectedRow.id, payload); // <-- UPDATE API CALL
-  
-      setShowBenchmarkTable(false);
+  try {
+    // selectedBenchmarkIds = [1,2,3]
+    const selectedBIds = selectedBenchmarkIds; // ✅ same thing at unit level
 
+    const existingBenchmarkIds = selectedRow.benchmarkIds || [];
+    const existingBIds = selectedRow.bIds || [];
+
+    // 🚫 No selection + no existing record → do nothing
+    if (selectedBIds.length === 0 && !selectedRow.id) {
       setRefreshBenchmarksUnitLevel(prev => !prev);
-
-      // call parent refresh if exists
-      if (refreshUnitImprovement) refreshUnitImprovement();
-      
-  
-    } catch (error) {
-      console.error("Failed to update improvement:", error);
+      return;
     }
-  };
+
+    // 🗑 No selection + existing record → DELETE
+    if (selectedBIds.length === 0 && selectedRow.id) {
+      await deleteUnitImprovement(selectedRow.id);
+      setRefreshBenchmarksUnitLevel(prev => !prev);
+      return;
+    }
+
+    const payload = {
+      unitId,
+      candidateId,
+      benchmarkIds: selectedBenchmarkIds,
+      bIds: selectedBIds
+    };
+
+    if (selectedRow.id) {
+      // ✅ UPDATE
+      await updateUnitImprovement(selectedRow.id, payload);
+    } else {
+      // ✅ CREATE
+      await createUnitImprovement(payload);
+    }
+
+    // ✅ refresh list
+    setRefreshBenchmarksUnitLevel(prev => !prev);
+
+  } catch (error) {
+    console.error("Failed to save unit improvement benchmarks:", error);
+    alert("Failed to save benchmark selection");
+  }
+};
+
   
   const getTableConfig = () => {
   if (!selectedChart) return null;
@@ -848,6 +1097,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   // console.log("attendance tracking: ", attendanceBreakdown);
   
   const renderChartContent = () => {
+    
     if (!selectedChart) {
       return (
         <div className="flex items-center justify-center h-full">
@@ -861,10 +1111,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         <>
           {showBenchmarkTable && (
             <BenchmarkTable
-              onClose={(selectedBenchmarks) => {
-                handleBenchmarkSelection(selectedBenchmarks);
-                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
-              }}
+            onClose={(selectedBenchmarks) => {
+              handleBenchmarkSelection(selectedBenchmarks);
+              setRefreshBenchmarks(prev => !prev);
+            }}
+            selectedBenchmarks={selectedRow?.bIds || []} // Pass already selected benchmarks
             />
           )}
 
@@ -909,23 +1160,83 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       
                     {/* ADD button */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                      <button 
+                        className={`px-3 py-1 rounded ${
+                          item.bIds.length > 0
+                            ? "bg-gray-200 hover:bg-gray-300"
+                            : "bg-gray-200 hover:bg-gray-300"
+                        }`}
                         onClick={() => {
                           setSelectedRow(item);
                           setShowBenchmarkTable(true);
-                          }
-                        } >
-                        + ADD
+                        }}
+                      >
+                        {item.bIds.length > 0 ? 'EDIT' : 'ADD'}
                       </button>
                     </td>
+
                     {/* Linked BIDs */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
                     </td>
+
                     {/* Observations */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      {item.observation}
+                    <input
+                      type="text"
+                      value={item.observation ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        // Optimistic UI update (no DB call)
+                        setNeedAssessment(prev =>
+                          prev.map(n =>
+                            n.ppId === item.ppId
+                              ? { ...n, observation: value }
+                              : n
+                          )
+                        );
+                      }}
+                      onBlur={async (e) => {
+                        const newObservation = e.target.value.trim();
+
+                        try {
+                          const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
+
+                          // ❌ Do nothing if empty observation AND no existing record
+                          if (!existingNeed && newObservation === "") return;
+
+                          const payload = {
+                            unitId,
+                            candidateId,
+                            ppId: item.ppId,
+                            bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
+                            benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
+                            observation: newObservation
+                          };
+
+                          if (existingNeed) {
+                            // ✅ UPDATE
+                            await updateNeedAssessment(existingNeed.id, payload);
+                          } else {
+                            // ✅ CREATE
+                            await createNeedAssessment(payload);
+                          }
+
+                          // ✅ Refresh backend state
+                          setRefreshBenchmarks(prev => !prev);
+
+                        } catch (error) {
+                          console.error("Observation save failed:", error);
+                          alert("Failed to save observation");
+                        }
+                      }}
+                      className="py-2 px-3 border border-gray-300 rounded w-full"
+                    />
+
+
                     </td>
+
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       {item.bIds.length === 0
                         ? "Open"
@@ -989,8 +1300,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <BenchmarkTableUnitLevel
               onClose={(selectedBenchmarks) => {
                 handleBenchmarkSelectionUnitLevel(selectedBenchmarks);
-                setRefreshBenchmarksUnitLevel(prev => !prev);  // 🔄 trigger re-render
+                setRefreshBenchmarksUnitLevel(prev => !prev);
               }}
+              selectedBenchmarks={selectedRow?.bIds || []}
             />
           )}
 
@@ -1625,7 +1937,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     }
                   }}  />
               </button>
-              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
               
@@ -1646,7 +1958,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' ? (
-                    activateCandidateLevel.map((chart) => (
+                    activateCandidateLevel.map((chart, index) => (
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
@@ -1656,7 +1968,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                         }}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{index +1}</div>
                       </div>
                     ))
                   ) : selectedSort === 'activateUnitLevel' ? (
@@ -1756,7 +2068,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.name}` : 'Select a plot'}

@@ -4,12 +4,13 @@ import { X } from "lucide-react";
 import { useUnit } from "@/context/UnitContext";
 import { getUnitById } from "@/services/unitService";
 
-export default function BenchmarkTableUnitLevel({ onClose }) {
+export default function BenchmarkTableUnitLevel({ onClose, selectedBenchmarks }) {
   const { selectedUnitId } = useUnit();
   const [benchmarkList, setBenchmarkList] = useState([]);   // <-- incoming benchmark data
   const [rows, setRows] = useState([]);                     // <-- editable table rows
   const [loading, setLoading] = useState(false);
 
+  // Load Benchmark Data
   // Load Benchmark Data
   useEffect(() => {
     if (!selectedUnitId) return;
@@ -18,21 +19,25 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
       try {
         setLoading(true);
         const data = await getUnitById(selectedUnitId);
-
         const benchmarks = data.benchmarks || [];
-
         setBenchmarkList(benchmarks);
 
-        // Initialize table rows based on number of benchmark objects
-        const initializedRows = benchmarks.map((b, index) => ({
-          rowId: index + 1,
-          bId: b.id || "",
-          benchmarkId: b.benchmarkId || "",
-          benchmarkType: b.benchmarkType || "",
-          benchmarkRef: b.benchmarkRef || "",
-          benchmarkDescription: b.benchmarkDescription || "",
-          isSelected: false
-        }));
+        // Initialize rows with pre-selected benchmarks
+        const initializedRows = benchmarks.map((b, index) => {
+          // Check if this benchmark is already selected
+          const isAlreadySelected = selectedBenchmarks.some(
+            selected => Number(selected) === Number(b.benchmarkId)
+          );
+          
+          return {
+            rowId: index + 1,
+            benchmarkId: b.benchmarkId || "",
+            benchmarkType: b.benchmarkType || "",
+            benchmarkRef: b.benchmarkRef || "",
+            benchmarkDescription: b.benchmarkDescription || "",
+            isSelected: isAlreadySelected // Pre-select based on selectedBenchmarks
+          };
+        });
 
         setRows(initializedRows);
       } finally {
@@ -41,9 +46,7 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
     };
 
     fetchBenchmarkData();
-  }, [selectedUnitId]);
-
-  console.log("Benchmark List:", rows);
+  }, [selectedUnitId, selectedBenchmarks]);
 
   // When selecting Benchmark ID from dropdown
   const handleBenchmarkIdChange = (rowId, value) => {
@@ -57,7 +60,8 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
               benchmarkId: value,
               benchmarkType: selectedBench?.benchmarkType || "",
               benchmarkRef: selectedBench?.benchmarkRef || "",
-              benchmarkDescription: selectedBench?.benchmarkDescription || ""
+              benchmarkDescription: selectedBench?.benchmarkDescription || "",
+              isSelected: true // Auto-select when chosen from dropdown
             }
           : row
       )
@@ -74,14 +78,29 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
   };
 
   
-  // close + return selected rows
+  // Select/Deselect All
+  const handleSelectAll = () => {
+    const allSelected = rows.every(row => row.isSelected);
+    setRows(prev =>
+      prev.map(row => ({ ...row, isSelected: !allSelected }))
+    );
+  };
+
+ 
+  // In BenchmarkTable component
   const handleCloseClick = () => {
     const selectedRows = rows.filter(row => row.isSelected);
-    onClose(selectedRows);
+    
+    // Return only the benchmarkIds
+    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+    
+    // Pass the array of benchmark IDs
+    onClose(selectedBenchmarkIds);
   };
   
 
   const selectedCount = rows.filter(row => row.isSelected).length;
+  const totalCount = rows.length;
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
@@ -109,23 +128,31 @@ export default function BenchmarkTableUnitLevel({ onClose }) {
             <tbody>
               {rows.map((row, index) => (
                 <tr
-                  key={index}
+                  key={row.benchmarkId || index}
                   onClick={() => handleRowClick(row.rowId)}
-                  className={`cursor-pointer ${row.isSelected ? "bg-gray-100" : ""}`}
+                  className={`cursor-pointer transition-colors ${
+                    row.isSelected 
+                      ? "bg-blue-50 hover:bg-blue-100" 
+                      : "hover:bg-gray-50"
+                  } ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
                 >
-                  <td className="px-4 py-2 border text-center">
+                  <td className="px-4 py-3 border text-center">
                     <input
                       type="checkbox"
                       checked={row.isSelected}
                       readOnly
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                     />
                   </td>
 
-                  {/* Benchmark ID dropdown */}
-                  <td className="px-4 py-2 border">{row.benchmarkId}</td>
-                  <td className="px-4 py-2 border text-center">{row.benchmarkType}</td>
-                  <td className="px-4 py-2 border text-center">{row.benchmarkRef}</td>
-                  <td className="px-4 py-2 border text-center">{row.benchmarkDescription}</td>
+                  <td className="px-4 py-3 border">
+                    <span className="font-medium text-gray-900">{row.benchmarkId}</span>
+                  </td>
+                  <td className="px-4 py-3 border">
+                      {row.benchmarkType}
+                  </td>
+                  <td className="px-4 py-3 border text-gray-700">{row.benchmarkRef}</td>
+                  <td className="px-4 py-3 border text-gray-600">{row.benchmarkDescription}</td>
                 </tr>
               ))}
             </tbody>

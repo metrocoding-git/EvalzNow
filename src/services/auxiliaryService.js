@@ -67,6 +67,26 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const updateNeedAssessment = async (id, updateData) => {
+    try {
+      const response = await api.put(`${API_ROUTES.AUXILIARY}/assessment/${id}`, updateData);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
+  export const deleteNeedAssessment = async (id) => {
+    try {
+      const response = await api.delete(`${API_ROUTES.AUXILIARY}/assessment/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
 
   export const getUnitImprovement = async (unitId, candidateId) => {
     try {
@@ -98,6 +118,15 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const deleteUnitImprovement = async (id) => {
+    try {
+      const response = await api.delete(`${API_ROUTES.AUXILIARY}/lesson/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
 
   export const getLeaderMarks = async (unitId, candidateId) => {
     try {
