@@ -1,6 +1,9 @@
 "use client";
 import { createClient } from "@/services/clientService";
 import { getCompanySize } from "@/services/companyService";
+import { getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
+import { createNeuroObject, getNeuroObjectbyUnitAndCandidate } from "@/services/neuroScienceService";
+import { getUnitAndMultipleCandidateSummary } from "@/services/tabulationTableService";
 import { ChevronLeft, ChevronRight, ListFilterPlus, Plus, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -23,7 +26,7 @@ const companySizes = [
 ];
 
 
-export default function NeuroObject({ onClose }) {
+export default function NeuroObject({ onClose, unitId, candidateId }) {
   const [form, setForm] = useState({});
   const [executiveId, setExecutiveId] = useState("");
 
@@ -31,9 +34,13 @@ export default function NeuroObject({ onClose }) {
   const [error, setError] = useState(null);
   const [companySize, setCompanySize] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [selectedPP, setSelectedPP] = useState(null);
   const [answers, setAnswers] = useState({});
   const [expanded, setExpanded] = useState({}); // track expanded lobes
+  const [assessmentData, setAssessmentData] = useState([]);
+
+  const [existingNeuroObjectPPs, setExistingNeuroObjectPPs] = useState([]); // Store PP IDs that already have neuro objects
+  
 
   const handleChange = (idx, value) => {
     setAnswers((prev) => ({
@@ -160,16 +167,126 @@ export default function NeuroObject({ onClose }) {
     { lobe: "Temporal Lobe - Right", func: "Functional Capacity - Temporal Lobe (R)", value: "Yes" },
   ];
 
-  const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
+  // Filtered assessment data - only PP IDs that don't exist in neuro object responses
+  const filteredAssessmentData = assessmentData.filter(
+    item => !existingNeuroObjectPPs.includes(item.ppId)
+  );
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!unitId || !candidateId) return;
+  
+      setLoading(true);
+      setError(null);
+  
+      try {
+        // Fetch both insert scores and neuro objects in parallel
+        const [insertScoreData, neuroObjectData] = await Promise.all([
+          getInsertScoreByUnitAndCandidate(unitId, candidateId),
+          getNeuroObjectbyUnitAndCandidate(unitId, candidateId)
+        ]);
+  
+        // Process insert scores
+        if (!Array.isArray(insertScoreData)) {
+          throw new Error("Invalid insert score response");
+        }
+  
+        console.log("Fetched insert scores:", insertScoreData);
+  
+        const extracted = insertScoreData.reduce((acc, item) => {
+          if (item.ppId > 0 && !acc.some(i => i.ppId === item.ppId)) {
+            acc.push({ 
+              ppId: item.ppId, 
+              assessmentBlockId: item.assessmentBlockId 
+            });
+          }
+          return acc;
+        }, []);
+        
+        setAssessmentData(extracted);
+  
+        // Process neuro objects to extract existing PP IDs
+        if (Array.isArray(neuroObjectData)) {
+          console.log("Fetched neuro objects:", neuroObjectData);
+          
+          // Extract unique PP IDs from neuro object responses
+          const existingPPs = neuroObjectData.reduce((acc, item) => {
+            if (item.ppId && !acc.includes(item.ppId)) {
+              acc.push(item.ppId);
+            }
+            return acc;
+          }, []);
+          
+          setExistingNeuroObjectPPs(existingPPs);
+          console.log("Existing PP IDs in neuro objects:", existingPPs);
+        }
+  
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data.");
+        setAssessmentData([]);
+        setExistingNeuroObjectPPs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [unitId, candidateId]);
 
   // Group rows by lobe
   const grouped = rows.reduce((acc, row, idx) => {
     if (!acc[row.lobe]) acc[row.lobe] = [];
     acc[row.lobe].push({ ...row, idx });
     return acc;
-  }, {})
+  }, {});
+
+  const handleSubmit = async () => {
+    if (!selectedPP) {
+      alert("Please select a PP ID");
+      return;
+    }
+  
+    const responses = rows.map((row, idx) => ({
+      lobe: row.lobe,
+      functionName: row.func,
+      value: answers[idx] ?? row.value ?? "No",
+    }));
+  
+    const payload = {
+      unitId,
+      candidateId,
+      assessmentBlockId: selectedPP.assessmentBlockId,
+      ppId: selectedPP.ppId,
+      responses,
+    };
+  
+    try {
+      setIsSubmitting(true);
+      await createNeuroObject(payload);
+      // Refresh the list after creating a new neuro object
+      const neuroObjectData = await getNeuroObjectbyUnitAndCandidate(unitId, candidateId);
+      if (Array.isArray(neuroObjectData)) {
+        const existingPPs = neuroObjectData.reduce((acc, item) => {
+          if (item.ppId && !acc.includes(item.ppId)) {
+            acc.push(item.ppId);
+          }
+          return acc;
+        }, []);
+        setExistingNeuroObjectPPs(existingPPs);
+      }
+      // Clear the selected PP and answers
+      setSelectedPP(null);
+      setAnswers({});
+     
+    } catch (err) {
+      console.error("Failed to create Neuro Object", err);
+      alert("Failed to save Neuro Object");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   return (
@@ -198,19 +315,30 @@ export default function NeuroObject({ onClose }) {
           PP ID Callout:
         </label>
         <select
-          // value={formData.ppId}
-          // onChange={(e) => handleChange("ppId", e.target.value)}
           className="flex-1 border px-2 py-1 w-full"
+          value={selectedPP?.ppId ?? ""}
+          onChange={(e) => {
+            const pp = filteredAssessmentData.find(
+              (item) => String(item.ppId) === e.target.value
+            );
+            setSelectedPP(pp || null);
+          }}
         >
-          <option value="" >
-            Select PP ID
-          </option>
-          {mockPpIds.map((pp, i) => (
-            <option key={i} value={pp}>
-              {pp}
+          <option value="">Select PP ID</option>
+          {filteredAssessmentData.length === 0 ? (
+            <option value="" disabled>
+              No available PP IDs
             </option>
-          ))}
+          ) : (
+            filteredAssessmentData.map((item, i) => (
+              <option key={i} value={item.ppId}>
+                {item.ppId}
+              </option>
+            ))
+          )}
         </select>
+
+
       </div>
 
           
@@ -286,9 +414,9 @@ export default function NeuroObject({ onClose }) {
         <div className="flex justify-end gap-2">
           <button
             type="submit"
-            onClick={onClose}
-            // disabled={!isFormValid() || isSubmitting}
-            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors disabled:opacity-50
             }`}
           >
             Close

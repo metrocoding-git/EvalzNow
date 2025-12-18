@@ -8,8 +8,9 @@ import {
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
 import NeuroObject from './NeuroObject';
+import { getNeuroObjectRMSValue } from '@/services/neuroScienceService';
 
-export default function PlotSelections({ activeChart, setActiveChart }) {
+export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -37,7 +38,7 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
 
   ]
 
-  const indicatorsData = [
+  const [indicatorsData, setIndicatorsData] = useState([
     { ppId: 1, target: 'Proficiency', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
     { ppId: 1, target: 'Growth', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
     { ppId: 2, target: 'Proficiency', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
@@ -46,7 +47,7 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
     { ppId: 3, target: 'Growth', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
     { ppId: 4, target: 'Proficiency', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
     { ppId: 4, target: 'Growth', RMS1: '', RMS2: '', RMS3: '', RMS4: '', RMS5: '', RMS6: '', RMS7: '', RMS8: '' },
-  ]
+  ]);
 
   const loadsData = [
     { ppId: 1, target: 'Proficiency', Cognitive1: '', Cognitive2: '', Cognitive3: '', Cognitive4: '', Cognitive5: '', Cognitive6: '', Cognitive7: '', Cognitive8: '' },
@@ -183,12 +184,12 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
     },
   ];
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedChart, setSelectedChart] = useState(entities[0]);
-
   const [selectedNeuroTools, setSelectedNeuroTools] = useState(1);
-
   const [showNeuroObject, setShowNeuroObject] = useState(false);
-
+  
   const handlePlusClick = () => setShowNeuroObject(true);
   const handleCloseNeuroObject = () => setShowNeuroObject(false);
 
@@ -206,6 +207,55 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
     }
   };
 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!unitId || !candidateId) return;
+  
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const apiResponse = await getNeuroObjectRMSValue(unitId, candidateId);
+  
+        if (!apiResponse?.data) return;
+  
+        // Map API response to indicatorsData
+        const updatedIndicators = indicatorsData.map(row => {
+          const ppData = apiResponse.data.find(d => d.ppId === row.ppId);
+          if (!ppData) return row;
+  
+          const lobes = ppData.lobes;
+  
+          // Determine which RMS to use
+          const isProficiency = row.target === "Proficiency";
+  
+          return {
+            ...row,
+            RMS1: isProficiency ? lobes["Frontal Lobe - Left"]?.RMS.toFixed(2) : lobes["Frontal Lobe - Left"]?.deltaRMS.toFixed(2),
+            RMS2: isProficiency ? lobes["Occipital Lobe - Left"]?.RMS.toFixed(2) : lobes["Occipital Lobe - Left"]?.deltaRMS.toFixed(2),
+            RMS3: isProficiency ? lobes["Parietal Lobe - Left"]?.RMS.toFixed(2) : lobes["Parietal Lobe - Left"]?.deltaRMS.toFixed(2),
+            RMS4: isProficiency ? lobes["Temporal Lobe - Left"]?.RMS.toFixed(2) : lobes["Temporal Lobe - Left"]?.deltaRMS.toFixed(2),
+            RMS5: isProficiency ? lobes["Frontal Lobe - Right"]?.RMS.toFixed(2) : lobes["Frontal Lobe - Right"]?.deltaRMS.toFixed(2),
+            RMS6: isProficiency ? lobes["Occipital Lobe - Right"]?.RMS.toFixed(2) : lobes["Occipital Lobe - Right"]?.deltaRMS.toFixed(2),
+            RMS7: isProficiency ? lobes["Parietal Lobe - Right"]?.RMS.toFixed(2) : lobes["Parietal Lobe - Right"]?.deltaRMS.toFixed(2),
+            RMS8: isProficiency ? lobes["Temporal Lobe - Right"]?.RMS.toFixed(2) : lobes["Temporal Lobe - Right"]?.deltaRMS.toFixed(2),
+          };
+        });
+  
+        setIndicatorsData(updatedIndicators);
+  
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [unitId, candidateId]);
+  
 
 
   const handleDeleteCurve = () => {
@@ -227,7 +277,7 @@ export default function PlotSelections({ activeChart, setActiveChart }) {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
         {showNeuroObject && (
           <div className="absolute top-0 left-0 z-50 w-[500px] h-[400px] bg-white shadow-2xl border border-gray-200 rounded-md">
-            <NeuroObject onClose={handleCloseNeuroObject} />
+            <NeuroObject onClose={handleCloseNeuroObject} unitId={unitId} candidateId={candidateId} />
           </div>
         )}
       </h2>

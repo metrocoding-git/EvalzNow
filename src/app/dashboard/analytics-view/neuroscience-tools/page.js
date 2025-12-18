@@ -286,7 +286,7 @@ export default function NeuroscienceTools() {
               <div className=" w-9/12 bg-white flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
                 {/* {ScoresOpen && <CurveEditor />} */}
 
-                <PlotSelections activeChart={activeChart}
+                <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
                   setActiveChart={setActiveChart} />
 
 
