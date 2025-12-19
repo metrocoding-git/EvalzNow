@@ -52,6 +52,9 @@ export default function NeuroscienceTools() {
     data.length > 0 ? data[0].id : null
   );
 
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [resetSignal, setResetSignal] = useState(0);
+  
   useEffect(() => {
     if (activeCandidateId) {
       setScoresOpen(true);
@@ -81,6 +84,17 @@ export default function NeuroscienceTools() {
     }
   });
 
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+    });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
+  };
 
   // Fetch candidates + unit details by selectedUnitId
   useEffect(() => {
@@ -266,14 +280,14 @@ export default function NeuroscienceTools() {
                     {/* Secondary Input Area */}
                     {showSecondary && (
                       <div className="h-1/3 overflow-auto ">
-                        <SecondaryArea onClose={() => setShowSecondary(false)} />
+                        <SecondaryArea onClose={() => setShowSecondary(false)} onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} />
                       </div>
                     )}
 
                     {/* Editor */}
                     <div className="h-1/3 overflow-auto ">
                       <ClientEditor
-                        onClose={() => setShowEdit(false)}
+                        onClose={() => setShowEdit(false)} unitId={unitData?.id} candidateId={activeCandidateId}
                         client={true}
                         showForm={showEdit}
                       />
@@ -287,7 +301,7 @@ export default function NeuroscienceTools() {
                 {/* {ScoresOpen && <CurveEditor />} */}
 
                 <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
-                  setActiveChart={setActiveChart} />
+                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} />
 
 
               </div>

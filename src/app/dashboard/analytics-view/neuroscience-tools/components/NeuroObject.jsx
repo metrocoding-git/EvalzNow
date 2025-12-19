@@ -26,7 +26,7 @@ const companySizes = [
 ];
 
 
-export default function NeuroObject({ onClose, unitId, candidateId }) {
+export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
   const [form, setForm] = useState({});
   const [executiveId, setExecutiveId] = useState("");
 
@@ -182,15 +182,16 @@ export default function NeuroObject({ onClose, unitId, candidateId }) {
   
       try {
         // Fetch both insert scores and neuro objects in parallel
-        const [insertScoreData, neuroObjectData] = await Promise.all([
-          getInsertScoreByUnitAndCandidate(unitId, candidateId),
-          getNeuroObjectbyUnitAndCandidate(unitId, candidateId)
-        ]);
+        const insertScoreData = await getInsertScoreByUnitAndCandidate(
+          unitId,
+          candidateId
+        );
+  
+        const neuroObjectData =
+          (await getNeuroObjectbyUnitAndCandidate(unitId, candidateId)) || [];
   
         // Process insert scores
-        if (!Array.isArray(insertScoreData)) {
-          throw new Error("Invalid insert score response");
-        }
+       
   
         console.log("Fetched insert scores:", insertScoreData);
   
@@ -265,6 +266,8 @@ export default function NeuroObject({ onClose, unitId, candidateId }) {
     try {
       setIsSubmitting(true);
       await createNeuroObject(payload);
+
+      if (onSaved) onSaved();
       // Refresh the list after creating a new neuro object
       const neuroObjectData = await getNeuroObjectbyUnitAndCandidate(unitId, candidateId);
       if (Array.isArray(neuroObjectData)) {
