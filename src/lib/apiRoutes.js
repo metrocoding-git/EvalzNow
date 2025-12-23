@@ -19,5 +19,6 @@ export const API_ROUTES = {
     BENCHMARK: "/benchmark",
     PROJECTION: "/projection",
     UNITDISTRIBUTION: "/unit-distribution",
-    AUXILIARY: "/auxiliary"
+    AUXILIARY: "/auxiliary",
+    NEURO_SCIENCE: "/neuro-science",
 };

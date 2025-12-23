@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
@@ -12,10 +12,15 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getUnitImprovement, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
+import { getInsertScoreByUnitAndCandidate } from '@/services/insertScoreService';
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, onChartSelect, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -34,7 +39,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [refreshBenchmarks, setRefreshBenchmarks] = useState(false);
   const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
   const [chainData, setChainData] = useState([]);
-
+  const chartContainerRef = useRef(null);
+  
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -45,35 +51,36 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   ];
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
+  
+    // Curve Label
+    showLabel: true,
+    labelType: "X Type",
+    
+  
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
+  
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
+    symbolFrequency: 1,
+    symbolScaleSize: 3,
+  
+    // Shade area
+    shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
+  });
 
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
-
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
-
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
-
-  // Shade area
-  shadeArea: "#ffffff",
-});
-
-console.log("candidate id : ", candidateId);
+// console.log("candidate id : ", candidateId);
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
@@ -83,8 +90,10 @@ console.log("candidate id : ", candidateId);
   const [rosterData, setRosterData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [candidateMarks, setCandidateMarks] = useState([]);
+  const [insertScores, setInsertScores] = useState([]);
   const [leaderMarks, setleaderMarks] = useState([]);
   const [needAssessment, setNeedAssessment] = useState([]);
+  const [needAssessmentSummary, setNeedAssessmentSummary] = useState([]);
   const [unitImprovement, setUnitImprovement] = useState([]);
 
   const canvasRef = useRef(null);
@@ -223,6 +232,7 @@ console.log("candidate id : ", candidateId);
       name: "Needs Assessment Tracking",
       icon: "🥧",
       type: "pie",
+      key: 'nat',
       id: 6
     },
   
@@ -271,7 +281,7 @@ console.log("candidate id : ", candidateId);
         // Convert candidateId to comma-separated string if it's an array
         const candidateParam = Array.isArray(candidateId) ? candidateId.join(",") : candidateId;
   
-        const data = await getAuxiliarydata(unitId, candidateParam);
+        const data = await getAuxiliarydata(unitId, candidateParam, filters);
         setAuxData(data.results || []);
         setRosterData(data.rosterData || []);
       } catch (err) {
@@ -280,7 +290,7 @@ console.log("candidate id : ", candidateId);
     };
   
     fetchData();
-  }, [unitId, candidateId]);
+  }, [unitId, candidateId, filters, onResetFilters]);
   
 
   const csdChartData = auxData.map(r => ({
@@ -353,7 +363,7 @@ console.log("candidate id : ", candidateId);
         
         setTableData(formattedData);
 
-        console.log("tabulation data: ", formattedData);
+        // console.log("tabulation data: ", formattedData);
         
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
@@ -387,7 +397,7 @@ console.log("candidate id : ", candidateId);
     fetchChainData();
   }, [unitId, candidateId]);
 
-  console.log("chain data: ", chainData);
+  // console.log("chain data: ", chainData);
 
   useEffect(() => {
     const fetchNeedAssessment = async () => {
@@ -439,7 +449,7 @@ console.log("candidate id : ", candidateId);
           }))
         );
         
-        console.log("unit improvement data: ", result.data);
+        // console.log("unit improvement data: ", result.data);
       } catch (err) {
         console.error("Failed to  candidate marks data:", err);
         setError("Failed to load table data.");
@@ -453,7 +463,7 @@ console.log("candidate id : ", candidateId);
     fetchUnitImprovement();
   }, [unitId, candidateId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
 
-  console.log("unit improvement: ", unitImprovement);
+  // console.log("unit improvement: ", unitImprovement);
 
   useEffect(() => {
     const fetchCandidateMarks = async () => {
@@ -482,6 +492,54 @@ console.log("candidate id : ", candidateId);
     fetchCandidateMarks();
   }, [unitId, candidateId, refresh]);
 
+  useEffect(() => { 
+    
+    const fetchScoresWithAssessment = async () => { 
+      if (!unitId || !candidateId) return; 
+      
+      setLoading(true); 
+      setError(null); 
+      
+      try { 
+        const data = await getInsertScoreByUnitAndCandidate(unitId, candidateId); 
+        
+        if (!Array.isArray(data)) throw new Error("Invalid insert score response"); 
+        console.log("Fetched insert scores:", data); 
+        setInsertScores(data); 
+      } catch (err) { 
+        console.error("Error fetching insert scores:", err); 
+        setError("Failed to load insert scores."); 
+      } finally { 
+        setLoading(false); 
+        
+      } 
+    };
+    fetchScoresWithAssessment();
+  }, [unitId, candidateId]);
+
+
+  const insertScoreMap = useMemo(() => {
+    if (!Array.isArray(insertScores)) return {};
+  
+    return insertScores.reduce((acc, score) => {
+      const key = Number(score.ppId);
+      if (!acc[key]) acc[key] = [];
+  
+      acc[key].push({
+        subPpId: score.subPpId,
+        taskDeclaration: score.remarks || "-",
+        competency: score.competency || "-",
+        attainedScore: Number(score.attainedScore) || 0,
+        maxScore: Number(score.maxScore) || 0,
+        workflowStage: score.workflowStage || "-",
+        assessmentType: score.assessmentType || "-",
+        scheduleImpact: score.scheduleImpact || "-"
+      });
+  
+      return acc;
+    }, {});
+  }, [insertScores]);
+  
 
   // Merge need assessments into tableData by PP ID
   const mergedTableData = tableData.map(row => {
@@ -496,6 +554,32 @@ console.log("candidate id : ", candidateId);
   });
 
 
+  const finalMergedTableData = mergedTableData.map(row => ({
+    ...row,
+    insertScores: insertScoreMap[row.ppId] || []
+  }));
+
+  const sortedFinalTableData = [...finalMergedTableData].sort((a, b) => {
+    const aNeg = a.ppId < 0;
+    const bNeg = b.ppId < 0;
+  
+    // Both negative → sort by absolute value ASC
+    if (aNeg && bNeg) {
+      return Math.abs(a.ppId) - Math.abs(b.ppId);
+    }
+  
+    // Only A is negative → A comes first
+    if (aNeg && !bNeg) return -1;
+  
+    // Only B is negative → B comes first
+    if (!aNeg && bNeg) return 1;
+  
+    // Both positive → normal ascending
+    return a.ppId - b.ppId;
+  });
+  
+  console.log("final merged table data: ", finalMergedTableData);
+  
   useEffect(() => {
     const fetchLeaderMarks = async () => {
       if (!unitId || !candidateId) {
@@ -522,8 +606,45 @@ console.log("candidate id : ", candidateId);
   
     fetchLeaderMarks();
   }, [unitId, candidateId, refreshLeaderMarks]);
+
+
+  useEffect(() => {
+    const fetchNeedAssessmentSummary = async () => {
+      if (!unitId || !candidateId) {
+        setNeedAssessmentSummary([]);
+        return;
+      }
   
-  console.log("candidate Marks: ", candidateMarks);
+      setLoading(true);
+      setError(null);
+  
+      try {
+        const result = await getNeedAssessmentSummary(unitId, candidateId);
+        // console.log("need assessment summary result: ", result);
+        const { statusCounts } = result;
+  
+        const pieData = [
+          { name: "Open", value: statusCounts.Open || 0 },
+          { name: "Pending", value: statusCounts.Pending || 0 },
+          { name: "Closed", value: statusCounts.Closed || 0 }
+        ];
+  
+        setNeedAssessmentSummary(pieData);
+  
+      } catch (err) {
+        console.error("Failed to load need assessment summary:", err);
+        setError("Failed to load table data.");
+        setNeedAssessmentSummary([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchNeedAssessmentSummary();
+  }, [unitId, candidateId]);
+  
+  
+  // console.log("need assesssment summary: ", needAssessmentSummary);
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -574,73 +695,409 @@ console.log("candidate id : ", candidateId);
   ];
   
 
-  const handleBenchmarkSelection = async (selectedRows) => {
-    setShowBenchmarkTable(false);
+
   
-    if (!selectedRow) return; // safety
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
+      return;
+    }
   
-    const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
+      }
   
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
+  
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+  
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
+  
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+  
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+  
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+  
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+  
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+  
+      // Move down past the image
+      let currentRow = 27;
+  
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
+  
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+  
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+  
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+  
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+  
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      }
+  
+      // 8. Add threshold information if available
+      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      //   currentRow++;
+      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      //   worksheet.getRow(currentRow).font = { bold: true };
+      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      //   currentRow++;
+  
+      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      // }
+  
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+  
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      
+      // Download the file
+      saveAs(blob, fileName);
+  
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+  
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
+
+// Updated handleBenchmarkSelection function:
+const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
+  setShowBenchmarkTable(false);
+  
+  if (!selectedRow) return;
+
+  try {
+    // Check if a need assessment already exists for this PP ID
+    const existingNeed = needAssessment.find(n => n.ppId === selectedRow.ppId);
+    
+    // Get existing benchmark IDs
+    const existingBIds = existingNeed ? JSON.parse(existingNeed.bIds) : [];
+    const existingBenchmarkIds = existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [];
+    
+    // Determine which benchmarks to KEEP (selected ones)
+    const benchmarksToKeep = selectedBenchmarkIds;
+    
+    // Determine which benchmarks to REMOVE (were previously selected but now unchecked)
+    const benchmarksToRemove = existingBIds.filter(id => !selectedBenchmarkIds.includes(id));
+    
+    // Final list: only keep the selected ones (this removes unchecked ones)
+    const finalBIds = benchmarksToKeep;
+    const finalBenchmarkIds = benchmarksToKeep;
+    
+    console.log("Previous IDs:", existingBIds);
+    console.log("Selected IDs:", selectedBenchmarkIds);
+    console.log("IDs to remove:", benchmarksToRemove);
+    console.log("Final IDs:", finalBIds);
+    
+    // If NO benchmarks are selected AND there was no existing record, don't create empty record
+    if (finalBIds.length === 0 && !existingNeed) {
+      console.log("No benchmarks selected and no existing record - nothing to save");
+      setRefreshBenchmarks(prev => !prev);
+      return;
+    }
+    
+    // If NO benchmarks are selected BUT there was an existing record, delete it
+    if (finalBIds.length === 0 && existingNeed) {
+      console.log("All benchmarks removed - deleting existing record");
+      try {
+        await deleteNeedAssessment(existingNeed.id);
+        setRefreshBenchmarks(prev => !prev);
+        return;
+      } catch (deleteErr) {
+        console.error("Failed to delete need assessment:", deleteErr);
+        alert("Failed to remove all benchmarks. Please try again.");
+        return;
+      }
+    }
+    
+    // Prepare the payload with only selected benchmarks
     const payload = {
       unitId,
       candidateId,
       ppId: selectedRow.ppId,
-      bIds: [
-        ...(selectedRow.bIds || []),
-        ...selectedBenchmarkIds
-      ],
-      benchmarkIds: [
-        ...(selectedRow.benchmarkIds || []),
-        ...selectedBenchmarkIds
-      ],
+      bIds: finalBIds,
+      benchmarkIds: finalBenchmarkIds,
       observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
     };
-  
-    console.log("Submitting to backend:", payload);
-  
-    try {
+
+    if (existingNeed) {
+      // Update existing need assessment
+      console.log("Updating existing need assessment:", existingNeed.id);
+      await updateNeedAssessment(existingNeed.id, payload);
+    } else {
+      // Create new need assessment
+      console.log("Creating new need assessment");
       await createNeedAssessment(payload);
-                       // trigger parent refresh
-    } catch (err) {
-      console.error("Failed to submit need assessment:", err);
     }
-  };
+    
+    // Trigger refresh to show updated data
+    setRefreshBenchmarks(prev => !prev);
+    
+  } catch (err) {
+    console.error("Failed to submit need assessment:", err);
+    alert("Failed to save benchmark selection. Please try again.");
+  }
+};
 
+const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
+  setShowBenchmarkTable(false);
 
-  const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarks) => {
-    if (!selectedRow || selectedBenchmarks.length === 0) return;
-  
-    // Extract only benchmark IDs or BID numbers
-    const newBenchmarkIds = selectedBenchmarks.map(b => b.benchmarkId);
-    const newBIds = selectedBenchmarks.map(b => b.bId);
+  if (!selectedRow) return;
 
-  
-    const payload = {
-      benchmarkIds: newBenchmarkIds,
-      bIds: newBIds,
-    };
-  
-    try {
-      await updateUnitImprovement(selectedRow.id, payload); // <-- UPDATE API CALL
-  
-      setShowBenchmarkTable(false);
+  try {
+    // selectedBenchmarkIds = [1,2,3]
+    const selectedBIds = selectedBenchmarkIds; // ✅ same thing at unit level
 
+    const existingBenchmarkIds = selectedRow.benchmarkIds || [];
+    const existingBIds = selectedRow.bIds || [];
+
+    // 🚫 No selection + no existing record → do nothing
+    if (selectedBIds.length === 0 && !selectedRow.id) {
       setRefreshBenchmarksUnitLevel(prev => !prev);
-
-      // call parent refresh if exists
-      if (refreshUnitImprovement) refreshUnitImprovement();
-      
-  
-    } catch (error) {
-      console.error("Failed to update improvement:", error);
+      return;
     }
-  };
+
+    // 🗑 No selection + existing record → DELETE
+    if (selectedBIds.length === 0 && selectedRow.id) {
+      await deleteUnitImprovement(selectedRow.id);
+      setRefreshBenchmarksUnitLevel(prev => !prev);
+      return;
+    }
+
+    const payload = {
+      unitId,
+      candidateId,
+      benchmarkIds: selectedBenchmarkIds,
+      bIds: selectedBIds
+    };
+
+    if (selectedRow.id) {
+      // ✅ UPDATE
+      await updateUnitImprovement(selectedRow.id, payload);
+    } else {
+      // ✅ CREATE
+      await createUnitImprovement(payload);
+    }
+
+    // ✅ refresh list
+    setRefreshBenchmarksUnitLevel(prev => !prev);
+
+  } catch (error) {
+    console.error("Failed to save unit improvement benchmarks:", error);
+    alert("Failed to save benchmark selection");
+  }
+};
+
   
+  const getTableConfig = () => {
+  if (!selectedChart) return null;
+
+  // ❌ Not applicable for table-type charts
+  if (selectedChart.type === "table") return null;
+
+  // ---------- LINE CHARTS ----------
+  if (selectedChart.type === "line") {
+    switch (selectedChart.key) {
+      case "be-csd":
+        return {
+          columns: ["PP ID", "CSD Tenure Days", "Cumulative Duration"],
+          rows: csdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.csdTenureDays,
+            b: r.duration
+          }))
+        };
+
+      case "be-usd":
+        return {
+          columns: ["PP ID", "USD Tenure Days", "Cumulative Duration"],
+          rows: usdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.usdTenureDays,
+            b: r.duration
+          }))
+        };
+
+      case "bp-csd":
+        return {
+          columns: ["PP ID", "Productivity CSD"],
+          rows: BpCsdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.productivityCsd
+          }))
+        };
+
+      case "bp-usd":
+        return {
+          columns: ["PP ID", "Productivity USD"],
+          rows: BpUsdChartData.map(r => ({
+            ppId: r.ppId,
+            a: r.productivityUsd
+          }))
+        };
+
+      default:
+        return null;
+    }
+  }
+
+  // ---------- SCATTER ----------
+  if (selectedChart.type === "scatter-2d") {
+    const data =
+      selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
+
+    return {
+      columns: ["PP ID", "Value"],
+      rows: data.map(r => ({
+        ppId: r.ppId,
+        a:
+          selectedChart.key === "bp-csd"
+            ? r.productivityCsd
+            : r.productivityUsd
+      }))
+    };
+  }
+
+  // ---------- PIE ----------
+  if (selectedChart.type === "pie") {
+    const dataMap = {
+      at: attendanceBreakdown,
+      et: engagementBreakdown,
+      uo: unitOutcomeData,
+      nat: needAssessmentSummary
+    };
+
+    const data = dataMap[selectedChart.key] || [];
+
+    return {
+      columns: ["Category", "Count"],
+      rows: data.map(r => ({
+        name: r.name,
+        a: r.value
+      }))
+    };
+  }
+
+  return null;
+};
+
   
-  
-  console.log("attendance tracking: ", attendanceBreakdown);
+  // console.log("attendance tracking: ", attendanceBreakdown);
   
   const renderChartContent = () => {
+    
     if (!selectedChart) {
       return (
         <div className="flex items-center justify-center h-full">
@@ -654,17 +1111,18 @@ console.log("candidate id : ", candidateId);
         <>
           {showBenchmarkTable && (
             <BenchmarkTable
-              onClose={(selectedBenchmarks) => {
-                handleBenchmarkSelection(selectedBenchmarks);
-                setRefreshBenchmarks(prev => !prev);  // 🔄 trigger re-render
-              }}
+            onClose={(selectedBenchmarks) => {
+              handleBenchmarkSelection(selectedBenchmarks);
+              setRefreshBenchmarks(prev => !prev);
+            }}
+            selectedBenchmarks={selectedRow?.bIds || []} // Pass already selected benchmarks
             />
           )}
 
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="bg-gray-100">
+              <thead className="">
                 <tr>
                   <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
                   <th className="border border-gray-300 px-3 py-2 text-center">
@@ -687,8 +1145,8 @@ console.log("candidate id : ", candidateId);
               </thead>
       
               <tbody>
-                {mergedTableData.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                {sortedFinalTableData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
@@ -702,23 +1160,83 @@ console.log("candidate id : ", candidateId);
       
                     {/* ADD button */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                      <button 
+                        className={`px-3 py-1 rounded ${
+                          item.bIds.length > 0
+                            ? "bg-gray-200 hover:bg-gray-300"
+                            : "bg-gray-200 hover:bg-gray-300"
+                        }`}
                         onClick={() => {
                           setSelectedRow(item);
                           setShowBenchmarkTable(true);
-                          }
-                        } >
-                        + ADD
+                        }}
+                      >
+                        {item.bIds.length > 0 ? 'EDIT' : 'ADD'}
                       </button>
                     </td>
+
                     {/* Linked BIDs */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
                     </td>
+
                     {/* Observations */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      {item.observation}
+                    <input
+                      type="text"
+                      value={item.observation ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        // Optimistic UI update (no DB call)
+                        setNeedAssessment(prev =>
+                          prev.map(n =>
+                            n.ppId === item.ppId
+                              ? { ...n, observation: value }
+                              : n
+                          )
+                        );
+                      }}
+                      onBlur={async (e) => {
+                        const newObservation = e.target.value.trim();
+
+                        try {
+                          const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
+
+                          // ❌ Do nothing if empty observation AND no existing record
+                          if (!existingNeed && newObservation === "") return;
+
+                          const payload = {
+                            unitId,
+                            candidateId,
+                            ppId: item.ppId,
+                            bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
+                            benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
+                            observation: newObservation
+                          };
+
+                          if (existingNeed) {
+                            // ✅ UPDATE
+                            await updateNeedAssessment(existingNeed.id, payload);
+                          } else {
+                            // ✅ CREATE
+                            await createNeedAssessment(payload);
+                          }
+
+                          // ✅ Refresh backend state
+                          setRefreshBenchmarks(prev => !prev);
+
+                        } catch (error) {
+                          console.error("Observation save failed:", error);
+                          alert("Failed to save observation");
+                        }
+                      }}
+                      className="py-2 px-3 border border-gray-300 rounded w-full"
+                    />
+
+
                     </td>
+
                     <td className="border border-gray-300 px-3 py-2 text-center">
                       {item.bIds.length === 0
                         ? "Open"
@@ -757,7 +1275,7 @@ console.log("candidate id : ", candidateId);
       
               <tbody>
                 {leaderMarks.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.entryNumber}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.staffFirstName}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.staffLastName}</td>
@@ -782,13 +1300,14 @@ console.log("candidate id : ", candidateId);
             <BenchmarkTableUnitLevel
               onClose={(selectedBenchmarks) => {
                 handleBenchmarkSelectionUnitLevel(selectedBenchmarks);
-                setRefreshBenchmarksUnitLevel(prev => !prev);  // 🔄 trigger re-render
+                setRefreshBenchmarksUnitLevel(prev => !prev);
               }}
+              selectedBenchmarks={selectedRow?.bIds || []}
             />
           )}
 
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
@@ -801,7 +1320,7 @@ console.log("candidate id : ", candidateId);
       
               <tbody>
                 {unitImprovement.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.lesson}</td>
       
@@ -842,9 +1361,9 @@ console.log("candidate id : ", candidateId);
                 <div className="font-semibold text-gray-800">
                   Assessment Chain {chainIndex + 1}
                 </div>
-                <div className="text-xs text-gray-600">
+                {/* <div className="text-xs text-gray-600">
                   Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
-                </div>
+                </div> */}
               </div>
     
               {/* 🔹 Chain Tables */}
@@ -926,12 +1445,126 @@ console.log("candidate id : ", candidateId);
         </div>
       );
     }
+
+    else if (selectedChart.type === "table" && selectedChart.id === 13) {
+      const computeActionStatus = (benchmarkIds = []) => {
+        if (!benchmarkIds.length) return "Open";
+        if (benchmarkIds.length < 5) return "Pending";
+        return "Closed";
+      };
+      
+      return (
+        <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-8">
+    
+          {sortedFinalTableData.map((sel, idx) => (
+            <div
+              key={`${sel.ppId}-${idx}`}
+              className="border border-gray-300 rounded-md bg-white shadow-sm p-4 space-y-6"
+            >
+    
+              {/* ===================== */}
+              {/* TABLE 1 — PP SUMMARY */}
+              {/* ===================== */}
+              <table className="table-auto w-full text-sm border border-gray-300">
+                <tbody>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2 w-1/2">PP ID</td>
+                    <td className="border px-3 py-2">{sel.ppId}</td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">RRN, PRN, ARN</td>
+                    <td className="border px-3 py-2">
+                      {[ 
+                        sel.RRN != null && `RRN: ${sel.RRN}`,
+                        sel.PRN != null && `PRN: ${sel.PRN}`,
+                        sel.ARN != null && `ARN: ${sel.ARN}`
+                      ].filter(Boolean).join(", ")}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Benchmark IDs</td>
+                    <td className="border px-3 py-2">
+                      {sel.benchmarkIds?.length
+                        ? sel.benchmarkIds.join(", ")
+                        : "—"}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Action Status</td>
+                    <td className="border px-3 py-2 font-semibold">
+                      {computeActionStatus(sel.benchmarkIds)}
+                    </td>
+                  </tr>
+    
+                  <tr>
+                    <td className="font-medium border px-3 py-2">Critical Ref Date</td>
+                    <td className="border px-3 py-2">
+                      {sel.criticalRefDate
+                        ? new Date(sel.criticalRefDate).toLocaleDateString()
+                        : "—"}
+                    </td>
+                  </tr>
+    
+                </tbody>
+              </table>
+    
+              {/* ============================= */}
+              {/* TABLE 2 — INSERT SCORE DETAIL */}
+              {/* ============================= */}
+              <div className="overflow-x-auto">
+                <table className="table-auto w-full text-sm border border-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="border px-3 py-2">Task Declaration</th>
+                      <th className="border px-3 py-2">Competency</th>
+                      <th className="border px-3 py-2">Attained Score</th>
+                      <th className="border px-3 py-2">Maximum Score</th>
+                      <th className="border px-3 py-2">Workflow Stage</th>
+                      <th className="border px-3 py-2">Assessment Type</th>
+                      <th className="border px-3 py-2">Schedule Impact</th>
+                    </tr>
+                  </thead>
+    
+                  <tbody>
+                    {sel.insertScores.length ? (
+                      sel.insertScores.map((s, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="border px-3 py-2">{s.taskDeclaration}</td>
+                          <td className="border px-3 py-2">{s.competency}</td>
+                          <td className="border px-3 py-2">{s.attainedScore}</td>
+                          <td className="border px-3 py-2">{s.maxScore}</td>
+                          <td className="border px-3 py-2">{s.workflowStage}</td>
+                          <td className="border px-3 py-2">{s.assessmentType}</td>
+                          <td className="border px-3 py-2">{s.scheduleImpact}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="text-center py-3">
+                          No insert score records
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+    
+            </div>
+          ))}
+    
+        </div>
+      );
+    }    
     
     else if (selectedChart.type === "table" && selectedChart.id === 14) {
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2">
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
           <table className="table-auto w-full text-sm border border-gray-300">
-            <thead className="bg-gray-100">
+            <thead className="">
               <tr>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
@@ -943,7 +1576,7 @@ console.log("candidate id : ", candidateId);
             </thead>
             <tbody>
               {candidateMarks.map((row, index) => (
-                <tr key={index} className="hover:bg-blue-50">
+                <tr key={index} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.entryNumber}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.impactType}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernIdentified}</td>
@@ -973,7 +1606,7 @@ console.log("candidate id : ", candidateId);
             </thead>
             <tbody>
               {[1, 2, 3, 4, 5].map((num) => (
-                <tr key={num} className="hover:bg-blue-50">
+                <tr key={num} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Type {num}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern {num}</td>
@@ -1120,12 +1753,12 @@ console.log("candidate id : ", candidateId);
         );
       }
 
-      if (selectedChart.key === 'uo' && attendanceBreakdown.length > 0) {
+      if (selectedChart.key === 'uo' && unitOutcomeData.length > 0) {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={attendanceBreakdown}
+                data={unitOutcomeData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -1133,7 +1766,7 @@ console.log("candidate id : ", candidateId);
                 outerRadius={120}
                 label
               >
-                {attendanceBreakdown.map((entry, index) => (
+                {unitOutcomeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
                 ))}
               </Pie>
@@ -1144,6 +1777,33 @@ console.log("candidate id : ", candidateId);
         );
       }
 
+      if (selectedChart.key === 'nat' && needAssessmentSummary.length > 0) {
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={needAssessmentSummary}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {needAssessmentSummary.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={["#3b82f6", "#f59e0b", "#10b981"][index % 3]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+      }
+      
       // Update your scatter chart rendering logic:
       if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
@@ -1271,9 +1931,13 @@ console.log("candidate id : ", candidateId);
               )}
 
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
+                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
+                    if (typeof onResetFilters === "function") {
+                      onResetFilters(); // ✅ reset filters in parent
+                    }
+                  }}  />
               </button>
-              <button onClick={handleDeleteCurve} title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
               
@@ -1294,7 +1958,7 @@ console.log("candidate id : ", candidateId);
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' ? (
-                    activateCandidateLevel.map((chart) => (
+                    activateCandidateLevel.map((chart, index) => (
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
@@ -1304,7 +1968,7 @@ console.log("candidate id : ", candidateId);
                         }}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{index +1}</div>
                       </div>
                     ))
                   ) : selectedSort === 'activateUnitLevel' ? (
@@ -1350,16 +2014,6 @@ console.log("candidate id : ", candidateId);
                   Table
                 </button>
 
-                <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Chain'
-                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
-                    }`}
-                  onClick={() => setActiveAdjustPropertieTab('Chain')}
-                >
-                  Chain
-                </button>
-
               </div>
 
               {/* Tab Content */}
@@ -1371,37 +2025,50 @@ console.log("candidate id : ", candidateId);
                   />
                 )}
 
-                {activeAdjustPropertieTab === 'Table' && (
+                {activeAdjustPropertieTab === "Table" && (() => {
+                  const tableConfig = getTableConfig();
+                  if (!tableConfig) return null;
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Month</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">X Axis Value</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Y Axis Value</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Z Axis Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {floatChartData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.name}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.xValue}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.yValue}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.zValue}</td>
+                  return (
+                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-15">
+                      <table className="table-auto w-full text-sm border border-gray-300">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            {tableConfig.columns.map(col => (
+                              <th
+                                key={col}
+                                className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                              >
+                                {col}
+                              </th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {tableConfig.rows.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-blue-50">
+                              {Object.values(row).map((cell, i) => (
+                                <td
+                                  key={i}
+                                  className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                                >
+                                  {cell ?? "—"}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
             {selectedChart ? `${selectedChart.name}` : 'Select a plot'}

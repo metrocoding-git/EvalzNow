@@ -170,7 +170,8 @@ console.log("table data check proper:", tableData)
             Selection 1: <span className="text-red-500 ml-1">*</span>
           </label>
           <select
-            value={form.selection1}
+            value={form.selection1} className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             onChange={(e) => handleChange("selection1", e.target.value)}
             required
             >
@@ -184,11 +185,12 @@ console.log("table data check proper:", tableData)
           </select>
 
 
-          {/* Selection 1 */}
+          {/* Selection 2 */}
           <label className="col-span-1 text-gray-700 flex items-center">
             Selection 2: <span className="text-red-500 ml-1">*</span>
           </label>
-          <select
+          <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+           focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             value={form.selection2}
             onChange={(e) => handleChange("selection2", e.target.value)}
            
@@ -203,11 +205,12 @@ console.log("table data check proper:", tableData)
           </select>
 
 
-          {/* Selection 1 */}
+          {/* Selection 3 */}
           <label className="col-span-1 text-gray-700 flex items-center">
             Selection 3: <span className="text-red-500 ml-1">*</span>
           </label>
-          <select
+          <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+           focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             value={form.selection3}
             onChange={(e) => handleChange("selection3", e.target.value)}
            
@@ -222,11 +225,12 @@ console.log("table data check proper:", tableData)
           </select>
 
 
-          {/* Selection 1 */}
+          {/* Selection 4 */}
           <label className="col-span-1 text-gray-700 flex items-center">
             Selection 4: <span className="text-red-500 ml-1">*</span>
           </label>
-          <select
+          <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+           focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             value={form.selection4}
             onChange={(e) => handleChange("selection4", e.target.value)}
            
@@ -241,11 +245,12 @@ console.log("table data check proper:", tableData)
           </select>
 
 
-          {/* Selection 1 */}
+          {/* Selection 5 */}
           <label className="col-span-1 text-gray-700 flex items-center">
             Selection 5: <span className="text-red-500 ml-1">*</span>
           </label>
-          <select
+          <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+           focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             value={form.selection5}
             onChange={(e) => handleChange("selection5", e.target.value)}
            

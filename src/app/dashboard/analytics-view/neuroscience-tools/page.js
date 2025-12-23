@@ -15,6 +15,8 @@ import ClientEditor from "./components/ClientEditor";
 import RightPanel from "./components/RightPanel";
 import CurveEditor from "./components/CurveEditor";
 import PlotSelections from "./components/PlotSelections";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { useUnit } from "@/context/UnitContext";
 
 export default function NeuroscienceTools() {
   const tabs = [
@@ -40,23 +42,19 @@ export default function NeuroscienceTools() {
   const [activeChart, setActiveChart] = useState(false);
 
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [unitData, setUnitData] = useState(null);      // store unit details
+  const [data, setData] = useState([]); 
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
 
+  const [secondaryValues, setSecondaryValues] = useState(null);
+  const [resetSignal, setResetSignal] = useState(0);
+  
   useEffect(() => {
     if (activeCandidateId) {
       setScoresOpen(true);
@@ -85,6 +83,62 @@ export default function NeuroscienceTools() {
         : valB.localeCompare(valA);
     }
   });
+
+  const resetFilters = () => {
+    setSecondaryValues({
+      ppIdFrom: null,
+      ppIdTo: null,
+      criticalDateFrom: null,
+      criticalDateTo: null,
+    });
+
+    // 🔁 trigger reset for SecondaryArea inputs
+    setResetSignal((prev) => prev + 1);
+  };
+
+  // Fetch candidates + unit details by selectedUnitId
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted.length > 0 ? sorted[0].id : null);
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
 
   return (
     <div className="w-full flex flex-col">
@@ -161,57 +215,62 @@ export default function NeuroscienceTools() {
                           </div>
 
                           {openMenu && (
-                            <>
-                              <div className=" items-center justify-center  px-4 ">
-                                <div className="border border-gray-200 p-1">
-                                  <span className="text-sm text-gray-400">
-                                    Unit Name: Unit 1
-                                  </span>
-                                  <br />
-                                  <span className="text-sm text-gray-400">
-                                    Unit ID: UA123
-                                  </span>
-                                  <br />
-                                  <span className="text-sm text-gray-400">
-                                    Unit Type: Group
-                                  </span>
-                                  <br />
-                                  <span className="text-sm text-gray-400">
-                                    Signature Profile: Signature 1
-                                  </span>
-                                </div>
-                              </div>
-                              {/* Candidate Data */}
-                              <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
-                                {sortedData.map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
-                                  ${activeCandidateId === item.id
-                                        ? "bg-blue-100 border-l-4 border-blue-400"
-                                        : "hover:bg-gray-100"
-                                      }`}
-                                    onClick={() => {
-                                      setShowEdit(true);
-                                      setShowSecondary(true);
-                                    }}
-                                    onDoubleClick={() => {
-                                      setScoresOpen(true);
-                                      setActiveCandidateId(item.id);
-                                    }}
-                                  >
-                                    <span className="text-gray-800">
-                                      {item.lastName}
-                                    </span>
-                                    <span className="text-gray-800">
-                                      {item.firstName}
-                                    </span>
-                                    <span className="text-gray-600">{item.id}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
+                        <>
+                          {unitData && (
+                          <div className=" items-center justify-center  px-4 ">
+                            <div className="border border-gray-200 p-1">
+                              <span className="text-sm text-gray-400">
+                                Unit Name: {unitData.unitName}
+                              </span>
+                              <br />
+                              <span className="text-sm text-gray-400">
+                                Unit ID: {unitData.unitId}
+                              </span>
+                              <br />
+                              <span className="text-sm text-gray-400">
+                                Unit Type: {unitData.unitType}
+                              </span>
+                              <br />
+                              <span className="text-sm text-gray-400">
+                                Signature Profile: {unitData.signatureProfile}
+                              </span>
+                            </div>
+                          </div>
                           )}
+
+                          {/* Candidate Data */}
+                          <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
+                            {sortedData.map((item) => (
+                              <div
+                                key={item.id}
+                                className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
+                                ${
+                                  activeCandidateId === item.id
+                                    ? "bg-blue-100 border-l-4 border-blue-400"
+                                    : "hover:bg-gray-100"
+                                }`}
+                                onClick={() => {
+                                  setShowEdit(true);
+                                  setShowSecondary(true);
+                                  setActiveCandidateId(item.id); // ✅ mark candidate as active
+                                }}
+                                onDoubleClick={() => {
+                                  setScoresOpen(true);
+                                  setActiveCandidateId(item.id);
+                                }}
+                              >
+                                <span className="text-gray-800">
+                                  {item.lastName}
+                                </span>
+                                <span className="text-gray-800">
+                                  {item.firstName}
+                                </span>
+                                <span className="text-gray-600">{item.id}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
                         </div>
 
                         {/* Dropdown Content */}
@@ -221,14 +280,14 @@ export default function NeuroscienceTools() {
                     {/* Secondary Input Area */}
                     {showSecondary && (
                       <div className="h-1/3 overflow-auto ">
-                        <SecondaryArea onClose={() => setShowSecondary(false)} />
+                        <SecondaryArea onClose={() => setShowSecondary(false)} onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} />
                       </div>
                     )}
 
                     {/* Editor */}
                     <div className="h-1/3 overflow-auto ">
                       <ClientEditor
-                        onClose={() => setShowEdit(false)}
+                        onClose={() => setShowEdit(false)} unitId={unitData?.id} candidateId={activeCandidateId}
                         client={true}
                         showForm={showEdit}
                       />
@@ -241,8 +300,8 @@ export default function NeuroscienceTools() {
               <div className=" w-9/12 bg-white flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
                 {/* {ScoresOpen && <CurveEditor />} */}
 
-                <PlotSelections activeChart={activeChart}
-                  setActiveChart={setActiveChart} />
+                <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
+                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} />
 
 
               </div>
