@@ -388,6 +388,26 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     return { positive: positivePoints, negative: negativePoints };
   };
   
+  useEffect(() => {
+    if (!chart || chart.length === 0) return;
+  
+    // Apply the SAME filter logic used in render
+    const visibleCharts = chart.filter((item) => {
+      if (environment === "Workforce") return true;
+      return ["attained", "max"].includes(item.key);
+    });
+  
+    if (visibleCharts.length === 0) return;
+  
+    // If selectedChart is missing or not visible → reset
+    const isSelectedVisible = visibleCharts.some(
+      (item) => item.key === selectedChart?.key
+    );
+  
+    if (!isSelectedVisible) {
+      setSelectedChart(visibleCharts[0]);
+    }
+  }, [environment, chart]);
   
   
   

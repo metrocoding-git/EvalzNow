@@ -24,7 +24,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6" }) {
             <XAxis
               dataKey="dayCount" 
               type="number"
-              label={{ value: 'Day Count', position: 'insideBottom', offset: -5 }}
+              label={{ value: 'Days', position: 'insideBottom', offset: -5 }}
               domain={['dataMin', 'dataMax']}
             />
             <YAxis 

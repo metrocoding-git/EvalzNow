@@ -99,7 +99,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { id: "11", name: "Composite Proficiency (XCP)", icon: "🧩", type: "line" },
     { id: "12", name: "Band Proficiency (XBP)", icon: "🎼", type: "line" },
     { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "line" },
-    { id: "14", name: "Stability in Proficiency (STAP)", icon: "🧭", type: "pie" },
+    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
 
   const activateUnitLevel = [
@@ -117,7 +117,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { id: "11", name: "Composite Proficiency (XCP)", icon: "🧩", type: "scatter" },
     { id: "12", name: "Band Proficiency (XBP)", icon: "🎼", type: "scatter" },
     { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🤝", type: "scatter" },
-    { id: "14", name: "Stability in Proficiency (STAP)", icon: "🧭", type: "pie" },
+    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
   ];
   
   const [chartProperties, setChartProperties] = useState({
@@ -733,7 +733,7 @@ const CustomTooltip = ({ active, payload }) => {
                   {selectedSort === 'activateCandidateLevel' && (
                     activateCandidateLevel.filter(chart => {
                       // Common charts for all
-                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
+                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
                       if (commonCharts.includes(chart.name)) return true;
               
                       // Unit-specific charts
@@ -765,7 +765,7 @@ const CustomTooltip = ({ active, payload }) => {
                   {selectedSort === 'activateUnitLevel' && (
                     activateUnitLevel.filter(chart => {
                       // Common charts for all
-                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STAP)"];
+                      const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
                       if (commonCharts.includes(chart.name)) return true;
               
                       // Unit-specific charts

@@ -5,7 +5,10 @@ import { FolderOutput, RefreshCw } from 'lucide-react';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary } from '@/services/tabulationTableService';
 import { useUnit } from '@/context/UnitContext';
-
+import html2canvas from "html2canvas-pro";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
 
 export default function ViewerSelections({candidate, unitId}) {
   const [openCandidate, setOpenCandidate] = useState({});
@@ -13,6 +16,8 @@ export default function ViewerSelections({candidate, unitId}) {
   const toggleGroup = (index) => {
     setOpenCandidate((prev) => ({ ...prev, [index]: !prev[index] }));
   };
+
+  const chartContainerRef = useRef(null);
 
   const [chartProperties, setChartProperties] = useState({
   // Standard
@@ -246,7 +251,7 @@ console.log("unit type check", tableData);
     const ratioColumns = {
       "Communicative I/O": ["XLR", "XRR", "XSR", "XWR"],
       "Theory & Practice": ["XTR", "XPR"],
-      "Third Parameter": ["XRVSR", "XPVSR", "XAVSR", "ARN", "deltaARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"],
+      "Third Parameter": ["XRVSR", "XPVSR", "XAVSR", "ARN", "ΔARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"],
     };
 
     // Determine columns to keep visible
@@ -255,7 +260,7 @@ console.log("unit type check", tableData);
     // Keep all non-ratio columns + selected ratios
     return allColumns.filter(
       (col) =>
-        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR", "ARN", "deltaARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"].includes(col) ||
+        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR", "ARN", "ΔARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"].includes(col) ||
         selectedRatios.includes(col)
     );
   };
@@ -265,6 +270,141 @@ console.log("unit type check", tableData);
 
   // Compute visible headers based on that
   const visibleHeaders = getVisibleColumns(currentUnitType);
+
+  // Function to export with image and data in single worksheet
+  const exportToExcel = async () => {
+    if (!tableData || tableData.length === 0) {
+      alert("No table data available to export");
+      return;
+    }
+  
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Candidate Table");
+  
+      // ===== TITLE =====
+      worksheet.addRow(["CANDIDATE PERFORMANCE TABLE"]);
+      worksheet.mergeCells("A1:" + String.fromCharCode(64 + visibleHeaders.length) + "1");
+      worksheet.getCell("A1").font = { bold: true, size: 14 };
+      worksheet.getCell("A1").alignment = { horizontal: "center" };
+  
+      worksheet.addRow([]);
+      worksheet.addRow([
+        `Candidate: ${candidate?.firstName ?? ""} ${candidate?.lastName ?? ""}`,
+      ]);
+      worksheet.addRow([`Exported: ${new Date().toLocaleString()}`]);
+      worksheet.addRow([]);
+  
+      // ===== HEADER ROW =====
+      const headerRow = worksheet.addRow(visibleHeaders);
+  
+      headerRow.eachCell((cell, colNumber) => {
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: "center" };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFEFEFEF" },
+        };
+  
+        // Tooltip → Excel comment
+        const header = visibleHeaders[colNumber - 1];
+        if (headers[header]) {
+          cell.note = headers[header];
+        }
+      });
+  
+      // ===== DATA ROWS =====
+      tableData.forEach((row) => {
+        const excelRow = worksheet.addRow(
+          visibleHeaders.map((header) => {
+            const value = row[header];
+  
+            const skipFormatting = [
+              "PP ID",
+              "Critical Reference Date",
+              "Day Count (Days)",
+              "unitType",
+              "IC",
+              "STA/P",
+              "ΔRRN",
+              "ΔPRN",
+              "ΔARN",
+              "ΔGEQ",
+            ];
+  
+            if (skipFormatting.includes(header)) {
+              return value ?? "";
+            }
+  
+            const num = parseFloat(value);
+            if (!isNaN(num) && value?.toString().includes(".")) {
+              return Number(num.toFixed(3));
+            }
+  
+            return value ?? "";
+          })
+        );
+  
+        const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
+  
+        excelRow.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+  
+          if (isSummaryRow) {
+            cell.font = { bold: true };
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFD9D9D9" },
+            };
+          }
+        });
+      });
+  
+      // ===== AUTO COLUMN WIDTH =====
+      worksheet.columns.forEach((column) => {
+        let maxLength = 10;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const length = cell.value ? cell.value.toString().length : 0;
+          maxLength = Math.max(maxLength, length);
+        });
+        column.width = Math.min(maxLength + 2, 40);
+      });
+  
+      // ===== SAVE FILE =====
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+  
+      saveAs(
+        blob,
+        `candidate-table-${candidate?.id ?? "export"}-${Date.now()}.xlsx`
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export table");
+    }
+  };
+  
+
+
+   // Update your existing handleDeleteCurve function or create a new one
+   const handleExportGraph = () => {
+    exportToExcel();
+  };
 
 
   if (!visible) return null;
@@ -279,11 +419,12 @@ console.log("unit type check", tableData);
         <div className='w-full flex flex-col border-2 h-full border-gray-200 '>
           <div className="flex items-center justify-between  mb-1 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Candidate Display</h2>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 ">
               <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button>
-              <button title="Delete Curve" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={handleExportGraph}
+                title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
 
@@ -333,7 +474,7 @@ console.log("unit type check", tableData);
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
               <h2 className="text-sm font-semibold mx-1 p-2 text-gray-700">Candidate</h2>
               
-              <div className="flex-1 overflow-auto mx-1">
+              <div ref={chartContainerRef} className="flex-1 overflow-auto mx-1">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>

@@ -207,36 +207,43 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   ];
 
   const activateCandidateLevel = [
-    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📈", type: "line" },
-    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", icon: "📈", type: "line" },
-    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", icon: "📈", type: "line" },
-    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", icon: "📈", type: "line" },
-    { id: "acl-5", name: "Performance Ratio (RR)", icon: "📊", type: "line" },
-    { id: "acl-6", name: "Performance Ratios (PR)", icon: "📊", type: "line" },
-    { id: "acl-7", name: "Performance Ratios (AR)", icon: "📊", type: "line" },
-    { id: "acl-8", name: "Stability in Growth (STAG)", icon: "🧭", type: "pie" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 1 (RRGT1)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 1 (PRGT1)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 1 (ARGT1)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 2 (RRGT2)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 2 (PRGT2)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 2 (ARGT2)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 3 (RRGT3)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 3 (PRGT3)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 3 (ARGT3)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 4 (RRGT4)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 4 (PRGT4)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 4 (ARGT4)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Receptive Ratio Component for Growth Target 5 (RRGT5)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Productive Ratio Component for Growth Target 5 (PRGT5)", icon: "🧪", type: "line" },
-    { id: "acl-9", name: "Projected Acuity Ratio Component for Growth Target 5 (ARGT5)", icon: "🧪", type: "line" },
+    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", key: "ΔGEQ", type: "line" },
+    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", type: "line" },
+    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", type: "line" },
+    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", type: "line" },
+  
+    { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", type: "line" },
+    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", type: "line" },
+    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", type: "line" },
+  
+    { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie" },
+    { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "🧪", type: "line" },
+    { id: "acl-9-2", name: "Growth Target 1 Trends - PR", key: "PRGT1", icon: "🧪", type: "line" },
+    { id: "acl-9-3", name: "Growth Target 1 Trends - AR", key: "ARGT1", icon: "🧪", type: "line" },
+
+    { id: "acl-9-4", name: "Growth Target 2 Trends - RR", key: "RRGT2", icon: "🧪", type: "line" },
+    { id: "acl-9-5", name: "Growth Target 2 Trends - PR", key: "PRGT2", icon: "🧪", type: "line" },
+    { id: "acl-9-6", name: "Growth Target 2 Trends - AR", key: "ARGT2", icon: "🧪", type: "line" },
+
+    { id: "acl-9-7", name: "Growth Target 3 Trends - RR", key: "RRGT3", icon: "🧪", type: "line" },
+    { id: "acl-9-8", name: "Growth Target 3 Trends - PR", key: "PRGT3", icon: "🧪", type: "line" },
+    { id: "acl-9-9", name: "Growth Target 3 Trends - AR", key: "ARGT3", icon: "🧪", type: "line" },
+
+    { id: "acl-9-10", name: "Growth Target 4 Trends - RR", key: "RRGT4", icon: "🧪", type: "line" },
+    { id: "acl-9-11", name: "Growth Target 4 Trends - PR", key: "PRGT4", icon: "🧪", type: "line" },
+    { id: "acl-9-12", name: "Growth Target 4 Trends - AR", key: "ARGT4", icon: "🧪", type: "line" },
+
+    { id: "acl-9-13", name: "Growth Target 5 Trends - RR", key: "RRGT5", icon: "🧪", type: "line" },
+    { id: "acl-9-14", name: "Growth Target 5 Trends - PR", key: "PRGT5", icon: "🧪", type: "line" },
+    { id: "acl-9-15", name: "Growth Target 5 Trends - AR", key: "ARGT5", icon: "🧪", type: "line" },
+
     // { id: "acl-10", name: "GT 2 Component", icon: "🧪", type: "line" },
     // { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
     // { id: "acl-12", name: "GT 4 Component", icon: "🧪", type: "line" },
     // { id: "acl-13", name: "GT 5 Component", icon: "🧪", type: "line" },
-    { id: "acl-14", name: "∆RR Growth Projections", icon: "📉", type: "line" },
-    { id: "acl-15", name: "∆PR Growth Projections", icon: "📉", type: "line" },
-    { id: "acl-16", name: "∆AR Growth Projections", icon: "📉", type: "line" },
+    { id: "acl-14", name: "Growth Projections - ∆RR", icon: "📉", type: "line" },
+    { id: "acl-15", name: "Growth Projections - ∆PR", icon: "📉", type: "line" },
+    { id: "acl-16", name: "Growth Projections - ∆AR", icon: "📉", type: "line" },
   ];
 
   const activateUnitLevel = [
@@ -781,7 +788,7 @@ const handleExportGraph = () => {
                       {activateCandidateLevel
                         .filter(chart => {
                           // Hide AR-related items unless unitType is "Third Parameter"
-                          if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
+                          if (chart.name.includes("(ΔAR)") || chart.name.includes("AR") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
                             return unitType === "Third Parameter";
                           }
                           return true;
@@ -886,7 +893,7 @@ const handleExportGraph = () => {
                       {selectedChart && tableData.length > 0 ? (
                         (() => {
                           // Extract key name inside parentheses — e.g., "ΔRR (deltaRRN)" → "deltaRRN"
-                          const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1] ?? null;
+                          const keyName = selectedChart.key;
                           if (!keyName) {
                             return (
                               <tr>
@@ -946,9 +953,9 @@ const handleExportGraph = () => {
               {selectedChart ? (
                 (() => {
                   const projectionCharts = [
-                    "∆RR Growth Projections",
-                    "∆PR Growth Projections",
-                    "∆AR Growth Projections",
+                    "Growth Projections - ∆RR",
+                    "Growth Projections - ∆PR",
+                    "Growth Projections - ∆AR",
                   ];
 
                   const gtKeys = [
@@ -966,11 +973,11 @@ const handleExportGraph = () => {
                     let curveData = [];
                     let chartTitle = selectedChart.name;
 
-                    if (selectedChart.name === "∆RR Growth Projections") {
+                    if (selectedChart.name === "Growth Projections - ∆RR") {
                       curveData = curves.rr || [];
-                    } else if (selectedChart.name === "∆PR Growth Projections") {
+                    } else if (selectedChart.name === "Growth Projections - ∆PR") {
                       curveData = curves.pr || [];
-                    } else if (selectedChart.name === "∆AR Growth Projections") {
+                    } else if (selectedChart.name === "Growth Projections - ∆AR") {
                       curveData = curves.ar || [];
                     }
 
@@ -983,8 +990,14 @@ const handleExportGraph = () => {
                   }
 
                   // ✅ Existing chart handling for non-projection charts
-                  const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-                  if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
+                  const keyName =
+                    selectedChart.key ||
+                    selectedChart.name.match(/\((.*?)\)/)?.[1];
+
+                  if (!keyName) {
+                    return <div className="text-gray-500">Invalid chart selection</div>;
+                  }
+
 
                   const isGTchart = gtKeys.includes(keyName);
 
