@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import { createProjection, getProjection } from "@/services/projectionService";
 import {
@@ -311,6 +311,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     setGrowthMetric(growthMetricData);
     console.log("📊 Extracted growth metrics data:", growthMetricData);
   };
+
+  const thirdPPDayCount = useMemo(() => {
+    const third = growthMetric.find(
+      g => g.callout === "Third PP Selection"
+    );
+    return third ? Number(third.dayCount) : null;
+  }, [growthMetric]);
+  
 
   console.log("pp id extract : ", growthMetric);
 
@@ -989,6 +997,7 @@ const handleExportGraph = () => {
                       <GrowthProjectionChart
                         data={curveData}
                         title={chartTitle}
+                        thirdPPDayCount={thirdPPDayCount}
                       />
                     );
                   }

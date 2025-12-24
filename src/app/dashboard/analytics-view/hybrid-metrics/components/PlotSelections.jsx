@@ -843,6 +843,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           strokeWidth={2}
           dot={false}
           isAnimationActive={false}
+          legendType="none"
         />
         );
       }
@@ -858,6 +859,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           strokeWidth={2}
           dot={false}
           isAnimationActive={false}
+          legendType="none"
         />
       );
     });
@@ -1022,7 +1024,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           )}
           
           {/* IC Curves */}
-          {/* {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)} */}
+          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
 
           {/* Bias Lines */}
           {/* {renderBiasLines(unitType, "scatter", xKey, yKey)} */}
@@ -1366,7 +1368,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 />
                 
                 {/* IC Curves for line chart */}
-                {/* {renderICCurves(unitSignature, unitType, "line")} */}
+                {renderICCurves(unitSignature, unitType, "line")}
     
                 {/* Bias Lines for line chart */}
                 {/* {renderBiasLines(unitType, "line")} */}

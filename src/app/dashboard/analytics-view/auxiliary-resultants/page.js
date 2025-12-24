@@ -53,6 +53,7 @@ export default function AuxiliaryResultants() {
   const [error, setError] = useState(null);
   const [refreshMarks, setRefreshMarks] = useState(0);
   const [refreshUnitImprovement, setRefreshUnitImprovement] = useState(0);
+  const [refreshChainData, setRefreshChainData] = useState(0);
   const [refreshLeaderMarks, setRefreshLeaderMarks] = useState(0);
   const [data, setData] = useState([]);
   const [secondaryValues, setSecondaryValues] = useState(null);
@@ -358,7 +359,7 @@ export default function AuxiliaryResultants() {
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
-                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks} onChartSelect={(key) => setSelectedChartKey(key)} 
+                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} onChartSelect={(key) => setSelectedChartKey(key)} 
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
@@ -388,7 +389,7 @@ export default function AuxiliaryResultants() {
                     <div className="relative bg-white w-1/2 h-90 rounded-lg shadow-2xl border border-gray-300 z-50">
                       <CreateChainForm unitId={selectedUnitId} candidateId={activeCandidateId}
                         onClose={() => setShowCreateForm(false)}
-                        onSuccess={() => setRefreshMarks(prev => prev + 1)}
+                        onSuccess={() => setRefreshChainData(prev => prev + 1)}
                       />
                     </div>
                   </div>
