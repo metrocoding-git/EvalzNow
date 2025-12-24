@@ -341,7 +341,7 @@ export default function HybridMetrics() {
               </div>
 
               {/* Right Panel */}
-              <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200  p-1 ml-1">
+              <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-1 h-full border-gray-200  p-1 ml-1">
                 {/* Tab buttons */}
                 <div className="flex space-x-0  bg-gray-50 ">
                   <div className="w-6/12 lg:w-9/12 flex flex-col  h-full border-gray-200  p-1">
@@ -355,9 +355,9 @@ export default function HybridMetrics() {
                           className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
                           <option value="activateCandidateLevel">
-                            Activate Candidate Level
+                            Candidate Level
                           </option>
-                          <option value="activateUnitLevel">Activate Unit Level</option>
+                          <option value="activateUnitLevel">Unit Level</option>
                         </select>
                       )}
                     </div>

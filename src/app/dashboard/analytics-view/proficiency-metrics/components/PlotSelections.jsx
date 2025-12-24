@@ -757,7 +757,7 @@ const CustomTooltip = ({ active, payload }) => {
                           setSelectedChart(chart);
                         }}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
                       </div>
                     ))
@@ -789,7 +789,7 @@ const CustomTooltip = ({ active, payload }) => {
                           setSelectedChart(chart); 
                         }}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
                       </div>
                     ))
@@ -1272,7 +1272,7 @@ const CustomTooltip = ({ active, payload }) => {
                   if (selectedChart.type === "scatter") {
                     return (
                       <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={400}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -1338,7 +1338,7 @@ const CustomTooltip = ({ active, payload }) => {
                   
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm">
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                   
                         <ResponsiveContainer width="100%" height={400}>
                           <PieChart>

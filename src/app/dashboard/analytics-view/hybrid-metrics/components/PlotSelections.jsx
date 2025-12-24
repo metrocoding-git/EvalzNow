@@ -252,6 +252,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   ];
 
+
   const getTableColumns = () => {
     switch (selectedChart?.id) {
       case "1": // IC vs PP ID
@@ -345,7 +346,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           );
       }
     }
-  };  
+  };
+  
+  useEffect(() => {
+    console.log( "filters in plot selection: ", filters);
+  }, [filters]);
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -527,12 +532,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         // Handle averages data
         const averageData = averages?.map(item => ({
           ppId: item.ppId,
-          RRN: item.RRN,
-          PRN: item.PRN,
-          ARN: item.ARN,
+          RRN: item.RRN || 0,
+          PRN: item.PRN || 0,
+          ARN: item.ARN || 0,
         })) || [];
   
         setAverageData(averageData);
+        console.log("averages data: ", averageData);
   
         // Handle growth target data
         const growthTargetData = results
@@ -862,10 +868,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const containerStyle = {
     backgroundColor: chartProperties.shadeArea,
     width: '100%',
-    height: '400px',
+    height: '600px',
     padding: '10px',
     borderRadius: '8px'
   };
+
+  const isTargetMode = filters?.unitMode === "target";
+  const targetPpId = filters?.selectedPpId;
+  const isPositiveTarget = targetPpId > 0;
 
   // Check if we should show averages
   const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
@@ -909,13 +919,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Legend 
-            wrapperStyle={{ 
-              paddingTop: "10px",
-              fontSize: "12px"
-            }}
-            iconSize={10}
-          />
+          <Legend />
           
           {/* Reference Lines */}
           {renderReferenceLinesForScatter(xKey, yKey)}
@@ -925,12 +929,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={positiveData} 
               dataKey={yKey} 
-              name="Performance Points (+)"
+               name="Positive PP IDs"
+               fill={chartProperties.positiveLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  "#ef4444", // Red color for positive PP IDs
+                  chartProperties.positiveSymbolColor, // Red color for positive PP IDs
                   chartProperties.symbolScaleSize
                 )
               }
@@ -942,12 +947,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={negativeData} 
               dataKey={yKey} 
-              name="Performance Points (-)"
+              name="Negative PP IDs"
+              fill={chartProperties.negativeLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  "#10b981", // Green color for negative PP IDs
+                  chartProperties.negativeSymbolColor, // Green color for negative PP IDs
                   chartProperties.symbolScaleSize
                 )
               }
@@ -1016,10 +1022,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           )}
           
           {/* IC Curves */}
-          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+          {/* {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)} */}
 
           {/* Bias Lines */}
-          {renderBiasLines(unitType, "scatter", xKey, yKey)}
+          {/* {renderBiasLines(unitType, "scatter", xKey, yKey)} */}
         </ScatterChart>
       </ResponsiveContainer>
     </div>
@@ -1284,7 +1290,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const containerStyle = {
       backgroundColor: chartProperties.shadeArea,
       width: '100%',
-      height: '400px',
+      height: '600px',
       padding: '10px',
       borderRadius: '8px'
     };
@@ -1363,7 +1369,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 {/* {renderICCurves(unitSignature, unitType, "line")} */}
     
                 {/* Bias Lines for line chart */}
-                {renderBiasLines(unitType, "line")}
+                {/* {renderBiasLines(unitType, "line")} */}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -1672,7 +1678,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                           ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon}{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -1737,7 +1743,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   if (!cols) return <div className="text-center text-gray-500">Select a chart</div>;
 
                   return (
-                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-60 mb-16 pb-3">
+                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-16 pb-1">
                       <table className="table-auto w-full text-sm border border-gray-300">
                         <thead className="bg-gray-100">
                           <tr>

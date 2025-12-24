@@ -156,6 +156,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   const [growthMetric, setGrowthMetric] = useState([]);
   const chartContainerRef = useRef(null);
   const [unitType, setUnitType] = useState(null);
+  const [signatureProfile, setSignatureProfile] = useState(null);
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -207,16 +208,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   ];
 
   const activateCandidateLevel = [
-    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", key: "ΔGEQ", type: "line" },
-    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", type: "line" },
-    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", type: "line" },
-    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", type: "line" },
+    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", key: "ΔGEQ", type: "line", icon: "📈" },
+    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", type: "line", icon: "📈" },
+    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", type: "line", icon: "📈" },
+    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", type: "line", icon: "📈" },
   
-    { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", type: "line" },
-    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", type: "line" },
-    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", type: "line" },
+    { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", type: "line", icon: "📊" },
+    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", type: "line", icon: "📊" },
+    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", type: "line", icon: "📊" },
   
-    { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie" },
+    { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie", icon: "🧭" },
     { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "🧪", type: "line" },
     { id: "acl-9-2", name: "Growth Target 1 Trends - PR", key: "PRGT1", icon: "🧪", type: "line" },
     { id: "acl-9-3", name: "Growth Target 1 Trends - AR", key: "ARGT1", icon: "🧪", type: "line" },
@@ -325,6 +326,7 @@ useEffect(() => {
     const [y1_RR, y2_RR, y3_RR] = growthMetric.map(m => parseFloat(m.deltaRRN));
     const rrCurves = calculateProjectionValues(y1_RR, y2_RR, y3_RR, 0, x1, x2, x3, x4);
 
+
     // ∆PR Growth Projections
     const [y1_PR, y2_PR, y3_PR] = growthMetric.map(m => parseFloat(m.deltaPRN));
     const prCurves = calculateProjectionValues(y1_PR, y2_PR, y3_PR, 0, x1, x2, x3, x4);
@@ -343,7 +345,7 @@ useEffect(() => {
         const splineValue = item.s1 || item.s2 || item.s3 || 0;
         
         return {
-          dayCount: index + 1, // Sequential day count starting from 1
+          dayCount: Number(xValue.toFixed(3)), // Sequential day count starting from 1
           originalX: xValue,   // Keep original x for reference
           l: linearValue,
           s: splineValue
@@ -446,6 +448,7 @@ useEffect(() => {
       if (!unitId) {
         setThresholdValue(null);
         setUnitType(null);
+        setSignatureProfile(null);
         return;
       }
   
@@ -463,8 +466,9 @@ useEffect(() => {
   
         setThresholdValue(extractedThresholds);
         setUnitType(data?.unitType || null);
+        setSignatureProfile(data?.signatureProfile || null);
   
-        console.log("✅ Extracted Threshold Values:", extractedThresholds);
+        console.log("✅ Extracted Signature Profile:", data);
       } catch (error) {
         console.error("❌ Failed to fetch threshold values:", error);
         setThresholdValue(null);
@@ -800,7 +804,7 @@ const handleExportGraph = () => {
                               ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
                             onClick={() => setSelectedChart(chart)}
                           >
-                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon}{chart.name}</div>
                             <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
                           </div>
                         ))}
@@ -918,7 +922,7 @@ const handleExportGraph = () => {
                               <tr key={idx} className="hover:bg-blue-50">
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.ppId}</td>
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.dayCount}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-center">{row.value}</td>
+                                <td className="border border-gray-300 px-3 py-2 text-center">{row.value.toFixed(3)}</td>
                               </tr>
                             ))
                           ) : (
@@ -1037,7 +1041,7 @@ const handleExportGraph = () => {
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <ResponsiveContainer width="100%" height={400}>
+                        <ResponsiveContainer width="100%" height={450}>
                           <LineChart 
                             data={positiveData}
                             margin={{ top: 20, right: 30, left: 0, bottom: 40 }}
@@ -1047,6 +1051,7 @@ const handleExportGraph = () => {
                             type="number"
                             dataKey={isGTchart ? "ppId" : "dayCount"}
                             domain={[0, "auto"]}
+                            tickFormatter={(value) => Number(value).toFixed(3)}
                             allowDataOverflow={true}
                             >
                             {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1114,7 +1119,7 @@ const handleExportGraph = () => {
                     return (
                       <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
-                        <ResponsiveContainer width="100%" height={400}>
+                        <ResponsiveContainer width="100%" height={450}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" dataKey="dayCount" name="PP ID" >
@@ -1157,7 +1162,7 @@ const handleExportGraph = () => {
 
                     return (
                       <div className="p-4 bg-white rounded-xl shadow-sm">
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={400}>
                           <PieChart>
                             <Tooltip />
@@ -1198,6 +1203,7 @@ const handleExportGraph = () => {
         candidateId= {candidateId}
         projectionData={tableData}
         unitType={unitType}
+        signatureProfile={signatureProfile}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}
