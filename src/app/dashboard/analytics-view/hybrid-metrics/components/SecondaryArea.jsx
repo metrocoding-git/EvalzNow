@@ -12,7 +12,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
   const [showProjectionPoints, setShowProjectionPoints] = useState(false);
   const [selectedPpId, setSelectedPpId] = useState(null);
   const [unitMode, setUnitMode] = useState("averages"); // "averages" or "target"
-
+  const isUnitLevel = selectedSort === "activateUnitLevel";
+  const isTargetMode = isUnitLevel && unitMode === "target";
   // sample PP IDs
   const ppIds = [-3, -2, -1, 1, 2, 3];
 
@@ -23,11 +24,17 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
     setCriticalDateTo("");
     setThresholdEnabled(false);
     setSelectedPpId(null);
-    setUnitMode("");
+    setUnitMode("averages");
     setShowGrowthTarget(false);
     setShowProjectionPoints(false);
   }, [resetSignal]);
 
+  useEffect(() => {
+    if (unitMode === "averages") {
+      setSelectedPpId(null);
+    }
+  }, [unitMode]);
+  
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -37,8 +44,9 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
       criticalDateFrom,
       criticalDateTo,
       thresholdEnabled,
-      unitMode,
-      selectedPpId: selectedPpId !== null ? selectedPpId : null,
+      unitMode: isUnitLevel ? unitMode || "averages" : null,
+
+      selectedPpId: isTargetMode ? selectedPpId : null,
       showGrowthTarget,
       showProjectionPoints
     };
@@ -60,88 +68,92 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
-        {/* PP ID Range */}
-        <div className="gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            PP ID Range
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">From:</label>
-              <input
-                type="number"
-                value={ppIdFrom}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPpIdFrom(val === "" ? "" : parseInt(val));
-                }}
-                className="border px-2 py-1 w-full"
-                placeholder="From (e.g., -3)"
-              />
-            </div>
-
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">To:</label>
-              <input
-                type="number"
-                value={ppIdTo}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPpIdTo(val === "" ? "" : parseInt(val));
-                }} 
-                className="border px-2 py-1 w-full"
-                placeholder="To (e.g., 3)"
-              />
-            </div>
-
-          </div>
-        </div>
-
-
-        {/* Critical Reference Date */}
-        <div className="w-full gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            Critical Reference Range
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">From:</label>
-              <input
-                type="date"
-                value={criticalDateFrom}
-                onChange={(e) => setCriticalDateFrom(e.target.value)}
-                className="border px-2 py-1 w-full" />
-            </div>
-
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">To:</label>
-              <input
-                type="date"
-                value={criticalDateTo}
-                onChange={(e) => setCriticalDateTo(e.target.value)}
-                className="border px-2 py-1 w-full" />
-            </div>
-          </div>
-        </div>
+        
 
         {/* Threshold Toggle (only show if isSelectedInteractionClass is true) */}
         {isSelectedInteractionClass && (
-          <div className="flex items-center justify-between p-2">
-            <label className="font-medium text-gray-800">Enable Thresholds</label>
-            <div
-              onClick={() => setThresholdEnabled(!thresholdEnabled)}
-              className="relative w-12 h-6 cursor-pointer"
-            >
+          <div className="">
+            {/* PP ID Range */}
+            <div className="gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                PP ID Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="number"
+                    value={ppIdFrom}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdFrom(val === "" ? "" : parseInt(val));
+                    }}
+                    className="border px-2 py-1 w-full"
+                    placeholder="From (e.g., -3)"
+                  />
+                </div>
+
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">To:</label>
+                  <input
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdTo(val === "" ? "" : parseInt(val));
+                    }} 
+                    className="border px-2 py-1 w-full"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+
+            {/* Critical Reference Date */}
+            <div className="w-full gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Critical Reference Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="date"
+                    value={criticalDateFrom}
+                    onChange={(e) => setCriticalDateFrom(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">To:</label>
+                  <input
+                    type="date"
+                    value={criticalDateTo}
+                    onChange={(e) => setCriticalDateTo(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+              </div>
+            </div>
+          
+            <div className="flex items-center justify-between p-2">
+              <label className="font-medium text-gray-800">Enable Thresholds</label>
               <div
-                className={`absolute inset-0 rounded-full transition-colors duration-300 ${thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
-                  }`}
-              />
-              <div
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${thresholdEnabled ? "translate-x-6" : "translate-x-0"
-                  }`}
-              />
+                onClick={() => setThresholdEnabled(!thresholdEnabled)}
+                className="relative w-12 h-6 cursor-pointer"
+              >
+                <div
+                  className={`absolute inset-0 rounded-full transition-colors duration-300 ${thresholdEnabled ? "bg-gray-600" : "bg-gray-300"
+                    }`}
+                />
+                <div
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${thresholdEnabled ? "translate-x-6" : "translate-x-0"
+                    }`}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -150,6 +162,72 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
         {/* Candidate Level Options */}
         {selectedSort === "activateCandidateLevel" && !isSelectedInteractionClass && (
           <div className="flex flex-col gap-2">
+            {/* PP ID Range */}
+            <div className="gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                PP ID Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="number"
+                    value={ppIdFrom}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdFrom(val === "" ? "" : parseInt(val));
+                    }}
+                    className="border px-2 py-1 w-full"
+                    placeholder="From (e.g., -3)"
+                  />
+                </div>
+
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">To:</label>
+                  <input
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdTo(val === "" ? "" : parseInt(val));
+                    }} 
+                    className="border px-2 py-1 w-full"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+
+            {/* Critical Reference Date */}
+            <div className="w-full gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Critical Reference Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="date"
+                    value={criticalDateFrom}
+                    onChange={(e) => setCriticalDateFrom(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">To:</label>
+                  <input
+                    type="date"
+                    value={criticalDateTo}
+                    onChange={(e) => setCriticalDateTo(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+              </div>
+            </div>
+            
             {/* Growth Target Toggle */}
             <div className="flex items-center justify-between p-2">
               <label className="font-medium text-gray-800">

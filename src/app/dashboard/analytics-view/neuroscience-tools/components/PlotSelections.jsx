@@ -187,7 +187,7 @@ const lobeData = [
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
   );
   const [visible, setVisible] = useState(true);
-  const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Neuro Tools Table');
+  const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Indicators');
 
 
   const canvasRef = useRef(null);

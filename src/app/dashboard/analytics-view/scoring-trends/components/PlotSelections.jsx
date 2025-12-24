@@ -649,7 +649,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                           >
                             <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                               <div className="flex items-center">
-                                <span className="truncate">📉 {item.name}</span>
+                                <span className="truncate">{item.icon} {item.name}</span>
                               </div>
                             </div>
                             <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">

@@ -92,7 +92,126 @@ export function calculateProjectionValues(
   // };
 }
 
-export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [], unitType }) {
+// Case 1
+function GetInteractionClassForCase1(rr, pr) {
+  const eqn = Math.sqrt(Math.pow(rr, 2) + Math.pow(pr, 2));
+  return GetInteractionClassAreaCase1(eqn);
+}
+
+// Case 2
+function GetInteractionClassForCase2(rr, pr) {
+  const eqn = Math.sqrt(Math.pow(rr, 3) + Math.pow(pr, 3));
+  return GetInteractionClassAreaCase2(eqn);
+}
+
+// Case 3a
+function GetInteractionClassForCase3a(rr, pr) {
+  const eqn = Math.sqrt(Math.pow(rr, 3) + Math.pow(pr, 2));
+  return GetInteractionClassAreaCase3a(eqn);
+}
+
+// Case 3b
+function GetInteractionClassForCase3b(rr, pr) {
+  const eqn = Math.sqrt(Math.pow(rr, 2) + Math.pow(pr, 3));
+  return GetInteractionClassAreaCase3b(eqn);
+}
+
+// Third Parameter (3D)
+function GetInteractionClassForThird(rr, pr, ar) {
+  const eqn = Math.sqrt(Math.pow(rr, 2) + Math.pow(pr, 2) + Math.pow(ar, 2));
+  return GetInteractionClassAreaThird(eqn);
+}
+
+function GetInteractionClassAreaCase1(eqn) {
+  if (eqn < 0.6) return "0R0P";
+  else if (eqn < 0.7) return "1R1P";
+  else if (eqn < 0.8) return "2R2P";
+  else if (eqn < 0.9) return "3R3P";
+  else if (eqn < 1.0) return "4R4P";
+  else return "5R5P";
+}
+
+function GetInteractionClassAreaCase2(eqn) {
+  if (eqn < 0.71138) return "0R0P";
+  else if (eqn < 0.78837) return "1R1P";
+  else if (eqn < 0.86177) return "2R2P";
+  else if (eqn < 0.93217) return "3R3P";
+  else if (eqn < 1.0) return "4R4P";
+  else return "5R5P";
+}
+
+function GetInteractionClassAreaCase3a(eqn) {
+  if (eqn < 0.6) return "0R0P";
+  else if (eqn < 0.7) return "0R1P";
+  else if (eqn < 0.711379) return "0R2P";
+  else if (eqn < 0.788374) return "1R2P";
+  else if (eqn < 0.8) return "2R2P";
+  else if (eqn < 0.86177) return "2R3P";
+  else if (eqn < 0.9) return "3R3P";
+  else if (eqn < 0.93217) return "3R4P";
+  else if (eqn < 1.0) return "4R4P";
+  else return "5R5P";
+}
+
+function GetInteractionClassAreaCase3b(eqn) {
+  if (eqn < 0.6) return "0R0P";
+  else if (eqn < 0.7) return "1R0P";
+  else if (eqn < 0.711379) return "2R0P";
+  else if (eqn < 0.788374) return "2R1P";
+  else if (eqn < 0.8) return "2R2P";
+  else if (eqn < 0.86177) return "3R2P";
+  else if (eqn < 0.9) return "3R3P";
+  else if (eqn < 0.93217) return "4R3P";
+  else if (eqn < 1.0) return "4R4P";
+  else return "5R5P";
+}
+
+// function GetInteractionClassAreaThird(eqn) {
+//   if (eqn < 0.6) return 0;
+//   else if (eqn < 0.7) return 1;
+//   else if (eqn < 0.8) return 2;
+//   else if (eqn < 0.9) return 3;
+//   else if (eqn < 1.0) return 4;
+//   else return 5;
+// }
+function GetInteractionClassAreaThird(eqn) {
+  if (eqn < 0.6) return '0R0P';
+  else if (eqn >= 0.6 && eqn < 0.7) return '1R1P';
+  else if (eqn >= 0.7 && eqn < 0.8) return '2R2P';
+  else if (eqn >= 0.8 && eqn < 0.9) return '3R3P';
+  else if (eqn >= 0.9 && eqn < 1.0) return '4R4P';
+  else return '5R5P';
+}
+
+// --- Unified router function ---
+function calculateInteractionClass(rr, pr, ar, unitType, signatureProfile) {
+  const rrVal = rr ?? 0;
+  const prVal = pr ?? 0;
+  const arVal = ar ?? 0;
+
+  if (unitType === "Third Parameter") {
+    return GetInteractionClassForThird(rrVal, prVal, arVal);
+  }
+
+  if (unitType === "Communicative I/O" || unitType === "Theory & Practice") {
+    switch (signatureProfile) {
+      case "Case 1: Solid Balanced":
+        return GetInteractionClassForCase1(rrVal, prVal);
+      case "Case 2: Rigorous Balanced":
+        return GetInteractionClassForCase2(rrVal, prVal);
+      case "Case 3a: Productive-Weighted":
+        return GetInteractionClassForCase3a(rrVal, prVal);
+      case "Case 3b: Receptive-Weighed":
+        return GetInteractionClassForCase3b(rrVal, prVal);
+      default:
+        return null;
+    }
+  }
+
+  return null;
+}
+
+export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [], unitType, signatureProfile }) {
   if (!visible) return null;
 
   const columns = useMemo(() => {
@@ -132,7 +251,13 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     { Callout: "Average ", PP_ID: 0, RRN: 0, PRN: 0, ARN: 0, IC: 0, ΔRRN: 0, ΔPRN: 0, ΔARN: 0, DayCount: 0 },
   ]);
 
-  const safeNum = (val) => (isNaN(parseFloat(val)) ? 0 : parseFloat(val));
+  const safeNum = (val) => {
+    if (val === "-" || val === "" || val === null || val === undefined) {
+      return 0;
+    }
+    const parsed = parseFloat(val);
+    return isNaN(parsed) ? 0 : parsed;
+  };
 
   const allPpIds = useMemo(
     () =>
@@ -297,6 +422,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: (safeNum(third.RRN) + safeNum(overRRN)).toFixed(3),
         PRN: (safeNum(third.PRN) + safeNum(overPRN)).toFixed(3),
         ARN: (safeNum(third.ARN) + safeNum(overARN)).toFixed(3),
+        IC: "-", 
       };
 
       // Update Undershoot (row 5)
@@ -310,6 +436,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: (safeNum(third.RRN) + safeNum(underRRN)).toFixed(3),
         PRN: (safeNum(third.PRN) + safeNum(underPRN)).toFixed(3),
         ARN: (safeNum(third.ARN) + safeNum(underARN)).toFixed(3),
+        IC: "-", 
       };
 
       // ------------- FIXED: 15-day Average (use mean of undershoot & overshoot) -------------
@@ -326,6 +453,8 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       const avgPRN_15 = (safeNum(overshootRow15.PRN) + safeNum(undershootRow15.PRN)) / 2;
       const avgARN_15 = (safeNum(overshootRow15.ARN) + safeNum(undershootRow15.ARN)) / 2;
 
+      const avgIC_15 = calculateInteractionClass(avgRRN_15, avgPRN_15, avgARN_15, unitType, signatureProfile);
+      
       updated[6] = {
         ...updated[6],
         PP_ID: `${dayCount} days`,
@@ -336,6 +465,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: avgRRN_15.toFixed(3),
         PRN: avgPRN_15.toFixed(3),
         ARN: avgARN_15.toFixed(3),
+        IC: avgIC_15,
       };
 
       // ---------------- 30-day projections ----------------
@@ -373,6 +503,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: (safeNum(prevOvershoot15.RRN) + safeNum(overRRN30)).toFixed(3),
         PRN: (safeNum(prevOvershoot15.PRN) + safeNum(overPRN30)).toFixed(3),
         ARN: (safeNum(prevOvershoot15.ARN) + safeNum(overARN30)).toFixed(3),
+        IC: "-", 
       };
 
       // Undershoot (30 days) - row 8
@@ -386,6 +517,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: (safeNum(prevUndershoot15.RRN) + safeNum(underRRN30)).toFixed(3),
         PRN: (safeNum(prevUndershoot15.PRN) + safeNum(underPRN30)).toFixed(3),
         ARN: (safeNum(prevUndershoot15.ARN) + safeNum(underARN30)).toFixed(3),
+        IC: "-", 
       };
 
       // ---------------- FIXED: 30-day Average (mean of undershoot & overshoot) ----------------
@@ -400,6 +532,8 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       const avgPRN_30 = (safeNum(overshootRow30.PRN) + safeNum(undershootRow30.PRN)) / 2;
       const avgARN_30 = (safeNum(overshootRow30.ARN) + safeNum(undershootRow30.ARN)) / 2;
 
+      const avgIC_30 = calculateInteractionClass(avgRRN_30, avgPRN_30, avgARN_30, unitType, signatureProfile);
+      
       updated[9] = {
         ...updated[9],
         PP_ID: `${dayCount30} days`,
@@ -410,6 +544,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         RRN: avgRRN_30.toFixed(3),
         PRN: avgPRN_30.toFixed(3),
         ARN: avgARN_30.toFixed(3),
+        IC: avgIC_30,
       };
 
       return updated;
@@ -502,6 +637,22 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
             setRows((prevRows) =>
               prevRows.map((r, idx) => {
                 const matched = savedPoints[idx];
+
+                if (idx === 3) {
+                  return {
+                    ...r,
+                    PP_ID: "-",
+                    RRN: "-",
+                    PRN: "-",
+                    ARN: "-",
+                    IC: "-",
+                    ΔRRN: 0,
+                    ΔPRN: 0,
+                    ΔARN: 0,
+                    DayCount: parseFloat(matched?.dayCount ?? r.DayCount),
+                  };
+                }
+
                 if (matched) {
                   return {
                     ...r,

@@ -1967,7 +1967,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                           onChartSelect?.(chart.key); 
                         }}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{index +1}</div>
                       </div>
                     ))
@@ -1978,7 +1978,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
                         <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -2071,7 +2071,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
 
           <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-            {selectedChart ? `${selectedChart.name}` : 'Select a plot'}
+            {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
           </h2>
 
           <div className="h-full overflow-y-auto overflow-x-auto mb-16 p-3">
