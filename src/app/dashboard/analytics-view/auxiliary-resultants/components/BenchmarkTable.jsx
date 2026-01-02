@@ -161,15 +161,7 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
 
         {/* Footer */}
         <div className="p-4 border-t flex justify-end">
-          <button
-            onClick={handleCloseClick}
-            disabled={selectedCount < 1}
-            className={`px-4 py-2 text-white ${
-              selectedCount >= 1
-                ? "bg-gray-600 hover:bg-gray-700"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
-          >
+          <button onClick={handleCloseClick} className={`px-4 py-2 text-white bg-gray-600 hover:bg-gray-700`}>
             Close
           </button>
         </div>

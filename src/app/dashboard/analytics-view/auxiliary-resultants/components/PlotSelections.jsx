@@ -112,6 +112,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       name: "Needs Assessment Table",
       icon: "📑",
       type: "table",
+      key: "nat",
       id: 11
     },
     {

@@ -65,6 +65,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
+  const [showLobeImage, setShowLobeImage] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [indicatorsData, setIndicatorsData] = useState([]);
@@ -303,7 +304,11 @@ const lobeData = [
     }
   };
 
-
+  const handleToggleImage = () => {
+    if (!selectedLobe) return; // prevent opening without selection
+    setShowLobeImage(prev => !prev);
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
       if (!unitId || !candidateId) return;
@@ -859,7 +864,8 @@ const handleExportGraph = () => {
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
                     
                     {/* Simple Lobe Dropdown */}
-                    <div className="mb-4">
+                    {/* Lobe selector + ON/OFF toggle */}
+                    <div className="mb-4 flex items-center gap-4">
                       <select
                         value={selectedLobe}
                         onChange={(e) => setSelectedLobe(e.target.value)}
@@ -872,11 +878,38 @@ const handleExportGraph = () => {
                           </option>
                         ))}
                       </select>
+
+                      {/* ON / OFF toggle */}
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <span className="text-sm text-gray-600">Show</span>
+
+                        <input
+                          type="checkbox"
+                          checked={showLobeImage}
+                          onChange={handleToggleImage}
+                          className="sr-only"
+                        />
+
+                        <div
+                          className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
+                            ${showLobeImage ? "bg-gray-500" : "bg-gray-300"}`}
+                        >
+                          <div
+                            className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform
+                              ${showLobeImage ? "translate-x-5" : "translate-x-0"}`}
+                          />
+                        </div>
+
+                        <span className="text-xs font-medium text-gray-700">
+                          {showLobeImage ? "ON" : "OFF"}
+                        </span>
+                      </label>
                     </div>
 
+
                     {/* Image Display */}
-                    {selectedLobeData && (
-                      <div className="">
+                    {/* {showLobeImage && selectedLobeData && (
+                      <div>
                         <div className="relative w-64 h-64 mx-auto">
                           <Image
                             src={selectedLobeData.image}
@@ -886,11 +919,13 @@ const handleExportGraph = () => {
                             className="p-4"
                           />
                         </div>
+
                         <p className="text-center mt-2 text-gray-700 font-medium">
                           {selectedLobeData.name}
                         </p>
                       </div>
-                    )}
+                    )} */}
+
                   </div>
                 )}
 
@@ -1021,6 +1056,46 @@ const handleExportGraph = () => {
         )}
 
       </div>
+
+      {/* Image pop Up */}
+      {showLobeImage && selectedLobeData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowLobeImage(false)}
+        >
+          {/* Modal content */}
+          <div
+            className="relative bg-white rounded-xl shadow-xl p-6 w-[90%] max-w-md
+                      scale-100 animate-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close icon */}
+            <button
+              onClick={() => setShowLobeImage(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-500 text-xl"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            {/* Image */}
+            <div className="relative w-64 h-64 mx-auto">
+              <Image
+                src={selectedLobeData.image}
+                alt={selectedLobeData.name}
+                fill
+                className="object-contain"
+              />
+            </div>
+
+            {/* Title */}
+            <p className="text-center mt-3 text-lg font-semibold">
+              {selectedLobeData.name}
+            </p>
+          </div>
+        </div>
+      )}
+
 
     </>
   );

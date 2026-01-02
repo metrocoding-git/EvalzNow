@@ -317,6 +317,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     fetchDistributionData();
   }, [unitId, candidatePpList, selectedChart, betaValue]);
 
+  const getTableHeaderLabel = (key) => {
+    if (key === "name") return getXAxisLabel();
+  
+    // Weibull specific
+    if (key === "pdf") return "Probability Density f(t)";
+    if (key === "cdf") return "Cumulative Distribution F(t)";
+    if (key === "reliability") return "Reliability R(t)";
+    if (key === "risk") return "Risk (1 - R)";
+  
+    // Generic Y axis value
+    if (key === "value") return getYAxisLabel();
+  
+    // Fallback
+    return key;
+  };
+  
   const handleChartSelect = (chartItem) => {
     setSelectedChart(chartItem);
     setSelectedKey(chartItem.key);
@@ -637,9 +653,10 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <Area
                 type="monotone"
                 dataKey="reliability"
+                strokeWidth={chartProperties.lineThickness}
                 stroke="#10b981"
                 fill="#10b981"
-                fillOpacity={0.2}
+                fillOpacity={0}
                 name="Reliability (R)"
               />
             </AreaChart>
@@ -1374,7 +1391,7 @@ const getYAxisLabel = () => {
                               key={i}
                               className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center capitalize"
                             >
-                              {col}
+                            {getTableHeaderLabel(col)}
                             </th>
                           ))}
                         </tr>

@@ -27,49 +27,85 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
   // const csdEffort = "1.234";
   // const usdEffort = "5.678";
 
-  useEffect(() => {
-    const fetchEffortData = async () => {
-      try {
-        if (!selectedChartKey) return;
+  // useEffect(() => {
+  //   const fetchEffortData = async () => {
+  //     try {
+  //       if (!selectedChartKey) return;
   
-        // Only fetch for Butler-related charts
-        if (selectedChartKey === "bp-csd" || selectedChartKey === "bp-usd") {
-          const response = await getEffortBu(unitId, candidateId);
+  //       // Only fetch for Butler-related charts
+  //       if (selectedChartKey === "bp-csd" || selectedChartKey === "bp-usd") {
+  //         const response = await getEffortBu(unitId, candidateId);
   
-          // based on your API response shape
-          const { data } = response;
+  //         // based on your API response shape
+  //         const { data } = response;
   
-          setCsdEffort(data?.CSD ?? "");
-          setUsdEffort(data?.USD ?? "");
-        }
-      } catch (error) {
-        console.error("Error fetching effort data:", error);
-        setCsdEffort("");
-        setUsdEffort("");
+  //         setCsdEffort(data?.CSD ?? "");
+  //         setUsdEffort(data?.USD ?? "");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching effort data:", error);
+  //       setCsdEffort("");
+  //       setUsdEffort("");
+  //     }
+  //   };
+  
+  //   fetchEffortData();
+  // }, [selectedChartKey, unitId, candidateId]);
+  
+
+  const fetchEffort = async (filters) => {
+    try {
+      if (!selectedChartKey) return;
+  
+      if (selectedChartKey === "bp-csd" || selectedChartKey === "bp-usd") {
+        const response = await getEffortBu(unitId, candidateId, filters);
+  
+        setCsdEffort(response?.data?.CSD ?? "");
+        setUsdEffort(response?.data?.USD ?? "");
+  
+        console.log("EFFORT RESPONSE:", response);
       }
-    };
-  
-    fetchEffortData();
-  }, [selectedChartKey, unitId, candidateId]);
-  
-  
+    } catch (error) {
+      console.error("Error fetching effort BU:", error);
+      setCsdEffort("");
+      setUsdEffort("");
+    }
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const values = {
+  useEffect(() => {
+    // load with default filters
+    const defaultFilters = {
       ppIdFrom,
       ppIdTo,
       criticalDateFrom,
       criticalDateTo
     };
+  
+    fetchEffort(defaultFilters);
+  }, [selectedChartKey, unitId, candidateId]);
+  
 
-    onSubmit(values); // ✅ send values to parent
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (ppIdFrom !== "" && ppIdTo !== "" && ppIdFrom > ppIdTo) {
+      alert("PP ID From cannot be greater than To");
+      return;
+    }
+  
+    const filters = {
+      ppIdFrom,
+      ppIdTo,
+      criticalDateFrom,
+      criticalDateTo
+    };
+  
+    onSubmit(filters); 
+    fetchEffort(filters); 
   };
-
-
-
+  
+  
+  
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Section Header */}
