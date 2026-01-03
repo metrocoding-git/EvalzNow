@@ -50,7 +50,7 @@ export default function ClientEditor({
       <div className="flex items-center bg-gray-100 px-4 py-1.5 border-b border-gray-300">
         <div className="flex items-center gap-2 text-black font-semibold text-sm">
           <Edit className="w-4 h-4" />
-          Entity Editor
+          Secondary Input Area
         </div>
       </div>
 

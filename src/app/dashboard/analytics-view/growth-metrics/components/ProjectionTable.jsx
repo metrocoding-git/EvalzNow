@@ -472,17 +472,17 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       const dayCount30 = 30;
 
       const [underRRN30, overRRN30] = calculateProjectionValues(
-        first.ΔRRN, second.ΔRRN, third.ΔRRN, third.ΔRRN,
+        first.ΔRRN, second.ΔRRN, third.ΔRRN, 0,
         first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );
       const [underPRN30, overPRN30] = calculateProjectionValues(
-        first.ΔPRN, second.ΔPRN, third.ΔPRN, third.ΔPRN,
+        first.ΔPRN, second.ΔPRN, third.ΔPRN, 0,
         first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );
       const [underARN30, overARN30] = calculateProjectionValues(
-        first.ΔARN, second.ΔARN, third.ΔARN, third.ΔARN,
+        first.ΔARN, second.ΔARN, third.ΔARN, 0,
         first.DayCount, second.DayCount, third.DayCount, fourth.DayCount,
         dayCount30
       );

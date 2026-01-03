@@ -40,6 +40,7 @@ export default function CurveEditor() {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
   const chart = [
+    { id: 35, name: "Shared Global Analytics Index Table", icon: "🥧", type: "table" },
     { id: 1, name: "Global Signature Case Profile Percentages", icon: "🥧", type: "pie" },
     { id: 2, name: "Global Unit Type Percentages", icon: "🥧", type: "pie" },
     { id: 3, name: "Global Candidate-to-Leader Percentages", icon: "🥧", type: "pie" },
@@ -74,7 +75,7 @@ export default function CurveEditor() {
     { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🥧", type: "pie" },
     { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🥧", type: "pie" },
     { id: 34, name: "Global Percentages of Utilization Rates", icon: "🥧", type: "pie" },
-    { id: 35, name: "Shared Global Analytics Index Table", icon: "🥧", type: "table" }
+   
   ];
   
 
@@ -189,7 +190,7 @@ export default function CurveEditor() {
 
           <div className=" h-full overflow-hidden w-full my-2">
             <div className="h-full flex flex-col border border-gray-200">
-              <div className="flex-1 overflow-auto p-1">
+              <div className="flex-1 overflow-auto p-1 mb-5">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
                  
@@ -200,7 +201,7 @@ export default function CurveEditor() {
 
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
-                  {chart.map((item) => (
+                  {chart.map((item, index) => (
                     <div
                       key={item.id}
                       className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 ${selectedRow === item.id ? "bg-blue-100 font-medium" : ""} cursor-pointer`}
@@ -210,9 +211,9 @@ export default function CurveEditor() {
                       }}
                     >
                      
-                      <div className="col-span-10 text-xs text-gray-700 truncate">🧭 {item.name}</div>
+                      <div className="col-span-10 text-xs text-gray-700 truncate">{item.icon} {item.name}</div>
                     
-                      <div className="col-span-2 pl-3 text-xs text-gray-400">{item.id}</div>
+                      <div className="col-span-2 pl-3 text-xs text-gray-400">{index + 1}</div>
                     </div>
                   ))}
                 </div>

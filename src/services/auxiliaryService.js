@@ -149,15 +149,23 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
   };
 
 
-  export const getEffortBu = async (unitId, candidateId) => {
-    try {
-      const response = await api.get(`${API_ROUTES.AUXILIARY}/effort/${unitId}/${candidateId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching candidate marks:", error);
-      throw error;
-    }
+  export const getEffortBu = async (unitId, candidateId, filters = {}) => {
+    const response = await api.get(
+      `${API_ROUTES.AUXILIARY}/effort/${unitId}/${candidateId}`,
+      {
+        params: {
+          ppIdFrom: filters.ppIdFrom,
+          ppIdTo: filters.ppIdTo,
+          criticalRefDateFrom: filters.criticalDateFrom,
+          criticalRefDateTo: filters.criticalDateTo
+        }
+      }
+    );
+  
+    return response.data;
   };
+  
+  
 
   export const createAssessmentChain = async (assessment) => {
     try {

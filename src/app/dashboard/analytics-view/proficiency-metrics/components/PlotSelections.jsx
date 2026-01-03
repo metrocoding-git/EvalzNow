@@ -961,9 +961,7 @@ const CustomTooltip = ({ active, payload }) => {
                                 <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                                   PP Id / Label
                                 </th>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                                  X Axis Value
-                                </th>
+                                
                                 <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                                   {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
                                 </th>
@@ -1006,9 +1004,7 @@ const CustomTooltip = ({ active, payload }) => {
                                       <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                                         {row.ppId}
                                       </td>
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                        {row.ppId}
-                                      </td>
+                                     
                                       <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                                         {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                       </td>
@@ -1035,9 +1031,7 @@ const CustomTooltip = ({ active, payload }) => {
                                 <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                                   PP Id / Label
                                 </th>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                                  X Axis Value
-                                </th>
+                               
                                 <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
                                   {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
                                 </th>
@@ -1080,9 +1074,7 @@ const CustomTooltip = ({ active, payload }) => {
                                       <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                                         {row.ppId}
                                       </td>
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                        {row.ppId}
-                                      </td>
+                                      
                                       <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
                                         {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                       </td>
@@ -1181,7 +1173,7 @@ const CustomTooltip = ({ active, payload }) => {
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
-                                  value={`${selectedChart.name} (Y)`}
+                                  value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
                                   offset={10}
@@ -1284,7 +1276,7 @@ const CustomTooltip = ({ active, payload }) => {
                             <YAxis type="number" dataKey="value" name={selectedChart.name}>
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
-                                  value={`${selectedChart.name} (Y)`}
+                                  value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
                                   offset={10}

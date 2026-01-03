@@ -22,7 +22,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, onChartSelect, filters, onResetFilters }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -112,6 +112,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       name: "Needs Assessment Table",
       icon: "📑",
       type: "table",
+      key: "nat",
       id: 11
     },
     {
@@ -395,7 +396,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     };
   
     fetchChainData();
-  }, [unitId, candidateId]);
+  }, [unitId, candidateId, refreshChainData, refreshBenchmarks]);
 
   // console.log("chain data: ", chainData);
 

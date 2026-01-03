@@ -13,26 +13,42 @@ const concernResolved = ["Yes", "No"];
 export default function CreateChainForm({ onClose, onSuccess , unitId, candidateId}) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-  const [form, setForm] = useState({
-    selection1: "",
-    selection2: "",
-    selection3: "",
-    selection4: "",
-    selection5: "",
-  });
+    const [form, setForm] = useState({
+      selection1: null,
+      selection2: null,
+      selection3: null,
+      selection4: null,
+      selection5: null,
+    });
+    
   const [tableData, setTableData] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (label, value) => {
-    setForm((prev) => ({ ...prev, [label]: value }));
+    const selectedItem = ppIdList.find(
+      (item) => item.blockId === Number(value)
+    );
+  
+    setForm((prev) => ({
+      ...prev,
+      [label]: selectedItem || null,
+    }));
   };
+  
 
   // Validate required fields
+  
+
   const isFormValid = () => {
-    return (
-      form.selection1.trim() !== ""
-    );
+    return form.selection1 !== null;
   };
+  
+
+  const getMinPpId = (prevSelection) => {
+    return prevSelection ? prevSelection.ppId : -Infinity;
+  };
+
+  const selection1Min = getMinPpId(form.selection1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,43 +121,77 @@ console.log("table data check proper:", tableData)
     ppId: item.ppId
   }));
 
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      selection2: null,
+      selection3: null,
+      selection4: null,
+      selection5: null,
+    }));
+  }, [form.selection1]);
+  
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      selection3: null,
+      selection4: null,
+      selection5: null,
+    }));
+  }, [form.selection2]);
+  
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      selection4: null,
+      selection5: null,
+    }));
+  }, [form.selection3]);
+  
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      selection5: null,
+    }));
+  }, [form.selection4]);
   
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!isFormValid()) {
       toast.error("Please fill all required fields.");
       return;
     }
-
-   
+  
     setIsSubmitting(true);
-
+  
     try {
       const data = {
-        unitId: unitId,
-        candidateId: candidateId,
-        selection1: form.selection1,
-        selection2: form.selection2,
-        selection3: form.selection3,
-        selection4: form.selection4,
-        selection5: form.selection5,
+        unitId,
+        candidateId,
+        selection1: form.selection1?.blockId || null,
+        selection2: form.selection2?.blockId || null,
+        selection3: form.selection3?.blockId || null,
+        selection4: form.selection4?.blockId || null,
+        selection5: form.selection5?.blockId || null,
       };
-
+  
       const response = await createAssessmentChain(data);
   
       if (response) {
         onSuccess();
         onClose();
       }
-
+  
     } catch (error) {
+      console.error("API Error:", error);
       toast.error("Failed to save entry.");
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <form className="flex flex-col h-full w-full bg-white border shadow-2xl border-gray-200" onSubmit={handleSubmit}>
@@ -170,18 +220,18 @@ console.log("table data check proper:", tableData)
             Selection 1: <span className="text-red-500 ml-1">*</span>
           </label>
           <select
-            value={form.selection1} className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
+            value={form.selection1?.blockId || ""}
+            onChange={(e) => handleChange("selection1", e.target.value)} className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
             focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            onChange={(e) => handleChange("selection1", e.target.value)}
             required
             >
             <option value="">Select PP ID</option>
-            {ppIdList.map((item, index) => (
-                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
-                {item.ppId}
-              </option>
-              
-            ))}
+              {ppIdList.map((item, index) => (
+                  <option key={item.blockId} value={item.blockId}>
+                  {item.ppId}
+                </option>
+                
+              ))}
           </select>
 
 
@@ -191,16 +241,16 @@ console.log("table data check proper:", tableData)
           </label>
           <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            value={form.selection2}
-            onChange={(e) => handleChange("selection2", e.target.value)}
+           value={form.selection2?.blockId || ""}
+           onChange={(e) => handleChange("selection2", e.target.value)}
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.map((item, index) => (
-                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
-                {item.ppId}
-              </option>
-              
+            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection1))
+              .map(item => (
+                <option key={item.blockId} value={item.blockId}>
+                  {item.ppId}
+                </option>
             ))}
           </select>
 
@@ -211,16 +261,16 @@ console.log("table data check proper:", tableData)
           </label>
           <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            value={form.selection3}
+           value={form.selection3?.blockId || ""}
             onChange={(e) => handleChange("selection3", e.target.value)}
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.map((item, index) => (
-               <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
-               {item.ppId}
-             </option>
-             
+            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection2))
+              .map(item => (
+                <option key={item.blockId} value={item.blockId}>
+                  {item.ppId}
+                </option>
             ))}
           </select>
 
@@ -231,16 +281,16 @@ console.log("table data check proper:", tableData)
           </label>
           <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            value={form.selection4}
+            value={form.selection4?.blockId || ""}
             onChange={(e) => handleChange("selection4", e.target.value)}
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.map((item, index) => (
-                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
-                {item.ppId}
-              </option>
-              
+            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection3))
+              .map(item => (
+                <option key={item.blockId} value={item.blockId}>
+                  {item.ppId}
+                </option>
             ))}
           </select>
 
@@ -251,16 +301,16 @@ console.log("table data check proper:", tableData)
           </label>
           <select className="w-full border border-gray-300 rounded px-2 py-1 text-sm bg-white 
            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            value={form.selection5}
+            value={form.selection5?.blockId || ""}
             onChange={(e) => handleChange("selection5", e.target.value)}
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.map((item, index) => (
-                <option key={item.blockId} value={item.blockId} disabled={selectedValues.includes(item.blockId)}>
-                {item.ppId}
-              </option>
-              
+            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection4))
+              .map(item => (
+                <option key={item.blockId} value={item.blockId}>
+                  {item.ppId}
+                </option>
             ))}
           </select>
 

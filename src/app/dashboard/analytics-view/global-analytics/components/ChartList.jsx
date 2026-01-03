@@ -4,6 +4,7 @@ import { FaChartPie } from "react-icons/fa"; // for pie chart icon
 
 export default function ChartList({ selectedChart, onSelect }) {
   const charts = [
+    "Shared Global Analytics Index Table",
     "Global Signature Case Profile Percentages (Pie Chart)",
     "Global Unit Type Percentages (Pie Chart)",
     "Global Candidate-to-Leader Percentages (Pie Chart)",

@@ -1,6 +1,17 @@
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6" }) {
+export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thirdPPDayCount }) {
+
+  const ppPlus15 =
+    typeof thirdPPDayCount === "number"
+      ? thirdPPDayCount + 15
+      : null;
+
+  const ppPlus30 =
+    typeof thirdPPDayCount === "number"
+      ? thirdPPDayCount + 30
+      : null;
+      
     if (!data || data.length === 0) {
       return (
         <div className="p-4 bg-white rounded-xl shadow-sm">
@@ -32,6 +43,37 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6" }) {
             />
             <Tooltip />
             <Legend />
+
+            {ppPlus15 !== null && (
+              <ReferenceLine
+                x={ppPlus15}
+                stroke="#dc2626"
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                label={{
+                  value: "3rd PP + 15",
+                  position: "top",
+                  fill: "#dc2626",
+                  fontSize: 12,
+                }}
+              />
+            )}
+
+            {/* 🔵 Third PP + 30 */}
+            {ppPlus30 !== null && (
+              <ReferenceLine
+                x={ppPlus30}
+                stroke="#2563eb"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                label={{
+                  value: "3rd PP + 30",
+                  position: "top",
+                  fill: "#2563eb",
+                  fontSize: 12,
+                }}
+              />
+            )}
             
             {/* Blue line (Linear Projection) */}
             <Line

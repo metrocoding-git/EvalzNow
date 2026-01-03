@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import { createProjection, getProjection } from "@/services/projectionService";
 import {
@@ -311,6 +311,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     setGrowthMetric(growthMetricData);
     console.log("📊 Extracted growth metrics data:", growthMetricData);
   };
+
+  const thirdPPDayCount = useMemo(() => {
+    const third = growthMetric.find(
+      g => g.callout === "Third PP Selection"
+    );
+    return third ? Number(third.dayCount) : null;
+  }, [growthMetric]);
+  
 
   console.log("pp id extract : ", growthMetric);
 
@@ -989,6 +997,7 @@ const handleExportGraph = () => {
                       <GrowthProjectionChart
                         data={curveData}
                         title={chartTitle}
+                        thirdPPDayCount={thirdPPDayCount}
                       />
                     );
                   }
@@ -1051,7 +1060,7 @@ const handleExportGraph = () => {
                             type="number"
                             dataKey={isGTchart ? "ppId" : "dayCount"}
                             domain={[0, "auto"]}
-                            tickFormatter={(value) => Number(value).toFixed(3)}
+                            tickFormatter={(value) => Number(value).toFixed(1)}
                             allowDataOverflow={true}
                             >
                             {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1122,7 +1131,7 @@ const handleExportGraph = () => {
                         <ResponsiveContainer width="100%" height={450}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" dataKey="dayCount" name="PP ID" >
+                            <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                                 <Label value={`Day Count`} offset={-10} position="insideBottom" />
                               )}
