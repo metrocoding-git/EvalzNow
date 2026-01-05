@@ -30,6 +30,7 @@ export default function AuxiliaryResultants() {
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
 
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
+  const [selectedAssessmentChain, setSelectedAssessmentChain] = useState(null);
 
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
   const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
@@ -326,7 +327,8 @@ export default function AuxiliaryResultants() {
                   <div className="h-1/2 overflow-auto ">
                     <SecondaryInputForm selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId}
                       onClose={() => setShowSecondary(false)} selectedChartKey={selectedChartKey}
-                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal}
+                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} 
+                      selectedAssessmentChain={selectedAssessmentChain}
                     />
 
                   </div>
@@ -359,12 +361,23 @@ export default function AuxiliaryResultants() {
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
-                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} onChartSelect={(key) => setSelectedChartKey(key)} 
+                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} 
+                 refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} 
+                 onChartSelect={(key) => setSelectedChartKey(key)} 
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
                     : activeCandidateId   // pass single ID
-                } onResetFilters={resetFilters}  onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} onCreateChainFormOpen={(value) => setShowCreateForm(value)} oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)}   />}
+                } onResetFilters={resetFilters}  
+                onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} 
+                onCreateChainFormOpen={(value) => setShowCreateForm(value)} 
+                oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  
+                onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)} 
+                onAssessmentChainSelect={(chain) => {
+                  setSelectedAssessmentChain(chain);
+                  setShowSecondary(true); // auto-open secondary
+                }}
+              />}
 
                 
 
