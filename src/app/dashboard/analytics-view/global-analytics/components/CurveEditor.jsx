@@ -3,12 +3,32 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
+import { getAllGLobalAnalyticsData, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
+
+const assignedWeights = [
+  0.500, 1.000, 0.250, 0.250,
+  0.500, 0.500, 1.000, 1.000,
+  0.500, 0.000, 0.000, 0.500,
+  1.000, 0.000, 0.500, 1.000,
+  1.000, 0.000, 0.000, 0.500,
+  0.500, 1.000, 1.000, 1.000,
+  1.000, 0.000, 0.500,
+  1.000, 1.000, 1.000, 1.000,
+  0.000, 0.000, 0.000, 0.250,
+  0.500, 0.750, 1.000,
+  1.000, 1.000, 1.000, 1.000,
+  1.000, 1.000, 1.000, 1.000,
+  0.000, 0.500, 1.000
+];
 
 export default function CurveEditor() {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
-
+  const [globalAnalytics, setGlobalAnalytics] = useState(null);
+  const [thresholdAnalytics, setThresholdAnalytics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
   const [ScoreAdd, setScoreAdd] = useState(false);
 
   const floatChartData = [
@@ -27,7 +47,7 @@ export default function CurveEditor() {
   const [activeTab, setActiveTab] = useState('IndirectPerformancePoint');
   const [activeAdjustPropertieTab, setActiveAdjustPropertieTab] = useState('Table');
 
-
+  const [activeClientId, setActiveClientId] = useState(null);
   const canvasRef = useRef(null);
 
   // Example line chart data
@@ -83,9 +103,124 @@ export default function CurveEditor() {
 
   const [selectedRow, setSelectedRow] = useState(null);
 
+  const percent = (value, total) =>
+    total ? ((value / total) * 100).toFixed(2) : "";
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
+  }, []);
+
   if (!visible) return null;
 
 
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const [globalRes, thresholdRes] = await Promise.all([
+          getAllGLobalAnalyticsData(activeClientId),        // clientId
+          getUnitSuccessRatesByThreshold(activeClientId),
+        ]);
+  
+        setGlobalAnalytics(globalRes);
+        setThresholdAnalytics(thresholdRes);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAnalytics();
+  }, [activeClientId]);
+
+  const toPercentagePie = (rate) => {
+    if (rate === null || rate === undefined) return [];
+  
+    const value = Number(rate);
+  
+    if (isNaN(value)) return [];
+  
+    return [
+      { name: "Achieved", value },
+      { name: "Remaining", value: 100 - value }
+    ];
+  };
+  
+
+  const buildPieData = () => {
+    if (!selectedChart || !globalAnalytics || !thresholdAnalytics) return [];
+  
+    const regular = thresholdAnalytics?.summary?.regularMetrics;
+    const avgDelta = thresholdAnalytics?.summary?.averageDeltaMetrics;
+    const sumDelta = thresholdAnalytics?.summary?.cumulativeSumDeltaMetrics;
+  
+    switch (selectedChart.id) {
+      // ================= GLOBAL ANALYTICS =================
+      case 1:
+        return Object.entries(globalAnalytics.signatureProfiles || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      case 2:
+        return Object.entries(globalAnalytics.unitTypes || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      case 4:
+        return Object.entries(globalAnalytics.benchmarkCounts || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      case 5:
+        return Object.entries(globalAnalytics.assessmentBlocks || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      case 6:
+        return Object.entries(globalAnalytics.attendance || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      case 10:
+        return Object.entries(globalAnalytics.unitOutcomes || {})
+          .map(([name, value]) => ({ name, value }));
+  
+      // ================= REGULAR METRICS (100%) =================
+      case 11: return toPercentagePie(regular?.XEP?.successRate);
+      case 12: return toPercentagePie(regular?.XRR?.successRate);
+      case 13: return toPercentagePie(regular?.XLR?.successRate);
+      case 14: return toPercentagePie(regular?.XWR?.successRate);
+      case 15: return toPercentagePie(regular?.XSR?.successRate);
+      case 16: return toPercentagePie(regular?.XTR?.successRate);
+      case 17: return toPercentagePie(regular?.XPR?.successRate);
+      case 18: return toPercentagePie(regular?.XRVSR?.successRate);
+      case 19: return toPercentagePie(regular?.XPVSR?.successRate);
+      case 20: return toPercentagePie(regular?.XAVSR?.successRate);
+      case 21: return toPercentagePie(regular?.XCP?.successRate);
+      case 22: return toPercentagePie(regular?.XBP?.successRate);
+      case 24: return toPercentagePie(regular?.MSIP?.successRate);
+      case 25: return toPercentagePie(regular?.IC?.successRate);
+      case 26: return toPercentagePie(regular?.GEQ?.successRate);
+  
+      // ================= AVERAGE DELTA =================
+      case 27: return toPercentagePie(avgDelta?.avgDeltaRRN?.successRate);
+      case 28: return toPercentagePie(avgDelta?.avgDeltaPRN?.successRate);
+      case 29: return toPercentagePie(avgDelta?.avgDeltaARN?.successRate);
+  
+      // ================= CUMULATIVE DELTA =================
+      case 30: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
+      case 31: return toPercentagePie(sumDelta?.sumDeltaPRN?.successRate);
+      case 32: return toPercentagePie(sumDelta?.sumDeltaARN?.successRate);
+  
+      // ================= STABILITY =================
+      case 33: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
+  
+      default:
+        return [];
+    }
+  };
+  
+  
+  
   const metricRows = [
     "Global Percentage of Case 1 Profiles",
     "Global Percentage of Case 2 Profiles",
@@ -100,20 +235,208 @@ export default function CurveEditor() {
     "Global Percentage of Benchmark Counts, BC ≤ 10",
     "Global Percentage of Benchmark Counts, 10 < BC ≤ 25",
     "Global Percentage of Benchmark Counts, BC > 25",
+    "Global Percentage of Assessment Blocks, AB ≤ 8",
+    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20",
+    "Global Percentage of Assessment Blocks, AB > 20",
+    "Global Percentage of Attendance - Present",
+    "Global Percentage of Attendance - Excused Absences",
+    "Global Percentage of Attendance - Unexcused Absences",
+    "Global Percentage of Attendance - Excused Tardies",
+    "Global Percentage of Attendance - Unexcused Tardies",
+    "Global Percentage Open Items for All Courses",
+    "Global Percentage of Positive Candidate Marks",
+    "Global Percentage of Positive Leader Marks",
+    "Global Percentage of Passing Candidates",
+    "Global Percentage of Failed Candidates",
+    "Global Percentage of Ongoing Candidates",
+    "Global Percentage of Average Passed Equivalent Proficiency - XEQ",
+    "Global Percentage of Average Passed Composite Proficiency - XCP",
+    "Global Percentage of Average Passed Band Proficiency - XBP",
+    "Global Percentages of Stable Proficiency - STA/P",
+    "Global Percentage of Average Passed Butler Interaction Proficiency - MSIP",
+    "Global Percentage of Average Interaction Class 0",
+    "Global Percentage of Average Interaction Class 1",
+    "Global Percentage of Average Interaction Class 2",
+    "Global Percentage of Average Interaction Class 3",
+    "Global Percentage of Average Interaction Class 4",
+    "Global Percentage of Average Interaction Class 5",
+    "Global Percentage of Average Passed Equivalent Growth - ∆GEQ",
+    "Global Percentage of Passed Average Growth - ∆RR",
+    "Global Percentage of Passed Average Growth - ∆PR",
+    "Global Percentage of Passed Average Growth - ∆AR",
+    "Global Percentage of Passed Cumulative Growth - ∆RR",
+    "Global Percentage of Passed Cumulative Growth - ∆PR",
+    "Global Percentage of Passed Cumulative Growth - ∆AR",
+    "Global Percentages of Stable Growth - STA/G",
+    "Global Percentage of Productivity Rates, UR < 0.300",
+    "Global Percentage of Productivity Rates, 0.300 ≤ UR ≤ 0.600",
+    "Global Percentage of Productivity Rates, UR > 0.600",
   ];
+
+  const metricValueResolvers = {
+    // ===== Signature Profiles =====
+    "Global Percentage of Case 1 Profiles": (g) =>
+      percent(g.signatureProfiles?.["Case 1: Solid Balanced"], g.totalUnits),
+  
+    "Global Percentage of Case 2 Profiles": (g) =>
+      percent(g.signatureProfiles?.["Case 2: Rigorous Balanced"], g.totalUnits),
+  
+    "Global Percentage of Case 3a Profiles": (g) =>
+      percent(g.signatureProfiles?.["Case 3a: Productive-Weighted"], g.totalUnits),
+  
+    "Global Percentage of Case 3b Profiles": (g) =>
+      percent(g.signatureProfiles?.["Case 3b: Receptive-Weighed"], g.totalUnits),
+  
+    // ===== Unit Types =====
+    "Global Percentage of CI/CO": (g) =>
+      percent(g.unitTypes?.["Communicative I/O"], g.totalUnits),
+  
+    "Global Percentage of T&P": (g) =>
+      percent(g.unitTypes?.["Theory & Practice"], g.totalUnits),
+  
+    "Global Percentage of Third Parameter": (g) =>
+      percent(g.unitTypes?.["Third Parameter"], g.totalUnits),
+  
+    // ===== Benchmark Counts =====
+    "Global Percentage of Benchmark Counts, BC ≤ 10": (g) =>
+      percent(g.benchmarkCounts?.["BC ≤ 10"], g.totalUnits),
+  
+    "Global Percentage of Benchmark Counts, 10 < BC ≤ 25": (g) =>
+      percent(g.benchmarkCounts?.["10 < BC ≤ 25"], g.totalUnits),
+  
+    "Global Percentage of Benchmark Counts, BC > 25": (g) =>
+      percent(g.benchmarkCounts?.["BC > 25"], g.totalUnits),
+  
+    // ===== Assessment Blocks =====
+    "Global Percentage of Assessment Blocks, AB ≤ 8": (g) =>
+      percent(g.assessmentBlocks?.["AB ≤ 8"], g.totalUnits),
+  
+    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20": (g) =>
+      percent(g.assessmentBlocks?.["8 < AB ≤ 20"], g.totalUnits),
+  
+    "Global Percentage of Assessment Blocks, AB > 20": (g) =>
+      percent(g.assessmentBlocks?.["AB > 20"], g.totalUnits),
+  
+    // ===== Attendance =====
+    "Global Percentage of Attendance - Present": (g) =>
+      percent(g.attendance?.present, g.totalUnits),
+  
+    "Global Percentage of Attendance - Excused Absences": (g) =>
+      percent(g.attendance?.excusedAbsences, g.totalUnits),
+  
+    "Global Percentage of Attendance - Unexcused Absences": (g) =>
+      percent(g.attendance?.unexcusedAbsences, g.totalUnits),
+  
+    "Global Percentage of Attendance - Excused Tardies": (g) =>
+      percent(g.attendance?.excusedTardies, g.totalUnits),
+  
+    "Global Percentage of Attendance - Unexcused Tardies": (g) =>
+      percent(g.attendance?.unexcusedTardies, g.totalUnits),
+  
+    // ===== Open Items =====
+    "Global Percentage Open Items for All Courses": (g) =>
+      percent(g.needAssessments?.open, g.needAssessments?.total),
+  
+    // ===== Outcomes =====
+    "Global Percentage of Passing Candidates": (g) =>
+      percent(g.unitOutcomes?.pass, g.totalCandidates),
+  
+    "Global Percentage of Failed Candidates": (g) =>
+      percent(g.unitOutcomes?.fail, g.totalCandidates),
+  
+    "Global Percentage of Ongoing Candidates": (g) =>
+      percent(g.unitOutcomes?.ongoing, g.totalCandidates),
+  
+    // ===== Proficiency =====
+    "Global Percentage of Average Passed Equivalent Proficiency - XEQ": (_, t) =>
+      t.summary?.regularMetrics?.XEP?.successRate,
+  
+    "Global Percentage of Average Passed Composite Proficiency - XCP": (_, t) =>
+      t.summary?.regularMetrics?.XCP?.successRate,
+  
+    "Global Percentage of Average Passed Band Proficiency - XBP": (_, t) =>
+      t.summary?.regularMetrics?.XBP?.successRate,
+  
+    "Global Percentage of Average Passed Butler Interaction Proficiency - MSIP": (_, t) =>
+      t.summary?.regularMetrics?.MSIP?.successRate,
+  
+    // ===== Stability =====
+    "Global Percentages of Stable Proficiency - STA/P": (_, t) =>
+      t.summary?.stabilityMetrics?.STAP?.stablePercentage,
+  
+    "Global Percentages of Stable Growth - STA/G": (_, t) =>
+      t.summary?.stabilityMetrics?.STAG?.stablePercentage,
+  
+    // ===== Growth =====
+    "Global Percentage of Average Passed Equivalent Growth - ∆GEQ": (_, t) =>
+      t.summary?.regularMetrics?.GEQ?.successRate,
+  
+    "Global Percentage of Passed Average Growth - ∆RR": (_, t) =>
+      t.summary?.averageDeltaMetrics?.avgDeltaRRN?.successRate,
+  
+    "Global Percentage of Passed Average Growth - ∆PR": (_, t) =>
+      t.summary?.averageDeltaMetrics?.avgDeltaPRN?.successRate,
+  
+    "Global Percentage of Passed Average Growth - ∆AR": (_, t) =>
+      t.summary?.averageDeltaMetrics?.avgDeltaARN?.successRate,
+  
+    "Global Percentage of Passed Cumulative Growth - ∆RR": (_, t) =>
+      t.summary?.cumulativeSumDeltaMetrics?.sumDeltaRRN?.successRate,
+  
+    "Global Percentage of Passed Cumulative Growth - ∆PR": (_, t) =>
+      t.summary?.cumulativeSumDeltaMetrics?.sumDeltaPRN?.successRate,
+  
+    "Global Percentage of Passed Cumulative Growth - ∆AR": (_, t) =>
+      t.summary?.cumulativeSumDeltaMetrics?.sumDeltaARN?.successRate,
+  };
+  
 
   // Initialize table state
   const [tableData, setTableData] = useState(
-    metricRows.map((metric) => ({
+    metricRows.map((metric, index) => ({
       metricDescription: metric,
       metricValue: '',
-      assignedWeight: '',
+      assignedWeight: assignedWeights[index] ?? '',
       metricWeight: '',
     }))
-  );
+  );  
 
-
-
+  useEffect(() => {
+    if (!globalAnalytics || !thresholdAnalytics) return;
+  
+    setTableData((prev) =>
+      prev.map((row) => {
+        const resolver = metricValueResolvers[row.metricDescription];
+  
+        const rawValue = resolver
+          ? resolver(globalAnalytics, thresholdAnalytics)
+          : null;
+  
+        const metricValue =
+          rawValue !== null && rawValue !== undefined && !isNaN(rawValue)
+            ? Number(rawValue)
+            : null;
+  
+        const assignedWeight =
+          row.assignedWeight !== null && row.assignedWeight !== undefined
+            ? Number(row.assignedWeight)
+            : null;
+  
+        const metricWeight =
+          metricValue !== null && assignedWeight !== null
+            ? (metricValue * assignedWeight).toFixed(3)
+            : "";
+  
+        return {
+          ...row,
+          metricValue: metricValue !== null ? metricValue.toFixed(3) : "",
+          metricWeight,
+        };
+      })
+    );
+  }, [globalAnalytics, thresholdAnalytics]);
+  
+  
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -123,10 +446,17 @@ export default function CurveEditor() {
       );
     }
 
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-full text-gray-500">
+          Loading...
+        </div>
+      );
+    }
 
     if (selectedChart.type === "table") {
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-5">
           <table className="table-auto w-full text-sm border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
@@ -137,42 +467,81 @@ export default function CurveEditor() {
               </tr>
             </thead>
             <tbody>
-              {metricRows.map((row, idx) => (
-                <tr key={idx} className="hover:bg-blue-50">
-                  <td className="border border-gray-300 px-3 py-2">{row}</td>
-                  <td className="border border-gray-300 px-3 py-2"></td>
-                  <td className="border border-gray-300 px-3 py-2"> </td>
-                  <td className="border border-gray-300 px-3 py-2"></td>
+              {tableData.map((row, idx) => (
+                <tr key={idx} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-3 py-2">
+                    {row.metricDescription}
+                  </td>
+
+                  <td className="border border-gray-300 px-3 py-2">
+                    {row.metricValue}
+                  </td>
+
+                  {/*  3rd Column: Assigned Weights */}
+                  <td className="border border-gray-300 px-3 py-2 text-center font-medium">
+                    {row.assignedWeight}
+                  </td>
+
+                  <td className="border border-gray-300 px-3 py-2">
+                    {row.metricWeight}
+                  </td>
                 </tr>
               ))}
+
+              <tr  className="hover:bg-gray-50">
+                <td className="border border-gray-300 px-3 py-2 text-right">
+                  <strong>Index Rating</strong>
+                </td> 
+                <td className="border border-gray-300 px-3 py-2">
+                
+                </td> 
+                <td className="border border-gray-300 px-3 py-2">
+                
+                </td> 
+                <td className="border border-gray-300 px-3 py-2">
+                
+                </td> 
+             </tr>
+
             </tbody>
+
           </table>
         </div>
       );
-    } else {
-      // Render chart for all other types
+    } 
+    
+    const pieData = buildPieData();
+
+    if ( !pieData.length || pieData.reduce((sum, d) => sum + d.value, 0) === 0) {
+    
       return (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              label
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <div className="flex justify-center items-center h-full text-gray-400">
+          No data available
+        </div>
       );
     }
+
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={pieData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label
+          >
+            {pieData.map((_, index) => (
+              <Cell key={index} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    );
   }
 
   return (
