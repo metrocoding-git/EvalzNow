@@ -49,7 +49,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
   const [chainData, setChainData] = useState([]);
   const chartContainerRef = useRef(null);
-  
+  const [engageSummary, setEngageSummary] = useState(null);
+
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -307,6 +308,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setAuxData(data.results || []);
         setRawRosterData(data.rosterData || []);
        
+        setEngageSummary(data.engageLevelSummary || {
+          High: 0,
+          Medium: 0,
+          Low: 0,
+          "N/A": 0
+        });
+
+        console.log("fetched auxiliary data: ", data.engageLevelSummary);  
         const aggregatedRoster = aggregateRosterData(data.rosterData || []);
         setRosterData(aggregatedRoster);
 
@@ -707,22 +716,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     ]
   : [];
 
-
-  const engagementCounts = auxData.reduce(
-    (acc, r) => {
-      const level = r.engageLevel || "N/A";
-      acc[level] = (acc[level] || 0) + 1;
-      return acc;
-    },
-    { High: 0, Medium: 0, Low: 0, "N/A": 0 }
-  );
   
-  const engagementBreakdown = [
-    { name: "High", value: engagementCounts.High },
-    { name: "Medium", value: engagementCounts.Medium },
-    { name: "Low", value: engagementCounts.Low },
-    { name: "N/A", value: engagementCounts["N/A"] },
-  ];
+  const engagementBreakdown = engageSummary
+  ? [
+      { name: "High", value: engageSummary.High || 0 },
+      { name: "Medium", value: engageSummary.Medium || 0 },
+      { name: "Low", value: engageSummary.Low || 0 },
+      { name: "N/A", value: engageSummary["N/A"] || 0 },
+    ]
+  : [];
+
   
   const exportToExcelWithImage = async () => {
     if (!selectedChart || !chartContainerRef.current) {

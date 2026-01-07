@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
-import { getAllGLobalAnalyticsData, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
+import { getAllGLobalAnalyticsData, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
 
 const assignedWeights = [
   0.500, 1.000, 0.250, 0.250,
@@ -27,6 +27,7 @@ export default function CurveEditor() {
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
   const [globalAnalytics, setGlobalAnalytics] = useState(null);
   const [thresholdAnalytics, setThresholdAnalytics] = useState(null);
+  const [StableData, setStableData] = useState(null);
   const [loading, setLoading] = useState(false);
   
   const [ScoreAdd, setScoreAdd] = useState(false);
@@ -120,13 +121,15 @@ export default function CurveEditor() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const [globalRes, thresholdRes] = await Promise.all([
-          getAllGLobalAnalyticsData(activeClientId),        // clientId
+        const [globalRes, thresholdRes, stableData] = await Promise.all([
+          getAllGLobalAnalyticsData(activeClientId),        
           getUnitSuccessRatesByThreshold(activeClientId),
+          getSTAPAndSTAGStableCount(activeClientId)
         ]);
   
         setGlobalAnalytics(globalRes);
         setThresholdAnalytics(thresholdRes);
+        setStableData(stableData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -140,7 +143,7 @@ export default function CurveEditor() {
   const toPercentagePie = (rate) => {
     if (rate === null || rate === undefined) return [];
   
-    const value = Number(rate);
+    const value = Number(rate*100);
   
     if (isNaN(value)) return [];
   
@@ -151,6 +154,28 @@ export default function CurveEditor() {
   };
   
 
+  const buildSTAPPieData = () => {
+    if (!StableData?.totalByCandidate) return [];
+  
+    return StableData.totalByCandidate
+      .filter(c => c.totalStableSTAPCount > 0)
+      .map(c => ({
+        name: `Candidate ${c.candidateId}`,
+        value: c.totalStableSTAPCount
+      }));
+  };
+  
+  const buildSTAGPieData = () => {
+    if (!StableData?.totalByCandidate) return [];
+  
+    return StableData.totalByCandidate
+      .filter(c => c.totalStableSTAGCount > 0)
+      .map(c => ({
+        name: `Candidate ${c.candidateId}`,
+        value: c.totalStableSTAGCount
+      }));
+  };
+  
   const buildPieData = () => {
     if (!selectedChart || !globalAnalytics || !thresholdAnalytics) return [];
   
@@ -179,6 +204,30 @@ export default function CurveEditor() {
       case 6:
         return Object.entries(globalAnalytics.attendance || {})
           .map(([name, value]) => ({ name, value }));
+      
+      case 7: {
+        const total = globalAnalytics.needAssessments?.total ?? 0;
+        const open = globalAnalytics.needAssessments?.open ?? 0;
+        const closed = total - open;
+      
+        if (total === 0) return [];
+      
+        return [
+          { name: "Open", value: open },
+          { name: "Pending/Closed", value: closed },
+        ];
+      }    
+      
+      case 8: { 
+        const rate = globalAnalytics.candidateMarks?.impactScore;
+        return toPercentagePie(rate);
+      }
+      
+      case 9: { 
+        const rate = globalAnalytics.leaderMarks?.impactScore;
+        return toPercentagePie(rate);
+      }
+          
   
       case 10:
         return Object.entries(globalAnalytics.unitOutcomes || {})
@@ -212,7 +261,13 @@ export default function CurveEditor() {
       case 32: return toPercentagePie(sumDelta?.sumDeltaARN?.successRate);
   
       // ================= STABILITY =================
-      case 33: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
+      // case 33: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
+
+      case 23: // STA/P
+        return buildSTAPPieData();
+
+      case 33: // STA/G
+        return buildSTAGPieData();
   
       default:
         return [];
@@ -273,6 +328,32 @@ export default function CurveEditor() {
     "Global Percentage of Productivity Rates, UR > 0.600",
   ];
 
+  const totalStableSTAP = () =>
+    StableData?.totalByCandidate?.reduce(
+      (sum, c) => sum + (c.totalStableSTAPCount ?? 0),
+      0
+    );
+  
+  const totalStableSTAG = () =>
+    StableData?.totalByCandidate?.reduce(
+      (sum, c) => sum + (c.totalStableSTAGCount ?? 0),
+      0
+    );
+
+  const totalOutcomeCount = (g) =>
+    (g.unitOutcomes?.pass ?? 0) +
+    (g.unitOutcomes?.fail ?? 0) +
+    (g.unitOutcomes?.ongoing ?? 0);
+    
+  
+  const totalAttendanceCount = (g) =>
+    (g.attendance?.present ?? 0) +
+    (g.attendance?.excusedAbsences ?? 0) +
+    (g.attendance?.unexcusedAbsences ?? 0) +
+    (g.attendance?.excusedTardies ?? 0) +
+    (g.attendance?.unexcusedTardies ?? 0);
+    
+  
   const metricValueResolvers = {
     // ===== Signature Profiles =====
     "Global Percentage of Case 1 Profiles": (g) =>
@@ -319,33 +400,44 @@ export default function CurveEditor() {
   
     // ===== Attendance =====
     "Global Percentage of Attendance - Present": (g) =>
-      percent(g.attendance?.present, g.totalUnits),
-  
+      percent(g.attendance?.present, totalAttendanceCount(g)),
+
     "Global Percentage of Attendance - Excused Absences": (g) =>
-      percent(g.attendance?.excusedAbsences, g.totalUnits),
-  
+      percent(g.attendance?.excusedAbsences, totalAttendanceCount(g)),
+
     "Global Percentage of Attendance - Unexcused Absences": (g) =>
-      percent(g.attendance?.unexcusedAbsences, g.totalUnits),
-  
+      percent(g.attendance?.unexcusedAbsences, totalAttendanceCount(g)),
+
     "Global Percentage of Attendance - Excused Tardies": (g) =>
-      percent(g.attendance?.excusedTardies, g.totalUnits),
-  
+      percent(g.attendance?.excusedTardies, totalAttendanceCount(g)),
+
     "Global Percentage of Attendance - Unexcused Tardies": (g) =>
-      percent(g.attendance?.unexcusedTardies, g.totalUnits),
-  
+      percent(g.attendance?.unexcusedTardies, totalAttendanceCount(g)),
+
+    // ===== Marks =====
+    "Global Percentage of Positive Candidate Marks": (g) =>
+      g.candidateMarks?.impactScore !== undefined
+        ? g.candidateMarks.impactScore * 100
+        : null,
+
+    "Global Percentage of Positive Leader Marks": (g) =>
+      g.leaderMarks?.impactScore !== undefined
+        ? g.leaderMarks.impactScore * 100
+        : null,
+
     // ===== Open Items =====
     "Global Percentage Open Items for All Courses": (g) =>
       percent(g.needAssessments?.open, g.needAssessments?.total),
   
     // ===== Outcomes =====
     "Global Percentage of Passing Candidates": (g) =>
-      percent(g.unitOutcomes?.pass, g.totalCandidates),
-  
+      percent(g.unitOutcomes?.pass, totalOutcomeCount(g)),
+
     "Global Percentage of Failed Candidates": (g) =>
-      percent(g.unitOutcomes?.fail, g.totalCandidates),
-  
+      percent(g.unitOutcomes?.fail, totalOutcomeCount(g)),
+
     "Global Percentage of Ongoing Candidates": (g) =>
-      percent(g.unitOutcomes?.ongoing, g.totalCandidates),
+      percent(g.unitOutcomes?.ongoing, totalOutcomeCount(g)),
   
     // ===== Proficiency =====
     "Global Percentage of Average Passed Equivalent Proficiency - XEQ": (_, t) =>
@@ -361,11 +453,11 @@ export default function CurveEditor() {
       t.summary?.regularMetrics?.MSIP?.successRate,
   
     // ===== Stability =====
-    "Global Percentages of Stable Proficiency - STA/P": (_, t) =>
-      t.summary?.stabilityMetrics?.STAP?.stablePercentage,
+    "Global Percentages of Stable Proficiency - STA/P": () =>
+      totalStableSTAP(),
   
-    "Global Percentages of Stable Growth - STA/G": (_, t) =>
-      t.summary?.stabilityMetrics?.STAG?.stablePercentage,
+    "Global Percentages of Stable Growth - STA/G": () =>
+      totalStableSTAG(),
   
     // ===== Growth =====
     "Global Percentage of Average Passed Equivalent Growth - ∆GEQ": (_, t) =>
@@ -402,7 +494,7 @@ export default function CurveEditor() {
   );  
 
   useEffect(() => {
-    if (!globalAnalytics || !thresholdAnalytics) return;
+    if (!globalAnalytics || !thresholdAnalytics || !StableData) return;
   
     setTableData((prev) =>
       prev.map((row) => {
@@ -434,7 +526,7 @@ export default function CurveEditor() {
         };
       })
     );
-  }, [globalAnalytics, thresholdAnalytics]);
+  }, [globalAnalytics, thresholdAnalytics, StableData]);
   
   
   const renderChartContent = () => {
@@ -457,7 +549,7 @@ export default function CurveEditor() {
     if (selectedChart.type === "table") {
       return (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-5">
-          <table className="table-auto w-full text-sm border border-gray-300">
+          <table className="table-auto w-full text-sm ">
             <thead className="bg-gray-100">
               <tr>
                 <th className="border border-gray-300 px-3 py-2 text-left">Metric Descriptions</th>
@@ -495,8 +587,17 @@ export default function CurveEditor() {
                 <td className="border border-gray-300 px-3 py-2">
                 
                 </td> 
+                <td className="border border-gray-300 px-3 py-2 text-center">
+                  31
+                </td> 
                 <td className="border border-gray-300 px-3 py-2">
                 
+                </td> 
+             </tr>
+
+             <tr  className="hover:bg-gray-50">
+                <td className="border border-gray-300 px-3 py-2 text-right">
+                  <strong>Weight Index</strong>
                 </td> 
                 <td className="border border-gray-300 px-3 py-2">
                 

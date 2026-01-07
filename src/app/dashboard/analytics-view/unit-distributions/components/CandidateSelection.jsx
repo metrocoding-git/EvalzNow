@@ -93,7 +93,7 @@ export default function CandidateSelectionTable({ onClose }) {
         if (row.id === id) {
           if (newValue === "Candidate Average") {
             // Automatically populate sample numbers
-            return { ...row, value: newValue, ppListings: "75" , isSelected: false};
+            return { ...row, value: newValue, ppListings: "" , isSelected: false};
           } else {
             return { ...row, value: newValue, ppListings: "", isSelected: false };
           }
