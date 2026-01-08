@@ -118,6 +118,8 @@ export default function CurveEditor() {
 
 
   useEffect(() => {
+    if (!activeClientId) return;
+    
     const fetchAnalytics = async () => {
       try {
         setLoading(true);

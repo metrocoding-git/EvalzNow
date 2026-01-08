@@ -403,8 +403,24 @@ const lobeData = [
   
     setIndicatorsData(updated);
   }, [indicatorsData.length]);
+
+
+  const indicatorsWithLoads = useMemo(() => {
+    if (!indicatorsData.length) return [];
   
-  
+    return indicatorsData.map(row => ({
+      ...row,
+      Cognitive1: computeRowCognitiveNS(indicatorsData, row, "RMS1"),
+      Cognitive2: computeRowCognitiveNS(indicatorsData, row, "RMS2"),
+      Cognitive3: computeRowCognitiveNS(indicatorsData, row, "RMS3"),
+      Cognitive4: computeRowCognitiveNS(indicatorsData, row, "RMS4"),
+      Cognitive5: computeRowCognitiveNS(indicatorsData, row, "RMS5"),
+      Cognitive6: computeRowCognitiveNS(indicatorsData, row, "RMS6"),
+      Cognitive7: computeRowCognitiveNS(indicatorsData, row, "RMS7"),
+      Cognitive8: computeRowCognitiveNS(indicatorsData, row, "RMS8"),
+    }));
+  }, [indicatorsData]);
+    
 
   const chartData = useMemo(() => {
     if (!selectedChart || selectedChart.type !== "chart") return [];
@@ -986,7 +1002,7 @@ const handleExportGraph = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {indicatorsData.map((row, idx) => (
+                        {indicatorsWithLoads.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
                             <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
                             <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>

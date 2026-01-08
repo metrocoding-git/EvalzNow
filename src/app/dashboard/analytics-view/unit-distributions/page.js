@@ -61,6 +61,13 @@ export default function UnitDistributions() {
     data.length > 0 ? data[0].id : null
   );
 
+  const DEFAULT_BETA = 1.5;
+
+  const handleBetaReset = () => {
+    setBeta(DEFAULT_BETA);
+    setShowBetaValue(false); 
+  };
+
   const handleSelectedCandidates = (candidates) => {
     setSelectedCandidates(candidates);
     setShowEdit(true); // open ClientEditor when candidates are selected
@@ -296,7 +303,7 @@ export default function UnitDistributions() {
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 p-1 ml-1">
                 {ScoresOpen && <PlotSelections onCandidatesSelected={handleSelectedCandidates} unitId={selectedUnitId} onWeibullSelect={setShowBetaValue} 
-                betaValue={beta} unitType={unitData.unitType} />}
+                betaValue={beta} unitType={unitData.unitType} onResetBeta={handleBetaReset} />}
               </div>
             </div>
             {/* ------- */}
