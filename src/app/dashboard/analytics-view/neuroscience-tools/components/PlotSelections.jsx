@@ -38,27 +38,23 @@ function cognitiveNS(xArray, yArray) {
 
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
-  // get rows with same target
+  // Get all rows of same target (Proficiency / Growth)
   const sameTarget = indicatorsData
     .filter(r => r.target === row.target)
     .sort((a, b) => a.ppId - b.ppId);
 
-  const index = sameTarget.findIndex(r => r.ppId === row.ppId);
+  // Take all rows up to current ppId
+  const uptoCurrent = sameTarget.filter(r => r.ppId <= row.ppId);
 
-  // Need at least 2 points
-  if (index <= 0) return "0.000";
+  // Need at least 2 PP points
+  if (uptoCurrent.length < 2) return "0.000";
 
-  const prev = sameTarget[index - 1];
-  const curr = sameTarget[index];
-
-  const xArray = [prev.ppId, curr.ppId];
-  const yArray = [
-    Number(prev[rmsKey]) || 0,
-    Number(curr[rmsKey]) || 0
-  ];
+  const xArray = uptoCurrent.map(r => r.ppId);
+  const yArray = uptoCurrent.map(r => Number(r[rmsKey]) || 0);
 
   return cognitiveNS(xArray, yArray);
 }
+
 
 
 export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters }) {
