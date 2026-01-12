@@ -10,8 +10,14 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { useUnit } from "@/context/UnitContext";
+import { getDataExtractionByCandidateId, getDataExtractionByClientId, getDataExtractionByUnitId } from "@/services/dataExtractionService";
+import { extractActiveUnitCandidatesCSV } from "./components/CandidateExtraction";
+import { extractClientCandidatesCSV } from "./components/CandidateExtractionByClientId";
+import { extractCandidateUnitsCSV } from "./components/CandidateExtractionByCandidateId";
 
 export default function DataExtractions() {
   const tabs = [
@@ -22,42 +28,54 @@ export default function DataExtractions() {
   const currentTab =
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
 
+  const [selectedExtractOption, setSelectedExtractOption] = useState(null);
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const [RightPanelOpen, setRightPanelOpen] = useState(false);
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [RightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
+  const [unitData, setUnitData] = useState(null); 
+  const [data, setData] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeClientId, setActiveClientId] = useState(null);
+  const [unitExtractionData, setUnitExtractionData] = useState(null);
+  const [clientExtractionData, setClientExtractionData] = useState(null);
+  const [candidateExtractionData, setCandidateExtractionData] = useState(null);
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+
+  // const data = [
+  //   { id: 1, firstName: "John", lastName: "Doe" },
+  //   { id: 2, firstName: "Jane", lastName: "Smith" },
+  //   { id: 3, firstName: "Bob", lastName: "Johnson" },
+  //   { id: 4, firstName: "Alice", lastName: "Williams" },
+  //   { id: 5, firstName: "Charlie", lastName: "Brown" },
+  //   { id: 6, firstName: "David", lastName: "Jones" },
+  //   { id: 7, firstName: "Eva", lastName: "Miller" },
+  //   { id: 8, firstName: "Frank", lastName: "Davis" },
+  //   { id: 9, firstName: "Grace", lastName: "Wilson" },
+  //   { id: 10, firstName: "Henry", lastName: "Moore" },
+  // ];
+
   const [openMenu, setopenMenu] = useState(true);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
 
   const sortedData = [...data].sort((a, b) => {
-    if (sortKey === "id") {
-      // Numeric sort for id
-      return sortOrder === "asc" ? a.id - b.id : b.id - a.id;
-    } else {
-      // Case-insensitive string sort for names
-      const valA = a[sortKey].toLowerCase();
-      const valB = b[sortKey].toLowerCase();
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
+    const valA = a[sortKey];
+    const valB = b[sortKey];
+  
+    if (typeof valA === "number") {
+      return sortOrder === "asc" ? valA - valB : valB - valA;
     }
+  
+    return sortOrder === "asc"
+      ? String(valA || "").localeCompare(String(valB || ""))
+      : String(valB || "").localeCompare(String(valA || ""));
   });
+  
 
   useEffect(() => {
     if (data.length > 0 && activeCandidateId === null) {
@@ -66,7 +84,105 @@ export default function DataExtractions() {
       setShowEdit(true);
       setShowSecondary(true);
     }
+  }, [data]);
+
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted[0]?.id);
+
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
+
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
   }, []);
+
+
+  useEffect(() => {
+    const dataExtractionByUnitId = async () => {
+      if (!selectedUnitId) return;
+  
+      try {
+        const response = await getDataExtractionByUnitId(selectedUnitId);
+        setUnitExtractionData(response); // ✅ store it
+      } catch (err) {
+        console.error("Failed to fetch data extraction:", err);
+        setUnitExtractionData(null);
+      }
+    };
+  
+    dataExtractionByUnitId();
+  }, [selectedUnitId]);
+
+  useEffect(() => {
+    const fetchDataExtractionByClientId = async () => {
+      if (!activeClientId) return;
+      try {
+        const response = await getDataExtractionByClientId(activeClientId);
+        setClientExtractionData(response);
+      } catch (err) {
+        console.error(err);
+        setClientExtractionData(null);
+      }
+    };
+    fetchDataExtractionByClientId();
+  }, [activeClientId]);
+  
+  
+  useEffect(() => {
+    const fetchDataExtractionByActiveCandidateId = async () => {
+      if (!activeClientId || !activeCandidateId) return;
+      try {
+        const response = await getDataExtractionByCandidateId(activeClientId, activeCandidateId);
+        setCandidateExtractionData(response);
+      } catch (err) {
+        console.error(err);
+        setClientExtractionData(null);
+      }
+    };
+    fetchDataExtractionByActiveCandidateId();
+  }, [activeClientId, activeCandidateId]);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -77,6 +193,38 @@ export default function DataExtractions() {
     }
   };
 
+  const extractionData =
+  selectedExtractOption === "active-unit-candidates"
+    ? unitExtractionData
+    : selectedExtractOption === "all-candidates-database" ? clientExtractionData : candidateExtractionData;
+
+  const handleExtract = () => {
+    if (!selectedExtractOption || !extractionData) return;
+  
+    if (selectedExtractOption === "active-unit-candidates") {
+      extractActiveUnitCandidatesCSV({
+        extractionData,
+        unitData,
+      });
+    }
+  
+    if (selectedExtractOption === "all-candidates-database") {
+      extractClientCandidatesCSV({
+        extractionData,
+        clientId: activeClientId,
+      });
+    }
+
+    if (selectedExtractOption === "all-units-candidates") {
+      extractCandidateUnitsCSV({
+        extractionData,
+        clientId: activeClientId,
+        candidateId: activeCandidateId,
+      });
+    }
+  };
+  
+  
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden ">
@@ -161,31 +309,33 @@ export default function DataExtractions() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
                       {openMenu && (
                         <>
-                          <div className="items-center justify-center px-4 mb-2">
-                            <div className="border border-gray-200 p-1">
-                              <span className="text-sm text-gray-400">
-                                Unit Name: Unit 1
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit ID: UA123
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Unit Type: Group
-                              </span>
-                              <br />
-                              <span className="text-sm text-gray-400">
-                                Signature Profile: Signature 1
-                              </span>
+                          {unitData && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">
+                                  Unit Name: {unitData.unitName}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit ID: {unitData.unitId}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit Type: {unitData.unitType}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Signature Profile: {unitData.signatureProfile}
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          )}
 
                           {/* Candidate List */}
                           <div className="space-y-1 px-4">
@@ -238,40 +388,54 @@ export default function DataExtractions() {
                           {
                             id: "active-unit-candidates",
                             label: "Extract Candidate Data for the Active Unit",
+                            disabled: !selectedUnitId,
                           },
                           {
                             id: "all-units-candidates",
-                            label:
-                              "Extract Candidate Data for All Units in Database",
+                            label: "Extract Candidate Data for All Units in Database",
+                            disabled: !selectedUnitId && !activeCandidateId,
                           },
                           {
                             id: "all-candidates-database",
                             label: "Extract All Candidate Data from Database",
+                            disabled: false,
                           },
                         ].map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center gap-2"
+                            className={`flex items-center gap-2 ${
+                              item.disabled ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
                           >
                             <input
                               id={item.id}
                               type="radio"
-                              name="candidateOption" // same name for grouping
+                              name="candidateOption"
+                              disabled={item.disabled}
+                              onChange={() => setSelectedExtractOption(item.id)}
                               className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
                             />
-                            <label htmlFor={item.id} className="text-gray-800">
+                            <label
+                              htmlFor={item.id}
+                              className={`text-gray-800 ${
+                                item.disabled ? "cursor-not-allowed" : "cursor-pointer"
+                              }`}
+                            >
                               {item.label}
                             </label>
                           </div>
                         ))}
                       </div>
-                        <div className="">
-                      <button
-                        type="submit"
-                        className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition"
-                      >
-                        Extract
-                      </button>
+
+                      <div className="">
+                        <button
+                          onClick={handleExtract}
+                          disabled={!selectedExtractOption}
+                          type="submit"
+                          className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition"
+                        >
+                          Extract
+                        </button>
                     </div>
                   </div>
                 </div>
