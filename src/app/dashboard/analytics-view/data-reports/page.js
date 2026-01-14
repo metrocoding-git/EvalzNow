@@ -10,8 +10,10 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { useUnit } from "@/context/UnitContext";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
 export default function DataReports() {
   const tabs = [
@@ -23,21 +25,27 @@ export default function DataReports() {
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
-  const [RightPanelOpen, setRightPanelOpen] = useState(false);
+  const [RightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const [unitData, setUnitData] = useState(null); 
+  const [data, setData] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeClientId, setActiveClientId] = useState(null);
 
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+  // const data = [
+  //   { id: 1, firstName: "John", lastName: "Doe" },
+  //   { id: 2, firstName: "Jane", lastName: "Smith" },
+  //   { id: 3, firstName: "Bob", lastName: "Johnson" },
+  //   { id: 4, firstName: "Alice", lastName: "Williams" },
+  //   { id: 5, firstName: "Charlie", lastName: "Brown" },
+  //   { id: 6, firstName: "David", lastName: "Jones" },
+  //   { id: 7, firstName: "Eva", lastName: "Miller" },
+  //   { id: 8, firstName: "Frank", lastName: "Davis" },
+  //   { id: 9, firstName: "Grace", lastName: "Wilson" },
+  //   { id: 10, firstName: "Henry", lastName: "Moore" },
+  // ];
   const [openMenu, setopenMenu] = useState(true);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -65,6 +73,57 @@ export default function DataReports() {
       setRightPanelOpen(true);
       setShowEdit(true);
       setShowSecondary(true);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted[0]?.id);
+
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
     }
   }, []);
 
@@ -161,26 +220,33 @@ export default function DataReports() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
                       {openMenu && (
                         <>
-                          <div className="px-4 py-2 border border-gray-200 mb-2">
-                            <p className="text-sm text-gray-400">
-                              Unit Name: Unit 1
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Unit ID: UA123
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Unit Type: Group
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Signature Profile: Signature 1
-                            </p>
-                          </div>
+                          {unitData && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">
+                                  Unit Name: {unitData.unitName}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit ID: {unitData.unitId}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit Type: {unitData.unitType}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Signature Profile: {unitData.signatureProfile}
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Candidate List */}
                           <div className="space-y-1 px-4">
@@ -236,35 +302,42 @@ export default function DataReports() {
                       {[
                         {
                           id: "candidate-report",
-                          label:
-                            "Extract Candidate Report for the Active Candidate",
+                          label: "Extract Candidate Report for the Active Candidate",
+                          disabled: !selectedUnitId,
                         },
                         {
                           id: "all-candidates-unit",
-                          label:
-                            "Extract All Candidate Reports for the Active Unit",
+                          label: "Extract All Candidate Reports for the Active Unit",
+                          disabled: !selectedUnitId,
                         },
                         {
                           id: "unit-report",
                           label: "Extract Unit Report for the Active Unit",
+                          disabled: !selectedUnitId,
                         },
                         {
                           id: "all-units",
                           label: "Extract All Unit Reports",
+                          disabled: false,
                         },
                         {
                           id: "global-data",
                           label: "Extract Global Data Report",
+                          disabled: false,
                         },
                       ].map((item) => (
-                        <div key={item.id} className="flex items-center gap-2">
+                        <div key={item.id} className={`flex items-center gap-2 ${
+                          item.disabled ? "opacity-50 cursor-not-allowed" : ""
+                        }`}>
                           <input
                             id={item.id}
                             type="radio"
                             name="reportOption"
+                            disabled={item.disabled}
                             className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
                           />
-                          <label htmlFor={item.id} className="text-gray-800">
+                          <label htmlFor={item.id} className={`text-gray-800 ${
+                                item.disabled ? "cursor-not-allowed" : "cursor-pointer" }`}>
                             {item.label}
                           </label>
                         </div>

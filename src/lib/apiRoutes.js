@@ -23,4 +23,5 @@ export const API_ROUTES = {
     NEURO_SCIENCE: "/neuro-science",
     GLOBAL_ANALYTICS: "/global-analytics",
     DATA_EXTRACTION: "/data-extract",
+    DATA_REPORT: "/data-report",
 };
