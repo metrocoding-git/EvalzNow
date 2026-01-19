@@ -14,11 +14,13 @@ import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useUnit } from "@/context/UnitContext";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
-import { getDataReportByUnitAllCandidates, getDataReportByUnitCandidate, getGlobalDataReportByClient } from "@/services/dataReportService";
+import { getDataReportByClient, getDataReportByUnit, getDataReportByUnitAllCandidates, getDataReportByUnitCandidate, getGlobalDataReportByClient } from "@/services/dataReportService";
 import { extractDataReportByCandidateId } from "./DataReportByCandidateId";
 import { buildCandidateEZReport } from "./ActiveCandidateEZReport";
 import { downloadEZFile } from "./downloadEZ";
 import { buildGlobalEZReport } from "./GlobalEZReport";
+import { getEffortBu } from "@/services/auxiliaryService";
+import { buildUnitEZReport } from "./ActiveUnitEZReport";
 
 export default function DataReports() {
   const tabs = [
@@ -54,7 +56,7 @@ export default function DataReports() {
   const [assessmentChain, setAssessmentChain] = useState({});
   const [candidateMarks, setCandidateMarks] = useState({});
   const [needAssessment, setNeedAssessment] = useState({});
-
+  const [effortResults, setEffortResults] = useState([]);
 
   const sortedData = [...data].sort((a, b) => {
     let valA = a[sortKey];
@@ -133,6 +135,30 @@ export default function DataReports() {
     }
   }, []);
 
+
+  useEffect(() => {
+    if (!selectedUnitId || !activeCandidateId) return;
+  
+    const fetchEffort = async () => {
+      try {
+        const response = await getEffortBu(selectedUnitId, activeCandidateId);
+  
+        console.log("Effort Response:", response);
+  
+        
+        setEffortResults(response);
+      } catch (err) {
+        console.error("Failed to fetch effort data:", err);
+        setEffortResults([]);
+      }
+    };
+  
+    fetchEffort();
+  }, [selectedUnitId, activeCandidateId]);
+  
+
+ console.log("effortResults", effortResults);
+
   useEffect(() => {
     const fetchDataReportByActiveCandidateId = async () => {
       if (!selectedUnitId || !activeCandidateId) return;
@@ -177,6 +203,21 @@ export default function DataReports() {
   }, [selectedUnitId, activeCandidateId]);
 
   useEffect(() => {
+    const fetchDataReportBySelectedUnit = async () => {
+      if (!selectedUnitId) return;
+  
+      try {
+        const response = await getDataReportByUnit(selectedUnitId);
+        
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchDataReportBySelectedUnit();
+  }, [selectedUnitId]);
+
+  useEffect(() => {
     const fetchGlobalDataReportByClient = async () => {
       if (!activeClientId) return;
       try {
@@ -199,6 +240,7 @@ export default function DataReports() {
     }
   }
 
+  
   const handleExtract = async () => {
     if (!selectedUnitId) return;
   
@@ -216,6 +258,7 @@ export default function DataReports() {
         candidateMarks: candidateMarks[activeCandidateId],
         assessmentChain: assessmentChain[activeCandidateId],
         needAssessments: needAssessment[activeCandidateId],
+        effortResults: effortResults,
       });
   
       downloadEZFile(
@@ -227,18 +270,38 @@ export default function DataReports() {
       try {
         const response = await getDataReportByUnitAllCandidates(selectedUnitId);
     
-        // ✅ Extract ONCE
         const extracted = extractDataReportByCandidateId(response);
     
-        if (!extracted.candidates || extracted.candidates.length === 0) {
+        
+        if (!extracted?.candidates?.length) {
           console.warn("No candidates found for this unit.");
           return;
         }
     
-        // ✅ Loop over extracted candidates (NOT API candidates)
+        // ✅ Loop per candidate
         for (const candidate of extracted.candidates) {
           const candidateId = candidate.id;
+
+          // console.log(
+          //   "EZ EXPORT:",
+          //   candidate.id,
+          //   competency?.results?.length,
+          //   effortResults?.length
+          // );
+          
     
+          // ✅ Fetch effort PER candidate
+          let effortResults = [];
+          try {
+            effortResults = await getEffortBu(selectedUnitId, candidateId);
+          } catch (e) {
+            console.warn(
+              `Effort data missing for candidate ${candidateId}`,
+              e
+            );
+          }
+    
+          // ✅ Build PURE candidate-specific report
           const ezText = buildCandidateEZReport({
             unitMeta: extracted.unitMeta,
             candidate,
@@ -250,6 +313,7 @@ export default function DataReports() {
             candidateMarks: extracted.candidateMarks[candidateId],
             assessmentChain: extracted.assessmentChain[candidateId],
             needAssessments: extracted.needAssessments[candidateId],
+            effortResults, // ✅ CORRECT
           });
     
           downloadEZFile(
@@ -257,11 +321,59 @@ export default function DataReports() {
             `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
           );
         }
-    
       } catch (err) {
         console.error("Failed to extract all candidate reports:", err);
       }
-    }
+      } else if (selectedReport === "unit-report") {
+        try {
+          const response = await getDataReportByUnit(selectedUnitId);
+      
+          if (!response?.unit) {
+            console.warn("No unit data found");
+            return;
+          }
+      
+          const ezText = buildUnitEZReport({
+            unit: response.unit,
+          });
+      
+          downloadEZFile(
+            ezText,
+            `Unit_Report_${response.unit.unitName}_${response.unit.unitId}.ez`
+          );
+        } catch (err) {
+          console.error("Failed to generate unit report:", err);
+        }
+      }  
+      
+      else if (selectedReport === "client-units") {
+        try {
+          const response = await getDataReportByClient(activeClientId);
+      
+          if (!response?.units || !Array.isArray(response.units)) {
+            console.warn("No units found for this client");
+            return;
+          }
+      
+          // ✅ LOOP ALL UNITS
+          for (const unit of response.units) {
+            if (!unit?.unitId) continue;
+      
+            const ezText = buildUnitEZReport({
+              unit
+            });
+      
+            downloadEZFile(
+              ezText,
+              `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
+            );
+          }
+      
+        } catch (err) {
+          console.error("Failed to generate unit reports:", err);
+        }
+      }
+      
      else if (selectedReport === "global-data") {
       try {
         const response = await getGlobalDataReportByClient(activeClientId);
@@ -453,7 +565,7 @@ export default function DataReports() {
                           disabled: !selectedUnitId,
                         },
                         {
-                          id: "all-units",
+                          id: "client-units",
                           label: "Extract All Unit Reports",
                           disabled: false,
                         },

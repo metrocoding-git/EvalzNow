@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 function extractStaffAssignments(staffAssignments = []) {
     const leaders = staffAssignments
       .filter(s => s.roleType === "Leader")
@@ -198,12 +200,12 @@ function extractStaffAssignments(staffAssignments = []) {
       return results
         .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
-          const score = scores.find(s => s.ppId === r.ppId);
-          const dayCount = score?.dayCount ?? "XXX";
+          // const score = scores.find(s => s.ppId === r.ppId);
+          // const dayCount = score?.durationHrs ?? "XXX";
     
           let row =
             `     ${String(r.ppId).padEnd(10)}  ` +
-            `     ${fmt(dayCount).padEnd(10)}  `;
+            `     ${fmt(r.totalDuration).padEnd(10)}  `;
     
           cols.forEach(([key, w]) => {
             row += `     ${fmt(r[key]).padEnd(w)}  `;
@@ -386,7 +388,116 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return `${headers}\n\n${rows.join("\n")}`;
   }
+
+  function buildDayCountByPpMap(competencyResults = []) {
+    const map = new Map();
   
+    competencyResults.forEach(r => {
+      if (r?.ppId && r?.totalDuration != null) {
+        map.set(r.ppId, r.totalDuration);
+      }
+    });
+  
+    return map;
+  }
+  
+  
+  function getRms(entry, mode, lobeName) {
+    const lobe = entry?.lobes?.[lobeName];
+  
+    if (!lobe) return "XXX";
+  
+    if (mode === "proficiency") {
+      return fmt3(lobe.RMS);
+    }
+  
+    if (mode === "growth") {
+      return fmt3(lobe.deltaRMS);
+    }
+  
+    return "XXX";
+  }  
+
+  function renderRmsProficiencyTables(neuro, competencyResults) {
+    if (!Array.isArray(neuro?.data)) return "";
+  
+    const dayCountMap = buildDayCountByPpMap(competencyResults);
+  
+    const leftRows = [];
+    const rightRows = [];
+  
+    neuro.data.forEach(entry => {
+      const dayCount =
+        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "XXX";
+  
+      leftRows.push(
+        `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
+        `${getRms(entry, "proficiency", "Frontal Lobe - Left").padEnd(14)}` +
+        `${getRms(entry, "proficiency", "Occipital Lobe - Left").padEnd(18)}` +
+        `${getRms(entry, "proficiency", "Parietal Lobe - Left").padEnd(16)}` +
+        `${getRms(entry, "proficiency", "Temporal Lobe - Left")}`
+      );
+  
+      rightRows.push(
+        `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
+        `${getRms(entry, "proficiency", "Frontal Lobe - Right").padEnd(14)}` +
+        `${getRms(entry, "proficiency", "Occipital Lobe - Right").padEnd(18)}` +
+        `${getRms(entry, "proficiency", "Parietal Lobe - Right").padEnd(16)}` +
+        `${getRms(entry, "proficiency", "Temporal Lobe - Right")}`
+      );
+    });
+  
+    return `
+         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
+  
+  ${leftRows.join("\n")}
+  
+         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (R) - Frontal |||     ||| P/ RMS (R) - Occipital Lobe |||     ||| P/ RMS (R) - Parietal |||     ||| P/ RMS (R) - Temporal |||
+  
+  ${rightRows.join("\n")}
+  `.trim();
+  }
+  
+
+  function renderRmsGrowthTables(neuro, competencyResults) {
+    if (!Array.isArray(neuro?.data)) return "";
+  
+    const dayCountMap = buildDayCountByPpMap(competencyResults);
+  
+    const leftRows = [];
+    const rightRows = [];
+  
+    neuro.data.forEach(entry => {
+      const dayCount =
+        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "XXX";
+  
+      leftRows.push(
+        `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
+        `${getRms(entry, "growth", "Frontal Lobe - Left").padEnd(14)}` +
+        `${getRms(entry, "growth", "Occipital Lobe - Left").padEnd(18)}` +
+        `${getRms(entry, "growth", "Parietal Lobe - Left").padEnd(16)}` +
+        `${getRms(entry, "growth", "Temporal Lobe - Left")}`
+      );
+  
+      rightRows.push(
+        `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
+        `${getRms(entry, "growth", "Frontal Lobe - Right").padEnd(14)}` +
+        `${getRms(entry, "growth", "Occipital Lobe - Right").padEnd(18)}` +
+        `${getRms(entry, "growth", "Parietal Lobe - Right").padEnd(16)}` +
+        `${getRms(entry, "growth", "Temporal Lobe - Right")}`
+      );
+    });
+  
+    return `
+         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
+  
+  ${leftRows.join("\n")}
+  
+         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (R) - Frontal |||     ||| G/ RMS (R) - Occipital Lobe |||     ||| G/ RMS (R) - Parietal |||     ||| G/ RMS (R) - Temporal |||
+  
+  ${rightRows.join("\n")}
+  `.trim();
+  }  
   
   function fmt3(value) {
     return Number.isFinite(value) ? value.toFixed(3) : "X.XXX";
@@ -426,7 +537,7 @@ function extractStaffAssignments(staffAssignments = []) {
   }
 
   function renderCognitiveLoad(neuro) {
-    const cognitiveLoad = neuro?.neuroScienceRms?.cognitiveLoad;
+    const cognitiveLoad = neuro?.cognitiveLoad;
     if (!cognitiveLoad) return "";
   
     const sums = sumCognitiveLoad(cognitiveLoad);
@@ -453,6 +564,7 @@ function extractStaffAssignments(staffAssignments = []) {
   ${growthLines.join("\n")}
   `.trim();
   }
+  
 
   function renderAverageBlock(averages = {}, unitType) {
     const lines = [];
@@ -500,6 +612,39 @@ function extractStaffAssignments(staffAssignments = []) {
     return lines.join("\n");
   }
   
+  function renderButlerProductivityRows(productivity = []) {
+    if (!Array.isArray(productivity) || productivity.length === 0) {
+      return "     XXX";
+    }
+  
+    return productivity
+      .map(r => {
+        const date = r.criticalRefDate
+          ? new Date(r.criticalRefDate).toISOString().split("T")[0]
+          : "XXX";
+  
+        return (
+        `     ${String(r.ppId).padEnd(10)}` +
+        `     ${date.padEnd(30)}` +
+        `     ${String(r.totalDuration ?? "X.XXX").padEnd(12)}` + 
+        `     ${String(r.Productivity_CSD ?? "X.XXX").padEnd(28)}` +
+        `     ${String(r.Productivity_USD ?? "X.XXX")}`
+        );
+      })
+      .join("\n    ");
+  }
+  
+  function renderIrregularitiesRows(irregularities = []) {
+    if (!Array.isArray(irregularities) || irregularities.length === 0) {
+      return `     NONE RECORDED`;
+    }
+  
+    return irregularities
+      .map((item, index) => {
+        return `     ${String(index + 1).padEnd(10)}     ${String(item.type ?? "XXX").padEnd(28)}     ${item.comments ?? "XXX"}`;
+      })
+      .join("\n");
+  }
   
 export function buildCandidateEZReport({
     unitMeta,
@@ -512,6 +657,7 @@ export function buildCandidateEZReport({
     candidateMarks,
     needAssessments,
     assessmentChain,
+    effortResults,
   }) {
     const today = new Date().toDateString();
 
@@ -550,7 +696,19 @@ export function buildCandidateEZReport({
 
     const candidateMarksRows = renderCandidateMarksRows(candidateMarks);
 
+    
+    const rmsProficiencyTables = renderRmsProficiencyTables(neuro, competency?.results ?? []);
+
+    const rmsGrowthTables = renderRmsGrowthTables(neuro, competency?.results ?? []);
+
     const cognitiveLoadBlock = renderCognitiveLoad(neuro);
+
+
+    const productivityRows = renderButlerProductivityRows(competency?.results ?? []);
+
+    const candidateFromScores = scores?.[0]?.candidate;
+    const irregularityRows = renderIrregularitiesRows(candidateFromScores?.irregularities);
+
 
 
     return `
@@ -642,6 +800,8 @@ export function buildCandidateEZReport({
 ---------------------------------------
 
      ||| NOTE # |||     ||| IRREGULARITY TYPE |||     ||| COMMENTS |||
+
+     ${irregularityRows}
 
 ---------------------------------------
  ASSESSMENT BLOCKS:
@@ -747,8 +907,10 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| DAYCOUNT |||     ||| PRODUCTIVITY RATES - CSD |||     ||| PRODUCTIVITY RATES - USD |||
 
-     Effort -  CSD Reference                   :     X.XXX
-     Effort -  USD Reference                   :     X.XXX
+     ${productivityRows}
+
+     Effort -  CSD Reference                   :     ${effortResults.data.CSD}
+     Effort -  USD Reference                   :     ${effortResults.data.USD}
 
 ---------------------------------------
  ATTENDANCE TRACKING:
@@ -803,37 +965,31 @@ export function buildCandidateEZReport({
     ${assessmentChainBlock}
 
 
+*******************************************************                                  SECTION 07                   *******************************************************
+
+---------------------------------------
+  RECORD OF ASSIGNMENTS:
+---------------------------------------
+
+      ||| PP ID |||     ||| DAYCOUNT |||     ||| TASK DECLARATION |||     ||| ATTAINED SCORE |||     ||| MAX SCORE |||
+
+      ${assignmentRows1}
+
+      ||| PP ID |||     ||| DAYCOUNT |||     ||| WORKFLOW STAGE |||     ||| ASSESSMENT TYPE |||     ||| SCHEDULE IMPACT |||
+      ${assignmentRows2}
+
 *******************************************************                                  SECTION 08                               *******************************************************
 
 ---------------------------------------
  NEUROSCIENCE INDICATORS:
 ---------------------------------------
 
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
 
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (R) - Frontal |||     ||| P/ RMS (R) - Occipital Lobe |||     ||| P/ RMS (R) - Parietal |||     ||| P/ RMS (R) - Temporal |||
+${rmsProficiencyTables}
 
-     P/ Cognitive Load (L) - Frontal         :     X.XXX
-     P/ Cognitive Load (L) - Occipital       :     X.XXX
-     P/ Cognitive Load (L) - Parietal        :     X.XXX
-     P/ Cognitive Load (L) - Temporal        :     X.XXX
-     P/ Cognitive Load (R) - Frontal         :     X.XXX
-     P/ Cognitive Load (R) - Occipital       :     X.XXX
-     P/ Cognitive Load (R) - Parietal        :     X.XXX
-     P/ Cognitive Load (R) - Temporal        :     X.XXX
+${cognitiveLoadBlock}
 
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
-
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (R) - Frontal |||     ||| G/ RMS (R) - Occipital Lobe |||     ||| G/ RMS (R) - Parietal |||     ||| G/ RMS (R) - Temporal |||
-
-     G/ Cognitive Load (L) - Frontal         :     X.XXX
-     G/ Cognitive Load (L) - Occipital       :     X.XXX
-     G/ Cognitive Load (L) - Parietal        :     X.XXX
-     G/ Cognitive Load (L) - Temporal        :     X.XXX
-     G/ Cognitive Load (R) - Frontal         :     X.XXX
-     G/ Cognitive Load (R) - Occipital       :     X.XXX
-     G/ Cognitive Load (R) - Parietal        :     X.XXX
-     G/ Cognitive Load (R) - Temporal        :     X.XXX
+${rmsGrowthTables}
 
 *******************************************************                                  SECTION 09                               *******************************************************
 

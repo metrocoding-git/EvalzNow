@@ -3,7 +3,6 @@ import Loading from '@/components/Loading';
 import { useUnit } from '@/context/UnitContext';
 import { getUniRostertByUnitId } from '@/services/unitRosterService';
 import { redirect, useRouter } from 'next/navigation';
-
 import { useEffect, useState } from 'react';
 
 
@@ -25,10 +24,10 @@ export default function AnalyticsView({ searchParams }) {
         const roster = await getUniRostertByUnitId(selectedUnitId);
 
         if (!Array.isArray(roster) || roster.length === 0) {
-          // 👈 empty roster → setup view
+          //  empty roster → setup view
           router.replace("/dashboard/setup-view");
         } else {
-          // 👈 roster exists → go to scoring trends
+          //  roster exists → go to scoring trends
           router.replace("/dashboard/analytics-view/scoring-trends");
         }
       } catch (err) {
@@ -49,6 +48,37 @@ export default function AnalyticsView({ searchParams }) {
     if (!token || !user) {
       router.replace("/login");
     }
+  }, [router]);
+
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if user is typing in input/textarea
+      const tag = e.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) {
+        return;
+      }
+  
+      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+        switch (e.key) {
+          case "1":
+            e.preventDefault();
+            router.push("/dashboard/control-view");
+            break;
+  
+          case "2":
+            e.preventDefault();
+            router.push("/dashboard/setup-view");
+            break;
+  
+          default:
+            break;
+        }
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
   return (

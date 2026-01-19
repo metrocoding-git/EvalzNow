@@ -10,5 +10,5 @@ export function downloadEZFile(content, filename) {
   
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }
+}
   
