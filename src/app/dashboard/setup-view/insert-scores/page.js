@@ -60,7 +60,8 @@ export default function EntitiesManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
 
   const router = useRouter();

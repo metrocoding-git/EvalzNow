@@ -31,7 +31,8 @@ export default function TabulationTables() {
 
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
 
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe", candidateStartDate: "2023-01-10", unitStartDate: "2023-01-15" },
@@ -298,7 +299,7 @@ export default function TabulationTables() {
 
               {/* Right Panel */}
               <div className="w-6/12 lg:w-9/12 bg-white  flex flex-col border-1 h-full border-gray-200 ml-1 ">
-                {ViewerOpen && <ViewerSelections candidate={selectedCandidate}  unitId={unitData?.id} />}
+                {ViewerOpen && <ViewerSelections candidate={selectedCandidate}  unitId={unitData?.id} unitStartDate={unitData?.unitStartDate} />}
               </div>
             </div>
             {/* ------- */}

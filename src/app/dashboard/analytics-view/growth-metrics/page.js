@@ -36,7 +36,8 @@ export default function GrowthMetrics() {
   const [ScoresOpen, setScoresOpen] = useState(false);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
@@ -162,7 +163,7 @@ export default function GrowthMetrics() {
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
               <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
-                <div className="flex-grow  flex flex-col h-1/2">
+              <div className="flex-grow  border-gray-300 flex flex-col h-1/2">
                   {/* Header */}
                   <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${selectedSort === "activateUnitLevel"
                    ? "grid-cols-4 px-4" : "grid-cols-3 px-4"  } text-gray-800 font-semibold text-sm`}>
@@ -173,7 +174,7 @@ export default function GrowthMetrics() {
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
                     >
-                      Last <br/> Name
+                      Last Name
                       {/* {" "}
                       {sortKey === "lastName" ? (
                         sortOrder === "asc" ? (
@@ -305,7 +306,7 @@ export default function GrowthMetrics() {
                               />
                               
                               )}
-                              <span className="text-gray-800 ">
+                              <span className="text-gray-800">
                                 {item.lastName}
                               </span>
                               <span className="text-gray-800">

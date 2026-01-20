@@ -100,35 +100,35 @@ export default function ControlViewLayout({ children }) {
     }
   }, [pathname, visibleTabs, router]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Ignore if user is typing in input/textarea
-      const tag = e.target.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) {
-        return;
-      }
+  // useEffect(() => {
+  //   const handleKeyDown = (e) => {
+  //     // Ignore if user is typing in input/textarea
+  //     const tag = e.target.tagName;
+  //     if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) {
+  //       return;
+  //     }
   
-      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-        switch (e.key) {
-          case "2":
-            e.preventDefault();
-            router.push("/dashboard/setup-view");
-            break;
+  //     if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+  //       switch (e.key) {
+  //         case "2":
+  //           e.preventDefault();
+  //           router.push("/dashboard/setup-view");
+  //           break;
   
-          case "3":
-            e.preventDefault();
-            router.push("/dashboard/analytics-view");
-            break;
+  //         case "3":
+  //           e.preventDefault();
+  //           router.push("/dashboard/analytics-view");
+  //           break;
   
-          default:
-            break;
-        }
-      }
-    };
+  //         default:
+  //           break;
+  //       }
+  //     }
+  //   };
   
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router]);
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, [router]);
   
   return (
     <div className="w-full flex flex-col">

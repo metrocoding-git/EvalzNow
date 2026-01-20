@@ -38,7 +38,8 @@ export default function HybridMetrics() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [loading, setLoading] = useState(false);

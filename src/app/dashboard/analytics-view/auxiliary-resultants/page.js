@@ -47,7 +47,8 @@ export default function AuxiliaryResultants() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -352,9 +353,9 @@ export default function AuxiliaryResultants() {
                           className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
                           <option value="activateCandidateLevel">
-                            Activate Candidate Level
+                            Candidate Level
                           </option>
-                          <option value="activateUnitLevel">Activate Unit Level</option>
+                          <option value="activateUnitLevel">Unit Level</option>
                         </select>
                       )}
                     </div>

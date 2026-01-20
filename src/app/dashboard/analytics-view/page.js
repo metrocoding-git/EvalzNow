@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 
 export default function AnalyticsView({ searchParams }) {
 
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

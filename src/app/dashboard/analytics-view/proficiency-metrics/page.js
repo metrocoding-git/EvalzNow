@@ -35,7 +35,8 @@ export default function ProficiencyMetrics() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [data, setData] = useState([]);  
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);

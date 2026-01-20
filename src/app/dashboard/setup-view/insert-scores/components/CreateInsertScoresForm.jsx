@@ -247,8 +247,9 @@ const [formData, setFormData] = useState({
   const [scoringSystem, setScoringSystem] = useState();
   const { setFormStatus } = useFormStatus();
 
-  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const unitId = selectedUnitId
+  // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const unitId = selectedUnitId;
   const environment = unit.environment;
   // const rawType = searchParams.get("type") || "communicative";
   const type = unit.unitType.toLowerCase(); // normalize

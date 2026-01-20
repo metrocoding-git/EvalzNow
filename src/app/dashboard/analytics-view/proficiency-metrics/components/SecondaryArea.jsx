@@ -120,7 +120,7 @@ const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
 
         {/* Threshold Toggle */}
         <div className="flex items-center justify-between p-2">
-          <label className="font-medium text-gray-800">Enable Thresholds</label>
+          <label className="font-medium text-gray-800">Thresholds</label>
 
           {/* Toggle */}
           <div

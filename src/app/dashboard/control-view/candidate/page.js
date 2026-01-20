@@ -461,6 +461,10 @@ export default function CandidateControl() {
   
   const handleIncomeBlur = async (idx) => {
     const inc = incomes[idx];
+  
+    // Guard against invalid index
+    if (!inc || typeof inc.name !== "string") return;
+  
     const value = inc.name.trim();
   
     try {
@@ -475,7 +479,10 @@ export default function CandidateControl() {
         await updateIncome(inc.id, { name: value });
         toast.success("Income updated");
       } else {
-        const created = await createIncome({ name: value, clientId: activeClientId });
+        const created = await createIncome({
+          name: value,
+          clientId: activeClientId,
+        });
         setIncomes(prev => {
           const updated = [...prev];
           updated[idx] = created;
@@ -488,6 +495,7 @@ export default function CandidateControl() {
       toast.error("Failed to save income");
     }
   };
+  
   
   
   useEffect(() => {
@@ -560,14 +568,24 @@ const isEthnicityUsed = (eth) => {
 
 
 const isIncomeUsed = (inc) => {
-  if (!inc?.name || !Array.isArray(candidateIncome)) return false;
+  // New / unsaved income → NEVER disable
+  if (!inc?.id) return false;
+
+  if (!Array.isArray(candidateIncome)) return false;
+
   return candidateIncome.some(
     (usedInc) =>
       usedInc?.trim().toLowerCase() === inc.name.trim().toLowerCase()
   );
 };
 
-
+const isDuplicateIncomeName = (value, idx) => {
+  return incomes.some(
+    (inc, i) =>
+      i !== idx &&
+      inc.name?.trim().toLowerCase() === value.trim().toLowerCase()
+  );
+};
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -743,18 +761,17 @@ const isIncomeUsed = (inc) => {
                             placeholder={`Ethnicity ${idx + 1}`}
                           />
                           <button
-  type="button"
-  onClick={() => handleEthnicityDelete(idx)}
-  disabled={isEthnicityUsed(eth)}  // ✅ disable if used
-  className={`px-2 py-1 text-xs rounded ${
-    isEthnicityUsed(eth)
-      ? "text-gray-400 cursor-not-allowed"
-      : "text-red-500"
-  }`}
->
-  <Trash2 className="w-4 h-4" />
-</button>
-
+                            type="button"
+                            onClick={() => handleEthnicityDelete(idx)}
+                            disabled={isEthnicityUsed(eth)}  // ✅ disable if used
+                            className={`px-2 py-1 text-xs rounded ${
+                              isEthnicityUsed(eth)
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-red-500"
+                            }`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       ))}
                       {ethnicities.length < 10 && (
@@ -783,7 +800,17 @@ const isIncomeUsed = (inc) => {
                             value={income.name || ""}
                             disabled={isIncomeUsed(income)} 
                             onChange={(e) => handleIncomeChange(idx, e.target.value)}
-                            onBlur={() => handleIncomeBlur(idx)}
+                            onBlur={() => {
+                              const value = income.name?.trim() || "";
+                            
+                              if (isDuplicateIncomeName(value, idx)) {
+                                toast.error("Income range already exists");
+                                return;
+                              }
+                            
+                              handleIncomeBlur(idx);
+                            }}
+                            
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Income Ranges ${idx + 1}`}
                           />
@@ -823,8 +850,7 @@ const isIncomeUsed = (inc) => {
           <div
             ref={contextRef}
             className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
-          >
+            style={{ top: contextMenu.y, left: contextMenu.x }}>
             <button
               className="flex justify-between items-center px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 w-full text-left border-t border-gray-200"
               onClick={(e) => {
@@ -834,8 +860,7 @@ const isIncomeUsed = (inc) => {
                 setShowReview(true);
                 setShowEdit(false);
                 setShowAdd(false);
-              }}
-            >
+              }}>
               <span className="flex items-center gap-2">
                 <View className="w-4 h-4" /> Review
               </span>
@@ -847,8 +872,7 @@ const isIncomeUsed = (inc) => {
               onClick={() => {
                 handleDelete(contextMenu.selectedCandidate.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
-              }}
-            >
+              }} >
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </span>
@@ -873,8 +897,6 @@ const isIncomeUsed = (inc) => {
             setSelectedCandidate(updatedCandidate);
             setFormStatus("Candidate Updated");
 
-              // Optional: revert back to Ready after 2s
-              
           }}
         />
 
@@ -886,8 +908,8 @@ const isIncomeUsed = (inc) => {
         
           {showAdd && (
             <div className="h-full flex flex-col w-96" ref={createFormRef}>
-              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} ethnicities={ethnicities}
-    incomes={incomes} />
+              <CreateCandidateForm onClose={() => setShowAdd(false)} onCreate={handleCreate} 
+              ethnicities={ethnicities} incomes={incomes} />
             </div>
           )}
 
@@ -896,11 +918,7 @@ const isIncomeUsed = (inc) => {
               <ReviewCandidate candidate={selectedCandidate} />
             </div>
           )}
-
-       
       </div>
-
-   
     </div>
   );
 }
