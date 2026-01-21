@@ -21,4 +21,7 @@ export const API_ROUTES = {
     UNITDISTRIBUTION: "/unit-distribution",
     AUXILIARY: "/auxiliary",
     NEURO_SCIENCE: "/neuro-science",
+    GLOBAL_ANALYTICS: "/global-analytics",
+    DATA_EXTRACTION: "/data-extract",
+    DATA_REPORT: "/data-report",
 };

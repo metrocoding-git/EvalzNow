@@ -10,7 +10,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 
-export default function ViewerSelections({candidate, unitId}) {
+export default function ViewerSelections({candidate, unitId, unitStartDate}) {
   const [openCandidate, setOpenCandidate] = useState({});
   const [isExpanded, setIsExpanded] = useState(false);
   const toggleGroup = (index) => {
@@ -189,9 +189,9 @@ useEffect(() => {
       // Append summary rows at the bottom
       const summaryRows = [
         { label: "Average", key: "averages" },
-        { label: "StdDev", key: "stdDevs" },
-        { label: "StdErr", key: "stdErrs" },
-      ].map(({ label, key }) => {
+        { label: "Std Dev", key: "stdDevs" },
+        { label: "Std Error", key: "stdErrs" },
+      ].map(({ label, key }) => {      
         const summaryData = data[key]?.[0] || {};
         const fixedData = {
           ...summaryData,
@@ -412,7 +412,7 @@ console.log("unit type check", tableData);
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
-        <span className="pl-2 text-md text-gray-800">Viewers</span>
+        <span className="pl-2 text-md text-gray-800">Viewer</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2 mx-1">
@@ -451,16 +451,16 @@ console.log("unit type check", tableData);
                           <span>ID:</span>
                           <span>{candidate.id}</span>
                         </div>
-                        {candidate.candidateStartDate && (
+                        {candidate.startDate && (
                           <div className="grid grid-cols-5 text-sm text-gray-400">
                             <span>Candidate Start Date:</span>
-                            <span>{candidate.candidateStartDate}</span>
+                            <span>{candidate.startDate}</span>
                           </div>
                         )}
-                        {candidate.unitStartDate && (
+                        {unitStartDate && (
                           <div className="grid grid-cols-5 text-sm text-gray-400">
                             <span>Unit Start Date:</span>
-                            <span>{candidate.unitStartDate}</span>
+                            <span>{unitStartDate}</span>
                           </div>
                         )}
                       </div>
@@ -495,7 +495,7 @@ console.log("unit type check", tableData);
                   <tbody>
                     {tableData.length > 0 ? (
                       tableData.map((row, rowIndex) => {
-                        const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
+                        const isSummaryRow = ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]);
                         return (
                           <tr
                             key={rowIndex}

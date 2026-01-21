@@ -30,6 +30,7 @@ export default function AuxiliaryResultants() {
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
 
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
+  const [selectedAssessmentChain, setSelectedAssessmentChain] = useState(null);
 
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
   const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
@@ -46,7 +47,8 @@ export default function AuxiliaryResultants() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -326,7 +328,8 @@ export default function AuxiliaryResultants() {
                   <div className="h-1/2 overflow-auto ">
                     <SecondaryInputForm selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId}
                       onClose={() => setShowSecondary(false)} selectedChartKey={selectedChartKey}
-                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal}
+                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} 
+                      selectedAssessmentChain={selectedAssessmentChain}
                     />
 
                   </div>
@@ -350,21 +353,32 @@ export default function AuxiliaryResultants() {
                           className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
                           <option value="activateCandidateLevel">
-                            Activate Candidate Level
+                            Candidate Level
                           </option>
-                          <option value="activateUnitLevel">Activate Unit Level</option>
+                          <option value="activateUnitLevel">Unit Level</option>
                         </select>
                       )}
                     </div>
                   </div>
                 </div>
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
-                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} onChartSelect={(key) => setSelectedChartKey(key)} 
+                 refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} 
+                 refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} 
+                 onChartSelect={(key) => setSelectedChartKey(key)} 
                  candidateId={
                   selectedSort === "activateUnitLevel"
                     ? selectedCandidateIds // pass multiple IDs
                     : activeCandidateId   // pass single ID
-                } onResetFilters={resetFilters}  onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} onCreateChainFormOpen={(value) => setShowCreateForm(value)} oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)}   />}
+                } onResetFilters={resetFilters}  
+                onUnitImprovementFormOpen={(value) => setShowUnitImprovementForm(value)} 
+                onCreateChainFormOpen={(value) => setShowCreateForm(value)} 
+                oncandidateFormOpen={(value) => setShowCandidateMarksForm(value)}  
+                onLeaderMarkFormOpen={(value) => setShowLeaderMarkForm(value)} 
+                onAssessmentChainSelect={(chain) => {
+                  setSelectedAssessmentChain(chain);
+                  setShowSecondary(true); // auto-open secondary
+                }}
+              />}
 
                 
 

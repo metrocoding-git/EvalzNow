@@ -51,7 +51,8 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
     setScoreAdd(false);
   };
 
-  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   // const searchParams = useSearchParams();
   const environment = unit.environment;
 
@@ -691,7 +692,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                     }`}
                   onClick={() => { setActiveTab("Indirect"); setSelectedRow(null); }}
                 >
-                  Indirect Performance Point (Sub)
+                  Indirect Performance Points (Sub)
 
                 </button>
                 <button
@@ -701,7 +702,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                     }`}
                   onClick={() => { setActiveTab("Direct"); setSelectedRow(null); }}
                 >
-                  Direct Performance Point (Sub)
+                  Direct Performance Points (Sub)
                 </button>
 
               </div>

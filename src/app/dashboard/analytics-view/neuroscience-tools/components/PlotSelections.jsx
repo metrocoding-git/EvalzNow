@@ -38,27 +38,23 @@ function cognitiveNS(xArray, yArray) {
 
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
-  // get rows with same target
+  // Get all rows of same target (Proficiency / Growth)
   const sameTarget = indicatorsData
     .filter(r => r.target === row.target)
     .sort((a, b) => a.ppId - b.ppId);
 
-  const index = sameTarget.findIndex(r => r.ppId === row.ppId);
+  // Take all rows up to current ppId
+  const uptoCurrent = sameTarget.filter(r => r.ppId <= row.ppId);
 
-  // Need at least 2 points
-  if (index <= 0) return "0.000";
+  // Need at least 2 PP points
+  if (uptoCurrent.length < 2) return "0.000";
 
-  const prev = sameTarget[index - 1];
-  const curr = sameTarget[index];
-
-  const xArray = [prev.ppId, curr.ppId];
-  const yArray = [
-    Number(prev[rmsKey]) || 0,
-    Number(curr[rmsKey]) || 0
-  ];
+  const xArray = uptoCurrent.map(r => r.ppId);
+  const yArray = uptoCurrent.map(r => Number(r[rmsKey]) || 0);
 
   return cognitiveNS(xArray, yArray);
 }
+
 
 
 export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters }) {
@@ -403,8 +399,24 @@ const lobeData = [
   
     setIndicatorsData(updated);
   }, [indicatorsData.length]);
+
+
+  const indicatorsWithLoads = useMemo(() => {
+    if (!indicatorsData.length) return [];
   
-  
+    return indicatorsData.map(row => ({
+      ...row,
+      Cognitive1: computeRowCognitiveNS(indicatorsData, row, "RMS1"),
+      Cognitive2: computeRowCognitiveNS(indicatorsData, row, "RMS2"),
+      Cognitive3: computeRowCognitiveNS(indicatorsData, row, "RMS3"),
+      Cognitive4: computeRowCognitiveNS(indicatorsData, row, "RMS4"),
+      Cognitive5: computeRowCognitiveNS(indicatorsData, row, "RMS5"),
+      Cognitive6: computeRowCognitiveNS(indicatorsData, row, "RMS6"),
+      Cognitive7: computeRowCognitiveNS(indicatorsData, row, "RMS7"),
+      Cognitive8: computeRowCognitiveNS(indicatorsData, row, "RMS8"),
+    }));
+  }, [indicatorsData]);
+    
 
   const chartData = useMemo(() => {
     if (!selectedChart || selectedChart.type !== "chart") return [];
@@ -788,7 +800,7 @@ const handleExportGraph = () => {
                         }`}
                       onClick={() => setActiveAdjustPropertieTab('Indicators')}
                     >
-                      Indicators
+                      Neuro Indicators
                     </button>
                     <button
                       className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === 'Loads'
@@ -941,10 +953,10 @@ const handleExportGraph = () => {
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe (L)</th>
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe (L)</th>
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe (R)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -979,14 +991,14 @@ const handleExportGraph = () => {
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe (L)</th>
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe (L)</th>
                           <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe ®</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe ®</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe (R)</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {indicatorsData.map((row, idx) => (
+                        {indicatorsWithLoads.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
                             <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
                             <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>

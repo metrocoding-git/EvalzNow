@@ -192,7 +192,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       id: "1"
     },
     {
-      name: "Productive Ratio (PR) vs.Receptive Ratio (RR) 2-D Cross Plot",
+      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "2"
@@ -226,7 +226,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       id: "1"
     },
     {
-      name: "Productive Ratio (PR) vs.Receptive Ratio (RR) 2-D Cross Plot",
+      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
       icon: "📊",
       type: "scatter-2d",
       id: "2",

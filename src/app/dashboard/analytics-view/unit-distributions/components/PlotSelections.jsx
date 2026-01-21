@@ -33,7 +33,7 @@ import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
 
-export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType }) {
+export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType, onResetBeta }) {
   const [distributions, setDistributions] = useState({});
   const [selectedKey, setSelectedKey] = useState("RR");
   const [curves, setCurves] = useState([
@@ -195,6 +195,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       try {
         // Determine which API to call based on selected distribution type
         let data;
+        
+        if (selectedChart.distribution.startsWith("weibull") && !betaValue) {
+          return; 
+        }
         
         if (selectedChart.distribution.startsWith("weibull")) {
           let data;
@@ -1284,13 +1288,14 @@ const getYAxisLabel = () => {
                     <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
               <button
-                onClick={() => {}}
+                onClick={() => {
+                  onResetBeta();      
+                }}
                 title="Reset"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 <RefreshCw
                   className="w-4 h-4 hover:text-blue-800"
-                  onClick={() => setScoreAdd(true)}
                 />
               </button>
               <button

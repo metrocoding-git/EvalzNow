@@ -21,7 +21,8 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   // const searchParams = useSearchParams();
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const unitId = selectedUnitId;
 
 

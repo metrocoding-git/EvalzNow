@@ -38,7 +38,8 @@ export default function ScoringTrends() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]);  
   const [secondaryValues, setSecondaryValues] = useState(null);

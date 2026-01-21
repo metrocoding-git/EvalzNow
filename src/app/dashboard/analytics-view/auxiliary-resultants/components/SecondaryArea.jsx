@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
@@ -72,6 +72,19 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
     }
   };
 
+  const fetchAssessmentChain = async () => {
+    try {
+      if (!selectedChartKey) return;
+
+      if (selectedChartKey === "nac") {
+
+      }
+
+    } catch (error) {
+      console.error("Error fetching assessment chain:", error);
+    }
+  }
+
   useEffect(() => {
     // load with default filters
     const defaultFilters = {
@@ -107,130 +120,166 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
   
   
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Section Header */}
-      <div className="flex justify-between items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
-        <div className="flex items-center text-sm gap-2 text-gray-800 font-semibold">
-          <Edit className="w-5 h-5" />
-          Secondary Input Area
-        </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
-        {/* PP ID Range */}
-        <div className="gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            PP ID Range
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">From:</label>
-              <input
-                type="number"
-                value={ppIdFrom}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPpIdFrom(val === "" ? "" : parseInt(val));
-                }}
-                className="border px-2 py-1 w-full"
-                placeholder="From (e.g., -3)"
-              />
-            </div>
-            
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">To:</label>
-              <input
-                type="number"
-                value={ppIdTo}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPpIdTo(val === "" ? "" : parseInt(val));
-                }}
-                className="border px-2 py-1 w-full"
-                placeholder="To (e.g., 3)"
-              />
-            </div>
-            
-          </div>
-        </div>
-
-
-        {/* Critical Reference Date */}
-        <div className="w-full gap-1 text-xs p-2">
-          <label className="block font-medium text-gray-700 mb-1">
-            Critical Reference Range
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">From:</label>
-              <input
-                type="date"
-                value={criticalDateFrom}
-                onChange={(e) => setCriticalDateFrom(e.target.value)}
-                className="border px-2 py-1 w-full" />
-            </div>
-
-            <div className="flex items-center ">
-              <label htmlFor="" className="w-1/2">From:</label>
-              <input
-                type="date"
-                value={criticalDateTo}
-                onChange={(e) => setCriticalDateTo(e.target.value)}
-                className="border px-2 py-1 w-full" />
+    <>
+      {/* 🔹 Assessment Chain Mode */}
+      {selectedChartKey === "nac" && selectedAssessmentChain ? (
+        <div className="space-y-3 text-sm mx-1">
+          {/* Section Header */}
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
+            <div className="flex items-center text-sm gap-2 text-gray-800 font-semibold">
+              <Edit className="w-5 h-5" />
+              Secondary Input Area
             </div>
           </div>
-        </div>
 
-        {/* Effort Fields – only show if candidate level */}
-        {selectedSort === "activateCandidateLevel" && selectedChartKey && (
-          <>
-            {selectedChartKey === "bp-csd"  && (
-              <div className="gap-1 text-xs p-2 w-full">
-                <label className="block font-medium text-gray-700 mb-1">
-                  Effort – CSD
-                </label>
-                <input
-                  type="text"
-                  value={csdEffort}
-                  disabled
-                  className="border px-2 py-1 w-full text-gray-600"
-                />
+          <div className="border rounded p-2 bg-gray-50">
+            <div><b>Chain ID:</b> {selectedAssessmentChain.chainId}</div>
+            <div><b>Unit ID:</b> {selectedAssessmentChain.unitId}</div>
+            <div><b>Candidate ID:</b> {selectedAssessmentChain.candidateId}</div>
+          </div>
+
+          {selectedAssessmentChain.selections.map((sel, idx) => (
+            <div key={idx} className="border p-2 rounded bg-white">
+              <div><b>PP ID:</b> {sel.ppId}</div>
+              <div><b>RRN:</b> {sel.RRN ?? "—"}</div>
+              <div><b>PRN:</b> {sel.PRN ?? "—"}</div>
+              <div><b>ARN:</b> {sel.ARN ?? "—"}</div>
+              <div><b>Status:</b> {sel.actionStatus}</div>
+              <div><b>Critical Date:</b> {sel.criticalRefDate
+                ? new Date(sel.criticalRefDate).toLocaleDateString()
+                : "—"}
               </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col h-full bg-white">
+          {/* Section Header */}
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
+            <div className="flex items-center text-sm gap-2 text-gray-800 font-semibold">
+              <Edit className="w-5 h-5" />
+              Secondary Input Area
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
+            {/* PP ID Range */}
+            <div className="gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                PP ID Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="number"
+                    value={ppIdFrom}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdFrom(val === "" ? "" : parseInt(val));
+                    }}
+                    className="border px-2 py-1 w-full"
+                    placeholder="From (e.g., -3)"
+                  />
+                </div>
+                
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">To:</label>
+                  <input
+                    type="number"
+                    value={ppIdTo}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPpIdTo(val === "" ? "" : parseInt(val));
+                    }}
+                    className="border px-2 py-1 w-full"
+                    placeholder="To (e.g., 3)"
+                  />
+                </div>
+                
+              </div>
+            </div>
+
+
+            {/* Critical Reference Date */}
+            <div className="w-full gap-1 text-xs p-2">
+              <label className="block font-medium text-gray-700 mb-1">
+                Critical Reference Range
+              </label>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="date"
+                    value={criticalDateFrom}
+                    onChange={(e) => setCriticalDateFrom(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+
+                <div className="flex items-center ">
+                  <label htmlFor="" className="w-1/2">From:</label>
+                  <input
+                    type="date"
+                    value={criticalDateTo}
+                    onChange={(e) => setCriticalDateTo(e.target.value)}
+                    className="border px-2 py-1 w-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Effort Fields – only show if candidate level */}
+            {selectedSort === "activateCandidateLevel" && selectedChartKey && (
+              <>
+                {selectedChartKey === "bp-csd"  && (
+                  <div className="gap-1 text-xs p-2 w-full">
+                    <label className="block font-medium text-gray-700 mb-1">
+                      Effort – CSD
+                    </label>
+                    <input
+                      type="text"
+                      value={csdEffort}
+                      disabled
+                      className="border px-2 py-1 w-full text-gray-600"
+                    />
+                  </div>
+                )}
+
+                {selectedChartKey === "bp-usd" && (
+                  <div className="gap-1 text-xs p-2 w-full">
+                    <label className="block font-medium text-gray-700 mb-1">
+                      Effort – USD
+                    </label>
+                    <input
+                      type="text"
+                      value={usdEffort}
+                      disabled
+                      className="border px-2 py-1 w-full text-gray-600"
+                    />
+                  </div>
+                )}
+              </>
             )}
 
-            {selectedChartKey === "bp-usd" && (
-              <div className="gap-1 text-xs p-2 w-full">
-                <label className="block font-medium text-gray-700 mb-1">
-                  Effort – USD
-                </label>
-                <input
-                  type="text"
-                  value={usdEffort}
-                  disabled
-                  className="border px-2 py-1 w-full text-gray-600"
-                />
-              </div>
-            )}
-          </>
-        )}
-
-      </div>
-      {/* Submit Button */}
-      <div className="border-t border-gray-200 p-2 bg-gray-50">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
-          >
-            Submit
-          </button>
-        </div>
-      </div>
-
-    </div>
+          </div>
+          {/* Submit Button */}
+          <div className="border-t border-gray-200 p-2 bg-gray-50">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div> 
+      )}
+    </>
+    
   );
 };
 

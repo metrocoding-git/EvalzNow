@@ -36,6 +36,12 @@ export default function ClientEditor({
     );
   };
 
+  useEffect(() => {
+    if (!showBetaValue) {
+      setBetaValue(""); // reset input when beta mode is off
+    }
+  }, [showBetaValue]);
+  
   const handlePpListingsChange = (index, newValue) => {
     setCandidateData((prev) =>
       prev.map((c, i) =>
@@ -142,7 +148,7 @@ export default function ClientEditor({
         )}
 
         {/* Default Edit Button */}
-        {!showBetaValue && (
+        {/* {!showBetaValue && (
           <div className="col-span-2 pt-4 flex justify-end gap-2">
             <button
               type="button"
@@ -152,7 +158,7 @@ export default function ClientEditor({
               Edit
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

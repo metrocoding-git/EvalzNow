@@ -140,7 +140,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
             </div>
           
             <div className="flex items-center justify-between p-2">
-              <label className="font-medium text-gray-800">Enable Thresholds</label>
+              <label className="font-medium text-gray-800">Thresholds</label>
               <div
                 onClick={() => setThresholdEnabled(!thresholdEnabled)}
                 className="relative w-12 h-6 cursor-pointer"
@@ -231,7 +231,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
             {/* Growth Target Toggle */}
             <div className="flex items-center justify-between p-2">
               <label className="font-medium text-gray-800">
-                Show Growth Target
+                Show Growth Targets
               </label>
               <div
                 onClick={() => setShowGrowthTarget(!showGrowthTarget)}
@@ -252,7 +252,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
             {/* Performance Points Projection Toggle */}
             <div className="flex items-center justify-between p-2">
               <label className="font-medium text-gray-800">
-                Performance Points Projection
+                Performance Points Projections
               </label>
               <div
                 onClick={() => setShowProjectionPoints(!showProjectionPoints)}

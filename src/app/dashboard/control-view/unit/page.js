@@ -643,6 +643,7 @@ const filteredCandidates = unitRosterData
         e.preventDefault();
         setSelectedUnit(selectedUnit);
         setSelectedUnitId(selectedUnit.id);
+        sessionStorage.setItem("selectedUnitId", selectedUnit.id);
         setUnitRoster(true);
         setShowAdd(false);
         setShowEdit(false);
@@ -667,6 +668,7 @@ const filteredCandidates = unitRosterData
       if (e.ctrlKey && e.key === "2") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
+        sessionStorage.setItem("selectedUnitId", selectedUnit.id);
         router.push(
           `/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
         );
@@ -676,6 +678,7 @@ const filteredCandidates = unitRosterData
       if (e.ctrlKey && e.key === "3") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
+        sessionStorage.setItem("selectedUnitId", selectedUnit.id);
         router.push(
           `/dashboard/analytics-view/scoring-trends?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
         );
@@ -1057,6 +1060,7 @@ const filteredCandidates = unitRosterData
                 const unit = contextMenu.selectedUnit;
                 setSelectedUnit(unit);
                 setSelectedUnitId(unit.id);
+                sessionStorage.setItem("selectedUnitId", unit.id);
                 setUnitRoster(true);
                 setShowAdd(false);
                 setShowEdit(false);
@@ -1100,6 +1104,7 @@ const filteredCandidates = unitRosterData
                 const unit = contextMenu.selectedUnit;
                 setSelectedUnit(unit);
                 setSelectedUnitId(unit.id);
+                sessionStorage.setItem("selectedUnitId", unit.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
                 router.push(`/dashboard/setup-view/insert-scores`);
               }}
@@ -1117,6 +1122,7 @@ const filteredCandidates = unitRosterData
               onClick={() => {
                 if (contextMenu.selectedUnit) {
                   setSelectedUnitId(contextMenu.selectedUnit.id);
+                  sessionStorage.setItem("selectedUnitId", contextMenu.selectedUnit.id);
                   console.log("Global Unit Id: ", contextMenu.selectedUnit.id);
                 }
                 setContextMenu((prev) => ({ ...prev, visible: false }));

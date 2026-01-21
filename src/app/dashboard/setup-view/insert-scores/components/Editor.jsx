@@ -189,7 +189,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
   // const searchParams = useSearchParams();
   const { setFormStatus } = useFormStatus();
   
-  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const unitId = selectedUnitId;
   const environment = unit?.environment || "";
   const [ppIds, setPpIds] = useState([]);

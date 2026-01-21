@@ -22,7 +22,16 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, filters, onResetFilters }) {
+const ROSTER_SUM_KEYS = [
+  "totalTally",
+  "presentCount",
+  "excusedAbsences",
+  "unexcusedAbsences",
+  "excusedTardies",
+  "unexcusedTardies",
+];
+
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, filters, onResetFilters, onAssessmentChainSelect }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -40,7 +49,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [refreshBenchmarksUnitLevel, setRefreshBenchmarksUnitLevel] = useState(false);
   const [chainData, setChainData] = useState([]);
   const chartContainerRef = useRef(null);
-  
+  const [engageSummary, setEngageSummary] = useState(null);
+
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -95,7 +105,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [needAssessment, setNeedAssessment] = useState([]);
   const [needAssessmentSummary, setNeedAssessmentSummary] = useState([]);
   const [unitImprovement, setUnitImprovement] = useState([]);
-
+  const [rawRosterData, setRawRosterData] = useState([]);
+  const [rosterSummary, setRosterSummary] = useState({});
+  
   const canvasRef = useRef(null);
 
   // Example line chart data
@@ -119,6 +131,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       name: "Needs Assessment Chains",
       icon: "🔗",
       type: "table",
+      key: "nac",
       id: 12
     },
     {
@@ -273,6 +286,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
   
   
+  const aggregateRosterData = (roster = []) => {
+    return roster.reduce((acc, row) => {
+      ROSTER_SUM_KEYS.forEach((key) => {
+        acc[key] = (acc[key] || 0) + (row[key] || 0);
+      });
+      return acc;
+    }, {});
+  };
+
   
   useEffect(() => {
     const fetchData = async () => {
@@ -284,7 +306,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
         const data = await getAuxiliarydata(unitId, candidateParam, filters);
         setAuxData(data.results || []);
-        setRosterData(data.rosterData || []);
+        setRawRosterData(data.rosterData || []);
+       
+        setEngageSummary(data.engageLevelSummary || {
+          High: 0,
+          Medium: 0,
+          Low: 0,
+          "N/A": 0
+        });
+
+        console.log("fetched auxiliary data: ", data.engageLevelSummary);  
+        const aggregatedRoster = aggregateRosterData(data.rosterData || []);
+        setRosterData(aggregatedRoster);
+
       } catch (err) {
         console.error("Error fetching auxiliary data", err);
       }
@@ -319,14 +353,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     engageLevel: r.engageLevel,
   }));
 
-  const attendanceTrackData = rosterData.map(r => ({
-    totalTally: r.totalTally,
-    PC: r.presentCount,
-    EA: r.excusedAbsences,
-    UA: r.unexcusedAbsences,
-    ET: r.excusedTardies,
-    UT: r.unexcusedTardies,
-  }));
+  const attendanceTrackData = rosterData
+  ? [{
+      totalTally: rosterData.totalTally,
+      PC: rosterData.presentCount,
+      EA: rosterData.excusedAbsences,
+      UA: rosterData.unexcusedAbsences,
+      ET: rosterData.excusedTardies,
+      UT: rosterData.unexcusedTardies,
+    }]
+  : [];
+
 
   useEffect(() => {
     const fetchTabulationData = async () => {
@@ -660,42 +697,34 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   if (!visible) return null;
 
 
-  const attendanceBreakdown = rosterData.length > 0
+  const attendanceBreakdown = rosterData && rosterData.totalTally
   ? [
-      { name: "Present", value: rosterData[0].presentCount },
-      { name: "Excused Absences", value: rosterData[0].excusedAbsences },
-      { name: "Unexcused Absences", value: rosterData[0].unexcusedAbsences },
-      { name: "Excused Tardies", value: rosterData[0].excusedTardies },
-      { name: "Unexcused Tardies", value: rosterData[0].unexcusedTardies },
-    ]
-  : [];
-
-  const unitOutcomeData = rosterData.length > 0
-  ? [
-      { name: "Ongoing", value: rosterData.filter(x => x.unitOutcome === "Ongoing").length },
-      { name: "Pass", value: rosterData.filter(x => x.unitOutcome === "Pass").length },
-      { name: "Fail", value: rosterData.filter(x => x.unitOutcome === "Fail").length },
+      { name: "Present", value: rosterData.presentCount },
+      { name: "Excused Absences", value: rosterData.excusedAbsences },
+      { name: "Unexcused Absences", value: rosterData.unexcusedAbsences },
+      { name: "Excused Tardies", value: rosterData.excusedTardies },
+      { name: "Unexcused Tardies", value: rosterData.unexcusedTardies },
     ]
   : [];
 
 
-  const engagementCounts = auxData.reduce(
-    (acc, r) => {
-      const level = r.engageLevel || "N/A";
-      acc[level] = (acc[level] || 0) + 1;
-      return acc;
-    },
-    { High: 0, Medium: 0, Low: 0, "N/A": 0 }
-  );
-  
-  const engagementBreakdown = [
-    { name: "High", value: engagementCounts.High },
-    { name: "Medium", value: engagementCounts.Medium },
-    { name: "Low", value: engagementCounts.Low },
-    { name: "N/A", value: engagementCounts["N/A"] },
-  ];
-  
+  const unitOutcomeData = rawRosterData.length > 0
+  ? [
+      { name: "Ongoing", value: rawRosterData.filter(x => x.unitOutcome === "Ongoing").length },
+      { name: "Pass", value: rawRosterData.filter(x => x.unitOutcome === "Pass").length },
+      { name: "Fail", value: rawRosterData.filter(x => x.unitOutcome === "Fail").length },
+    ]
+  : [];
 
+  
+  const engagementBreakdown = engageSummary
+  ? [
+      { name: "High", value: engageSummary.High || 0 },
+      { name: "Medium", value: engageSummary.Medium || 0 },
+      { name: "Low", value: engageSummary.Low || 0 },
+      { name: "N/A", value: engageSummary["N/A"] || 0 },
+    ]
+  : [];
 
   
   const exportToExcelWithImage = async () => {
@@ -1355,6 +1384,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <div
               key={chain.chainId}
               className="border border-gray-300 rounded-md bg-white shadow-sm"
+              onClick={() => {
+                onChartSelect("nac"); // already exists
+                onAssessmentChainSelect(chain); // 👈 NEW
+              }}
             >
     
               {/* 🔹 Chain Header */}

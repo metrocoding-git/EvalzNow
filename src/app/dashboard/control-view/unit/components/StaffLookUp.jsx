@@ -116,7 +116,7 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
                 <td className="border p-1">{c.emailAddress}</td>
               </tr>
             ))}
-            {filteredStaffs.length === 0 && (
+            {staffs.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center p-2 text-gray-500">
                   No matching Staff found.

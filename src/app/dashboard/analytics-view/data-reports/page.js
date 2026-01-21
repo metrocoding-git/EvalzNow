@@ -10,8 +10,17 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { useUnit } from "@/context/UnitContext";
+import { getUniRostertByUnitId } from "@/services/unitRosterService";
+import { getDataReportByClient, getDataReportByUnit, getDataReportByUnitAllCandidates, getDataReportByUnitCandidate, getGlobalDataReportByClient } from "@/services/dataReportService";
+import { extractDataReportByCandidateId } from "./DataReportByCandidateId";
+import { buildCandidateEZReport } from "./ActiveCandidateEZReport";
+import { downloadEZFile } from "./downloadEZ";
+import { buildGlobalEZReport } from "./GlobalEZReport";
+import { getEffortBu } from "@/services/auxiliaryService";
+import { buildUnitEZReport } from "./ActiveUnitEZReport";
 
 export default function DataReports() {
   const tabs = [
@@ -23,24 +32,32 @@ export default function DataReports() {
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
-  const [RightPanelOpen, setRightPanelOpen] = useState(false);
+  const [RightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
-
-  const data = [
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Johnson" },
-    { id: 4, firstName: "Alice", lastName: "Williams" },
-    { id: 5, firstName: "Charlie", lastName: "Brown" },
-    { id: 6, firstName: "David", lastName: "Jones" },
-    { id: 7, firstName: "Eva", lastName: "Miller" },
-    { id: 8, firstName: "Frank", lastName: "Davis" },
-    { id: 9, firstName: "Grace", lastName: "Wilson" },
-    { id: 10, firstName: "Henry", lastName: "Moore" },
-  ];
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [unitData, setUnitData] = useState(null); 
+  const [data, setData] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeClientId, setActiveClientId] = useState(null);
+  const [activeCandidateDataReport, setActiveCandidateDataReport] = useState(null);
   const [openMenu, setopenMenu] = useState(true);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [unitMeta, setUnitMeta] = useState(null);
+  const [candidates, setCandidates] = useState([]);
+  const [rosterByCandidate, setRosterByCandidate] = useState({});
+  const [scoresByCandidate, setScoresByCandidate] = useState({});
+  const [assessmentBlocksByCandidate, setAssessmentBlocksByCandidate] = useState({});
+  const [competencyByCandidate, setCompetencyByCandidate] = useState({});
+  const [neuroByCandidate, setNeuroByCandidate] = useState({});
+  const [engagementByCandidate, setEngagementByCandidate] = useState({});
+  const [assessmentChain, setAssessmentChain] = useState({});
+  const [candidateMarks, setCandidateMarks] = useState({});
+  const [needAssessment, setNeedAssessment] = useState({});
+  const [effortResults, setEffortResults] = useState([]);
 
   const sortedData = [...data].sort((a, b) => {
     let valA = a[sortKey];
@@ -66,7 +83,154 @@ export default function DataReports() {
       setShowEdit(true);
       setShowSecondary(true);
     }
+  }, [data]);
+
+  useEffect(() => {
+    if (!selectedUnitId) return;
+
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const roster = await getUniRostertByUnitId(selectedUnitId);
+
+        if (!Array.isArray(roster) || roster.length === 0) {
+          setUnitData(null);
+          setData([]);
+          // router.replace("/dashboard/control-view/unit");
+          redirect("/dashboard/setup-view/unit");
+          return;
+        }
+
+        // Extract unit (all rows share same unit)
+        setUnitData(roster[0].unit);
+
+        // Extract candidates
+        const candidates = roster.map((r) => r.candidate);
+
+        // Remove duplicates by candidate.id
+        const uniqueCandidates = Array.from(
+          new Map(candidates.map((c) => [c.id, c])).values()
+        );
+
+        // Sort by id ascending initially
+        const sorted = [...uniqueCandidates].sort((a, b) => a.id - b.id);
+
+        setData(sorted);
+        setActiveCandidateId(sorted[0]?.id);
+
+      } catch (err) {
+        console.error("Failed to fetch unit roster:", err);
+        setError("Failed to load unit roster. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoster();
+  }, [selectedUnitId]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedClientId = sessionStorage.getItem("activeClientId");
+      setActiveClientId(storedClientId);
+    }
   }, []);
+
+
+  useEffect(() => {
+    if (!selectedUnitId || !activeCandidateId) return;
+  
+    const fetchEffort = async () => {
+      try {
+        const response = await getEffortBu(selectedUnitId, activeCandidateId);
+  
+        console.log("Effort Response:", response);
+  
+        
+        setEffortResults(response);
+      } catch (err) {
+        console.error("Failed to fetch effort data:", err);
+        setEffortResults([]);
+      }
+    };
+  
+    fetchEffort();
+  }, [selectedUnitId, activeCandidateId]);
+  
+
+ console.log("effortResults", effortResults);
+
+  useEffect(() => {
+    const fetchDataReportByActiveCandidateId = async () => {
+      if (!selectedUnitId || !activeCandidateId) return;
+  
+      try {
+        const response = await getDataReportByUnitCandidate(
+          selectedUnitId,
+          activeCandidateId
+        );
+  
+        console.log("Data Report Response:", response);
+        const extracted = extractDataReportByCandidateId(response);
+  
+        setUnitMeta(extracted.unitMeta);
+        setCandidates(extracted.candidates);
+        setRosterByCandidate(extracted.rosterByCandidate);
+        setScoresByCandidate(extracted.scoresByCandidate);
+        setAssessmentBlocksByCandidate(extracted.assessmentBlocksByCandidate);
+        setCompetencyByCandidate(extracted.competencyByCandidate);
+        setNeuroByCandidate(extracted.neuroByCandidate);
+        setEngagementByCandidate(extracted.engagementByCandidate);
+        setAssessmentChain(extracted.assessmentChain);
+        setNeedAssessment(extracted.needAssessments);
+        setCandidateMarks(extracted.candidateMarks);
+
+        console.log("unitMeta", extracted.unitMeta);
+        console.log("candidates", extracted.candidates);
+        console.log("rosterByCandidate", extracted.rosterByCandidate);
+        console.log("scoresByCandidate", extracted.scoresByCandidate);
+        console.log("assessmentBlocksByCandidate", extracted.assessmentBlocksByCandidate);
+        console.log("competencyByCandidate", extracted.competencyByCandidate);
+        console.log("neuroByCandidate", extracted.neuroByCandidate);
+        console.log("engagementByCandidate", extracted.engagementByCandidate);
+
+  
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchDataReportByActiveCandidateId();
+  }, [selectedUnitId, activeCandidateId]);
+
+  useEffect(() => {
+    const fetchDataReportBySelectedUnit = async () => {
+      if (!selectedUnitId) return;
+  
+      try {
+        const response = await getDataReportByUnit(selectedUnitId);
+        
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchDataReportBySelectedUnit();
+  }, [selectedUnitId]);
+
+  useEffect(() => {
+    const fetchGlobalDataReportByClient = async () => {
+      if (!activeClientId) return;
+      try {
+        const response = await getGlobalDataReportByClient(activeClientId);
+        console.log("Global Data Report Response:", response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchGlobalDataReportByClient();
+  }, [activeClientId]);
 
   function handleSort(key) {
     if (sortKey === key) {
@@ -77,29 +241,174 @@ export default function DataReports() {
     }
   }
 
+  
+  const handleExtract = async () => {
+    if (!selectedUnitId) return;
+  
+    if (selectedReport === "candidate-report") {
+      const candidate = candidates.find(c => c.id === activeCandidateId);
+  
+      const ezText = buildCandidateEZReport({
+        unitMeta,
+        candidate,
+        roster: rosterByCandidate[activeCandidateId],
+        scores: scoresByCandidate[activeCandidateId] || [],
+        competency: competencyByCandidate[activeCandidateId],
+        neuro: neuroByCandidate[activeCandidateId],
+        engagement: engagementByCandidate[activeCandidateId],
+        candidateMarks: candidateMarks[activeCandidateId],
+        assessmentChain: assessmentChain[activeCandidateId],
+        needAssessments: needAssessment[activeCandidateId],
+        effortResults: effortResults,
+      });
+  
+      downloadEZFile(
+        ezText,
+        `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
+      );
+  
+    } else if (selectedReport === "all-candidates-unit") {
+      try {
+        const response = await getDataReportByUnitAllCandidates(selectedUnitId);
+    
+        const extracted = extractDataReportByCandidateId(response);
+    
+        
+        if (!extracted?.candidates?.length) {
+          console.warn("No candidates found for this unit.");
+          return;
+        }
+    
+        // ✅ Loop per candidate
+        for (const candidate of extracted.candidates) {
+          const candidateId = candidate.id;
+
+          // console.log(
+          //   "EZ EXPORT:",
+          //   candidate.id,
+          //   competency?.results?.length,
+          //   effortResults?.length
+          // );
+          
+    
+          // ✅ Fetch effort PER candidate
+          let effortResults = [];
+          try {
+            effortResults = await getEffortBu(selectedUnitId, candidateId);
+          } catch (e) {
+            console.warn(
+              `Effort data missing for candidate ${candidateId}`,
+              e
+            );
+          }
+    
+          // ✅ Build PURE candidate-specific report
+          const ezText = buildCandidateEZReport({
+            unitMeta: extracted.unitMeta,
+            candidate,
+            roster: extracted.rosterByCandidate[candidateId],
+            scores: extracted.scoresByCandidate[candidateId] || [],
+            competency: extracted.competencyByCandidate[candidateId],
+            neuro: extracted.neuroByCandidate[candidateId],
+            engagement: extracted.engagementByCandidate[candidateId],
+            candidateMarks: extracted.candidateMarks[candidateId],
+            assessmentChain: extracted.assessmentChain[candidateId],
+            needAssessments: extracted.needAssessments[candidateId],
+            effortResults, // ✅ CORRECT
+          });
+    
+          downloadEZFile(
+            ezText,
+            `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
+          );
+        }
+      } catch (err) {
+        console.error("Failed to extract all candidate reports:", err);
+      }
+      } else if (selectedReport === "unit-report") {
+        try {
+          const response = await getDataReportByUnit(selectedUnitId);
+      
+          if (!response?.unit) {
+            console.warn("No unit data found");
+            return;
+          }
+      
+          const ezText = buildUnitEZReport({
+            unit: response.unit,
+          });
+      
+          downloadEZFile(
+            ezText,
+            `Unit_Report_${response.unit.unitName}_${response.unit.unitId}.ez`
+          );
+        } catch (err) {
+          console.error("Failed to generate unit report:", err);
+        }
+      }  
+      
+      else if (selectedReport === "client-units") {
+        try {
+          const response = await getDataReportByClient(activeClientId);
+      
+          if (!response?.units || !Array.isArray(response.units)) {
+            console.warn("No units found for this client");
+            return;
+          }
+      
+          // ✅ LOOP ALL UNITS
+          for (const unit of response.units) {
+            if (!unit?.unitId) continue;
+      
+            const ezText = buildUnitEZReport({
+              unit
+            });
+      
+            downloadEZFile(
+              ezText,
+              `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
+            );
+          }
+      
+        } catch (err) {
+          console.error("Failed to generate unit reports:", err);
+        }
+      }
+      
+     else if (selectedReport === "global-data") {
+      try {
+        const response = await getGlobalDataReportByClient(activeClientId);
+    
+        const analytics = response.summary?.[0]?.globalAnalytics;
+        const thresholds = response.summary?.[0]?.globalAnalyticsThreshold?.summary;
+    
+        if (!analytics || !thresholds) {
+          console.warn("Incomplete global analytics data");
+          return;
+        }
+    
+        const ezText = buildGlobalEZReport({
+          client: response.client,
+          analytics,
+          thresholds,
+        });
+    
+        downloadEZFile(
+          ezText,
+          `Global_Analytics_Report_${response.client.companyName}.ez`
+        );
+      } catch (err) {
+        console.error("Failed to generate global report:", err);
+      }
+    }
+    
+  };
+  
+
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden  ">
-        {/* Tab buttons */}
-        {/* <div className="flex space-x-0 px-0 pt-2 border-b border-gray-200 bg-gray-50 ">
-          <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
-            {tabs.map((tab, index) => (
-              <Link href={tab.path} key={index}>
-                <span
-                  onClick={() => setActiveTab(tab.label)}
-                  className={
-                    `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
-                    (activeTab === tab.label
-                      ? "text-gray-600 bg-white border border-b-transparent border-gray-300 shadow-sm"
-                      : "text-gray-500 hover:text-gray-600 border-t border-r border-b-transparent border-gray-300 hover:bg-white")
-                  }
-                >
-                  {tab.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div> */}
+        
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white m-1">
           <div className="flex flex-col h-full">
@@ -161,26 +470,33 @@ export default function DataReports() {
                             openMenu ? "font-bold" : ""
                           }`}
                         >
-                          Sessions
+                          Details
                         </span>
                       </div>
 
                       {openMenu && (
                         <>
-                          <div className="px-4 py-2 border border-gray-200 mb-2">
-                            <p className="text-sm text-gray-400">
-                              Unit Name: Unit 1
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Unit ID: UA123
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Unit Type: Group
-                            </p>
-                            <p className="text-sm text-gray-400">
-                              Signature Profile: Signature 1
-                            </p>
-                          </div>
+                          {unitData && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">
+                                  Unit Name: {unitData.unitName}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit ID: {unitData.unitId}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit Type: {unitData.unitType}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Signature Profile: {unitData.signatureProfile}
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Candidate List */}
                           <div className="space-y-1 px-4">
@@ -236,35 +552,43 @@ export default function DataReports() {
                       {[
                         {
                           id: "candidate-report",
-                          label:
-                            "Extract Candidate Report for the Active Candidate",
+                          label: "Extract Candidate Report for the Active Candidate",
+                          disabled: !selectedUnitId,
                         },
                         {
                           id: "all-candidates-unit",
-                          label:
-                            "Extract All Candidate Reports for the Active Unit",
+                          label: "Extract All Candidate Reports for the Active Unit",
+                          disabled: !selectedUnitId,
                         },
                         {
                           id: "unit-report",
                           label: "Extract Unit Report for the Active Unit",
+                          disabled: !selectedUnitId,
                         },
                         {
-                          id: "all-units",
+                          id: "client-units",
                           label: "Extract All Unit Reports",
+                          disabled: false,
                         },
                         {
                           id: "global-data",
                           label: "Extract Global Data Report",
+                          disabled: false,
                         },
                       ].map((item) => (
-                        <div key={item.id} className="flex items-center gap-2">
+                        <div key={item.id} className={`flex items-center gap-2 ${
+                          item.disabled ? "opacity-50 cursor-not-allowed" : ""
+                        }`}>
                           <input
                             id={item.id}
                             type="radio"
                             name="reportOption"
+                            disabled={item.disabled}
+                            onChange={() => setSelectedReport(item.id)}
                             className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
                           />
-                          <label htmlFor={item.id} className="text-gray-800">
+                          <label htmlFor={item.id} className={`text-gray-800 ${
+                                item.disabled ? "cursor-not-allowed" : "cursor-pointer" }`}>
                             {item.label}
                           </label>
                         </div>
@@ -273,6 +597,7 @@ export default function DataReports() {
                     <div className="flex justify-center ">
                       <button
                         type="submit"
+                        onClick={handleExtract}
                         className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition"
                       >
                         Extract
