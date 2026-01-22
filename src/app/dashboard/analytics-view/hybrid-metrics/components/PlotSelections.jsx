@@ -187,7 +187,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
+      icon: "📈",
       type: "line", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
@@ -211,7 +211,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📈",
+      icon: "📊",
       type: "scatter-3d",
       id: "5"
     }] : [])
@@ -221,7 +221,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
+      icon: "📊",
       type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
@@ -245,7 +245,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📈",
+      icon: "📊",
       type: "scatter-3d",
       id: "5"
     }] : [])  
@@ -1368,7 +1368,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 />
                 
                 {/* IC Curves for line chart */}
-                {renderICCurves(unitSignature, unitType, "line")}
+                {/* {renderICCurves(unitSignature, unitType, "line")} */}
     
                 {/* Bias Lines for line chart */}
                 {/* {renderBiasLines(unitType, "line")} */}
@@ -1749,7 +1749,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       <table className="table-auto w-full text-sm border border-gray-300">
                         <thead className="bg-gray-100">
                           <tr>
-                            <th className="border px-3 py-2">PP ID</th>
                             <th className="border px-3 py-2">{cols.xLabel}</th>
                             <th className="border px-3 py-2">{cols.yLabel}</th>
                           </tr>
@@ -1758,7 +1757,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                         <tbody>
                           {sortedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
-                              <td className="border px-3 py-2 text-center">{row.ppId}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.xKey]}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.yKey]}</td>
                               

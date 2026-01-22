@@ -55,7 +55,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [candidatePpList, setCandidatePpList] = useState([]);
-
+  const [candidateRows, setCandidateRows] = useState([]);
   const chartRows = [
     "RR", "PR", "AR", "XEQ", "XCP", "XBP", "deltaRR", "deltaPR", "deltaAR", "deltaGEQ"
   ];
@@ -133,14 +133,14 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 9, name: "Normal Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "normal" },
     { id: 10, name: "Normal Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "normal" },
   
-    { id: 11, name: "T Distribution - RR", icon: "📉", type: "line", key: "RR", distribution: "t" },
-    { id: 12, name: "T Distribution - PR", icon: "📉", type: "line", key: "PR", distribution: "t" },
-    { id: 13, name: "T Distribution - AR", icon: "📉", type: "line", key: "AR", distribution: "t" },
-    { id: 14, name: "T Distribution - XEQ", icon: "📉", type: "line", key: "XEQ", distribution: "t" },
-    { id: 15, name: "T Distribution - ∆RR", icon: "📉", type: "line", key: "deltaRR", distribution: "t" },
-    { id: 16, name: "T Distribution - ∆PR", icon: "📉", type: "line", key: "deltaPR", distribution: "t" },
-    { id: 17, name: "T Distribution - ∆AR", icon: "📉", type: "line", key: "deltaAR", distribution: "t" },
-    { id: 18, name: "T Distribution - ∆GEQ", icon: "📉", type: "line", key: "deltaGEQ", distribution: "t" },
+    { id: 11, name: "T Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "t" },
+    { id: 12, name: "T Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "t" },
+    { id: 13, name: "T Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "t" },
+    { id: 14, name: "T Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "t" },
+    { id: 15, name: "T Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "t" },
+    { id: 16, name: "T Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "t" },
+    { id: 17, name: "T Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "t" },
+    { id: 18, name: "T Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "t" },
   
     { id: 19, name: "Exponential Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "exponential" },
     { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "exponential" },
@@ -148,21 +148,21 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "exponential" },
     { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "exponential" },
   
-    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📊", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
+    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📉", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
   
-    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📉", type: "line", key: "F_DIST", distribution: "f" },
+    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📈", type: "line", key: "F_DIST", distribution: "f" },
   
-    { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line", key: "STAP", distribution: "beta" },
-    { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line", key: "STAG", distribution: "beta" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "📈", type: "line", key: "STAP", distribution: "beta" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "📈", type: "line", key: "STAG", distribution: "beta" },
   
-    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar", key: "STAP", distribution: "uniform" },
-    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar", key: "STAG", distribution: "uniform" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🧮", type: "bar", key: "STAP", distribution: "uniform" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🧮", type: "bar", key: "STAG", distribution: "uniform" },
   
-    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "⏳", type: "area", key: "RR", distribution: "weibull-cdf" },
-    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "⏳", type: "area", key: "PR", distribution: "weibull-cdf" },
-    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "⏳", type: "area", key: "AR", distribution: "weibull-cdf" },
-    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "⏳", type: "area", key: "XEP", distribution: "weibull-cdf" },
-    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "⏳", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
+    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "📉", type: "area", key: "RR", distribution: "weibull-cdf" },
+    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "📉", type: "area", key: "PR", distribution: "weibull-cdf" },
+    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "📉", type: "area", key: "AR", distribution: "weibull-cdf" },
+    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "📉", type: "area", key: "XEP", distribution: "weibull-cdf" },
+    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "📉", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
   
     { id: 35, name: "Weibull Distribution - PDF - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-pdf" },
     { id: 36, name: "Weibull Distribution - PDF - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-pdf" },
@@ -170,11 +170,11 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-pdf" },
     { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
   
-    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "⚠️", type: "line", key: "RR", distribution: "weibull-risk" },
-    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "⚠️", type: "line", key: "PR", distribution: "weibull-risk" },
-    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "⚠️", type: "line", key: "AR", distribution: "weibull-risk" },
-    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "⚠️", type: "line", key: "XEP", distribution: "weibull-risk" },
-    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "⚠️", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
+    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-risk" },
+    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-risk" },
+    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-risk" },
+    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-risk" },
+    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
   ];
   
   
@@ -1094,7 +1094,7 @@ const getYAxisLabel = () => {
   
     try {
       // Extract key name from chart selection
-      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      const keyName = selectedChart.key;
       if (!keyName) {
         alert("Invalid chart selection.");
         return;
@@ -1179,18 +1179,29 @@ const getYAxisLabel = () => {
       currentRow++;
   
       // 6. Add all data points
-      tableData.forEach(row => {
-        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-          const dataRow = worksheet.getRow(currentRow);
-          dataRow.values = [
-            row.candidateId || "N/A",
-            row.ppId,
-            row.ppId,
-            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
-          ];
-          currentRow++;
-        }
+      if (!Array.isArray(chartData)) {
+        throw new Error("Chart data is not available for export.");
+      }
+      
+      chartData.forEach((row, index) => {
+        const xValue = row.name;
+        const yValue =
+          row.value ??
+          row.pdf ??
+          row.cdf ??
+          row.reliability ??
+          row.risk;
+      
+        if (yValue === undefined || yValue === null || isNaN(yValue)) return;
+      
+        worksheet.addRow([
+          "N/A",                // Candidate ID (not applicable here)
+          index + 1,            // PP / point index
+          xValue,
+          typeof yValue === "number" ? +yValue.toFixed(3) : yValue
+        ]);
       });
+      
   
       // 7. Add summary section
       currentRow++;
@@ -1200,9 +1211,15 @@ const getYAxisLabel = () => {
       currentRow++;
   
       // Calculate statistics
-      const validData = tableData
-        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-        .map(row => row[keyName]);
+      const validData = chartData.map(row =>
+        row.value ??
+        row.pdf ??
+        row.cdf ??
+        row.reliability ??
+        row.risk
+      )
+      .filter(v => typeof v === "number" && !isNaN(v));
+
   
       if (validData.length > 0) {
         const min = Math.min(...validData);
@@ -1221,16 +1238,16 @@ const getYAxisLabel = () => {
       }
   
       // 8. Add threshold information if available
-      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-        currentRow++;
-        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-        worksheet.getRow(currentRow).font = { bold: true };
-        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-        currentRow++;
+      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      //   currentRow++;
+      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      //   worksheet.getRow(currentRow).font = { bold: true };
+      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      //   currentRow++;
   
-        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-      }
+      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      // }
   
       // 9. Add some formatting
       // Format numeric cells
@@ -1429,15 +1446,36 @@ const getYAxisLabel = () => {
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
-            <ResponsiveContainer width="100%" height={400}>
-            {renderChart()}
-          </ResponsiveContainer>
+            <div className="h-[400px] flex items-center justify-center">
+              {loading && (
+                <p className="text-center text-gray-600">Loading...</p>
+              )}
+
+              {error && (
+                <p className="text-center text-red-600">{error}</p>
+              )}
+
+              {!loading && !error && (!chartData || chartData.length === 0) && (
+                <p className="text-center text-gray-500 whitespace-nowrap">
+                  No data available for the selected chart.
+                </p>
+              )}
+
+              {!loading && !error && chartData && chartData.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%">
+                  {renderChart()}
+                </ResponsiveContainer>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
 
       {showCandidateTable && (
         <CandidateSelectionTable
+          rows={candidateRows}
+          setRows={setCandidateRows}
           onClose={handleCandidateSubmit} // Use the correct handler
         />
       )}

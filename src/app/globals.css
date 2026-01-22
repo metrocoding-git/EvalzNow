@@ -48,3 +48,29 @@ body {
   border:1px solid #d1d5db;
 }
 
+
+/* Ensure tables are fully visible for export */
+.export-ready table {
+  border-collapse: collapse !important;
+  table-layout: auto !important;
+  width: auto !important;
+}
+
+.export-ready td, 
+.export-ready th {
+  padding: 8px !important;
+  border: 1px solid #ddd !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* For chart container during export */
+.chart-export-container {
+  position: relative;
+  background: white;
+}
+
+.chart-export-container * {
+  visibility: visible !important;
+}

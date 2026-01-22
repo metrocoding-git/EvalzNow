@@ -6,23 +6,25 @@ import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { getAssessmentBlockByUnitId } from "@/services/assessmentBlockManagerService";
 import { getInsertScoresByUnitId } from "@/services/insertScoreService";
 
-export default function CandidateSelectionTable({ onClose }) {
+export default function CandidateSelectionTable({ rows, setRows, onClose }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit();
+  // const { selectedUnitId, setSelectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+
   const [data, setData] = useState([]);
   const ppIdOptions = ["1", "2", "3", "4", "5"];
 
-  const [rows, setRows] = useState([
-    { id: 1, lastName: "Smith", firstName: "John", candidateId: "C001", value: "Omit", ppListings: "", isSelected: false },
-    { id: 2, lastName: "Doe", firstName: "Jane", candidateId: "C002", value: "Omit", ppListings: "", isSelected: false },
-    { id: 3, lastName: "Brown", firstName: "Alice", candidateId: "C003", value: "Omit", ppListings: "", isSelected: false },
-    { id: 4, lastName: "Johnson", firstName: "Mike", candidateId: "C004", value: "Omit", ppListings: "", isSelected: false },
-  ]);
+  // const [rows, setRows] = useState([
+  //   { id: 1, lastName: "Smith", firstName: "John", candidateId: "C001", value: "Omit", ppListings: "", isSelected: false },
+  //   { id: 2, lastName: "Doe", firstName: "Jane", candidateId: "C002", value: "Omit", ppListings: "", isSelected: false },
+  //   { id: 3, lastName: "Brown", firstName: "Alice", candidateId: "C003", value: "Omit", ppListings: "", isSelected: false },
+  //   { id: 4, lastName: "Johnson", firstName: "Mike", candidateId: "C004", value: "Omit", ppListings: "", isSelected: false },
+  // ]);
 
   useEffect(() => {
-    if (!selectedUnitId) return;
+    if (!selectedUnitId || rows.length > 0) return;
   
     const fetchCandidates = async () => {
       try {

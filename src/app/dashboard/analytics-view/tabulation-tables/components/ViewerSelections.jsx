@@ -420,9 +420,9 @@ console.log("unit type check", tableData);
           <div className="flex items-center justify-between  mb-1 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Candidate Display</h2>
             <div className="flex items-center gap-1 ">
-              <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+              {/* <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
-              </button>
+              </button> */}
               <button onClick={handleExportGraph}
                 title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
