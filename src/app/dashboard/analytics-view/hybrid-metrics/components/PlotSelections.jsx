@@ -187,7 +187,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
+      icon: "📈",
       type: "line", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
@@ -211,7 +211,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📈",
+      icon: "📊",
       type: "scatter-3d",
       id: "5"
     }] : [])
@@ -221,7 +221,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "🔀",
+      icon: "📊",
       type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
@@ -245,7 +245,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📈",
+      icon: "📊",
       type: "scatter-3d",
       id: "5"
     }] : [])  

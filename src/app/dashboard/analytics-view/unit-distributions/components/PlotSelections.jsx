@@ -133,14 +133,14 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 9, name: "Normal Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "normal" },
     { id: 10, name: "Normal Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "normal" },
   
-    { id: 11, name: "T Distribution - RR", icon: "📉", type: "line", key: "RR", distribution: "t" },
-    { id: 12, name: "T Distribution - PR", icon: "📉", type: "line", key: "PR", distribution: "t" },
-    { id: 13, name: "T Distribution - AR", icon: "📉", type: "line", key: "AR", distribution: "t" },
-    { id: 14, name: "T Distribution - XEQ", icon: "📉", type: "line", key: "XEQ", distribution: "t" },
-    { id: 15, name: "T Distribution - ∆RR", icon: "📉", type: "line", key: "deltaRR", distribution: "t" },
-    { id: 16, name: "T Distribution - ∆PR", icon: "📉", type: "line", key: "deltaPR", distribution: "t" },
-    { id: 17, name: "T Distribution - ∆AR", icon: "📉", type: "line", key: "deltaAR", distribution: "t" },
-    { id: 18, name: "T Distribution - ∆GEQ", icon: "📉", type: "line", key: "deltaGEQ", distribution: "t" },
+    { id: 11, name: "T Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "t" },
+    { id: 12, name: "T Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "t" },
+    { id: 13, name: "T Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "t" },
+    { id: 14, name: "T Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "t" },
+    { id: 15, name: "T Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "t" },
+    { id: 16, name: "T Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "t" },
+    { id: 17, name: "T Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "t" },
+    { id: 18, name: "T Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "t" },
   
     { id: 19, name: "Exponential Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "exponential" },
     { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "exponential" },
@@ -148,21 +148,21 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "exponential" },
     { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "exponential" },
   
-    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📊", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
+    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📉", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
   
-    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📉", type: "line", key: "F_DIST", distribution: "f" },
+    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📈", type: "line", key: "F_DIST", distribution: "f" },
   
-    { id: 26, name: "Beta Distribution - STA/P", icon: "🧪", type: "line", key: "STAP", distribution: "beta" },
-    { id: 27, name: "Beta Distribution - STA/G", icon: "🧪", type: "line", key: "STAG", distribution: "beta" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "📈", type: "line", key: "STAP", distribution: "beta" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "📈", type: "line", key: "STAG", distribution: "beta" },
   
-    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔢", type: "bar", key: "STAP", distribution: "uniform" },
-    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔢", type: "bar", key: "STAG", distribution: "uniform" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🧮", type: "bar", key: "STAP", distribution: "uniform" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🧮", type: "bar", key: "STAG", distribution: "uniform" },
   
-    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "⏳", type: "area", key: "RR", distribution: "weibull-cdf" },
-    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "⏳", type: "area", key: "PR", distribution: "weibull-cdf" },
-    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "⏳", type: "area", key: "AR", distribution: "weibull-cdf" },
-    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "⏳", type: "area", key: "XEP", distribution: "weibull-cdf" },
-    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "⏳", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
+    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "📉", type: "area", key: "RR", distribution: "weibull-cdf" },
+    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "📉", type: "area", key: "PR", distribution: "weibull-cdf" },
+    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "📉", type: "area", key: "AR", distribution: "weibull-cdf" },
+    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "📉", type: "area", key: "XEP", distribution: "weibull-cdf" },
+    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "📉", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
   
     { id: 35, name: "Weibull Distribution - PDF - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-pdf" },
     { id: 36, name: "Weibull Distribution - PDF - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-pdf" },
@@ -170,11 +170,11 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-pdf" },
     { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
   
-    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "⚠️", type: "line", key: "RR", distribution: "weibull-risk" },
-    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "⚠️", type: "line", key: "PR", distribution: "weibull-risk" },
-    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "⚠️", type: "line", key: "AR", distribution: "weibull-risk" },
-    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "⚠️", type: "line", key: "XEP", distribution: "weibull-risk" },
-    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "⚠️", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
+    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-risk" },
+    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-risk" },
+    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-risk" },
+    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-risk" },
+    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
   ];
   
   

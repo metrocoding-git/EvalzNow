@@ -179,14 +179,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     {
       name: "Attendance Tracking",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'at',
       id: 9
     },
     {
       name: "Engagement Tracking",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'et',
       id: 10
@@ -197,13 +197,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Unit Improvements & Optimization",
-      icon: "⚙️",
+      icon: "📑",
       type: "table",
       id: 7
     },
     {
       name: "Leader Marks",
-      icon: "⭐",
+      icon: "📑",
       type: "table",
       id: 8
     },
@@ -223,28 +223,28 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     {
       name: "Attendance Tracking",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'at',
       id: 3
     },
     {
       name: "Engagement Tracking",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'et',
       id: 4
     },
     {
       name: "Unit Outcomes",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'uo',
       id: 5
     },
     {
       name: "Needs Assessment Tracking",
-      icon: "🥧",
+      icon: "🧭",
       type: "pie",
       key: 'nat',
       id: 6
