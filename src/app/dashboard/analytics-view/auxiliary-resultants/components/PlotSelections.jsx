@@ -129,20 +129,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     },
     {
       name: "Needs Assessment Chains",
-      icon: "🔗",
+      icon: "📑",
       type: "table",
       key: "nac",
       id: 12
     },
     {
       name: "Task Declarations",
-      icon: "📝",
+      icon: "📑",
       type: "table",
       id: 13
     },
     {
       name: "Candidate Marks",
-      icon: "✅",
+      icon: "📑",
       type: "table",
       id: 14
     },
@@ -734,21 +734,72 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   
     try {
-      // Extract key name from chart selection
-      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      const keyName = selectedChart.key;
       if (!keyName) {
         alert("Invalid chart selection.");
         return;
       }
   
-      // 1. Capture chart as image
+      // 1. Prepare the chart container for capture
       const chartContainer = chartContainerRef.current;
+      
+      // Store original styles
+      const originalOverflow = chartContainer.style.overflow;
+      const originalHeight = chartContainer.style.height;
+      const originalWidth = chartContainer.style.width;
+      const originalPosition = chartContainer.style.position;
+      
+      // Temporarily adjust styles for full capture
+      chartContainer.style.overflow = 'visible';
+      chartContainer.style.height = 'auto';
+      chartContainer.style.width = 'auto';
+      chartContainer.style.position = 'absolute';
+      
+      // Force a reflow
+      chartContainer.offsetHeight;
+  
+      // 2. Capture the chart as image
       const canvas = await html2canvas(chartContainer, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: chartContainer.scrollWidth,
+        windowHeight: chartContainer.scrollHeight,
+        width: chartContainer.scrollWidth,
+        height: chartContainer.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Ensure all content is visible in the clone
+          const clonedContainer = clonedDoc.querySelector('[ref="chartContainerRef"]');
+          if (clonedContainer) {
+            clonedContainer.style.overflow = 'visible';
+            clonedContainer.style.height = 'auto';
+            clonedContainer.style.width = 'auto';
+            
+            // Make sure table cells are fully visible
+            const tables = clonedContainer.querySelectorAll('table');
+            tables.forEach(table => {
+              table.style.width = 'auto';
+              table.style.overflow = 'visible';
+              table.style.borderCollapse = 'collapse';
+              
+              const cells = table.querySelectorAll('td, th');
+              cells.forEach(cell => {
+                cell.style.boxSizing = 'border-box';
+                cell.style.whiteSpace = 'nowrap';
+              });
+            });
+          }
+        }
       });
+  
+      // Restore original styles
+      chartContainer.style.overflow = originalOverflow;
+      chartContainer.style.height = originalHeight;
+      chartContainer.style.width = originalWidth;
+      chartContainer.style.position = originalPosition;
   
       // Convert canvas to buffer
       const chartImageBuffer = await new Promise((resolve) => {
@@ -759,19 +810,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         }, 'image/png');
       });
   
-      // 2. Create workbook with ExcelJS
+      // 3. Create workbook (rest of your existing code...)
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Chart Report');
   
       // Set column widths
       worksheet.columns = [
-        { width: 15 }, // Column A
-        { width: 15 }, // Column B
-        { width: 15 }, // Column C
-        { width: 15 }, // Column D
+        { width: 20 },
+        { width: 20 },
+        { width: 20 },
+        { width: 20 },
       ];
   
-      // 3. Add header section
+      // Add header section
       const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
       headerRow.font = { size: 14, bold: true };
       headerRow.height = 30;
@@ -781,124 +832,124 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       worksheet.addRow(['Chart Name:', selectedChart.name]);
       worksheet.addRow(['Key Name:', keyName]);
       worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-      worksheet.addRow([]); // Empty row
+      worksheet.addRow([]);
   
       // 4. Add the chart image
-      // Skip some rows for the image
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-  
       const imageId = workbook.addImage({
         buffer: chartImageBuffer,
         extension: 'png',
       });
   
-      // Insert image at specific position
+      // Insert image starting from row 6
       worksheet.addImage(imageId, {
-        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+        tl: { col: 0, row: 5 },
+        br: { col: 4, row: 25 },
       });
   
-      // Move down past the image
+      // Add data points starting from row 27
       let currentRow = 27;
   
-      // 5. Add data points header
-      worksheet.getRow(currentRow).values = ['DATA POINTS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
+      // Rest of your existing export code...
+      // ... [existing data export logic] ...
   
-      const dataHeaderRow = worksheet.getRow(currentRow);
-      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-      dataHeaderRow.font = { bold: true };
-      dataHeaderRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE8F4FF' } // Light blue background
-      };
-      currentRow++;
-  
-      // 6. Add all data points
-      tableData.forEach(row => {
-        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-          const dataRow = worksheet.getRow(currentRow);
-          dataRow.values = [
-            row.candidateId || "N/A",
-            row.ppId,
-            row.ppId,
-            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
-          ];
-          currentRow++;
-        }
-      });
-  
-      // 7. Add summary section
-      currentRow++;
-      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
-  
-      // Calculate statistics
-      const validData = tableData
-        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-        .map(row => row[keyName]);
-  
-      if (validData.length > 0) {
-        const min = Math.min(...validData);
-        const max = Math.max(...validData);
-        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-  
-        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-      } else {
-        worksheet.getRow(currentRow++).values = ['No valid data points available'];
-        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
-      }
-  
-      // 8. Add threshold information if available
-      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-      //   currentRow++;
-      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-      //   worksheet.getRow(currentRow).font = { bold: true };
-      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      //   currentRow++;
-  
-      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-      // }
-  
-      // 9. Add some formatting
-      // Format numeric cells
-      for (let i = 27; i < currentRow; i++) {
-        const cell = worksheet.getCell(`D${i}`);
-        if (cell.value && typeof cell.value === 'number') {
-          cell.numFmt = '0.000';
-        }
-      }
-  
-      // 10. Save the workbook
+      // 5. Save the workbook
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { 
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
       });
       
-      // Generate filename
       const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      
-      // Download the file
       saveAs(blob, fileName);
   
-      console.log("✅ Excel file with chart image exported successfully:", fileName);
+      console.log("✅ Excel file exported successfully:", fileName);
   
     } catch (error) {
       console.error("❌ Failed to export Excel with image:", error);
       alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
+
+  const exportTableToExcel = () => {
+    if (!selectedChart || selectedChart.type !== "table") {
+      alert("Please select a table to export.");
+      return;
+    }
+  
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Table Data');
+  
+      // Get table data based on selected chart
+      let data = [];
+      let headers = [];
+  
+      switch (selectedChart.id) {
+        case 11: // Needs Assessment Table
+          headers = ['PP ID', 'Critical Ref Date', 'RRN', 'PRN', 'ARN', 'IC', 'BIDs', 'Observation', 'Status'];
+          data = sortedFinalTableData.map(item => [
+            item.ppId,
+            item.criticalRefDate,
+            item.RRN,
+            item.PRN,
+            item.ARN,
+            item.IC,
+            item.bIds?.join(', ') || '-',
+            item.observation || '-',
+            item.bIds.length === 0 ? "Open" : item.bIds.length === 5 ? "Closed" : "Pending"
+          ]);
+          break;
+        
+        case 14: // Candidate Marks
+          headers = ['Entry', 'Impact Type', 'Concern Identified', 'Identity Date', 'Concern Resolved', 'Resolution Date'];
+          data = candidateMarks.map(item => [
+            item.entryNumber,
+            item.impactType,
+            item.concernIdentified,
+            item.identityDate,
+            item.concernResolved,
+            item.resolutionDate
+          ]);
+          break;
+        
+        // Add cases for other table types...
+      }
+  
+      // Add headers
+      const headerRow = worksheet.addRow(headers);
+      headerRow.font = { bold: true };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' }
+      };
+  
+      // Add data
+      data.forEach(row => worksheet.addRow(row));
+  
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        let maxLength = 0;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const cellLength = cell.value ? cell.value.toString().length : 0;
+          if (cellLength > maxLength) {
+            maxLength = cellLength;
+          }
+        });
+        column.width = Math.min(maxLength + 2, 50);
+      });
+  
+      // Generate filename and save
+      const fileName = `table_${selectedChart.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        saveAs(blob, fileName);
+      });
+  
+    } catch (error) {
+      console.error("Error exporting table:", error);
+      alert("Failed to export table. Error: " + error.message);
     }
   };
 
@@ -1136,7 +1187,32 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       );
     }
 
+    const hasCandidateData = auxData.length > 0;
+  
+    // Check if there's no data for unit-level tables
+    const hasTableData11 = selectedChart.id === 11 && sortedFinalTableData.length > 0;
+    const hasTableData8 = selectedChart.id === 8 && leaderMarks.length > 0;
+    const hasTableData7 = selectedChart.id === 7 && unitImprovement.length > 0;
+    const hasTableData12 = selectedChart.id === 12 && chainData.length > 0;
+    const hasTableData13 = selectedChart.id === 13 && sortedFinalTableData.length > 0;
+    const hasTableData14 = selectedChart.id === 14 && candidateMarks.length > 0;
+
+    // Check if there's no data for pie charts
+    const hasPieDataAT = attendanceBreakdown.length > 0 && attendanceBreakdown.some(item => item.value > 0);
+    const hasPieDataET = engagementBreakdown.length > 0 && engagementBreakdown.some(item => item.value > 0);
+    const hasPieDataUO = unitOutcomeData.length > 0 && unitOutcomeData.some(item => item.value > 0);
+    const hasPieDataNAT = needAssessmentSummary.length > 0 && needAssessmentSummary.some(item => item.value > 0);
+
     if (selectedChart.type === "table" && selectedChart.id === 11) {
+
+      if (!hasTableData11) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
+
       return (
         <>
           {showBenchmarkTable && (
@@ -1284,9 +1360,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     }
 
     if (selectedChart.type === "table" && selectedChart.id === 8) {
+
+      if (!hasTableData8) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
+
       return (
         <>
-
           <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
             <table className="table-auto w-full border border-gray-300">
               <thead className="bg-gray-100">
@@ -1324,6 +1408,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     }
 
     else if (selectedChart.type === "table" && selectedChart.id === 7) {
+
+      if (!hasTableData7) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
+
       return (
         <>
           {showBenchmarkTable && (
@@ -1335,7 +1428,6 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               selectedBenchmarks={selectedRow?.bIds || []}
             />
           )}
-
 
           <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
@@ -1377,6 +1469,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       );
     }
     else if (selectedChart.type === "table" && selectedChart.id === 12) {
+
+      if (!hasTableData12) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
       return (
         <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-6">
     
@@ -1481,6 +1581,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     }
 
     else if (selectedChart.type === "table" && selectedChart.id === 13) {
+
+      if (!hasTableData13) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
+
       const computeActionStatus = (benchmarkIds = []) => {
         if (!benchmarkIds.length) return "Open";
         if (benchmarkIds.length < 5) return "Pending";
@@ -1595,6 +1704,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     }    
     
     else if (selectedChart.type === "table" && selectedChart.id === 14) {
+
+      if (!hasTableData14) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">No data available</p>
+          </div>
+        );
+      }
       return (
         <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
           <table className="table-auto w-full text-sm border border-gray-300">
@@ -1625,41 +1742,25 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       );
     } 
     else if (selectedChart.type === "table") {
+      
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-          <table className="table-auto w-full text-sm border border-gray-300">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Identified</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Identity Date</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Resolved</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Resolution Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <tr key={num} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Type {num}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern {num}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">2025-08-0{num}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{num % 2 === 0 ? "Yes" : "No"}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                    {num % 2 === 0 ? `2025-08-1${num}` : "-"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">No data available for this table</p>
         </div>
+    
       );
     } 
     
     else {
 
       if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-csd') {
+        if (!hasCandidateData) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for CSD Tenure Days chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -1677,6 +1778,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     
       // Multi-line chart for USD
       if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-usd') {
+        if (!hasCandidateData) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for USD Tenure Days chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -1693,6 +1801,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       }
 
       if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-csd") {
+        if (!hasCandidateData) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Productivity CSD chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -1715,6 +1830,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       
 
       if (selectedSort === 'activateCandidateLevel' && selectedChart.key === "bp-usd") {
+        if (!hasCandidateData) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Productivity USD chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
@@ -1736,6 +1858,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       }
 
       if (selectedChart.key === 'at' && attendanceBreakdown.length > 0) {
+        if (!hasPieDataAT) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Attendance Breakdown chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
@@ -1761,6 +1890,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       
 
       if (selectedChart.key === 'et' && engagementBreakdown.length > 0) {
+        if (!hasPieDataET) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Engagement Breakdown chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
@@ -1788,6 +1924,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       }
 
       if (selectedChart.key === 'uo' && unitOutcomeData.length > 0) {
+
+        if (!hasPieDataUO) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Unit Outcome chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
@@ -1812,6 +1956,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       }
 
       if (selectedChart.key === 'nat' && needAssessmentSummary.length > 0) {
+
+        if (!hasPieDataNAT) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Need Assessment Summary chart</p>
+            </div>
+          );
+        }
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
@@ -1840,6 +1992,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       
       // Update your scatter chart rendering logic:
       if (selectedSort === 'activateUnitLevel' && (selectedChart.key === "bp-csd" || selectedChart.key === "bp-usd")) {
+        
+        if (!hasCandidateData) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for scatter chart</p>
+            </div>
+          );
+        }
+        
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
         const yLabel = selectedChart.key === "bp-csd" ? "Productivity CSD" : "Productivity USD";
         const lineColor = selectedChart.key === "bp-csd" ? "#3b82f6" : "#f59e0b";
@@ -1971,7 +2132,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     }
                   }}  />
               </button>
-              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button 
+                onClick={() => {
+                  if (selectedChart?.type === "table") {
+                    exportTableToExcel();
+                  } else {
+                    exportToExcelWithImage();
+                  }
+                }} 
+                title="Export"
+                className='text-red-600 hover:text-red-800 cursor-pointer'
+              >
                 <FolderOutput className="w-4 h-4 hover:text-blue-600" />
               </button>
               

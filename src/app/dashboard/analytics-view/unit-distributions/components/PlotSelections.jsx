@@ -55,7 +55,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [candidatePpList, setCandidatePpList] = useState([]);
-
+  const [candidateRows, setCandidateRows] = useState([]);
   const chartRows = [
     "RR", "PR", "AR", "XEQ", "XCP", "XBP", "deltaRR", "deltaPR", "deltaAR", "deltaGEQ"
   ];
@@ -1094,7 +1094,7 @@ const getYAxisLabel = () => {
   
     try {
       // Extract key name from chart selection
-      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      const keyName = selectedChart.key;
       if (!keyName) {
         alert("Invalid chart selection.");
         return;
@@ -1179,18 +1179,29 @@ const getYAxisLabel = () => {
       currentRow++;
   
       // 6. Add all data points
-      tableData.forEach(row => {
-        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-          const dataRow = worksheet.getRow(currentRow);
-          dataRow.values = [
-            row.candidateId || "N/A",
-            row.ppId,
-            row.ppId,
-            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
-          ];
-          currentRow++;
-        }
+      if (!Array.isArray(chartData)) {
+        throw new Error("Chart data is not available for export.");
+      }
+      
+      chartData.forEach((row, index) => {
+        const xValue = row.name;
+        const yValue =
+          row.value ??
+          row.pdf ??
+          row.cdf ??
+          row.reliability ??
+          row.risk;
+      
+        if (yValue === undefined || yValue === null || isNaN(yValue)) return;
+      
+        worksheet.addRow([
+          "N/A",                // Candidate ID (not applicable here)
+          index + 1,            // PP / point index
+          xValue,
+          typeof yValue === "number" ? +yValue.toFixed(3) : yValue
+        ]);
       });
+      
   
       // 7. Add summary section
       currentRow++;
@@ -1200,9 +1211,15 @@ const getYAxisLabel = () => {
       currentRow++;
   
       // Calculate statistics
-      const validData = tableData
-        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-        .map(row => row[keyName]);
+      const validData = chartData.map(row =>
+        row.value ??
+        row.pdf ??
+        row.cdf ??
+        row.reliability ??
+        row.risk
+      )
+      .filter(v => typeof v === "number" && !isNaN(v));
+
   
       if (validData.length > 0) {
         const min = Math.min(...validData);
@@ -1221,16 +1238,16 @@ const getYAxisLabel = () => {
       }
   
       // 8. Add threshold information if available
-      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-        currentRow++;
-        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-        worksheet.getRow(currentRow).font = { bold: true };
-        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-        currentRow++;
+      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      //   currentRow++;
+      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      //   worksheet.getRow(currentRow).font = { bold: true };
+      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      //   currentRow++;
   
-        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-      }
+      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      // }
   
       // 9. Add some formatting
       // Format numeric cells
@@ -1429,15 +1446,36 @@ const getYAxisLabel = () => {
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
-            <ResponsiveContainer width="100%" height={400}>
-            {renderChart()}
-          </ResponsiveContainer>
+            <div className="h-[400px] flex items-center justify-center">
+              {loading && (
+                <p className="text-center text-gray-600">Loading...</p>
+              )}
+
+              {error && (
+                <p className="text-center text-red-600">{error}</p>
+              )}
+
+              {!loading && !error && (!chartData || chartData.length === 0) && (
+                <p className="text-center text-gray-500 whitespace-nowrap">
+                  No data available for the selected chart.
+                </p>
+              )}
+
+              {!loading && !error && chartData && chartData.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%">
+                  {renderChart()}
+                </ResponsiveContainer>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
 
       {showCandidateTable && (
         <CandidateSelectionTable
+          rows={candidateRows}
+          setRows={setCandidateRows}
           onClose={handleCandidateSubmit} // Use the correct handler
         />
       )}

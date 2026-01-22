@@ -242,9 +242,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     // { id: "acl-11", name: "GT 3 Component", icon: "🧪", type: "line" },
     // { id: "acl-12", name: "GT 4 Component", icon: "🧪", type: "line" },
     // { id: "acl-13", name: "GT 5 Component", icon: "🧪", type: "line" },
-    { id: "acl-14", name: "Growth Projections - ∆RR", icon: "📉", type: "line" },
-    { id: "acl-15", name: "Growth Projections - ∆PR", icon: "📉", type: "line" },
-    { id: "acl-16", name: "Growth Projections - ∆AR", icon: "📉", type: "line" },
+    { id: "acl-14", name: "Growth Projections - ∆RR", icon: "📉", type: "line", isProjection: true },
+    { id: "acl-15", name: "Growth Projections - ∆PR", icon: "📉", type: "line", isProjection: true },
+    { id: "acl-16", name: "Growth Projections - ∆AR", icon: "📉", type: "line", isProjection: true },
   ];
 
   const activateUnitLevel = [
@@ -324,55 +324,55 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
 
 
   // Update the useEffect that calculates projections
-useEffect(() => {
-  if (growthMetric.length === 3) {
-    // Extract dayCounts
-    const [x1, x2, x3] = growthMetric.map(m => m.dayCount);
-    const x4 = x3 + 31; // Projection termination (31 days later)
+  useEffect(() => {
+    if (growthMetric.length === 3) {
+      // Extract dayCounts
+      const [x1, x2, x3] = growthMetric.map(m => m.dayCount);
+      const x4 = x3 + 31; // Projection termination (31 days later)
 
-    // ∆RR Growth Projections
-    const [y1_RR, y2_RR, y3_RR] = growthMetric.map(m => parseFloat(m.deltaRRN));
-    const rrCurves = calculateProjectionValues(y1_RR, y2_RR, y3_RR, 0, x1, x2, x3, x4);
+      // ∆RR Growth Projections
+      const [y1_RR, y2_RR, y3_RR] = growthMetric.map(m => parseFloat(m.deltaRRN));
+      const rrCurves = calculateProjectionValues(y1_RR, y2_RR, y3_RR, 0, x1, x2, x3, x4);
 
 
-    // ∆PR Growth Projections
-    const [y1_PR, y2_PR, y3_PR] = growthMetric.map(m => parseFloat(m.deltaPRN));
-    const prCurves = calculateProjectionValues(y1_PR, y2_PR, y3_PR, 0, x1, x2, x3, x4);
+      // ∆PR Growth Projections
+      const [y1_PR, y2_PR, y3_PR] = growthMetric.map(m => parseFloat(m.deltaPRN));
+      const prCurves = calculateProjectionValues(y1_PR, y2_PR, y3_PR, 0, x1, x2, x3, x4);
 
-    // ∆AR Growth Projections
-    const [y1_AR, y2_AR, y3_AR] = growthMetric.map(m => parseFloat(m.deltaARN));
-    const arCurves = calculateProjectionValues(y1_AR, y2_AR, y3_AR, 0, x1, x2, x3, x4);
+      // ∆AR Growth Projections
+      const [y1_AR, y2_AR, y3_AR] = growthMetric.map(m => parseFloat(m.deltaARN));
+      const arCurves = calculateProjectionValues(y1_AR, y2_AR, y3_AR, 0, x1, x2, x3, x4);
 
-    // Normalize the data to sequential day counts starting from 1
-    const normalizeCurves = (curves) => {
-      return curves.map((item, index) => {
-        // Get the x value from whichever segment property exists
-        const xValue = item.i || item.j || item.k;
-        // Get the linear and spline values from whichever segment property exists
-        const linearValue = item.l1 || item.l2 || item.l3 || 0;
-        const splineValue = item.s1 || item.s2 || item.s3 || 0;
-        
-        return {
-          dayCount: Number(xValue.toFixed(3)), // Sequential day count starting from 1
-          originalX: xValue,   // Keep original x for reference
-          l: linearValue,
-          s: splineValue
-        };
+      // Normalize the data to sequential day counts starting from 1
+      const normalizeCurves = (curves) => {
+        return curves.map((item, index) => {
+          // Get the x value from whichever segment property exists
+          const xValue = item.i || item.j || item.k;
+          // Get the linear and spline values from whichever segment property exists
+          const linearValue = item.l1 || item.l2 || item.l3 || 0;
+          const splineValue = item.s1 || item.s2 || item.s3 || 0;
+          
+          return {
+            dayCount: Number(xValue.toFixed(3)), // Sequential day count starting from 1
+            originalX: xValue,   // Keep original x for reference
+            l: linearValue,
+            s: splineValue
+          };
+        });
+      };
+
+      setCurves({
+        rr: normalizeCurves(rrCurves),
+        pr: normalizeCurves(prCurves),
+        ar: normalizeCurves(arCurves),
       });
-    };
 
-    setCurves({
-      rr: normalizeCurves(rrCurves),
-      pr: normalizeCurves(prCurves),
-      ar: normalizeCurves(arCurves),
-    });
-
-    console.log("📈 Normalized ∆RR Projections:", normalizeCurves(rrCurves));
-    console.log("📈 Normalized ∆PR Projections:", normalizeCurves(prCurves).slice(0, 10));
-    console.log("📈 Normalized ∆AR Projections:", normalizeCurves(arCurves).slice(0, 10));
-    console.log("📈 Normalized ∆RR Projections curves->:", curves);
-  }
-}, [growthMetric]);
+      console.log("📈 Normalized ∆RR Projections:", normalizeCurves(rrCurves));
+      console.log("📈 Normalized ∆PR Projections:", normalizeCurves(prCurves).slice(0, 10));
+      console.log("📈 Normalized ∆AR Projections:", normalizeCurves(arCurves).slice(0, 10));
+      console.log("📈 Normalized ∆RR Projections curves->:", curves);
+    }
+  }, [growthMetric]);
   
 
   useEffect(() => {
@@ -546,14 +546,39 @@ useEffect(() => {
 
   
 const exportToExcelWithImage = async () => {
-  if (!selectedChart || !chartContainerRef.current) {
+  if (!selectedChart) {
     alert("Please select a chart first.");
     return;
   }
+  
+  if (selectedChart.type !== "pie" && !chartContainerRef.current) {
+    alert("Chart is not ready for export yet.");
+    return;
+  }
+  
+  const isProjectionChart = selectedChart.isProjection === true;
+
+  if (selectedChart.type === "pie") {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Stability Summary");
+  
+    sheet.addRow(["Stability Type", "Count"]);
+    sheet.addRow(["STABLE", stabilitySummary.stable]);
+    sheet.addRow(["UNSTABLE", stabilitySummary.unstable]);
+  
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(
+      new Blob([buffer]),
+      `stability_summary_${new Date().toISOString().slice(0,10)}.xlsx`
+    );
+    return;
+  }
+  
 
   try {
     // Extract key name from chart selection
-    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+    const keyName = selectedChart.key ?? selectedChart.name.match(/\((.*?)\)/)?.[1];
+
     if (!keyName) {
       alert("Invalid chart selection.");
       return;
@@ -636,6 +661,37 @@ const exportToExcelWithImage = async () => {
       fgColor: { argb: 'FFE8F4FF' } // Light blue background
     };
     currentRow++;
+
+    const isProjectionChart = selectedChart.name.startsWith("Growth Projections");
+
+    let exportData = [];
+
+    if (isProjectionChart) {
+      if (selectedChart.name.includes("∆RR")) exportData = curves.rr;
+      if (selectedChart.name.includes("∆PR")) exportData = curves.pr;
+      if (selectedChart.name.includes("∆AR")) exportData = curves.ar;
+
+      exportData.forEach(point => {
+        worksheet.addRow([
+          candidateId,
+          "Projection",
+          point.dayCount,
+          point.s.toFixed(3)
+        ]);
+      });
+    } else {
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && !isNaN(row[keyName])) {
+          worksheet.addRow([
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            parseFloat(row[keyName].toFixed(3))
+          ]);
+        }
+      });
+    }
+
 
     // 6. Add all data points
     tableData.forEach(row => {
@@ -994,11 +1050,14 @@ const handleExportGraph = () => {
                     }
 
                     return (
-                      <GrowthProjectionChart
-                        data={curveData}
-                        title={chartTitle}
-                        thirdPPDayCount={thirdPPDayCount}
-                      />
+                      <div ref={chartContainerRef}>
+                        <GrowthProjectionChart
+                          data={curveData}
+                          title={chartTitle}
+                          thirdPPDayCount={thirdPPDayCount}
+                        />
+                      </div>
+
                     );
                   }
 

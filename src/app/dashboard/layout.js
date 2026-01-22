@@ -100,75 +100,38 @@ export default function DashboardLayout({ children }) {
       let keyHandled = false;
     
       // -------- FUNCTION KEYS (Analytics) --------
-      switch (e.keyCode) {
-        // F2
-        case 113:
+      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+        const analyticsKeyMap = {
+          "4": "/dashboard/analytics-view/tabulation-tables",
+          "5": "/dashboard/analytics-view/proficiency-metrics",
+          "6": "/dashboard/analytics-view/growth-metrics",
+          "7": "/dashboard/analytics-view/hybrid-metrics",
+          "8": "/dashboard/analytics-view/unit-distributions",
+          "9": "/dashboard/analytics-view/auxiliary-resultants",
+          "0": "/dashboard/analytics-view/neuroscience-tools",
+          "-": "/dashboard/analytics-view/global-analytics",
+          "=": "/dashboard/analytics-view/data-extractions",
+          "[": "/dashboard/analytics-view/data-reports",
+        };
+      
+        const path = analyticsKeyMap[e.key];
+      
+        if (path) {
           e.preventDefault();
-          router.push("/dashboard/analytics-view/scoring-trends");
-          break;
-  
-        // F3
-        case 114:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/tabulation-tables");
-          break;
-  
-        // F4
-        case 115:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/proficiency-metrics");
-          break;
-  
-        // F5 (often blocked)
-        case 116:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/growth-metrics");
-          break;
-  
-        // F6
-        case 117:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/hybrid-metrics");
-          break;
-  
-        // F7
-        case 118:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/unit-distributions");
-          break;
-  
-        // F8
-        case 119:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/auxiliary-resultants");
-          break;
-  
-        // F9 (most reliable)
-        case 120:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/neuroscience-tools");
-          break;
-  
-        // F10
-        case 121:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/global-analytics");
-          break;
-  
-        // F11
-        case 122:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/data-extractions");
-          break;
-  
-        // F12
-        case 123:
-          e.preventDefault();
-          router.push("/dashboard/analytics-view/data-reports");
-          break;
-  
-        default:
-          break;
+          e.stopPropagation();
+      
+          try {
+            await router.push(path);
+      
+            setActiveTab("analytics");
+            setActiveButton(""); 
+          } catch (err) {
+            console.error("Shortcut navigation failed", err);
+            toast.error("Navigation failed");
+          }
+      
+          return; // stop further processing
+        }
       }
     
       // -------- CTRL shortcuts --------

@@ -31,7 +31,18 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
     setCriticalDateTo("");
     setThresholdEnabled(false);
   }, [resetSignal]);
+
+  useEffect(() => {
+    // Reset computed growth values
+    setGrowthMetrics({
+      receptive: { cumulative: 0, average: 0 },
+      productive: { cumulative: 0, average: 0 },
+      acuity: { cumulative: 0, average: 0 },
+    });
   
+    // Also clear last submitted filter snapshot
+    setSecondaryValues(null);
+  }, [resetSignal]);  
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -81,7 +81,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-5 h-5" />
-          Create Impact Entry
+          Create Candidate Marks
         </div>
 
         <button
@@ -148,7 +148,6 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
             className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm"
             value={form.concernResolved}
             onChange={(e) => handleChange("concernResolved", e.target.value)}
-            required
           >
             <option value="">Select Type</option>
             {concernResolved.map((type, index) => (

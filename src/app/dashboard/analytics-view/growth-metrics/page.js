@@ -37,7 +37,7 @@ export default function GrowthMetrics() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [unitData, setUnitData] = useState(null);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
@@ -65,6 +65,16 @@ export default function GrowthMetrics() {
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const unitId = sessionStorage.getItem("selectedUnitId");
+      setSelectedUnitId(unitId);
+    }
+  }, []);
+  
 
   useEffect(() => {
     if (activeCandidateId) {

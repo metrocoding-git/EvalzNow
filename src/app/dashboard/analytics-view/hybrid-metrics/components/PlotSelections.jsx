@@ -1749,7 +1749,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       <table className="table-auto w-full text-sm border border-gray-300">
                         <thead className="bg-gray-100">
                           <tr>
-                            <th className="border px-3 py-2">PP ID</th>
                             <th className="border px-3 py-2">{cols.xLabel}</th>
                             <th className="border px-3 py-2">{cols.yLabel}</th>
                           </tr>
@@ -1758,7 +1757,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                         <tbody>
                           {sortedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
-                              <td className="border px-3 py-2 text-center">{row.ppId}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.xKey]}</td>
                               <td className="border px-3 py-2 text-center">{row[cols.yKey]}</td>
                               

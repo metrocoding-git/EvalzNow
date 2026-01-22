@@ -29,16 +29,17 @@ const viewActions = [
 ];
 
 const otherHotKeys = [
-    { name: "Data Extractions", key: "F2" },
-    { name: "Tabulation Tables", key: "F3" },
-    { name: "Proficiency Metrics", key: "F4" },
-    { name: "Growth Metrics", key: "F5" },
-    { name: "Hybrid Metrics", key: "F6" },
-    { name: "Unit Distributions", key: "F7" },
-    { name: "Auxiliary Resultants", key: "F8" },
-    { name: "Neuroscience Tools", key: "F9" },
-    { name: "Global Analytics", key: "F10" },
-    { name: "Data Reports", key: "F11" }
+    
+    { name: "Tabulation Tables", key: "CTRL + 4" },
+    { name: "Proficiency Metrics", key: "CTRL + 5" },
+    { name: "Growth Metrics", key: "CTRL + 6" },
+    { name: "Hybrid Metrics", key: "CTRL + 7" },
+    { name: "Unit Distributions", key: "CTRL + 8" },
+    { name: "Auxiliary Resultants", key: "CTRL + 9" },
+    { name: "Neuroscience Tools", key: "CTRL + 0" },
+    { name: "Global Analytics", key: "CTRL + -" },
+    { name: "Data Extractions", key: "CTRL + =" },
+    { name: "Data Reports", key: "CTRL + [" }
   ];
   
 
@@ -78,7 +79,6 @@ export default function SettingsPage() {
                   onClick={() => openDoc(doc)}
                 >
                   {doc}
-                  <span className="ml-2 text-xs text-gray-500"><kbd>F1</kbd></span>
                 </li>
               ))}
             </ul>
