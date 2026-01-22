@@ -1368,7 +1368,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 />
                 
                 {/* IC Curves for line chart */}
-                {renderICCurves(unitSignature, unitType, "line")}
+                {/* {renderICCurves(unitSignature, unitType, "line")} */}
     
                 {/* Bias Lines for line chart */}
                 {/* {renderBiasLines(unitType, "line")} */}
