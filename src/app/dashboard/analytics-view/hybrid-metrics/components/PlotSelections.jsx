@@ -865,6 +865,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     });
   };
 
+  const generateTicks = (min, max, step = 0.1) => {
+    const ticks = [];
+    for (let v = min; v <= max + 0.0001; v += step) {
+      ticks.push(Number(v.toFixed(1)));
+    }
+    return ticks;
+  };
+  
 
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
   const containerStyle = {
@@ -898,6 +906,35 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
   console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
 
+  const FIXED_MIN = 0.1;
+  const FIXED_MAX = 1.0;
+  const STEP = 0.1;
+
+  const allXValues = [
+    ...tableData.map(d => d[xKey]),
+    ...growthTargetPoints.map(d => d[xKey]),
+  ];
+
+  const allYValues = [
+    ...tableData.map(d => d[yKey]),
+    ...growthTargetPoints.map(d => d[yKey]),
+  ];
+
+  // Always go up to at least 1.0
+  const xMax = Math.max(
+    FIXED_MAX,
+    Math.ceil(Math.max(...allXValues) * 10) / 10
+  );
+
+  const yMax = Math.max(
+    FIXED_MAX,
+    Math.ceil(Math.max(...allYValues) * 10) / 10
+  );
+
+  const xTicks = generateTicks(FIXED_MIN, xMax, STEP);
+  const yTicks = generateTicks(FIXED_MIN, yMax, STEP);
+
+
   return (
     <div style={containerStyle}>
       <ResponsiveContainer width="100%" height="95%">
@@ -910,6 +947,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             dataKey={xKey} 
             type="number"
             name={xLabel}
+            domain={[FIXED_MIN, xMax]}
+            ticks={xTicks}
+            allowDecimals
           >
             <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
           </XAxis>
@@ -917,6 +957,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             dataKey={yKey} 
             type="number"
             name={yLabel}
+            domain={[FIXED_MIN, yMax]}
+            ticks={yTicks}
+            allowDecimals
           >
             <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
@@ -987,14 +1030,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={projectionData} 
               dataKey={yKey} 
-              fill="#10b981" 
+              fill="#7c3aed" 
               name="Performance Points (G)"
               shape={(props) => (
                 <circle 
                   cx={props.cx} 
                   cy={props.cy} 
                   r={6} 
-                  fill="#10b981" 
+                  fill="#7c3aed"  
                   stroke="#000000"
                   strokeWidth={1}
                 />
@@ -1007,7 +1050,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={growthTargetPoints} 
               dataKey={yKey}
-              fill="#8b5cf6" 
+              fill="#f59e0b" 
               name="Growth Targets"
               shape={(props) => (
                 <rect 
@@ -1015,7 +1058,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   y={props.cy - 5} 
                   width={10} 
                   height={10} 
-                  fill="#8b5cf6" 
+                  fill="#f59e0b" 
                   stroke="#000000"
                   strokeWidth={1}
                 />
@@ -1027,7 +1070,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
 
           {/* Bias Lines */}
-          {/* {renderBiasLines(unitType, "scatter", xKey, yKey)} */}
+          {renderBiasLines(unitType, "scatter", xKey, yKey)}
         </ScatterChart>
       </ResponsiveContainer>
     </div>
