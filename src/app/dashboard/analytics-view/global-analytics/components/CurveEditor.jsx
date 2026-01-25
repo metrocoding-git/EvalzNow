@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
-import { getAllGLobalAnalyticsData, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
+import { getAllGLobalAnalyticsData, getICValue, getProductivityValue, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
 
 const assignedWeights = [
   0.500, 1.000, 0.250, 0.250,
@@ -29,8 +29,9 @@ export default function CurveEditor() {
   const [thresholdAnalytics, setThresholdAnalytics] = useState(null);
   const [StableData, setStableData] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+  const [icDistributionData, setIcDistributionData] = useState(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
+  const [ProductivityData, setProductivityData] = useState(null);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -105,7 +106,8 @@ export default function CurveEditor() {
   const [selectedRow, setSelectedRow] = useState(null);
 
   const percent = (value, total) =>
-    total ? ((value / total) * 100).toFixed(2) : "";
+    total ? Number((value / total).toFixed(4)) : null;
+  
   
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -116,6 +118,31 @@ export default function CurveEditor() {
 
   if (!visible) return null;
 
+  // useEffect(() => {
+  //   if (!icDistributionData) return;
+  
+  //   // Build table rows for IC classes 0-5
+  //   const icRows = Object.entries(icDistributionData.icDistribution).map(
+  //     ([icClass, value]) => ({
+  //       metricDescription: `Interaction Class ${icClass}`,
+  //       metricValue: Number(value.toFixed(3)), // 0-1
+  //       assignedWeight: "", 
+  //       metricWeight: ""
+  //     })
+  //   );
+  
+  //   // Add IC rows to tableData
+  //   setTableData(prev => [...prev, ...icRows]);
+  // }, [icDistributionData]);
+
+  const buildICPieData = () => {
+    if (!icDistributionData) return [];
+  
+    return Object.entries(icDistributionData.icDistribution).map(([icClass, value]) => ({
+      name: `IC ${icClass}`,
+      value: Number((value * 100).toFixed(2)) // Pie expects 0-100%
+    }));
+  };
 
   useEffect(() => {
     if (!activeClientId) return;
@@ -123,15 +150,19 @@ export default function CurveEditor() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const [globalRes, thresholdRes, stableData] = await Promise.all([
+        const [globalRes, thresholdRes, stableData, icData, productivityData] = await Promise.all([
           getAllGLobalAnalyticsData(activeClientId),        
           getUnitSuccessRatesByThreshold(activeClientId),
-          getSTAPAndSTAGStableCount(activeClientId)
+          getSTAPAndSTAGStableCount(activeClientId),
+          getICValue(activeClientId),
+          getProductivityValue(activeClientId)
         ]);
-  
+        
         setGlobalAnalytics(globalRes);
         setThresholdAnalytics(thresholdRes);
         setStableData(stableData);
+        setIcDistributionData(icData);
+        setProductivityData(productivityData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -145,9 +176,7 @@ export default function CurveEditor() {
   const toPercentagePie = (rate) => {
     if (rate === null || rate === undefined) return [];
   
-    const value = Number(rate*100);
-  
-    if (isNaN(value)) return [];
+    const value = Number((rate * 100).toFixed(2));
   
     return [
       { name: "Achieved", value },
@@ -155,7 +184,7 @@ export default function CurveEditor() {
     ];
   };
   
-
+  
   const buildSTAPPieData = () => {
     if (!StableData?.totalByCandidate) return [];
   
@@ -178,6 +207,25 @@ export default function CurveEditor() {
       }));
   };
   
+  const buildProductivityPieData = () => {
+    if (!ProductivityData?.distribution) return [];
+  
+    return [
+      {
+        name: "UR < 0.300",
+        value: Number((ProductivityData.distribution.low * 100).toFixed(2)),
+      },
+      {
+        name: "0.300 ≤ UR ≤ 0.600",
+        value: Number((ProductivityData.distribution.mid * 100).toFixed(2)),
+      },
+      {
+        name: "UR > 0.600",
+        value: Number((ProductivityData.distribution.high * 100).toFixed(2)),
+      },
+    ];
+  };
+  
   const buildPieData = () => {
     if (!selectedChart || !globalAnalytics || !thresholdAnalytics) return [];
   
@@ -195,6 +243,9 @@ export default function CurveEditor() {
         return Object.entries(globalAnalytics.unitTypes || {})
           .map(([name, value]) => ({ name, value }));
   
+      case 3:
+        return buildCandidateStaffRatioPie();
+          
       case 4:
         return Object.entries(globalAnalytics.benchmarkCounts || {})
           .map(([name, value]) => ({ name, value }));
@@ -230,7 +281,6 @@ export default function CurveEditor() {
         return toPercentagePie(rate);
       }
           
-  
       case 10:
         return Object.entries(globalAnalytics.unitOutcomes || {})
           .map(([name, value]) => ({ name, value }));
@@ -249,7 +299,7 @@ export default function CurveEditor() {
       case 21: return toPercentagePie(regular?.XCP?.successRate);
       case 22: return toPercentagePie(regular?.XBP?.successRate);
       case 24: return toPercentagePie(regular?.MSIP?.successRate);
-      case 25: return toPercentagePie(regular?.IC?.successRate);
+      case 25: return buildICPieData();
       case 26: return toPercentagePie(regular?.GEQ?.successRate);
   
       // ================= AVERAGE DELTA =================
@@ -270,13 +320,24 @@ export default function CurveEditor() {
 
       case 33: // STA/G
         return buildSTAGPieData();
-  
+       
+      case 34:
+        return buildProductivityPieData();
+
       default:
         return [];
     }
   };
   
   
+  const totalStabilityOpportunities = () => {
+    if (!StableData?.unitWiseData?.length) return null;
+  
+    return StableData.unitWiseData.reduce(
+      (sum, unit) => sum + (unit.candidates?.length ?? 0),
+      0
+    );
+  };
   
   const metricRows = [
     "Global Percentage of Case 1 Profiles",
@@ -330,18 +391,50 @@ export default function CurveEditor() {
     "Global Percentage of Productivity Rates, UR > 0.600",
   ];
 
-  const totalStableSTAP = () =>
-    StableData?.totalByCandidate?.reduce(
+  const stableSTAPRate = () => {
+    if (!StableData?.totalByCandidate) return null;
+  
+    const totalStable = StableData.totalByCandidate.reduce(
       (sum, c) => sum + (c.totalStableSTAPCount ?? 0),
       0
     );
   
-  const totalStableSTAG = () =>
-    StableData?.totalByCandidate?.reduce(
+    const totalPossible = totalStabilityOpportunities();
+    if (!totalPossible) return null;
+  
+    return Number((totalStable / totalPossible).toFixed(4));
+  };
+  
+  
+  const stableSTAGRate = () => {
+    if (!StableData?.totalByCandidate) return null;
+  
+    const totalStable = StableData.totalByCandidate.reduce(
       (sum, c) => sum + (c.totalStableSTAGCount ?? 0),
       0
     );
-
+  
+    const totalPossible = totalStabilityOpportunities();
+    if (!totalPossible) return null;
+  
+    return Number((totalStable / totalPossible).toFixed(4));
+  };
+  
+  
+  const buildCandidateStaffRatioPie = () => {
+    if (!globalAnalytics?.candidateStaffRatio || !globalAnalytics?.totalUnits)
+      return [];
+  
+    const total = globalAnalytics.totalUnits;
+  
+    return Object.entries(globalAnalytics.candidateStaffRatio).map(
+      ([name, count]) => ({
+        name,
+        value: Number(((count / total) * 100).toFixed(2)), // pie expects %
+      })
+    );
+  };
+  
   const totalOutcomeCount = (g) =>
     (g.unitOutcomes?.pass ?? 0) +
     (g.unitOutcomes?.fail ?? 0) +
@@ -380,6 +473,16 @@ export default function CurveEditor() {
     "Global Percentage of Third Parameter": (g) =>
       percent(g.unitTypes?.["Third Parameter"], g.totalUnits),
   
+    // ===== Candidate-to-Leader Ratio =====
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 20": (g) =>
+      percent(g.candidateStaffRatio?.["≤ 20"], g.totalUnits),
+
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 20 < CTL ≤ 30": (g) =>
+      percent(g.candidateStaffRatio?.["20–30"], g.totalUnits),
+
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30": (g) =>
+      percent(g.candidateStaffRatio?.["≥ 30"], g.totalUnits),
+
     // ===== Benchmark Counts =====
     "Global Percentage of Benchmark Counts, BC ≤ 10": (g) =>
       percent(g.benchmarkCounts?.["BC ≤ 10"], g.totalUnits),
@@ -419,12 +522,12 @@ export default function CurveEditor() {
     // ===== Marks =====
     "Global Percentage of Positive Candidate Marks": (g) =>
       g.candidateMarks?.impactScore !== undefined
-        ? g.candidateMarks.impactScore * 100
+        ? g.candidateMarks.impactScore
         : null,
 
     "Global Percentage of Positive Leader Marks": (g) =>
       g.leaderMarks?.impactScore !== undefined
-        ? g.leaderMarks.impactScore * 100
+        ? g.leaderMarks.impactScore
         : null,
 
     // ===== Open Items =====
@@ -453,13 +556,26 @@ export default function CurveEditor() {
   
     "Global Percentage of Average Passed Butler Interaction Proficiency - MSIP": (_, t) =>
       t.summary?.regularMetrics?.MSIP?.successRate,
+
+    "Global Percentage of Average Interaction Class 0": () =>
+      icDistributionData?.icDistribution?.[0] ?? null,
+    "Global Percentage of Average Interaction Class 1": () =>
+      icDistributionData?.icDistribution?.[1] ?? null,
+    "Global Percentage of Average Interaction Class 2": () =>
+      icDistributionData?.icDistribution?.[2] ?? null,
+    "Global Percentage of Average Interaction Class 3": () =>
+      icDistributionData?.icDistribution?.[3] ?? null,
+    "Global Percentage of Average Interaction Class 4": () =>
+      icDistributionData?.icDistribution?.[4] ?? null,
+    "Global Percentage of Average Interaction Class 5": () =>
+      icDistributionData?.icDistribution?.[5] ?? null,
   
     // ===== Stability =====
     "Global Percentages of Stable Proficiency - STA/P": () =>
-      totalStableSTAP(),
+      stableSTAPRate(),
   
     "Global Percentages of Stable Growth - STA/G": () =>
-      totalStableSTAG(),
+      stableSTAGRate(),
   
     // ===== Growth =====
     "Global Percentage of Average Passed Equivalent Growth - ∆GEQ": (_, t) =>
@@ -482,6 +598,17 @@ export default function CurveEditor() {
   
     "Global Percentage of Passed Cumulative Growth - ∆AR": (_, t) =>
       t.summary?.cumulativeSumDeltaMetrics?.sumDeltaARN?.successRate,
+
+    // ===== Productivity (UR) =====
+    "Global Percentage of Productivity Rates, UR < 0.300": () =>
+      ProductivityData?.distribution?.low ?? null,
+
+    "Global Percentage of Productivity Rates, 0.300 ≤ UR ≤ 0.600": () =>
+      ProductivityData?.distribution?.mid ?? null,
+
+    "Global Percentage of Productivity Rates, UR > 0.600": () =>
+      ProductivityData?.distribution?.high ?? null,
+
   };
   
 
@@ -704,11 +831,6 @@ export default function CurveEditor() {
           </div>
         </div>
       </div>
-
-
-
-
-
 
       {ScoreAdd && (
         <div className="overflow-auto my-2">

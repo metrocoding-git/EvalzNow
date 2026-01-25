@@ -25,6 +25,27 @@ export const getUnitSuccessRatesByThreshold = async (clientId) => {
 };
 
 
+// Get all global analytics data
+export const getICValue = async (clientId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.GLOBAL_ANALYTICS}/ic/${clientId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching global analytics IC:", error);
+    throw error;
+  }
+};
+
+// Get all global analytics data
+export const getProductivityValue = async (clientId) => {
+  try {
+    const response = await api.get(`${API_ROUTES.GLOBAL_ANALYTICS}/ur/${clientId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching global analytics IC:", error);
+    throw error;
+  }
+};
 
 // Get all global analytics data
 export const getSTAPAndSTAGStableCount = async (clientId) => {
