@@ -112,28 +112,28 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   ];
 
   const [chart, setChart] = useState([
-    { name: "Communication (MC1) vs. Insert Score Row Counter", key: "mc1", icon: "📉", id: "1" },
-    { name: "Intelligence (MC2) vs. Insert Score Row Counter", key: "mc2", icon: "📉", id: "2" },
-    { name: "Responsiveness (MC3) vs. Insert Score Row Counter ", key: "mc3", icon: "📉", id: "3" },
-    { name: "Efficiency (MC4) vs. Insert Score Row Counter ", key: "mc4", icon: "📉", id: "4" },
-    { name: "Adaptation (MC5) vs. Insert Score Row Counter ", key: "mc5", icon: "📉", id: "5" },
-    { name: "Accuracy (MC6) vs. Insert Score Row Counter ", key: "mc6", icon: "📉", id: "6" },
-    { name: "Verbal Reasoning (MC7) vs. Insert Score Row Counter ", key: "mc7", icon: "📉", id: "7" },
-    { name: "Spatial Reasoning (MC8) vs. Insert Score Row Counter ", key: "mc8", icon: "📉", id: "8" },
-    { name: "Numerical Reasoning (MC9) vs. Insert Score Row Counter ", key: "mc9", icon: "📉", id: "9" },
-    { name: "Problem Solving (MC10) vs. Insert Score Row Counter", key: "mc10", icon: "📉", id: "10" },
-    { name: "Memory (MC11) vs. Insert Score Row Counter", key: "mc11", icon: "📉", id: "11" },
-    { name: "Data Checking (MC12) vs. Insert Score Row Counter ", key: "mc12", icon: "📉", id: "12" },
-    { name: "Work Sampling (MC13) vs. Insert Score Row Counter", key: "mc13", icon: "📉", id: "13" },
-    { name: "Quality of Work (MC14) vs. Insert Score Row Counter", key: "mc14", icon: "📉", id: "14" },
-    { name: "Resourcefulness (MC15) vs. Insert Score Row Counter ", key: "mc15", icon: "📉", id: "15" },
-    { name: "Following Instructions (MC16) vs. Insert Score Row Counter ", key: "mc16", icon: "📉", id: "16" },
-    { name: "Working in Teams (MC17) vs. Insert Score Row Counter", key: "mc17", icon: "📉", id: "17" },
-    { name: "Working Alone (MC18) vs. Insert Score Row Counter", key: "mc18", icon: "📉", id: "18" },
-    { name: "Initiative (MC19) vs. Insert Score Row Counter", key: "mc19", icon: "📉", id: "19" },
-    { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter ", key: "mc20", icon: "📉", id: "20" },
-    { name: "Attained Score vs. Insert Score Row Counter ", key: "attained", icon: "📉", id: "21" },
-    { name: "Maximum Score vs. Insert Score Row Counter ", key: "max", icon: "📉", id: "22" }
+    { name: "Communication (MC1) vs. Insert Score Row Counter", key: "mc1", icon: "🔵", id: "1" },
+    { name: "Intelligence (MC2) vs. Insert Score Row Counter", key: "mc2", icon: "🔵", id: "2" },
+    { name: "Responsiveness (MC3) vs. Insert Score Row Counter ", key: "mc3", icon: "🔵", id: "3" },
+    { name: "Efficiency (MC4) vs. Insert Score Row Counter ", key: "mc4", icon: "🔵", id: "4" },
+    { name: "Adaptation (MC5) vs. Insert Score Row Counter ", key: "mc5", icon: "🔵", id: "5" },
+    { name: "Accuracy (MC6) vs. Insert Score Row Counter ", key: "mc6", icon: "🔵", id: "6" },
+    { name: "Verbal Reasoning (MC7) vs. Insert Score Row Counter ", key: "mc7", icon: "🔵", id: "7" },
+    { name: "Spatial Reasoning (MC8) vs. Insert Score Row Counter ", key: "mc8", icon: "🔵", id: "8" },
+    { name: "Numerical Reasoning (MC9) vs. Insert Score Row Counter ", key: "mc9", icon: "🔵", id: "9" },
+    { name: "Problem Solving (MC10) vs. Insert Score Row Counter", key: "mc10", icon: "🔵", id: "10" },
+    { name: "Memory (MC11) vs. Insert Score Row Counter", key: "mc11", icon: "🔵", id: "11" },
+    { name: "Data Checking (MC12) vs. Insert Score Row Counter ", key: "mc12", icon: "🔵", id: "12" },
+    { name: "Work Sampling (MC13) vs. Insert Score Row Counter", key: "mc13", icon: "🔵", id: "13" },
+    { name: "Quality of Work (MC14) vs. Insert Score Row Counter", key: "mc14", icon: "🔵", id: "14" },
+    { name: "Resourcefulness (MC15) vs. Insert Score Row Counter ", key: "mc15", icon: "🔵", id: "15" },
+    { name: "Following Instructions (MC16) vs. Insert Score Row Counter ", key: "mc16", icon: "🔵", id: "16" },
+    { name: "Working in Teams (MC17) vs. Insert Score Row Counter", key: "mc17", icon: "🔵", id: "17" },
+    { name: "Working Alone (MC18) vs. Insert Score Row Counter", key: "mc18", icon: "🔵", id: "18" },
+    { name: "Initiative (MC19) vs. Insert Score Row Counter", key: "mc19", icon: "🔵", id: "19" },
+    { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter ", key: "mc20", icon: "🔵", id: "20" },
+    { name: "Attained Score vs. Insert Score Row Counter ", key: "attained", icon: "🔵", id: "21" },
+    { name: "Maximum Score vs. Insert Score Row Counter ", key: "max", icon: "🔵", id: "22" }
   ]
   );
   
@@ -198,7 +198,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
           const mappedCharts = sorted.map((c, index) => ({
             name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter (Workforce Only - Line Graph)`,
             key: `cc${index + 1}`, // cc1, cc2, ...
-            icon: "📉",
+            icon: "🔵",
             id: (startId + index).toString(),
           }));
         
@@ -768,7 +768,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
 
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
-          <div className="h-full overflow-auto m-5">
+          <div className="h-full overflow-auto mx-5 mt-5 mb-2">
             {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name.replace(/\s*vs\. Insert Score Row Counter.*$/i, "").trim()}</h2> */}
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
@@ -794,9 +794,15 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                   allowDecimals={false}
                 >
                   {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                    <Label value={`Total Rows (X)`} offset={-10} position="insideBottom" />
+                    <Label
+                      value="Total Rows (X)"
+                      position="insideBottom"
+                      offset={-10}
+                      textAnchor="middle"
+                    />
                   )}
                 </XAxis>
+
 
                 {/* Y Axis */}
                 <YAxis type="number" dataKey="y">
@@ -805,7 +811,8 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                       value={`${selectedChart.key} (Y)`}
                       angle={-90}
                       position="insideLeft"
-                      offset={10}
+                      textAnchor="middle"
+                      offset={0}
                     />
                   )}
                 </YAxis>
@@ -816,7 +823,12 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                   contentStyle={{ fontSize: 12 }}
                 />
 
-                <Legend />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                />
+
 
                 {/* Shade Area (behind the lines) */}
                 

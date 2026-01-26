@@ -122,59 +122,59 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { name: "C", uv: 200, pv: 980 },
   ];
   const chart = [
-    { id: 1, name: "Normal Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "normal" },
-    { id: 2, name: "Normal Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "normal" },
-    { id: 3, name: "Normal Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "normal" },
-    { id: 4, name: "Normal Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "normal" },
-    { id: 5, name: "Normal Distribution - XCP", icon: "📈", type: "line", key: "XCP", distribution: "normal" },
-    { id: 6, name: "Normal Distribution - XBP", icon: "📈", type: "line", key: "XBP", distribution: "normal" },
-    { id: 7, name: "Normal Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "normal" },
-    { id: 8, name: "Normal Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "normal" },
-    { id: 9, name: "Normal Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "normal" },
-    { id: 10, name: "Normal Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "normal" },
+    { id: 1, name: "Normal Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "normal" },
+    { id: 2, name: "Normal Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "normal" },
+    { id: 3, name: "Normal Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "normal" },
+    { id: 4, name: "Normal Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "normal" },
+    { id: 5, name: "Normal Distribution - XCP", icon: "🔵", type: "line", key: "XCP", distribution: "normal" },
+    { id: 6, name: "Normal Distribution - XBP", icon: "🔵", type: "line", key: "XBP", distribution: "normal" },
+    { id: 7, name: "Normal Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "normal" },
+    { id: 8, name: "Normal Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "normal" },
+    { id: 9, name: "Normal Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "normal" },
+    { id: 10, name: "Normal Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "normal" },
   
-    { id: 11, name: "T Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "t" },
-    { id: 12, name: "T Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "t" },
-    { id: 13, name: "T Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "t" },
-    { id: 14, name: "T Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "t" },
-    { id: 15, name: "T Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "t" },
-    { id: 16, name: "T Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "t" },
-    { id: 17, name: "T Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "t" },
-    { id: 18, name: "T Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "t" },
+    { id: 11, name: "T Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "t" },
+    { id: 12, name: "T Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "t" },
+    { id: 13, name: "T Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "t" },
+    { id: 14, name: "T Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "t" },
+    { id: 15, name: "T Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "t" },
+    { id: 16, name: "T Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "t" },
+    { id: 17, name: "T Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "t" },
+    { id: 18, name: "T Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "t" },
   
-    { id: 19, name: "Exponential Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "exponential" },
-    { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "exponential" },
-    { id: 21, name: "Exponential Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "exponential" },
-    { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "exponential" },
-    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "exponential" },
+    { id: 19, name: "Exponential Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "exponential" },
+    { id: 20, name: "Exponential Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "exponential" },
+    { id: 21, name: "Exponential Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "exponential" },
+    { id: 22, name: "Exponential Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "exponential" },
+    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "exponential" },
   
-    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📉", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
+    { id: 24, name: "Chi-Square Distribution - 95%", icon: "🔵", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
   
-    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📈", type: "line", key: "F_DIST", distribution: "f" },
+    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "🔵", type: "line", key: "F_DIST", distribution: "f" },
   
-    { id: 26, name: "Beta Distribution - STA/P", icon: "📈", type: "line", key: "STAP", distribution: "beta" },
-    { id: 27, name: "Beta Distribution - STA/G", icon: "📈", type: "line", key: "STAG", distribution: "beta" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "🔵", type: "line", key: "STAP", distribution: "beta" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "🔵", type: "line", key: "STAG", distribution: "beta" },
   
-    { id: 28, name: "Uniform Distribution - STA/P", icon: "🧮", type: "bar", key: "STAP", distribution: "uniform" },
-    { id: 29, name: "Uniform Distribution - STA/G", icon: "🧮", type: "bar", key: "STAG", distribution: "uniform" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔵", type: "bar", key: "STAP", distribution: "uniform" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔵", type: "bar", key: "STAG", distribution: "uniform" },
   
-    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "📉", type: "area", key: "RR", distribution: "weibull-cdf" },
-    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "📉", type: "area", key: "PR", distribution: "weibull-cdf" },
-    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "📉", type: "area", key: "AR", distribution: "weibull-cdf" },
-    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "📉", type: "area", key: "XEP", distribution: "weibull-cdf" },
-    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "📉", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
+    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "🔵", type: "area", key: "RR", distribution: "weibull-cdf" },
+    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "🔵", type: "area", key: "PR", distribution: "weibull-cdf" },
+    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "🔵", type: "area", key: "AR", distribution: "weibull-cdf" },
+    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "🔵", type: "area", key: "XEP", distribution: "weibull-cdf" },
+    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "🔵", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
   
-    { id: 35, name: "Weibull Distribution - PDF - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-pdf" },
-    { id: 36, name: "Weibull Distribution - PDF - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-pdf" },
-    { id: 37, name: "Weibull Distribution - PDF - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-pdf" },
-    { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-pdf" },
-    { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
+    { id: 35, name: "Weibull Distribution - PDF - RR", icon: "🔵", type: "line", key: "RR", distribution: "weibull-pdf" },
+    { id: 36, name: "Weibull Distribution - PDF - PR", icon: "🔵", type: "line", key: "PR", distribution: "weibull-pdf" },
+    { id: 37, name: "Weibull Distribution - PDF - AR", icon: "🔵", type: "line", key: "AR", distribution: "weibull-pdf" },
+    { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "🔵", type: "line", key: "XEP", distribution: "weibull-pdf" },
+    { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "🔵", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
   
-    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-risk" },
-    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-risk" },
-    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-risk" },
-    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-risk" },
-    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
+    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "🔵", type: "line", key: "RR", distribution: "weibull-risk" },
+    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "🔵", type: "line", key: "PR", distribution: "weibull-risk" },
+    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "🔵", type: "line", key: "AR", distribution: "weibull-risk" },
+    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "🔵", type: "line", key: "XEP", distribution: "weibull-risk" },
+    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "🔵", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
   ];
   
   
@@ -591,10 +591,10 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <AreaChart {...commonProps} width={600} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name">
-                <Label value="Time/Value" position="insideBottom" offset={-10} />
+                <Label value="Time/Value" position="insideBottom"  textAnchor="middle" offset={-10} />
               </XAxis>
               <YAxis domain={[0, 1]}>
-                <Label value="Probability" angle={-90} position="insideLeft" offset={10} />
+                <Label value="Probability" angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip 
                 formatter={(value, name) => {
@@ -606,7 +606,11 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${label}`}
               />
-              <Legend />
+              <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               
               {/* Add vertical line at eta value */}
               
@@ -670,13 +674,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
         <AreaChart {...commonProps}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name">
-            <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+            <Label value={getXAxisLabel()} position="insideBottom"  textAnchor="middle" offset={-10} />
           </XAxis>
           <YAxis>
-            <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+            <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
           </YAxis>
           <Tooltip />
-          <Legend />
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+          />
           {renderReferenceLines()}
           <Area
             type="monotone" 
@@ -701,32 +709,28 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="name"
-                label={{ 
-                  value: "Stable Status", 
-                  position: "insideBottom", 
-                  offset: -10 
-                }}
+                // dataKey="name"
+                // label={{ 
+                //   value: "Stable Status", 
+                //   position: "insideBottom", 
+                //   offset: -10 
+                // }}
+                
               >
                 <Label 
                   value="Stable Status" 
                   position="insideBottom" 
                   offset={-10} 
+                  textAnchor="middle"
                 />
               </XAxis>
-              <YAxis 
-                label={{ 
-                  value: "X Value", 
-                  angle: -90, 
-                  position: "insideLeft",
-                  offset: 10
-                }}
-              >
+              <YAxis >
                 <Label 
                   value="X Value" 
                   angle={-90} 
                   position="insideLeft" 
                   offset={10} 
+                  textAnchor="middle"
                 />
               </YAxis>
               {/* In the uniform distribution bar chart section, update the Tooltip: */}
@@ -745,9 +749,11 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `Stable: ${label === '1' ? 'Yes' : 'No'}`}
               />
-              <Legend />
-              
-              
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               
               <Bar 
                 dataKey="value" 
@@ -764,13 +770,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <BarChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name">
-                <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+                <Label value={getXAxisLabel()} position="insideBottom" textAnchor="middle" offset={-10} />
               </XAxis>
               <YAxis>
-                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
               <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
             </BarChart>
@@ -782,15 +792,23 @@ const chartData = selectedChart.distribution.startsWith("weibull")
           const eta = Number(distributions[selectedKey].params.eta.toFixed(3));	
           console.log("eta value:: ", eta);
           return (
-            <LineChart width={600} height={400} data={chartData}>
+            <LineChart width={600} height={460} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -15 }}
+                textAnchor="middle"
               />
-              <YAxis 
-                label={{ value: "Probability Density f(t)", angle: -90, position: "insideLeft", offset: 10 }}
+              <YAxis
+                label={{
+                  value: "Probability Density f(t)",
+                  angle: -90,
+                  position: "insideLeft",
+                  textAnchor: "middle",
+                  dy: 0
+                }}
               />
+
               <Tooltip 
                 formatter={(value, name) => {
                   const labels = {
@@ -801,8 +819,16 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
               />
-              <Legend />
-              
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                height={60}
+                wrapperStyle={{
+                  bottom: -25,
+                  paddingLeft: 10
+                }}
+              />
+
                 <ReferenceLine 
                   x={eta}
                   stroke="#10b981"
@@ -887,12 +913,20 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -14 }}
+                textAnchor="middle"
               />
-              <YAxis 
+              <YAxis
                 domain={[0, 1]}
-                label={{ value: "Risk (1 - R(t))", angle: -90, position: "insideLeft", offset: 10 }}
+                label={{
+                  value: "Risk (1 - R(t))",
+                  angle: -90,
+                  position: "insideLeft",
+                  textAnchor: "middle",
+                  dy: 0
+                }}
               />
+
               <Tooltip 
                 formatter={(value, name) => {
                   const labels = {
@@ -903,7 +937,16 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
               />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                height={50}
+                wrapperStyle={{
+                  bottom: -20,
+                  paddingLeft: 60
+                }}
+              />
+
               
               {/* Add vertical line at eta value */}
               {selectedChart.distribution === "weibull-risk" && distributions[selectedKey]?.params?.eta && (
@@ -979,6 +1022,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                   strokeDasharray="3 3"
                   dot={false}
                   name="Reliability R(t) (reference)"
+                  legendType="none"
                 />
               )}
             </LineChart>
@@ -989,13 +1033,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name">
-              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
             <YAxis>
-              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
             </YAxis>
             <Tooltip />
-            <Legend />
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+            />
 
             {renderReferenceLines()}
             
@@ -1359,7 +1407,7 @@ const getYAxisLabel = () => {
                             </div>
                           </div>
                           <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                            {item.id}
+                            {index + 1}
                           </div>
                         </div>
                       ))} 
@@ -1442,7 +1490,7 @@ const getYAxisLabel = () => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1" style={{ backgroundColor: chartProperties.shadeArea }} >
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 " style={{ backgroundColor: chartProperties.shadeArea }} >
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 

@@ -211,7 +211,7 @@ function calculateInteractionClass(rr, pr, ar, unitType, signatureProfile) {
   return null;
 }
 
-export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [], unitType, signatureProfile }) {
+export default function ProjectionTable({ visible, onClose, unitId, candidateId, projectionData = [], unitType, signatureProfile, onRefreshProjections }) {
   if (!visible) return null;
 
   const columns = useMemo(() => {
@@ -724,15 +724,15 @@ const handleSubmit = async () => {
 
     let response;
 
-    // ✅ If session exists, UPDATE; otherwise CREATE
+    // If session exists, UPDATE; otherwise CREATE
     if (existingSessionId) {
-      console.log(`🔄 Updating existing session ID: ${existingSessionId}`);
+      console.log(` Updating existing session ID: ${existingSessionId}`);
       response = await updateProjection(existingSessionId, payload);
-      alert("✅ Projection updated successfully!");
+      alert(" Projection updated successfully!");
     } else {
-      console.log("🆕 Creating new projection session");
+      console.log(" Creating new projection session");
       response = await createProjection(payload);
-      alert("✅ Projection created successfully!");
+      alert(" Projection created successfully!");
       
       // Store the new session ID for future updates
       if (response?.session?.id) {
@@ -740,9 +740,11 @@ const handleSubmit = async () => {
       }
     }
 
-    console.log("✅ Projection API response:", response);
-
-    onClose(); // close modal
+    if (typeof onRefreshProjections === "function") {
+      await onRefreshProjections();
+    }
+    
+    onClose(); 
   } catch (error) {
     console.error("❌ Error submitting projection:", error);
     alert("Failed to save projection session.");

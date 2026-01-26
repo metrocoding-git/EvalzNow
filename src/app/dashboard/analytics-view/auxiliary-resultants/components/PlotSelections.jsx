@@ -122,33 +122,33 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Needs Assessment Table",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       key: "nat",
       id: 11
     },
     {
       name: "Needs Assessment Chains",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       key: "nac",
       id: 12
     },
     {
       name: "Task Declarations",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 13
     },
     {
       name: "Candidate Marks",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 14
     },
     {
       name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'be-csd',
       id: 1
@@ -156,7 +156,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
    
     {
       name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'be-usd',
       id: 4
@@ -164,14 +164,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
    
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'bp-csd',
       id: 7
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'bp-usd',
       id: 8
@@ -179,14 +179,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     {
       name: "Attendance Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'at',
       id: 9
     },
     {
       name: "Engagement Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'et',
       id: 10
@@ -197,54 +197,54 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Unit Improvements & Optimization",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 7
     },
     {
       name: "Leader Marks",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 8
     },
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       key: 'bp-csd',
       id: 1
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       key: 'bp-usd',
       id: 2
     },
     {
       name: "Attendance Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'at',
       id: 3
     },
     {
       name: "Engagement Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'et',
       id: 4
     },
     {
       name: "Unit Outcomes",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'uo',
       id: 5
     },
     {
       name: "Needs Assessment Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'nat',
       id: 6
@@ -1763,12 +1763,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={csdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
               <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
@@ -1787,14 +1788,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={usdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
-              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
-              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#10b981" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#ef4444" dot />
             </LineChart>
           </ResponsiveContainer>
         );
@@ -1810,17 +1812,18 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line 
                 type="linear" 
                 dataKey="productivityCsd" 
                 name="Productivity CSD" 
-                stroke="#3b82f6"
+                stroke="#10b981"
                 dot 
               />
             </LineChart>
@@ -1839,17 +1842,18 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line 
                 type="linear" 
                 dataKey="productivityUsd" 
                 name="Productivity USD" 
-                stroke="#f59e0b"
+                stroke="#10b981"
                 dot 
               />
             </LineChart>
@@ -1857,7 +1861,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
 
-      if (selectedChart.key === 'at' && attendanceBreakdown.length > 0) {
+      if (selectedChart.key === 'at' ) {
+        if (!attendanceBreakdown || attendanceBreakdown.length === 0) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Attendance Breakdown chart</p>
+            </div>
+          );
+        }
+
         if (!hasPieDataAT) {
           return (
             <div className="flex items-center justify-center h-full">
@@ -2003,7 +2015,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
         const yLabel = selectedChart.key === "bp-csd" ? "Productivity CSD" : "Productivity USD";
-        const lineColor = selectedChart.key === "bp-csd" ? "#3b82f6" : "#f59e0b";
+        const lineColor = selectedChart.key === "bp-csd" ? "#10b981" : "#10b981";
         const dataKey = selectedChart.key === "bp-csd" ? "productivityCsd" : "productivityUsd";
 
         // Sort data by ppId to ensure proper ordering
@@ -2022,11 +2034,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 allowDuplicatedCategory={false}
+                textAnchor='middle'
               />
               <YAxis 
-                label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 12 }} 
+                label={{ value: yLabel, angle: -90, position: "insideLeft" }} dy={0}
                 type="number"
                 domain={['dataMin', 'dataMax']}
+                textAnchor='middle'
               />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
@@ -2036,12 +2050,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   `PP ID: ${props.payload.ppId}`
                 ]}
               />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Scatter 
                 name={yLabel} 
                 data={sortedData} 
                 fill={lineColor}
                 dataKey={dataKey}
+                
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -2052,16 +2068,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       // Default fallback chart
       return (
         <ResponsiveContainer width="100%" height="95%">
-          <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+          <LineChart data={floatChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name">
               <Label value="Time Period (X)" offset={-10} position="insideBottom" />
             </XAxis>
             <YAxis>
-              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" offset={10} />
+              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" dy={0} />
             </YAxis>
             <Tooltip />
-            <Legend verticalAlign="top" />
+            <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
             <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
             <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
             <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
@@ -2177,14 +2194,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                       </div>
                     ))
                   ) : selectedSort === 'activateUnitLevel' ? (
-                    activateUnitLevel.map((chart) => (
+                    activateUnitLevel.map((chart, index) => (
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{index + 1}</div>
                       </div>
                     ))
                   ) : (

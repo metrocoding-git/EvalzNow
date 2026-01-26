@@ -85,39 +85,39 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   
   const activateCandidateLevel = [
-    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📈", type: "line" },
-    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📈", type: "line" },
-    { id: "2", name: "Reading Ratio (XRR)", icon: "📈", type: "line"  },
-    { id: "3", name: "Listening Ratio (XLR)", icon: "📈", type: "line" },
-    { id: "4", name: "Speaking Ratio (XSR)", icon: "📈", type: "line" },
-    { id: "5", name: "Writing Ratio (XWR)", icon: "📈", type: "line" },
-    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "📈", type: "line" },
-    { id: "7", name: "Practical Ratio (XPR)", icon: "📈", type: "line" },
-    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📈", type: "line" },
-    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "📈", type: "line" },
-    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "📈", type: "line" },
-    { id: "11", name: "Composite Proficiency (XCP)", icon: "📈", type: "line" },
-    { id: "12", name: "Band Proficiency (XBP)", icon: "📈", type: "line" },
-    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "📈", type: "line" },
-    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "🔵", type: "line" },
+    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "🔵", type: "line" },
+    { id: "2", name: "Reading Ratio (XRR)", icon: "🔵", type: "line"  },
+    { id: "3", name: "Listening Ratio (XLR)", icon: "🔵", type: "line" },
+    { id: "4", name: "Speaking Ratio (XSR)", icon: "🔵", type: "line" },
+    { id: "5", name: "Writing Ratio (XWR)", icon: "🔵", type: "line" },
+    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "🔵", type: "line" },
+    { id: "7", name: "Practical Ratio (XPR)", icon: "🔵", type: "line" },
+    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "🔵", type: "line" },
+    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "🔵", type: "line" },
+    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🔵", type: "line" },
+    { id: "11", name: "Composite Proficiency (XCP)", icon: "🔵", type: "line" },
+    { id: "12", name: "Band Proficiency (XBP)", icon: "🔵", type: "line" },
+    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🔵", type: "line" },
+    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🔵", type: "pie" },
   ];
 
   const activateUnitLevel = [
-    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "📊", type: "scatter" },
-    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "📊", type: "scatter" },
-    { id: "2", name: "Reading Ratio (XRR)", icon: "📊", type: "scatter" },
-    { id: "3", name: "Listening Ratio (XLR)", icon: "📊", type: "scatter" },
-    { id: "4", name: "Speaking Ratio (XSR)", icon: "📊", type: "scatter" },
-    { id: "5", name: "Writing Ratio (XWR)", icon: "📊", type: "scatter" },
-    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "📊", type: "scatter" },
-    { id: "7", name: "Practical Ratio (XPR)", icon: "📊", type: "scatter" },
-    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "📊", type: "scatter" },
-    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "📊", type: "scatter" },
-    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "📊", type: "scatter" },
-    { id: "11", name: "Composite Proficiency (XCP)", icon: "📊", type: "scatter" },
-    { id: "12", name: "Band Proficiency (XBP)", icon: "📊", type: "scatter" },
-    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "📊", type: "scatter" },
-    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🧭", type: "pie" },
+    { id: "1", name: "Equivalent Proficiency (XEP)", icon: "🔵", type: "scatter" },
+    // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "🔵", type: "scatter" },
+    { id: "2", name: "Reading Ratio (XRR)", icon: "🔵", type: "scatter" },
+    { id: "3", name: "Listening Ratio (XLR)", icon: "🔵", type: "scatter" },
+    { id: "4", name: "Speaking Ratio (XSR)", icon: "🔵", type: "scatter" },
+    { id: "5", name: "Writing Ratio (XWR)", icon: "🔵", type: "scatter" },
+    { id: "6", name: "Theory-Based Ratio (XTR)", icon: "🔵", type: "scatter" },
+    { id: "7", name: "Practical Ratio (XPR)", icon: "🔵", type: "scatter" },
+    { id: "8", name: "Receptive Variable Score Ratio (XRVSR)", icon: "🔵", type: "scatter" },
+    { id: "9", name: "Productive Variable Score Ratio (XPVSR)", icon: "🔵", type: "scatter" },
+    { id: "10", name: "Acuity Variable Score Ratio (XAVSR)", icon: "🔵", type: "scatter" },
+    { id: "11", name: "Composite Proficiency (XCP)", icon: "🔵", type: "scatter" },
+    { id: "12", name: "Band Proficiency (XBP)", icon: "🔵", type: "scatter" },
+    { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🔵", type: "scatter" },
+    { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🔵", type: "pie" },
   ];
   
   const [chartProperties, setChartProperties] = useState({
@@ -1102,14 +1102,14 @@ const CustomTooltip = ({ active, payload }) => {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1 " >
-          <div className="h-full overflow-auto m-5">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white  mb-4" >
+          <div className="h-full overflow-auto pb-4">
             {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
             </h2> */}
             {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
             
-            {/* 📊 DYNAMIC CHART SECTION */}
+            {/* 🔵 DYNAMIC CHART SECTION */}
             <div className="space-y-8">
               {selectedChart ? (
                 (() => {
@@ -1148,12 +1148,12 @@ const CustomTooltip = ({ active, payload }) => {
                     
                   
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-6 bg-white rounded-xl shadow-sm mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
                         <ResponsiveContainer width="100%" height={400}>
-                          <LineChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                          <LineChart margin={{ top: 20, right: 30, left:30, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
                               type="number"
@@ -1161,7 +1161,10 @@ const CustomTooltip = ({ active, payload }) => {
                               domain={["auto", "auto"]}
                             >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                              <Label value={`PP ID`} offset={-10} position="insideBottom" />
+                              <Label value={`PP ID`}  position="insideBottom"
+                                offset={-10}
+                                textAnchor="middle" 
+                              />
                             )}
                             </XAxis>
                             <YAxis
@@ -1176,13 +1179,19 @@ const CustomTooltip = ({ active, payload }) => {
                                   value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
-                                  offset={10}
-                                  dy={90}
+                                  textAnchor="middle"
+                                  offset={-2}
+                                  // dy={80}
                                 />
                               )}
                             </YAxis>
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend />
+                            <Legend
+                              verticalAlign="bottom"
+                              align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                              
+                            />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                               <ReferenceLine
@@ -1263,10 +1272,10 @@ const CustomTooltip = ({ active, payload }) => {
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-6 bg-white rounded-xl shadow-sm mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={400}>
-                          <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                          <ScatterChart margin={{ top: 20, right: 20, left:30, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" dataKey="ppId" name="PP ID" >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1279,14 +1288,18 @@ const CustomTooltip = ({ active, payload }) => {
                                   value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
-                                  offset={10}
+                                  offset={-3}
                                   dy={90}
                                 />
                               )}
                             </YAxis>
                             <Tooltip content={<CustomTooltip />} />
 
-                            <Legend />
+                            <Legend
+                              verticalAlign="bottom"
+                              align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                            />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                               <ReferenceLine

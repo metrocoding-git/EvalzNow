@@ -21,6 +21,7 @@ import ExcelJS from 'exceljs';
 
 /// <param name="xArray">array data - covers the range of Performance Point IDs (+PP ID only)</param>
 /// <param name="yArray">array data - represents the RMS for each +PP ID.</param>
+
 function cognitiveNS(xArray, yArray) {
   var areasub = 0;
 
@@ -33,9 +34,8 @@ function cognitiveNS(xArray, yArray) {
     }
   }
 
-  return parseFloat(areasub).toFixed(3);
+  return (parseFloat(areasub)/100).toFixed(3);
 }
-
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
   // Get all rows of same target (Proficiency / Growth)
@@ -725,7 +725,7 @@ const handleExportGraph = () => {
                       onClick={() => setSelectedChart(chart)}
                     >
                       {chart.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">📑{chart.name}</div>}
-                      {chart.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>}
+                      {chart.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">🔵{chart.name}</div>}
                       <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                     </div>
                   ))} */}
@@ -747,8 +747,8 @@ const handleExportGraph = () => {
                     >
                       <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                         <div className="flex items-center">
-                          {item.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">📑 {item.name}</div>}
-                          {item.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">📉 {item.name}</div>}
+                          {item.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">🟦 {item.name}</div>}
+                          {item.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">🔵 {item.name}</div>}
                         </div>
                       </div>
                       <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
@@ -1025,7 +1025,7 @@ const handleExportGraph = () => {
           <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart ? `📉 ${selectedChart.name}` : 'Select a plot'}
+              {selectedChart ? `🔵 ${selectedChart.name}` : 'Select a plot'}
             </h2>
 
             <div className="h-full overflow-auto m-5">
@@ -1034,7 +1034,7 @@ const handleExportGraph = () => {
                   <CartesianGrid strokeDasharray="3 3" />
 
                   <XAxis dataKey="ppId">
-                    <Label value="PP ID" position="insideBottom" offset={-10} />
+                    <Label value="PP ID" position="insideBottom" offset={-10} textAnchor='middle' />
                   </XAxis>
 
                   <YAxis>
@@ -1043,11 +1043,12 @@ const handleExportGraph = () => {
                       angle={-90}
                       position="insideLeft"
                       offset={10}
+                      textAnchor='middle'
                     />
                   </YAxis>
 
                   <Tooltip />
-                  <Legend />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
 
                   <Line
                     type="linear"

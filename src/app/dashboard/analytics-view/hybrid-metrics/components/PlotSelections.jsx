@@ -187,31 +187,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
     {
       name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "2"
     },
     {
       name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "3"
     },
     {
       name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "4"
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-3d",
       id: "5"
     }] : [])
@@ -221,31 +221,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
     {
       name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "2",
     },
     {
       name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "3"
     },
     {
       name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "4"
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-3d",
       id: "5"
     }] : [])  
@@ -507,7 +507,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
         const data = await getUnitAndMultipleCandidateSummary(apiFilters);
   
-        console.log("📊 API Response:", data);
+        console.log("🔵 API Response:", data);
   
         const { results, averages, stdDev, stdErr } = data;  
   
@@ -520,12 +520,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           ARN: row.ARN || 0,
         }));
   
-        console.log("📊 Formatted Data:", formattedData);
-        console.log(`📊 Data Count: ${formattedData.length} rows`);
+        console.log("🔵 Formatted Data:", formattedData);
+        console.log(`🔵 Data Count: ${formattedData.length} rows`);
   
         // Debug: Show what PP IDs we got
         const ppIds = formattedData.map(item => item.ppId);
-        console.log("📊 PP IDs in response:", ppIds);
+        console.log("🔵 PP IDs in response:", ppIds);
   
         setTableData(formattedData);
   
@@ -897,7 +897,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   // Get growth target points for the current chart
   const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
   
-  console.log("📊 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
+  console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
   
   // Separate positive and negative PP IDs for scatter plots
   const positiveData = tableData.filter(item => item.ppId > 0);
@@ -951,7 +951,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             ticks={xTicks}
             allowDecimals
           >
-            <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
+            <Label value={xLabel} position="bottom" offset={-2} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </XAxis>
           <YAxis 
             dataKey={yKey} 
@@ -961,10 +961,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             ticks={yTicks}
             allowDecimals
           >
-            <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
+            <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Legend />
+          <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
           {/* Reference Lines */}
           {renderReferenceLinesForScatter(xKey, yKey)}
@@ -1351,14 +1351,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
-              
-                  <Label value="PP ID" position="bottom" offset={0} />
+                  <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
                 </XAxis>
                 <YAxis dataKey="IC">
-                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-7} />
+                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-6} 
+                  textAnchor='middle' />
                 </YAxis>
                 <Tooltip />
-                <Legend />
+                <Legend verticalAlign="bottom" align="center" 
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
     
                 {/* Reference Lines */}
                 {renderReferenceLinesForLineChart()}
@@ -1735,7 +1736,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                           ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">🔵{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -1816,13 +1817,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-white ml-1">
 
           <h2 className="text-lg text-center font-semibold text-gray-700 my-2 ">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
           </h2>
 
-          <div className="h-full overflow-auto mb-9 p-3">
+          <div className="h-full overflow-auto mb-2 p-3">
             {renderSelectedChart()}
           </div>
 
