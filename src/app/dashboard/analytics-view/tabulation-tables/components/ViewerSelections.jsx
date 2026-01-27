@@ -9,6 +9,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 export default function ViewerSelections({candidate, unitId, unitStartDate}) {
   const [openCandidate, setOpenCandidate] = useState({});
@@ -20,35 +21,35 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
   const chartContainerRef = useRef(null);
 
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  visibility: true,
-  layer: 1,
-  reference: false,
+    // Standard
+    visibility: true,
+    layer: 1,
+    reference: false,
 
-  // Curve Label
-  showLabel: false,
-  labelType: "X Type",
-  showLabelPrefix: false,
-  labelPrefix: "X File name",
-  showLabelSuffix: false,
-  labelSuffix: "Y subcase",
+    // Curve Label
+    showLabel: false,
+    labelType: "X Type",
+    showLabelPrefix: false,
+    labelPrefix: "X File name",
+    showLabelSuffix: false,
+    labelSuffix: "Y subcase",
 
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
 
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  symbolFrequency: 1,
-  symbolScaleSize: 1,
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    symbolFrequency: 1,
+    symbolScaleSize: 1,
 
-  // Shade area
-  shadeArea: "#ffffff",
-});
+    // Shade area
+    shadeArea: "#ffffff",
+  });
 
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [ScoreAdd, setScoreAdd] = useState(false);
 
   const [visible, setVisible] = useState(true);
@@ -72,51 +73,51 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
 
 
     // Move this above your return
-const headers = {
-  'PP ID': 'Performance Profile Identifier',
-  'Critical Reference Date': 'The key date for assessment',
-  'Day Count (Days)': 'Number of days in assessment period',
-  'Productivity_CSD': 'Productivity score at candidate start date',
-  'Productivity_USD': 'Productivity score at unit start date',
-  'RRN': 'Receptive Ratio of the Performance Point',
-  'PRN': 'Productive Ratio of the Performance Point',
-  'ARN': 'Acuity Ratio of the Performance Point',
-  'XLR': 'Listening Ratio',
-  'XRR': 'Reading Ratio',
-  'XSR': 'Speaking Ratio',
-  'XWR': 'Writing Ratio',
-  'XTR': 'Theory-Based Ratio',
-  'XPR': 'Practical Ratio',
-  'XRVSR': 'Receptive Variable Scoring Ratio',
-  'XPVSR': 'Productive Variable Scoring Ratio',
-  'XAVSR': 'Acuity Variable Scoring Ratio',
-  'XEP': 'Equivalent Proficiency',
-  'XCP': 'Composite Proficiency',
-  'XBP': 'Band Proficiency',
-  'MSIP': 'Margins of Interaction Proficiency',
-  'STA/P': 'Stability in Proficiency',
-  'IC': 'Interaction Class Based on Performance Point',
-  'ΔRRN': 'Receptive Ratio Growth Differential',
-  'ΔPRN': 'Productive Ratio Growth Differential',
-  'ΔARN': 'Acuity Ratio Growth Differential',
-  'ΔGEQ': 'Equivalent Growth',
-  'STA/G': 'Stability in Growth',
-  'RRGT1': 'Projected Receptive Ratio Component for Growth Target 1',
-  'PRGT1': 'Projected Productive Ratio Component for Growth Target 1',
-  'ARGT1': 'Projected Acuity Ratio Component for Growth Target 1',
-  'RRGT2': 'Projected Receptive Ratio Component for Growth Target 2',
-  'PRGT2': 'Projected Productive Ratio Component for Growth Target 2',
-  'ARGT2': 'Projected Acuity Ratio Component for Growth Target 2',
-  'RRGT3': 'Projected Receptive Ratio Component for Growth Target 3',
-  'PRGT3': 'Projected Productive Ratio Component for Growth Target 3',
-  'ARGT3': 'Projected Acuity Ratio Component for Growth Target 3',
-  'RRGT4': 'Projected Receptive Ratio Component for Growth Target 4',
-  'PRGT4': 'Projected Productive Ratio Component for Growth Target 4',
-  'ARGT4': 'Projected Acuity Ratio Component for Growth Target 4',
-  'RRGT5': 'Projected Receptive Ratio Component for Growth Target 5',
-  'PRGT5': 'Projected Productive Ratio Component for Growth Target 5',
-  'ARGT5': 'Projected Acuity Ratio Component for Growth Target 5',
-};
+  const headers = {
+    'PP ID': 'Performance Profile Identifier',
+    'Critical Reference Date': 'The key date for assessment',
+    'Day Count (Days)': 'Number of days in assessment period',
+    'Productivity_CSD': 'Productivity score at candidate start date',
+    'Productivity_USD': 'Productivity score at unit start date',
+    'RRN': 'Receptive Ratio of the Performance Point',
+    'PRN': 'Productive Ratio of the Performance Point',
+    'ARN': 'Acuity Ratio of the Performance Point',
+    'XLR': 'Listening Ratio',
+    'XRR': 'Reading Ratio',
+    'XSR': 'Speaking Ratio',
+    'XWR': 'Writing Ratio',
+    'XTR': 'Theory-Based Ratio',
+    'XPR': 'Practical Ratio',
+    'XRVSR': 'Receptive Variable Scoring Ratio',
+    'XPVSR': 'Productive Variable Scoring Ratio',
+    'XAVSR': 'Acuity Variable Scoring Ratio',
+    'XEP': 'Equivalent Proficiency',
+    'XCP': 'Composite Proficiency',
+    'XBP': 'Band Proficiency',
+    'MSIP': 'Margins of Interaction Proficiency',
+    'STA/P': 'Stability in Proficiency',
+    'IC': 'Interaction Class Based on Performance Point',
+    'ΔRRN': 'Receptive Ratio Growth Differential',
+    'ΔPRN': 'Productive Ratio Growth Differential',
+    'ΔARN': 'Acuity Ratio Growth Differential',
+    'ΔGEQ': 'Equivalent Growth',
+    'STA/G': 'Stability in Growth',
+    'RRGT1': 'Projected Receptive Ratio Component for Growth Target 1',
+    'PRGT1': 'Projected Productive Ratio Component for Growth Target 1',
+    'ARGT1': 'Projected Acuity Ratio Component for Growth Target 1',
+    'RRGT2': 'Projected Receptive Ratio Component for Growth Target 2',
+    'PRGT2': 'Projected Productive Ratio Component for Growth Target 2',
+    'ARGT2': 'Projected Acuity Ratio Component for Growth Target 2',
+    'RRGT3': 'Projected Receptive Ratio Component for Growth Target 3',
+    'PRGT3': 'Projected Productive Ratio Component for Growth Target 3',
+    'ARGT3': 'Projected Acuity Ratio Component for Growth Target 3',
+    'RRGT4': 'Projected Receptive Ratio Component for Growth Target 4',
+    'PRGT4': 'Projected Productive Ratio Component for Growth Target 4',
+    'ARGT4': 'Projected Acuity Ratio Component for Growth Target 4',
+    'RRGT5': 'Projected Receptive Ratio Component for Growth Target 5',
+    'PRGT5': 'Projected Productive Ratio Component for Growth Target 5',
+    'ARGT5': 'Projected Acuity Ratio Component for Growth Target 5',
+  };
 
 console.log("tabulation table unit id:", unitId);
 console.log("tabulation table candidate key: ", candidate.id);
@@ -400,6 +401,147 @@ console.log("unit type check", tableData);
   };
   
 
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No table available to export");
+      return;
+    }
+  
+    try {
+      // Find the scrollable container (the one with overflow-auto)
+      const scrollContainer = chartContainerRef.current;
+      
+      // Store original styles
+      const originalOverflow = scrollContainer.style.overflow;
+      const originalMaxHeight = scrollContainer.style.maxHeight;
+      const originalHeight = scrollContainer.style.height;
+      const originalWidth = scrollContainer.style.width;
+      
+      // Temporarily remove scroll and constraints to capture full content
+      scrollContainer.style.overflow = 'visible';
+      scrollContainer.style.maxHeight = 'none';
+      scrollContainer.style.height = 'auto';
+      scrollContainer.style.width = 'max-content';
+      
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(scrollContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: scrollContainer.scrollWidth,
+        windowHeight: scrollContainer.scrollHeight
+      });
+  
+      // Restore original styles
+      scrollContainer.style.overflow = originalOverflow;
+      scrollContainer.style.maxHeight = originalMaxHeight;
+      scrollContainer.style.height = originalHeight;
+      scrollContainer.style.width = originalWidth;
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `candidate-table-${candidate?.id ?? 'export'}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+      
+      // Ensure styles are restored even if there's an error
+      if (chartContainerRef.current) {
+        chartContainerRef.current.style.overflow = '';
+        chartContainerRef.current.style.maxHeight = '';
+        chartContainerRef.current.style.height = '';
+        chartContainerRef.current.style.width = '';
+      }
+    }
+  };
+  
+  // Function to export as PDF - FIXED to capture entire table
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No table available to export");
+      return;
+    }
+  
+    try {
+      // Find the scrollable container
+      const scrollContainer = chartContainerRef.current;
+      
+      // Store original styles
+      const originalOverflow = scrollContainer.style.overflow;
+      const originalMaxHeight = scrollContainer.style.maxHeight;
+      const originalHeight = scrollContainer.style.height;
+      const originalWidth = scrollContainer.style.width;
+      
+      // Temporarily remove scroll and constraints to capture full content
+      scrollContainer.style.overflow = 'visible';
+      scrollContainer.style.maxHeight = 'none';
+      scrollContainer.style.height = 'auto';
+      scrollContainer.style.width = 'max-content';
+      
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(scrollContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: scrollContainer.scrollWidth,
+        windowHeight: scrollContainer.scrollHeight
+      });
+  
+      // Restore original styles
+      scrollContainer.style.overflow = originalOverflow;
+      scrollContainer.style.maxHeight = originalMaxHeight;
+      scrollContainer.style.height = originalHeight;
+      scrollContainer.style.width = originalWidth;
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate PDF dimensions
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      // Use mm as unit for better control
+      const pdfWidth = imgWidth * 0.264583; // Convert px to mm
+      const pdfHeight = imgHeight * 0.264583;
+      
+      // Create PDF with appropriate orientation
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      // Add image to fill the entire PDF page
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`candidate-table-${candidate?.id ?? 'export'}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+      
+      // Ensure styles are restored even if there's an error
+      if (chartContainerRef.current) {
+        chartContainerRef.current.style.overflow = '';
+        chartContainerRef.current.style.maxHeight = '';
+        chartContainerRef.current.style.height = '';
+        chartContainerRef.current.style.width = '';
+      }
+    }
+  };
+
 
    // Update your existing handleDeleteCurve function or create a new one
    const handleExportGraph = () => {
@@ -423,11 +565,39 @@ console.log("unit type check", tableData);
               {/* <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button> */}
-              <button onClick={handleExportGraph}
-                title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
 
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

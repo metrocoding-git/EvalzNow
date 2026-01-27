@@ -32,6 +32,7 @@ import ExcelJS from 'exceljs';
 import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
+import jsPDF from "jspdf";
 
 export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType, onResetBeta }) {
   const [distributions, setDistributions] = useState({});
@@ -73,6 +74,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
 
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -1134,195 +1136,127 @@ const getYAxisLabel = () => {
     }
   };
   
-  const exportToExcelWithImage = async () => {
-    if (!selectedChart || !chartContainerRef.current) {
-      alert("Please select a chart first.");
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
       return;
     }
   
     try {
-      // Extract key name from chart selection
-      const keyName = selectedChart.key;
-      if (!keyName) {
-        alert("Invalid chart selection.");
-        return;
-      }
+      const container = chartContainerRef.current;
+      
+      // Store original parent styles
+      const parentContainer = container.closest('[class*="overflow"]');
+      const parentOriginalStyles = parentContainer ? {
+        overflow: parentContainer.style.overflow,
+        height: parentContainer.style.height,
+      } : null;
   
-      // 1. Capture chart as image
-      const chartContainer = chartContainerRef.current;
-      const canvas = await html2canvas(chartContainer, {
+      // Expand parent if it exists
+      if (parentContainer) {
+        parentContainer.style.overflow = 'visible';
+        parentContainer.style.height = 'auto';
+      }
+      
+      // Wait for Recharts to fully render
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false
+        allowTaint: true,
+        backgroundColor: chartProperties.shadeArea || '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: container.scrollWidth,
+        height: container.scrollHeight,
       });
   
-      // Convert canvas to buffer
-      const chartImageBuffer = await new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(new Uint8Array(reader.result));
-          reader.readAsArrayBuffer(blob);
-        }, 'image/png');
-      });
-  
-      // 2. Create workbook with ExcelJS
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Chart Report');
-  
-      // Set column widths
-      worksheet.columns = [
-        { width: 15 }, // Column A
-        { width: 15 }, // Column B
-        { width: 15 }, // Column C
-        { width: 15 }, // Column D
-      ];
-  
-      // 3. Add header section
-      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
-      headerRow.font = { size: 14, bold: true };
-      headerRow.height = 30;
-      worksheet.mergeCells('A1:D1');
-      worksheet.getCell('A1').alignment = { horizontal: 'center' };
-  
-      worksheet.addRow(['Chart Name:', selectedChart.name]);
-      worksheet.addRow(['Key Name:', keyName]);
-      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-      worksheet.addRow([]); // Empty row
-  
-      // 4. Add the chart image
-      // Skip some rows for the image
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-  
-      const imageId = workbook.addImage({
-        buffer: chartImageBuffer,
-        extension: 'png',
-      });
-  
-      // Insert image at specific position
-      worksheet.addImage(imageId, {
-        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
-      });
-  
-      // Move down past the image
-      let currentRow = 27;
-  
-      // 5. Add data points header
-      worksheet.getRow(currentRow).values = ['DATA POINTS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
-  
-      const dataHeaderRow = worksheet.getRow(currentRow);
-      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-      dataHeaderRow.font = { bold: true };
-      dataHeaderRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE8F4FF' } // Light blue background
-      };
-      currentRow++;
-  
-      // 6. Add all data points
-      if (!Array.isArray(chartData)) {
-        throw new Error("Chart data is not available for export.");
-      }
-      
-      chartData.forEach((row, index) => {
-        const xValue = row.name;
-        const yValue =
-          row.value ??
-          row.pdf ??
-          row.cdf ??
-          row.reliability ??
-          row.risk;
-      
-        if (yValue === undefined || yValue === null || isNaN(yValue)) return;
-      
-        worksheet.addRow([
-          "N/A",                // Candidate ID (not applicable here)
-          index + 1,            // PP / point index
-          xValue,
-          typeof yValue === "number" ? +yValue.toFixed(3) : yValue
-        ]);
-      });
-      
-  
-      // 7. Add summary section
-      currentRow++;
-      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
-  
-      // Calculate statistics
-      const validData = chartData.map(row =>
-        row.value ??
-        row.pdf ??
-        row.cdf ??
-        row.reliability ??
-        row.risk
-      )
-      .filter(v => typeof v === "number" && !isNaN(v));
-
-  
-      if (validData.length > 0) {
-        const min = Math.min(...validData);
-        const max = Math.max(...validData);
-        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-  
-        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-      } else {
-        worksheet.getRow(currentRow++).values = ['No valid data points available'];
-        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      // Restore parent styles
+      if (parentContainer && parentOriginalStyles) {
+        parentContainer.style.overflow = parentOriginalStyles.overflow;
+        parentContainer.style.height = parentOriginalStyles.height;
       }
   
-      // 8. Add threshold information if available
-      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-      //   currentRow++;
-      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-      //   worksheet.getRow(currentRow).font = { bold: true };
-      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      //   currentRow++;
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
   
-      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-      // }
-  
-      // 9. Add some formatting
-      // Format numeric cells
-      for (let i = 27; i < currentRow; i++) {
-        const cell = worksheet.getCell(`D${i}`);
-        if (cell.value && typeof cell.value === 'number') {
-          cell.numFmt = '0.000';
-        }
-      }
-  
-      // 10. Save the workbook
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      });
-      
-      // Generate filename
-      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      
-      // Download the file
-      saveAs(blob, fileName);
-  
-      console.log("✅ Excel file with chart image exported successfully:", fileName);
+      console.log('✅ JPG Export successful');
   
     } catch (error) {
-      console.error("❌ Failed to export Excel with image:", error);
-      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+      console.error('❌ JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Store original parent styles
+      const parentContainer = container.closest('[class*="overflow"]');
+      const parentOriginalStyles = parentContainer ? {
+        overflow: parentContainer.style.overflow,
+        height: parentContainer.style.height,
+      } : null;
+  
+      // Expand parent if it exists
+      if (parentContainer) {
+        parentContainer.style.overflow = 'visible';
+        parentContainer.style.height = 'auto';
+      }
+      
+      // Wait for Recharts to fully render
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: chartProperties.shadeArea || '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: container.scrollWidth,
+        height: container.scrollHeight,
+      });
+  
+      // Restore parent styles
+      if (parentContainer && parentOriginalStyles) {
+        parentContainer.style.overflow = parentOriginalStyles.overflow;
+        parentContainer.style.height = parentOriginalStyles.height;
+      }
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const pdfWidth = imgWidth * 0.264583;
+      const pdfHeight = imgHeight * 0.264583;
+      
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.pdf`);
+  
+      console.log('✅ PDF Export successful');
+  
+    } catch (error) {
+      console.error('❌ PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
     }
   };
 
@@ -1363,13 +1297,39 @@ const getYAxisLabel = () => {
                   className="w-4 h-4 hover:text-blue-800"
                 />
               </button>
-              <button
-                onClick={exportToExcelWithImage}
-                title="Export"
-                className="text-red-600 hover:text-red-800 cursor-pointer"
-              >
-                <FolderOutput className="w-4 h-4 hover:text-red-800" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -1452,7 +1412,7 @@ const getYAxisLabel = () => {
 
                 {/* DYNAMIC TABLE SECTION */}
                 {activeAdjustPropertieTab === "Table" && chartData && chartData.length > 0 && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-10">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
@@ -1484,7 +1444,6 @@ const getYAxisLabel = () => {
                     </table>
                   </div>
                 )}
-
               </div>
             </div>
           </div>

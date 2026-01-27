@@ -141,7 +141,7 @@ export default function ClientEditor({
                 className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors"
                 onClick={() => onSubmit(betaValue)} // ⬅ SEND betaValue TO MAIN PAGE
               >
-                Add
+                Submit
               </button>
             </div>
           </div>

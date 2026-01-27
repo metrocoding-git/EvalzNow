@@ -22,6 +22,7 @@ import ExcelJS from 'exceljs';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary, getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import { getUnitById } from '@/services/unitService';
+import jsPDF from 'jspdf';
 
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters}) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -55,6 +56,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [selectedChart, setSelectedChart] = useState(0);
   const [tableData, setTableData] = useState([]);
   const [thresholdValue, setThresholdValue] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const canvasRef = useRef(null);
 
@@ -684,7 +686,62 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 
+const exportAsJPG = async () => {
+  if (!chartContainerRef.current) {
+    alert("No chart available to export");
+    return;
+  }
 
+  try {
+    const canvas = await html2canvas(chartContainerRef.current, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    canvas.toBlob((blob) => {
+      saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+    }, 'image/jpeg', 0.95);
+
+  } catch (error) {
+    console.error('JPG Export failed:', error);
+    alert('Failed to export as JPG: ' + error.message);
+  }
+};
+
+// Function to export as PDF
+const exportAsPDF = async () => {
+  if (!chartContainerRef.current) {
+    alert("No chart available to export");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(chartContainerRef.current, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+
+  } catch (error) {
+    console.error('PDF Export failed:', error);
+    alert('Failed to export as PDF: ' + error.message);
+  }
+};
 
   if (!visible) return null;
 
@@ -708,12 +765,39 @@ const CustomTooltip = ({ active, payload }) => {
                 title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
-              <button 
-                onClick={exportToExcelWithImage}
-                title="Export Graph"
-                 className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
 
             </div>
           </div>

@@ -21,6 +21,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 const ROSTER_SUM_KEYS = [
   "totalTally",
@@ -59,7 +60,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { name: "May", xValue: 2.0, yValue: 1.8, zValue: 3.1 },
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -1177,6 +1178,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   
   // console.log("attendance tracking: ", attendanceBreakdown);
   
+  const getActionStatus = (bIds = [], observation = "") => {
+    const hasBids = Array.isArray(bIds) && bIds.length > 0;
+    const hasObservation = observation && observation.trim() !== "";
+  
+    if (!hasBids && !hasObservation) return "Open";
+    if (hasBids && hasObservation) return "Closed";
+    return "Pending";
+  };
+  
   const renderChartContent = () => {
     
     if (!selectedChart) {
@@ -1344,12 +1354,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     </td>
 
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      {item.bIds.length === 0
-                        ? "Open"
-                        : item.bIds.length === 5
-                        ? "Closed"
-                        : "Pending"}
+                      {getActionStatus(item.bIds, item.observation)}
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -1845,7 +1852,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <LineChart data={BpUsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft" }}
+               dy={0} textAnchor='middle' />
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
@@ -2026,7 +2034,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <ScatterChart margin={{ top: 20, right: 20, left: 30, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="ppId" 
@@ -2037,9 +2045,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 textAnchor='middle'
               />
               <YAxis 
-                label={{ value: yLabel, angle: -90, position: "insideLeft" }} dy={0}
+                label={{
+                  value: yLabel,
+                  angle: -90,
+                  position: 'insideLeft',
+                  textAnchor: 'middle'
+                }}
                 type="number"
                 domain={['dataMin', 'dataMax']}
+                tickFormatter={(value) => value.toFixed(1)}
+                tickMargin={10}
+                offset={-10}
                 textAnchor='middle'
               />
               <Tooltip 
@@ -2085,6 +2101,193 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           </LineChart>
         </ResponsiveContainer>
       );
+    }
+  };
+
+
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+      
+      const fullWidth = container.scrollWidth;
+      const fullHeight = container.scrollHeight;
+
+      container.style.height = container.scrollHeight + 'px';
+      container.style.overflow = 'visible';
+
+
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+
+      const fullWidth = container.scrollWidth;
+      const fullHeight = container.scrollHeight;
+
+      container.style.height = container.scrollHeight + 'px';
+      container.style.overflow = 'visible';
+
+
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });      
+      
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const pdfWidth = imgWidth * 0.264583;
+      const pdfHeight = imgHeight * 0.264583;
+      
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
     }
   };
 
@@ -2149,19 +2352,39 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     }
                   }}  />
               </button>
-              <button 
-                onClick={() => {
-                  if (selectedChart?.type === "table") {
-                    exportTableToExcel();
-                  } else {
-                    exportToExcelWithImage();
-                  }
-                }} 
-                title="Export"
-                className='text-red-600 hover:text-red-800 cursor-pointer'
-              >
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
               
             </div>
           </div>

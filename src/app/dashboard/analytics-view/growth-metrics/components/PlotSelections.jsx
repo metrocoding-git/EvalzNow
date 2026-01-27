@@ -23,6 +23,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 //This script is used to plot the undershoot curves, the overshoot curves, and the vertical projection lines
 //on the Growth Projection graph -> Candidate Analysis: Growth Projections (Data Analytics)
@@ -157,7 +158,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   const chartContainerRef = useRef(null);
   const [unitType, setUnitType] = useState(null);
   const [signatureProfile, setSignatureProfile] = useState(null);
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -815,6 +816,63 @@ const handleExportGraph = () => {
     return null;
   };
 
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  // Function to export as PDF
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+    }
+  };
+
   if (!visible) return null;
 
   return (
@@ -836,9 +894,39 @@ const handleExportGraph = () => {
                     }
                   }} />
               </button>
-              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
 
             </div>
           </div>
@@ -966,8 +1054,7 @@ const handleExportGraph = () => {
                     <table className="table-auto w-full text-sm border-collapse">
                       <thead className="bg-gray-100">
                         <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
-                          <th className="border border-gray-300 px-3 py-2 text-center">X Value (Day Count)</th>
+                          <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
                           <th className="border border-gray-300 px-3 py-2 text-center">Y Value</th>
                         </tr>
                       </thead>
@@ -999,7 +1086,6 @@ const handleExportGraph = () => {
                             combinedData.map((row, idx) => (
                               <tr key={idx} className="hover:bg-blue-50">
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.ppId}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-center">{row.dayCount}</td>
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.value.toFixed(3)}</td>
                               </tr>
                             ))
