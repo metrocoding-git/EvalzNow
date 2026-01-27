@@ -18,9 +18,11 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 /// <param name="xArray">array data - covers the range of Performance Point IDs (+PP ID only)</param>
 /// <param name="yArray">array data - represents the RMS for each +PP ID.</param>
+
 function cognitiveNS(xArray, yArray) {
   var areasub = 0;
 
@@ -33,9 +35,8 @@ function cognitiveNS(xArray, yArray) {
     }
   }
 
-  return parseFloat(areasub).toFixed(3);
+  return (parseFloat(areasub)/100).toFixed(3);
 }
-
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
   // Get all rows of same target (Proficiency / Growth)
@@ -80,6 +81,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
     setRefreshKey(prev => prev + 1);
   };
   
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const neuroToolsTable = [
     { index: 1, ppId: 1, value: 'Yes' },
     { index: 2, ppId: 2, value: 'Yes' },
@@ -669,6 +671,66 @@ const handleExportGraph = () => {
     }
   };
 
+
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  // Function to export as PDF
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+    }
+  };
+
+  const closeLobeModal = () => setShowLobeImage(false);
+
   if (!visible) return null;
 
   return (
@@ -699,10 +761,40 @@ const handleExportGraph = () => {
                 }} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600"  />
               </button>
-              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
 
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -725,7 +817,7 @@ const handleExportGraph = () => {
                       onClick={() => setSelectedChart(chart)}
                     >
                       {chart.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">📑{chart.name}</div>}
-                      {chart.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>}
+                      {chart.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">🔵{chart.name}</div>}
                       <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                     </div>
                   ))} */}
@@ -747,8 +839,8 @@ const handleExportGraph = () => {
                     >
                       <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
                         <div className="flex items-center">
-                          {item.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">📑 {item.name}</div>}
-                          {item.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">📉 {item.name}</div>}
+                          {item.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">🟦 {item.name}</div>}
+                          {item.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">🔵 {item.name}</div>}
                         </div>
                       </div>
                       <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
@@ -1025,7 +1117,7 @@ const handleExportGraph = () => {
           <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart ? `📉 ${selectedChart.name}` : 'Select a plot'}
+              {selectedChart ? `🔵 ${selectedChart.name}` : 'Select a plot'}
             </h2>
 
             <div className="h-full overflow-auto m-5">
@@ -1034,7 +1126,7 @@ const handleExportGraph = () => {
                   <CartesianGrid strokeDasharray="3 3" />
 
                   <XAxis dataKey="ppId">
-                    <Label value="PP ID" position="insideBottom" offset={-10} />
+                    <Label value="PP ID" position="insideBottom" offset={-10} textAnchor='middle' />
                   </XAxis>
 
                   <YAxis>
@@ -1043,11 +1135,12 @@ const handleExportGraph = () => {
                       angle={-90}
                       position="insideLeft"
                       offset={10}
+                      textAnchor='middle'
                     />
                   </YAxis>
 
                   <Tooltip />
-                  <Legend />
+                  <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
 
                   <Line
                     type="linear"
@@ -1070,43 +1163,46 @@ const handleExportGraph = () => {
       </div>
 
       {/* Image pop Up */}
-      {showLobeImage && selectedLobeData && (
+    {showLobeImage && selectedLobeData && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+        onClick={() => setShowLobeImage(false)} // clicking backdrop closes modal
+      >
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          onClick={() => setShowLobeImage(false)}
+          className="relative bg-white rounded-xl shadow-2xl w-[96vw] h-[92vh] max-w-6xl p-4"
+          onClick={(e) => e.stopPropagation()} // prevent clicks inside modal from closing it
         >
-          {/* Modal content */}
-          <div
-            className="relative bg-white rounded-xl shadow-xl p-6 w-[90%] max-w-md
-                      scale-100 animate-popup"
-            onClick={(e) => e.stopPropagation()}
+          {/* Close Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Add this to prevent event bubbling
+              setShowLobeImage(false);
+            }}
+            className="absolute top-4 right-4 text-gray-600 hover:text-black z-10" // ✅ Added z-10
           >
-            {/* Close icon */}
-            <button
-              onClick={() => setShowLobeImage(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-500 text-xl"
-              aria-label="Close"
-            >
-              ✕
-            </button>
+            <X className="w-6 h-6" />
+          </button>
 
-            {/* Image */}
-            <div className="relative w-64 h-64 mx-auto">
-              <Image
-                src={selectedLobeData.image}
-                alt={selectedLobeData.name}
-                fill
-                className="object-contain"
-              />
-            </div>
-
-            {/* Title */}
-            <p className="text-center mt-3 text-lg font-semibold">
-              {selectedLobeData.name}
-            </p>
+          {/* Image container */}
+          <div className="relative w-full h-[80vh]">
+            <Image
+              src={selectedLobeData.image}
+              alt={selectedLobeData.name}
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
+
+          {/* Label */}
+          <p className="text-center mt-3 text-lg font-semibold text-gray-700">
+            {selectedLobeData.name}
+          </p>
         </div>
-      )}
+      </div>
+    )}
+
+
 
 
     </>

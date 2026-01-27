@@ -30,6 +30,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -117,7 +118,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [projectionData, setProjectionData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [thresholdValue, setThresholdValue] = useState(null);
 
   const chartContainerRef = useRef(null);
@@ -187,31 +188,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
     {
       name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "2"
     },
     {
       name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "3"
     },
     {
       name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "4"
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-3d",
       id: "5"
     }] : [])
@@ -221,31 +222,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
       id: "1"
     },
     {
       name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "2",
     },
     {
       name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "3"
     },
     {
       name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       id: "4"
     },
     ...(unitType === "Third Parameter" ? [{
       name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-3d",
       id: "5"
     }] : [])  
@@ -507,7 +508,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
         const data = await getUnitAndMultipleCandidateSummary(apiFilters);
   
-        console.log("📊 API Response:", data);
+        console.log("🔵 API Response:", data);
   
         const { results, averages, stdDev, stdErr } = data;  
   
@@ -520,12 +521,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           ARN: row.ARN || 0,
         }));
   
-        console.log("📊 Formatted Data:", formattedData);
-        console.log(`📊 Data Count: ${formattedData.length} rows`);
+        console.log("🔵 Formatted Data:", formattedData);
+        console.log(`🔵 Data Count: ${formattedData.length} rows`);
   
         // Debug: Show what PP IDs we got
         const ppIds = formattedData.map(item => item.ppId);
-        console.log("📊 PP IDs in response:", ppIds);
+        console.log("🔵 PP IDs in response:", ppIds);
   
         setTableData(formattedData);
   
@@ -897,7 +898,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   // Get growth target points for the current chart
   const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
   
-  console.log("📊 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
+  console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
   
   // Separate positive and negative PP IDs for scatter plots
   const positiveData = tableData.filter(item => item.ppId > 0);
@@ -951,7 +952,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             ticks={xTicks}
             allowDecimals
           >
-            <Label value={xLabel} position="bottom" offset={-2} style={{ fontSize: "14px", fontWeight: "500" }} />
+            <Label value={xLabel} position="bottom" offset={-2} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </XAxis>
           <YAxis 
             dataKey={yKey} 
@@ -961,10 +962,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             ticks={yTicks}
             allowDecimals
           >
-            <Label value={yLabel} angle={-90} position="left" offset={-7} style={{ fontSize: "14px", fontWeight: "500" }} />
+            <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
           <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Legend />
+          <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
           {/* Reference Lines */}
           {renderReferenceLinesForScatter(xKey, yKey)}
@@ -1036,7 +1037,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 <circle 
                   cx={props.cx} 
                   cy={props.cy} 
-                  r={6} 
+                  r={3} 
                   fill="#7c3aed"  
                   stroke="#000000"
                   strokeWidth={1}
@@ -1054,10 +1055,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               name="Growth Targets"
               shape={(props) => (
                 <rect 
-                  x={props.cx - 5} 
-                  y={props.cy - 5} 
-                  width={10} 
-                  height={10} 
+                  x={props.cx - 3}  // ✅ Reduced from 5 to 3
+                  y={props.cy - 3}  // ✅ Reduced from 5 to 3
+                  width={6}         // ✅ Reduced from 10 to 6
+                  height={6}        // ✅ Reduced from 10 to 6
                   fill="#f59e0b" 
                   stroke="#000000"
                   strokeWidth={1}
@@ -1351,14 +1352,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
-              
-                  <Label value="PP ID" position="bottom" offset={0} />
+                  <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
                 </XAxis>
                 <YAxis dataKey="IC">
-                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-7} />
+                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-6} 
+                  textAnchor='middle' />
                 </YAxis>
                 <Tooltip />
-                <Legend />
+                <Legend verticalAlign="bottom" align="center" 
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
     
                 {/* Reference Lines */}
                 {renderReferenceLinesForLineChart()}
@@ -1674,8 +1676,173 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     
     return 0;
   });
-  
 
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+      
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+      });
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+      
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+      });
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const pdfWidth = imgWidth * 0.264583;
+      const pdfHeight = imgHeight * 0.264583;
+      
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+    }
+  };
+  
   if (!visible) return null;
 
   return (
@@ -1696,10 +1863,39 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   }
                 }} />
               </button>
-              <button onClick={exportToExcelWithImage}
-                title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
            
             </div>
           </div>
@@ -1735,7 +1931,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                           ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => handleChartSelect(chart)}
                       >
-                        <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                        <div className="col-span-9 text-xs text-gray-700 truncate">🔵{chart.name}</div>
                         <div className="col-span-3 pl-3 text-xs text-gray-400">{chart.id}</div>
                       </div>
                     ))
@@ -1816,64 +2012,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white ml-1">
+  
+          <div ref={chartContainerRef} className="flex flex-col h-full">
+            <h2 className="text-lg text-center font-semibold text-gray-700 my-2">
+              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
+            </h2>
 
-          <h2 className="text-lg text-center font-semibold text-gray-700 my-2 ">
-            {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-          </h2>
-
-          <div className="h-full overflow-auto mb-9 p-3">
-            {renderSelectedChart()}
+            <div className="h-full overflow-auto mb-2 p-3">
+              {renderSelectedChart()}
+            </div>
           </div>
-
-          {/* <div className="h-full overflow-auto m-5">
-            <ResponsiveContainer width="100%" height="95%">
-              <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-
-                <XAxis dataKey="name">
-                  <Label value="Time Period (X)" offset={-10} position="insideBottom" />
-                </XAxis>
-
-                <YAxis>
-                  <Label
-                    value="Score / Value (Y/Z)"
-                    angle={-90}
-                    position="insideLeft"
-                    offset={10}
-                  />
-                </YAxis>
-
-                <Tooltip />
-                <Legend verticalAlign="top" />
-
-                <Line
-                  type="monotone"
-                  dataKey="xValue"
-                  name="X Axis Value"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="yValue"
-                  name="Y Axis Value"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot
-                />
-                <Line
-                  type="monotone"
-                  dataKey="zValue"
-                  name="Z Axis Value"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div> */}
         </div>
       </div>
 

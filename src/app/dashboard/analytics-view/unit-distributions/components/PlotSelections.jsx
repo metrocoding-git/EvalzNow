@@ -32,6 +32,7 @@ import ExcelJS from 'exceljs';
 import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
+import jsPDF from "jspdf";
 
 export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType, onResetBeta }) {
   const [distributions, setDistributions] = useState({});
@@ -73,6 +74,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
 
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -122,59 +124,59 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { name: "C", uv: 200, pv: 980 },
   ];
   const chart = [
-    { id: 1, name: "Normal Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "normal" },
-    { id: 2, name: "Normal Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "normal" },
-    { id: 3, name: "Normal Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "normal" },
-    { id: 4, name: "Normal Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "normal" },
-    { id: 5, name: "Normal Distribution - XCP", icon: "📈", type: "line", key: "XCP", distribution: "normal" },
-    { id: 6, name: "Normal Distribution - XBP", icon: "📈", type: "line", key: "XBP", distribution: "normal" },
-    { id: 7, name: "Normal Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "normal" },
-    { id: 8, name: "Normal Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "normal" },
-    { id: 9, name: "Normal Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "normal" },
-    { id: 10, name: "Normal Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "normal" },
+    { id: 1, name: "Normal Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "normal" },
+    { id: 2, name: "Normal Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "normal" },
+    { id: 3, name: "Normal Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "normal" },
+    { id: 4, name: "Normal Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "normal" },
+    { id: 5, name: "Normal Distribution - XCP", icon: "🔵", type: "line", key: "XCP", distribution: "normal" },
+    { id: 6, name: "Normal Distribution - XBP", icon: "🔵", type: "line", key: "XBP", distribution: "normal" },
+    { id: 7, name: "Normal Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "normal" },
+    { id: 8, name: "Normal Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "normal" },
+    { id: 9, name: "Normal Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "normal" },
+    { id: 10, name: "Normal Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "normal" },
   
-    { id: 11, name: "T Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "t" },
-    { id: 12, name: "T Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "t" },
-    { id: 13, name: "T Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "t" },
-    { id: 14, name: "T Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "t" },
-    { id: 15, name: "T Distribution - ∆RR", icon: "📈", type: "line", key: "deltaRR", distribution: "t" },
-    { id: 16, name: "T Distribution - ∆PR", icon: "📈", type: "line", key: "deltaPR", distribution: "t" },
-    { id: 17, name: "T Distribution - ∆AR", icon: "📈", type: "line", key: "deltaAR", distribution: "t" },
-    { id: 18, name: "T Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "t" },
+    { id: 11, name: "T Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "t" },
+    { id: 12, name: "T Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "t" },
+    { id: 13, name: "T Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "t" },
+    { id: 14, name: "T Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "t" },
+    { id: 15, name: "T Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "t" },
+    { id: 16, name: "T Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "t" },
+    { id: 17, name: "T Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "t" },
+    { id: 18, name: "T Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "t" },
   
-    { id: 19, name: "Exponential Distribution - RR", icon: "📈", type: "line", key: "RR", distribution: "exponential" },
-    { id: 20, name: "Exponential Distribution - PR", icon: "📈", type: "line", key: "PR", distribution: "exponential" },
-    { id: 21, name: "Exponential Distribution - AR", icon: "📈", type: "line", key: "AR", distribution: "exponential" },
-    { id: 22, name: "Exponential Distribution - XEQ", icon: "📈", type: "line", key: "XEQ", distribution: "exponential" },
-    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "📈", type: "line", key: "deltaGEQ", distribution: "exponential" },
+    { id: 19, name: "Exponential Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "exponential" },
+    { id: 20, name: "Exponential Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "exponential" },
+    { id: 21, name: "Exponential Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "exponential" },
+    { id: 22, name: "Exponential Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "exponential" },
+    { id: 23, name: "Exponential Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "exponential" },
   
-    { id: 24, name: "Chi-Square Distribution - 95%", icon: "📉", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
+    { id: 24, name: "Chi-Square Distribution - 95%", icon: "🔵", type: "area", key: "CHI_SQUARE", distribution: "chi-square" },
   
-    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "📈", type: "line", key: "F_DIST", distribution: "f" },
+    { id: 25, name: "F-Distribution - Proficiency to Growth", icon: "🔵", type: "line", key: "F_DIST", distribution: "f" },
   
-    { id: 26, name: "Beta Distribution - STA/P", icon: "📈", type: "line", key: "STAP", distribution: "beta" },
-    { id: 27, name: "Beta Distribution - STA/G", icon: "📈", type: "line", key: "STAG", distribution: "beta" },
+    { id: 26, name: "Beta Distribution - STA/P", icon: "🔵", type: "line", key: "STAP", distribution: "beta" },
+    { id: 27, name: "Beta Distribution - STA/G", icon: "🔵", type: "line", key: "STAG", distribution: "beta" },
   
-    { id: 28, name: "Uniform Distribution - STA/P", icon: "🧮", type: "bar", key: "STAP", distribution: "uniform" },
-    { id: 29, name: "Uniform Distribution - STA/G", icon: "🧮", type: "bar", key: "STAG", distribution: "uniform" },
+    { id: 28, name: "Uniform Distribution - STA/P", icon: "🔵", type: "bar", key: "STAP", distribution: "uniform" },
+    { id: 29, name: "Uniform Distribution - STA/G", icon: "🔵", type: "bar", key: "STAG", distribution: "uniform" },
   
-    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "📉", type: "area", key: "RR", distribution: "weibull-cdf" },
-    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "📉", type: "area", key: "PR", distribution: "weibull-cdf" },
-    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "📉", type: "area", key: "AR", distribution: "weibull-cdf" },
-    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "📉", type: "area", key: "XEP", distribution: "weibull-cdf" },
-    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "📉", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
+    { id: 30, name: "Weibull Distribution - CDF/RDF - RR", icon: "🔵", type: "area", key: "RR", distribution: "weibull-cdf" },
+    { id: 31, name: "Weibull Distribution - CDF/RDF - PR", icon: "🔵", type: "area", key: "PR", distribution: "weibull-cdf" },
+    { id: 32, name: "Weibull Distribution - CDF/RDF - AR", icon: "🔵", type: "area", key: "AR", distribution: "weibull-cdf" },
+    { id: 33, name: "Weibull Distribution - CDF/RDF - XEP", icon: "🔵", type: "area", key: "XEP", distribution: "weibull-cdf" },
+    { id: 34, name: "Weibull Distribution - CDF/RDF - ∆GEQ", icon: "🔵", type: "area", key: "∆GEQ", distribution: "weibull-cdf" },
   
-    { id: 35, name: "Weibull Distribution - PDF - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-pdf" },
-    { id: 36, name: "Weibull Distribution - PDF - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-pdf" },
-    { id: 37, name: "Weibull Distribution - PDF - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-pdf" },
-    { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-pdf" },
-    { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
+    { id: 35, name: "Weibull Distribution - PDF - RR", icon: "🔵", type: "line", key: "RR", distribution: "weibull-pdf" },
+    { id: 36, name: "Weibull Distribution - PDF - PR", icon: "🔵", type: "line", key: "PR", distribution: "weibull-pdf" },
+    { id: 37, name: "Weibull Distribution - PDF - AR", icon: "🔵", type: "line", key: "AR", distribution: "weibull-pdf" },
+    { id: 38, name: "Weibull Distribution - PDF - XEP", icon: "🔵", type: "line", key: "XEP", distribution: "weibull-pdf" },
+    { id: 39, name: "Weibull Distribution - PDF - ∆GEQ", icon: "🔵", type: "line", key: "∆GEQ", distribution: "weibull-pdf" },
   
-    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "📈", type: "line", key: "RR", distribution: "weibull-risk" },
-    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "📈", type: "line", key: "PR", distribution: "weibull-risk" },
-    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "📈", type: "line", key: "AR", distribution: "weibull-risk" },
-    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "📈", type: "line", key: "XEP", distribution: "weibull-risk" },
-    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "📈", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
+    { id: 40, name: "Weibull Distribution - RISK - RR", icon: "🔵", type: "line", key: "RR", distribution: "weibull-risk" },
+    { id: 41, name: "Weibull Distribution - RISK - PR", icon: "🔵", type: "line", key: "PR", distribution: "weibull-risk" },
+    { id: 42, name: "Weibull Distribution - RISK - AR", icon: "🔵", type: "line", key: "AR", distribution: "weibull-risk" },
+    { id: 43, name: "Weibull Distribution - RISK - XEP", icon: "🔵", type: "line", key: "XEP", distribution: "weibull-risk" },
+    { id: 44, name: "Weibull Distribution - RISK - ∆GEQ", icon: "🔵", type: "line", key: "∆GEQ", distribution: "weibull-risk" },
   ];
   
   
@@ -591,10 +593,10 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <AreaChart {...commonProps} width={600} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name">
-                <Label value="Time/Value" position="insideBottom" offset={-10} />
+                <Label value="Time/Value" position="insideBottom"  textAnchor="middle" offset={-10} />
               </XAxis>
               <YAxis domain={[0, 1]}>
-                <Label value="Probability" angle={-90} position="insideLeft" offset={10} />
+                <Label value="Probability" angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip 
                 formatter={(value, name) => {
@@ -606,7 +608,11 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${label}`}
               />
-              <Legend />
+              <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               
               {/* Add vertical line at eta value */}
               
@@ -670,13 +676,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
         <AreaChart {...commonProps}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name">
-            <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+            <Label value={getXAxisLabel()} position="insideBottom"  textAnchor="middle" offset={-10} />
           </XAxis>
           <YAxis>
-            <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+            <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
           </YAxis>
           <Tooltip />
-          <Legend />
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+          />
           {renderReferenceLines()}
           <Area
             type="monotone" 
@@ -701,32 +711,28 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="name"
-                label={{ 
-                  value: "Stable Status", 
-                  position: "insideBottom", 
-                  offset: -10 
-                }}
+                // dataKey="name"
+                // label={{ 
+                //   value: "Stable Status", 
+                //   position: "insideBottom", 
+                //   offset: -10 
+                // }}
+                
               >
                 <Label 
                   value="Stable Status" 
                   position="insideBottom" 
                   offset={-10} 
+                  textAnchor="middle"
                 />
               </XAxis>
-              <YAxis 
-                label={{ 
-                  value: "X Value", 
-                  angle: -90, 
-                  position: "insideLeft",
-                  offset: 10
-                }}
-              >
+              <YAxis >
                 <Label 
                   value="X Value" 
                   angle={-90} 
                   position="insideLeft" 
                   offset={10} 
+                  textAnchor="middle"
                 />
               </YAxis>
               {/* In the uniform distribution bar chart section, update the Tooltip: */}
@@ -745,9 +751,11 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `Stable: ${label === '1' ? 'Yes' : 'No'}`}
               />
-              <Legend />
-              
-              
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               
               <Bar 
                 dataKey="value" 
@@ -764,13 +772,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <BarChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name">
-                <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+                <Label value={getXAxisLabel()} position="insideBottom" textAnchor="middle" offset={-10} />
               </XAxis>
               <YAxis>
-                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
               <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
               <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
             </BarChart>
@@ -782,15 +794,23 @@ const chartData = selectedChart.distribution.startsWith("weibull")
           const eta = Number(distributions[selectedKey].params.eta.toFixed(3));	
           console.log("eta value:: ", eta);
           return (
-            <LineChart width={600} height={400} data={chartData}>
+            <LineChart width={600} height={460} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -15 }}
+                textAnchor="middle"
               />
-              <YAxis 
-                label={{ value: "Probability Density f(t)", angle: -90, position: "insideLeft", offset: 10 }}
+              <YAxis
+                label={{
+                  value: "Probability Density f(t)",
+                  angle: -90,
+                  position: "insideLeft",
+                  textAnchor: "middle",
+                  dy: 0
+                }}
               />
+
               <Tooltip 
                 formatter={(value, name) => {
                   const labels = {
@@ -801,8 +821,16 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
               />
-              <Legend />
-              
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                height={60}
+                wrapperStyle={{
+                  bottom: -25,
+                  paddingLeft: 10
+                }}
+              />
+
                 <ReferenceLine 
                   x={eta}
                   stroke="#10b981"
@@ -887,12 +915,20 @@ const chartData = selectedChart.distribution.startsWith("weibull")
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -10 }}
+                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -14 }}
+                textAnchor="middle"
               />
-              <YAxis 
+              <YAxis
                 domain={[0, 1]}
-                label={{ value: "Risk (1 - R(t))", angle: -90, position: "insideLeft", offset: 10 }}
+                label={{
+                  value: "Risk (1 - R(t))",
+                  angle: -90,
+                  position: "insideLeft",
+                  textAnchor: "middle",
+                  dy: 0
+                }}
               />
+
               <Tooltip 
                 formatter={(value, name) => {
                   const labels = {
@@ -903,7 +939,16 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 }}
                 labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
               />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                height={50}
+                wrapperStyle={{
+                  bottom: -20,
+                  paddingLeft: 60
+                }}
+              />
+
               
               {/* Add vertical line at eta value */}
               {selectedChart.distribution === "weibull-risk" && distributions[selectedKey]?.params?.eta && (
@@ -979,6 +1024,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                   strokeDasharray="3 3"
                   dot={false}
                   name="Reliability R(t) (reference)"
+                  legendType="none"
                 />
               )}
             </LineChart>
@@ -989,13 +1035,17 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name">
-              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} />
+              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
             <YAxis>
-              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} />
+              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
             </YAxis>
             <Tooltip />
-            <Legend />
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+            />
 
             {renderReferenceLines()}
             
@@ -1086,195 +1136,127 @@ const getYAxisLabel = () => {
     }
   };
   
-  const exportToExcelWithImage = async () => {
-    if (!selectedChart || !chartContainerRef.current) {
-      alert("Please select a chart first.");
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
       return;
     }
   
     try {
-      // Extract key name from chart selection
-      const keyName = selectedChart.key;
-      if (!keyName) {
-        alert("Invalid chart selection.");
-        return;
-      }
+      const container = chartContainerRef.current;
+      
+      // Store original parent styles
+      const parentContainer = container.closest('[class*="overflow"]');
+      const parentOriginalStyles = parentContainer ? {
+        overflow: parentContainer.style.overflow,
+        height: parentContainer.style.height,
+      } : null;
   
-      // 1. Capture chart as image
-      const chartContainer = chartContainerRef.current;
-      const canvas = await html2canvas(chartContainer, {
+      // Expand parent if it exists
+      if (parentContainer) {
+        parentContainer.style.overflow = 'visible';
+        parentContainer.style.height = 'auto';
+      }
+      
+      // Wait for Recharts to fully render
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false
+        allowTaint: true,
+        backgroundColor: chartProperties.shadeArea || '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: container.scrollWidth,
+        height: container.scrollHeight,
       });
   
-      // Convert canvas to buffer
-      const chartImageBuffer = await new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(new Uint8Array(reader.result));
-          reader.readAsArrayBuffer(blob);
-        }, 'image/png');
-      });
-  
-      // 2. Create workbook with ExcelJS
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Chart Report');
-  
-      // Set column widths
-      worksheet.columns = [
-        { width: 15 }, // Column A
-        { width: 15 }, // Column B
-        { width: 15 }, // Column C
-        { width: 15 }, // Column D
-      ];
-  
-      // 3. Add header section
-      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
-      headerRow.font = { size: 14, bold: true };
-      headerRow.height = 30;
-      worksheet.mergeCells('A1:D1');
-      worksheet.getCell('A1').alignment = { horizontal: 'center' };
-  
-      worksheet.addRow(['Chart Name:', selectedChart.name]);
-      worksheet.addRow(['Key Name:', keyName]);
-      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-      worksheet.addRow([]); // Empty row
-  
-      // 4. Add the chart image
-      // Skip some rows for the image
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-      worksheet.addRow([]);
-  
-      const imageId = workbook.addImage({
-        buffer: chartImageBuffer,
-        extension: 'png',
-      });
-  
-      // Insert image at specific position
-      worksheet.addImage(imageId, {
-        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
-      });
-  
-      // Move down past the image
-      let currentRow = 27;
-  
-      // 5. Add data points header
-      worksheet.getRow(currentRow).values = ['DATA POINTS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
-  
-      const dataHeaderRow = worksheet.getRow(currentRow);
-      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-      dataHeaderRow.font = { bold: true };
-      dataHeaderRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE8F4FF' } // Light blue background
-      };
-      currentRow++;
-  
-      // 6. Add all data points
-      if (!Array.isArray(chartData)) {
-        throw new Error("Chart data is not available for export.");
-      }
-      
-      chartData.forEach((row, index) => {
-        const xValue = row.name;
-        const yValue =
-          row.value ??
-          row.pdf ??
-          row.cdf ??
-          row.reliability ??
-          row.risk;
-      
-        if (yValue === undefined || yValue === null || isNaN(yValue)) return;
-      
-        worksheet.addRow([
-          "N/A",                // Candidate ID (not applicable here)
-          index + 1,            // PP / point index
-          xValue,
-          typeof yValue === "number" ? +yValue.toFixed(3) : yValue
-        ]);
-      });
-      
-  
-      // 7. Add summary section
-      currentRow++;
-      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-      worksheet.getRow(currentRow).font = { bold: true };
-      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      currentRow++;
-  
-      // Calculate statistics
-      const validData = chartData.map(row =>
-        row.value ??
-        row.pdf ??
-        row.cdf ??
-        row.reliability ??
-        row.risk
-      )
-      .filter(v => typeof v === "number" && !isNaN(v));
-
-  
-      if (validData.length > 0) {
-        const min = Math.min(...validData);
-        const max = Math.max(...validData);
-        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-  
-        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-      } else {
-        worksheet.getRow(currentRow++).values = ['No valid data points available'];
-        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
+      // Restore parent styles
+      if (parentContainer && parentOriginalStyles) {
+        parentContainer.style.overflow = parentOriginalStyles.overflow;
+        parentContainer.style.height = parentOriginalStyles.height;
       }
   
-      // 8. Add threshold information if available
-      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-      //   currentRow++;
-      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-      //   worksheet.getRow(currentRow).font = { bold: true };
-      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-      //   currentRow++;
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
   
-      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-      // }
-  
-      // 9. Add some formatting
-      // Format numeric cells
-      for (let i = 27; i < currentRow; i++) {
-        const cell = worksheet.getCell(`D${i}`);
-        if (cell.value && typeof cell.value === 'number') {
-          cell.numFmt = '0.000';
-        }
-      }
-  
-      // 10. Save the workbook
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      });
-      
-      // Generate filename
-      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      
-      // Download the file
-      saveAs(blob, fileName);
-  
-      console.log("✅ Excel file with chart image exported successfully:", fileName);
+      console.log('✅ JPG Export successful');
   
     } catch (error) {
-      console.error("❌ Failed to export Excel with image:", error);
-      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+      console.error('❌ JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Store original parent styles
+      const parentContainer = container.closest('[class*="overflow"]');
+      const parentOriginalStyles = parentContainer ? {
+        overflow: parentContainer.style.overflow,
+        height: parentContainer.style.height,
+      } : null;
+  
+      // Expand parent if it exists
+      if (parentContainer) {
+        parentContainer.style.overflow = 'visible';
+        parentContainer.style.height = 'auto';
+      }
+      
+      // Wait for Recharts to fully render
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: chartProperties.shadeArea || '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: container.scrollWidth,
+        height: container.scrollHeight,
+      });
+  
+      // Restore parent styles
+      if (parentContainer && parentOriginalStyles) {
+        parentContainer.style.overflow = parentOriginalStyles.overflow;
+        parentContainer.style.height = parentOriginalStyles.height;
+      }
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const pdfWidth = imgWidth * 0.264583;
+      const pdfHeight = imgHeight * 0.264583;
+      
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.pdf`);
+  
+      console.log('✅ PDF Export successful');
+  
+    } catch (error) {
+      console.error('❌ PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
     }
   };
 
@@ -1315,13 +1297,39 @@ const getYAxisLabel = () => {
                   className="w-4 h-4 hover:text-blue-800"
                 />
               </button>
-              <button
-                onClick={exportToExcelWithImage}
-                title="Export"
-                className="text-red-600 hover:text-red-800 cursor-pointer"
-              >
-                <FolderOutput className="w-4 h-4 hover:text-red-800" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -1359,7 +1367,7 @@ const getYAxisLabel = () => {
                             </div>
                           </div>
                           <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                            {item.id}
+                            {index + 1}
                           </div>
                         </div>
                       ))} 
@@ -1404,7 +1412,7 @@ const getYAxisLabel = () => {
 
                 {/* DYNAMIC TABLE SECTION */}
                 {activeAdjustPropertieTab === "Table" && chartData && chartData.length > 0 && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-10">
                     <table className="table-auto w-full text-sm border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
@@ -1436,13 +1444,12 @@ const getYAxisLabel = () => {
                     </table>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1" style={{ backgroundColor: chartProperties.shadeArea }} >
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 " style={{ backgroundColor: chartProperties.shadeArea }} >
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 

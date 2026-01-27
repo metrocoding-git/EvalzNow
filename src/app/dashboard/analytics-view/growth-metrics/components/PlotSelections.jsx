@@ -23,6 +23,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 //This script is used to plot the undershoot curves, the overshoot curves, and the vertical projection lines
 //on the Growth Projection graph -> Candidate Analysis: Growth Projections (Data Analytics)
@@ -157,7 +158,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   const chartContainerRef = useRef(null);
   const [unitType, setUnitType] = useState(null);
   const [signatureProfile, setSignatureProfile] = useState(null);
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -208,82 +209,80 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   ];
 
   const activateCandidateLevel = [
-    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", key: "ΔGEQ", icon: "📉", type: "line" },
-    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", icon: "📉", type: "line" },
-    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", icon: "📉", type: "line" },
-    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", icon: "📉", type: "line" },
+    { id: "acl-1", name: "Equivalent Growth Differentials (ΔGEQ)", key: "ΔGEQ", icon: "🔵", type: "line" },
+    { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", icon: "🔵", type: "line" },
+    { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", icon: "🔵", type: "line" },
+    { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", icon: "🔵", type: "line" },
   
-    { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", icon: "📉", type: "line" },
-    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", icon: "📉", type: "line" },
-    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", icon: "📉", type: "line" },
+    { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", icon: "🔵", type: "line" },
+    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", icon: "🔵", type: "line" },
+    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", icon: "🔵", type: "line" },
   
-    { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie", icon: "🧭" },
-    { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "📉", type: "line" },
-    { id: "acl-9-2", name: "Growth Target 1 Trends - PR", key: "PRGT1", icon: "📉", type: "line" },
-    { id: "acl-9-3", name: "Growth Target 1 Trends - AR", key: "ARGT1", icon: "📉", type: "line" },
+    { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie", icon: "🔵" },
+    { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "🔵", type: "line" },
+    { id: "acl-9-2", name: "Growth Target 1 Trends - PR", key: "PRGT1", icon: "🔵", type: "line" },
+    { id: "acl-9-3", name: "Growth Target 1 Trends - AR", key: "ARGT1", icon: "🔵", type: "line" },
 
-    { id: "acl-9-4", name: "Growth Target 2 Trends - RR", key: "RRGT2", icon: "📉", type: "line" },
-    { id: "acl-9-5", name: "Growth Target 2 Trends - PR", key: "PRGT2", icon: "📉", type: "line" },
-    { id: "acl-9-6", name: "Growth Target 2 Trends - AR", key: "ARGT2", icon: "📉", type: "line" },
+    { id: "acl-9-4", name: "Growth Target 2 Trends - RR", key: "RRGT2", icon: "🔵", type: "line" },
+    { id: "acl-9-5", name: "Growth Target 2 Trends - PR", key: "PRGT2", icon: "🔵", type: "line" },
+    { id: "acl-9-6", name: "Growth Target 2 Trends - AR", key: "ARGT2", icon: "🔵", type: "line" },
 
-    { id: "acl-9-7", name: "Growth Target 3 Trends - RR", key: "RRGT3", icon: "📉", type: "line" },
-    { id: "acl-9-8", name: "Growth Target 3 Trends - PR", key: "PRGT3", icon: "📉", type: "line" },
-    { id: "acl-9-9", name: "Growth Target 3 Trends - AR", key: "ARGT3", icon: "📉", type: "line" },
+    { id: "acl-9-7", name: "Growth Target 3 Trends - RR", key: "RRGT3", icon: "🔵", type: "line" },
+    { id: "acl-9-8", name: "Growth Target 3 Trends - PR", key: "PRGT3", icon: "🔵", type: "line" },
+    { id: "acl-9-9", name: "Growth Target 3 Trends - AR", key: "ARGT3", icon: "🔵", type: "line" },
 
-    { id: "acl-9-10", name: "Growth Target 4 Trends - RR", key: "RRGT4", icon: "📉", type: "line" },
-    { id: "acl-9-11", name: "Growth Target 4 Trends - PR", key: "PRGT4", icon: "📉", type: "line" },
-    { id: "acl-9-12", name: "Growth Target 4 Trends - AR", key: "ARGT4", icon: "📉", type: "line" },
+    { id: "acl-9-10", name: "Growth Target 4 Trends - RR", key: "RRGT4", icon: "🔵", type: "line" },
+    { id: "acl-9-11", name: "Growth Target 4 Trends - PR", key: "PRGT4", icon: "🔵", type: "line" },
+    { id: "acl-9-12", name: "Growth Target 4 Trends - AR", key: "ARGT4", icon: "🔵", type: "line" },
 
-    { id: "acl-9-13", name: "Growth Target 5 Trends - RR", key: "RRGT5", icon: "📉", type: "line" },
-    { id: "acl-9-14", name: "Growth Target 5 Trends - PR", key: "PRGT5", icon: "📉", type: "line" },
-    { id: "acl-9-15", name: "Growth Target 5 Trends - AR", key: "ARGT5", icon: "📉", type: "line" },
+    { id: "acl-9-13", name: "Growth Target 5 Trends - RR", key: "RRGT5", icon: "🔵", type: "line" },
+    { id: "acl-9-14", name: "Growth Target 5 Trends - PR", key: "PRGT5", icon: "🔵", type: "line" },
+    { id: "acl-9-15", name: "Growth Target 5 Trends - AR", key: "ARGT5", icon: "🔵", type: "line" },
 
-    // { id: "acl-10", name: "GT 2 Component", icon: "📉", type: "line" },
-    // { id: "acl-11", name: "GT 3 Component", icon: "📉", type: "line" },
-    // { id: "acl-12", name: "GT 4 Component", icon: "📉", type: "line" },
-    // { id: "acl-13", name: "GT 5 Component", icon: "📉", type: "line" },
-    { id: "acl-14", name: "Growth Projections - ∆RR", icon: "📉", type: "line", isProjection: true },
-    { id: "acl-15", name: "Growth Projections - ∆PR", icon: "📉", type: "line", isProjection: true },
-    { id: "acl-16", name: "Growth Projections - ∆AR", icon: "📉", type: "line", isProjection: true },
+    // { id: "acl-10", name: "GT 2 Component", icon: "🔵", type: "line" },
+    // { id: "acl-11", name: "GT 3 Component", icon: "🔵", type: "line" },
+    // { id: "acl-12", name: "GT 4 Component", icon: "🔵", type: "line" },
+    // { id: "acl-13", name: "GT 5 Component", icon: "🔵", type: "line" },
+    { id: "acl-14", name: "Growth Projections - ∆RR", icon: "🔵", type: "line", isProjection: true },
+    { id: "acl-15", name: "Growth Projections - ∆PR", icon: "🔵", type: "line", isProjection: true },
+    { id: "acl-16", name: "Growth Projections - ∆AR", icon: "🔵", type: "line", isProjection: true },
   ];
 
   const activateUnitLevel = [
-      { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "📊", type: "scatter" },
-      { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "📊", type: "scatter" },
-      { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "📊", type: "scatter" },
-      { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "📊", type: "scatter" },
-      { id: "aul-5", name: "Performance Ratio (RR)", icon: "📊", type: "scatter" },
-      { id: "aul-6", name: "Performance Ratios (PR)", icon: "📊", type: "scatter" },
-      { id: "aul-7", name: "Performance Ratios (AR)", icon: "📊", type: "scatter" },
-      { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🧭", type: "pie" },
+      { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "🔵", type: "scatter" },
+      { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "🔵", type: "scatter" },
+      { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "🔵", type: "scatter" },
+      { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "🔵", type: "scatter" },
+      { id: "aul-5", name: "Performance Ratio (RR)", icon: "🔵", type: "scatter" },
+      { id: "aul-6", name: "Performance Ratios (PR)", icon: "🔵", type: "scatter" },
+      { id: "aul-7", name: "Performance Ratios (AR)", icon: "🔵", type: "scatter" },
+      { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🔵", type: "pie" },
   ];
 
-  useEffect(() => {
-    const fetchProjectionData = async () => {
-      try {
-        setLoading(true);
-        const response = await getProjection(unitId, candidateId);
+  const fetchProjectionData = async () => {
+    try {
+      setLoading(true);
+      const response = await getProjection(unitId, candidateId);
   
-         // Extract PP IDs from the response
-         if (response && response.length > 0) {
-          const latestSession = response[0];
-          if (latestSession.points) {
-            extractPPIds(latestSession.points);
-          }
+      if (response && response.length > 0) {
+        const latestSession = response[0];
+        if (latestSession.points) {
+          extractPPIds(latestSession.points); // 🔥 THIS triggers curve recalculation
         }
-        
-      } catch (error) {
-        console.error("❌ Failed to fetch projection:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("❌ Failed to fetch projection:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
+  useEffect(() => {
     if (unitId && candidateId) {
       fetchProjectionData();
     }
   }, [unitId, candidateId]);
-
+  
 
   const extractPPIds = (points) => {
     const growthMetricData = [];
@@ -309,7 +308,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     });
 
     setGrowthMetric(growthMetricData);
-    console.log("📊 Extracted growth metrics data:", growthMetricData);
+    console.log("🔵 Extracted growth metrics data:", growthMetricData);
   };
 
   const thirdPPDayCount = useMemo(() => {
@@ -374,6 +373,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     }
   }, [growthMetric]);
   
+
+  const hasRRProjection = curves?.rr?.length > 0;
+  const hasPRProjection = curves?.pr?.length > 0;
+  const hasARProjection = curves?.ar?.length > 0;
+
 
   useEffect(() => {
     const fetchTabulationData = async () => {
@@ -812,6 +816,63 @@ const handleExportGraph = () => {
     return null;
   };
 
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  // Function to export as PDF
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+    }
+  };
+
   if (!visible) return null;
 
   return (
@@ -833,9 +894,39 @@ const handleExportGraph = () => {
                     }
                   }} />
               </button>
-              <button onClick={exportToExcelWithImage} title="Export Graph" className='text-red-600 hover:text-red-800 cursor-pointer'>
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
 
             </div>
           </div>
@@ -855,7 +946,18 @@ const handleExportGraph = () => {
                     <>
                       {activateCandidateLevel
                         .filter(chart => {
-                          // Hide AR-related items unless unitType is "Third Parameter"
+
+                          /* ---------- 1. Projection visibility ---------- */
+                          if (chart.isProjection) {
+                            if (chart.name === "Growth Projections - ∆RR") return hasRRProjection;
+                            if (chart.name === "Growth Projections - ∆PR") return hasPRProjection;
+                            if (chart.name === "Growth Projections - ∆AR") {
+                              return unitType === "Third Parameter" && hasARProjection;
+                            }
+                            return false;
+                          }
+
+                          /* ---------- 2. AR restriction ---------- */
                           if (chart.name.includes("(ΔAR)") || chart.name.includes("AR") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
                             return unitType === "Third Parameter";
                           }
@@ -891,7 +993,7 @@ const handleExportGraph = () => {
                               ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"}`}
                             onClick={() => setSelectedChart(chart)}
                           >
-                            <div className="col-span-9 text-xs text-gray-700 truncate">📉{chart.name}</div>
+                            <div className="col-span-9 text-xs text-gray-700 truncate">🔵{chart.name}</div>
                             <div className="col-span-3 pl-3 text-xs text-gray-400">{index + 1}</div>
                           </div>
                         ))}
@@ -952,8 +1054,7 @@ const handleExportGraph = () => {
                     <table className="table-auto w-full text-sm border-collapse">
                       <thead className="bg-gray-100">
                         <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
-                          <th className="border border-gray-300 px-3 py-2 text-center">X Value (Day Count)</th>
+                          <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
                           <th className="border border-gray-300 px-3 py-2 text-center">Y Value</th>
                         </tr>
                       </thead>
@@ -985,7 +1086,6 @@ const handleExportGraph = () => {
                             combinedData.map((row, idx) => (
                               <tr key={idx} className="hover:bg-blue-50">
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.ppId}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-center">{row.dayCount}</td>
                                 <td className="border border-gray-300 px-3 py-2 text-center">{row.value.toFixed(3)}</td>
                               </tr>
                             ))
@@ -1014,9 +1114,9 @@ const handleExportGraph = () => {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-white ml-1">
 
-          <div className="h-full overflow-auto m-5">
+          <div className="h-full overflow-auto m-4">
             <div className="space-y-8">
               {selectedChart ? (
                 (() => {
@@ -1112,7 +1212,7 @@ const handleExportGraph = () => {
                         <ResponsiveContainer width="100%" height={450}>
                           <LineChart 
                             data={positiveData}
-                            margin={{ top: 20, right: 30, left: 0, bottom: 40 }}
+                            margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
@@ -1127,6 +1227,7 @@ const handleExportGraph = () => {
                                 value={isGTchart ? "PP ID" : "Day Count"} 
                                 offset={-10} 
                                 position="insideBottom" 
+                                textAnchor="middle"
                               />
                             )}
                             </XAxis>
@@ -1140,13 +1241,16 @@ const handleExportGraph = () => {
                                   value={`${selectedChart.name} (Y)`}
                                   angle={-90}
                                   position="insideLeft"
-                                  offset={10}
-                                  dy={90}
+                                  offset={5}
+                                  textAnchor="middle"
                                 />
                               )}
                             </YAxis>
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend />
+                            <Legend verticalAlign="bottom"
+                              align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                              />
 
                             {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                               <ReferenceLine
@@ -1167,6 +1271,7 @@ const handleExportGraph = () => {
                               <Line
                                 type="linear"
                                 dataKey="value"
+                                name={selectedChart.name} 
                                 stroke={chartProperties.positiveLineColor}
                                 strokeWidth={chartProperties.lineThickness}
                                 strokeDasharray={strokeDasharray}
@@ -1185,7 +1290,7 @@ const handleExportGraph = () => {
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-4 bg-white  shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
                         <ResponsiveContainer width="100%" height={450}>
                           <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
@@ -1207,7 +1312,10 @@ const handleExportGraph = () => {
                               )}
                             </YAxis>
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend />
+                            <Legend verticalAlign="bottom"
+                              align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                               />
                             {chartProperties.visibility && (
                               <Scatter
                                 name="Positive PP IDs"
@@ -1272,6 +1380,7 @@ const handleExportGraph = () => {
         projectionData={tableData}
         unitType={unitType}
         signatureProfile={signatureProfile}
+        onRefreshProjections={fetchProjectionData}
         onClose={() => {
           setShowProjectionTable(false) 
           setActiveAdjustPropertieTab('Table') }}

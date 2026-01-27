@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
@@ -20,6 +20,52 @@ const assignedWeights = [
   1.000, 1.000, 1.000, 1.000,
   0.000, 0.500, 1.000
 ];
+
+function mainFunction(F6, assignedWeights) {
+  let totalAssignedWeight = 0;
+  let totalMetricWeight = 0;
+  const arrayData = [];
+
+  const length = Math.min(F6.length, assignedWeights.length);
+
+  for (let i = 0; i < length; i++) {
+    const metricValue = Number(F6[i]) || 0;
+    const assignedWeight = Number(assignedWeights[i]) || 0;
+    const metricWeight = metricValue * assignedWeight;
+
+    arrayData.push({
+      f6: metricValue.toFixed(3),
+      g6: assignedWeight.toFixed(3),
+      h6: metricWeight.toFixed(3),
+    });
+
+    totalAssignedWeight += assignedWeight;
+    totalMetricWeight += metricWeight;
+  }
+
+  const weightedIndex =
+    totalAssignedWeight > 0
+      ? totalMetricWeight / totalAssignedWeight
+      : 0;
+
+  let rating = "Unknown value";
+
+  if (weightedIndex < 0.0903) rating = "Negligent";
+  else if (weightedIndex < 0.1075) rating = "Underperforming";
+  else if (weightedIndex < 0.1246) rating = "Below Average";
+  else if (weightedIndex < 0.6734) rating = "Average";
+  else if (weightedIndex < 0.6906) rating = "Above Average";
+  else rating = "Overperforming";
+
+  return [
+    rating,
+    weightedIndex,
+    { H6: arrayData },
+    Number(totalAssignedWeight.toFixed(3)),
+    Number(totalMetricWeight.toFixed(3)),
+  ];
+}
+
 
 export default function CurveEditor() {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
@@ -62,41 +108,41 @@ export default function CurveEditor() {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
   const chart = [
-    { id: 35, name: "Shared Global Analytics Index Table", icon: "📑", type: "table" },
-    { id: 1, name: "Global Signature Case Profile Percentages", icon: "🧭", type: "pie" },
-    { id: 2, name: "Global Unit Type Percentages", icon: "🧭", type: "pie" },
-    { id: 3, name: "Global Candidate-to-Leader Percentages", icon: "🧭", type: "pie" },
-    { id: 4, name: "Global Benchmark Count Percentages", icon: "🧭", type: "pie" },
-    { id: 5, name: "Global Assessment Block Count Percentages", icon: "🧭", type: "pie" },
-    { id: 6, name: "Global Attendance Percentages", icon: "🧭", type: "pie" },
-    { id: 7, name: "Global Open Action Item Percentages", icon: "🧭", type: "pie" },
-    { id: 8, name: "Global Percentage of Positive Candidate Marks", icon: "🧭", type: "pie" },
-    { id: 9, name: "Global Percentage of Positive Leader Marks", icon: "🧭", type: "pie" },
-    { id: 10, name: "Global Unit Outcome Passing Percentages", icon: "🧭", type: "pie" },
-    { id: 11, name: "Global Percentages of Average Equivalent Proficiency - XEP", icon: "🧭", type: "pie" },
-    { id: 12, name: "Global Percentages of Average Unilateral Proficiency - XRR", icon: "🧭", type: "pie" },
-    { id: 13, name: "Global Percentages of Average Unilateral Proficiency - XLR", icon: "🧭", type: "pie" },
-    { id: 14, name: "Global Percentages of Average Unilateral Proficiency - XWR", icon: "🧭", type: "pie" },
-    { id: 15, name: "Global Percentages of Average Unilateral Proficiency - XSR", icon: "🧭", type: "pie" },
-    { id: 16, name: "Global Percentages of Average Unilateral Proficiency - XTR", icon: "🧭", type: "pie" },
-    { id: 17, name: "Global Percentages of Average Unilateral Proficiency - XPR", icon: "🧭", type: "pie" },
-    { id: 18, name: "Global Percentages of Average Unilateral Proficiency - XRVSR", icon: "🧭", type: "pie" },
-    { id: 19, name: "Global Percentages of Average Unilateral Proficiency - XPVSR", icon: "🧭", type: "pie" },
-    { id: 20, name: "Global Percentages of Average Unilateral Proficiency - XAVSR", icon: "🧭", type: "pie" },
-    { id: 21, name: "Global Percentages of Average Composite Proficiency - XCP", icon: "🧭", type: "pie" },
-    { id: 22, name: "Global Percentages of Average Band Proficiency - XBP", icon: "🧭", type: "pie" },
-    { id: 23, name: "Global Percentages of Stability in Proficiency - STA/P", icon: "🧭", type: "pie" },
-    { id: 24, name: "Global Percentages of Average Butler Interaction Proficiency - MSIP", icon: "🧭", type: "pie" },
-    { id: 25, name: "Global Percentages of Average Interaction Class - IC", icon: "🧭", type: "pie" },
-    { id: 26, name: "Global Percentages of Equivalent Growth - GEQ", icon: "🧭", type: "pie" },
-    { id: 27, name: "Global Percentages of Average Growth - ∆RR", icon: "🧭", type: "pie" },
-    { id: 28, name: "Global Percentages of Average Growth - ∆PR", icon: "🧭", type: "pie" },
-    { id: 29, name: "Global Percentages of Average Growth - ∆AR", icon: "🧭", type: "pie" },
-    { id: 30, name: "Global Percentages of Cumulative Growth - ∆RR", icon: "🧭", type: "pie" },
-    { id: 31, name: "Global Percentages of Cumulative Growth - ∆PR", icon: "🧭", type: "pie" },
-    { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🧭", type: "pie" },
-    { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🧭", type: "pie" },
-    { id: 34, name: "Global Percentages of Utilization Rates", icon: "🧭", type: "pie" },
+    { id: 35, name: "Shared Global Analytics Index Table", icon: "🟦", type: "table" },
+    { id: 1, name: "Global Signature Case Profile Percentages", icon: "🔵", type: "pie" },
+    { id: 2, name: "Global Unit Type Percentages", icon: "🔵", type: "pie" },
+    { id: 3, name: "Global Candidate-to-Leader Percentages", icon: "🔵", type: "pie" },
+    { id: 4, name: "Global Benchmark Count Percentages", icon: "🔵", type: "pie" },
+    { id: 5, name: "Global Assessment Block Count Percentages", icon: "🔵", type: "pie" },
+    { id: 6, name: "Global Attendance Percentages", icon: "🔵", type: "pie" },
+    { id: 7, name: "Global Open Action Item Percentages", icon: "🔵", type: "pie" },
+    { id: 8, name: "Global Percentage of Positive Candidate Marks", icon: "🔵", type: "pie" },
+    { id: 9, name: "Global Percentage of Positive Leader Marks", icon: "🔵", type: "pie" },
+    { id: 10, name: "Global Unit Outcome Passing Percentages", icon: "🔵", type: "pie" },
+    { id: 11, name: "Global Percentages of Average Equivalent Proficiency - XEP", icon: "🔵", type: "pie" },
+    { id: 12, name: "Global Percentages of Average Unilateral Proficiency - XRR", icon: "🔵", type: "pie" },
+    { id: 13, name: "Global Percentages of Average Unilateral Proficiency - XLR", icon: "🔵", type: "pie" },
+    { id: 14, name: "Global Percentages of Average Unilateral Proficiency - XWR", icon: "🔵", type: "pie" },
+    { id: 15, name: "Global Percentages of Average Unilateral Proficiency - XSR", icon: "🔵", type: "pie" },
+    { id: 16, name: "Global Percentages of Average Unilateral Proficiency - XTR", icon: "🔵", type: "pie" },
+    { id: 17, name: "Global Percentages of Average Unilateral Proficiency - XPR", icon: "🔵", type: "pie" },
+    { id: 18, name: "Global Percentages of Average Unilateral Proficiency - XRVSR", icon: "🔵", type: "pie" },
+    { id: 19, name: "Global Percentages of Average Unilateral Proficiency - XPVSR", icon: "🔵", type: "pie" },
+    { id: 20, name: "Global Percentages of Average Unilateral Proficiency - XAVSR", icon: "🔵", type: "pie" },
+    { id: 21, name: "Global Percentages of Average Composite Proficiency - XCP", icon: "🔵", type: "pie" },
+    { id: 22, name: "Global Percentages of Average Band Proficiency - XBP", icon: "🔵", type: "pie" },
+    { id: 23, name: "Global Percentages of Stability in Proficiency - STA/P", icon: "🔵", type: "pie" },
+    { id: 24, name: "Global Percentages of Average Butler Interaction Proficiency - MSIP", icon: "🔵", type: "pie" },
+    { id: 25, name: "Global Percentages of Average Interaction Class - IC", icon: "🔵", type: "pie" },
+    { id: 26, name: "Global Percentages of Equivalent Growth - GEQ", icon: "🔵", type: "pie" },
+    { id: 27, name: "Global Percentages of Average Growth - ∆RR", icon: "🔵", type: "pie" },
+    { id: 28, name: "Global Percentages of Average Growth - ∆PR", icon: "🔵", type: "pie" },
+    { id: 29, name: "Global Percentages of Average Growth - ∆AR", icon: "🔵", type: "pie" },
+    { id: 30, name: "Global Percentages of Cumulative Growth - ∆RR", icon: "🔵", type: "pie" },
+    { id: 31, name: "Global Percentages of Cumulative Growth - ∆PR", icon: "🔵", type: "pie" },
+    { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🔵", type: "pie" },
+    { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🔵", type: "pie" },
+    { id: 34, name: "Global Percentages of Utilization Rates", icon: "🔵", type: "pie" },
    
   ];
   
@@ -657,7 +703,24 @@ export default function CurveEditor() {
     );
   }, [globalAnalytics, thresholdAnalytics, StableData]);
   
+  const F6 = tableData.map(row =>
+    row.metricValue !== "" && !isNaN(row.metricValue)
+      ? Number(row.metricValue)
+      : 0
+  );
+
+  const indexResult = useMemo(() => {
+    if (!F6.length) return null;
+    return mainFunction(F6, assignedWeights);
+  }, [F6]);
   
+
+  
+  const indexRating = indexResult?.[0] ?? "";
+  const weightIndex = indexResult?.[1] ?? null;
+  const totalAssignedWeight = indexResult?.[3] ?? null;
+  const totalMetricWeight = indexResult?.[4] ?? null;
+
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -714,25 +777,26 @@ export default function CurveEditor() {
                   <strong>Index Rating</strong>
                 </td> 
                 <td className="border border-gray-300 px-3 py-2">
-                
+                 {indexRating}
                 </td> 
                 <td className="border border-gray-300 px-3 py-2 text-center">
-                  31
-                </td> 
+                 {totalAssignedWeight?.toFixed(3)}
+                </td>
                 <td className="border border-gray-300 px-3 py-2">
-                
+                  {totalMetricWeight?.toFixed?.(3)}
                 </td> 
              </tr>
 
-             <tr  className="hover:bg-gray-50">
+             <tr className="hover:bg-gray-50">
                 <td className="border border-gray-300 px-3 py-2 text-right">
-                  <strong>Weight Index</strong>
-                </td> 
-                <td className="border border-gray-300 px-3 py-2">
-                
-                </td> 
-             </tr>
-
+                  <strong>Weight Index (WI)</strong>
+                </td>
+                <td className="border border-gray-300 px-3 py-2 font-mono">
+                  {weightIndex !== null ? weightIndex.toFixed(4) : ""}
+                </td>
+                <td className="border border-gray-300 px-3 py-2"></td>
+                <td className="border border-gray-300 px-3 py-2"></td>
+              </tr>
             </tbody>
 
           </table>

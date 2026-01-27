@@ -21,6 +21,7 @@ import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
+import jsPDF from 'jspdf';
 
 const ROSTER_SUM_KEYS = [
   "totalTally",
@@ -59,7 +60,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { name: "May", xValue: 2.0, yValue: 1.8, zValue: 3.1 },
     { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
   ];
-
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
     visibility: true,
@@ -122,33 +123,33 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateCandidateLevel = [
     {
       name: "Needs Assessment Table",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       key: "nat",
       id: 11
     },
     {
       name: "Needs Assessment Chains",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       key: "nac",
       id: 12
     },
     {
       name: "Task Declarations",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 13
     },
     {
       name: "Candidate Marks",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 14
     },
     {
       name: "Butler Equivalency CSD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'be-csd',
       id: 1
@@ -156,7 +157,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
    
     {
       name: "Butler Equivalency USD - Accumulated Time (Days) vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'be-usd',
       id: 4
@@ -164,14 +165,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
    
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'bp-csd',
       id: 7
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📈",
+      icon: "🔵",
       type: "line",
       key: 'bp-usd',
       id: 8
@@ -179,14 +180,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     {
       name: "Attendance Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'at',
       id: 9
     },
     {
       name: "Engagement Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'et',
       id: 10
@@ -197,54 +198,54 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const activateUnitLevel = [
     {
       name: "Unit Improvements & Optimization",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 7
     },
     {
       name: "Leader Marks",
-      icon: "📑",
+      icon: "🟦",
       type: "table",
       id: 8
     },
     {
       name: "Butler Productivity CSD - Productivity Rates vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       key: 'bp-csd',
       id: 1
     },
     {
       name: "Butler Productivity USD - Productivity Rates vs. PP ID",
-      icon: "📊",
+      icon: "🔵",
       type: "scatter-2d",
       key: 'bp-usd',
       id: 2
     },
     {
       name: "Attendance Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'at',
       id: 3
     },
     {
       name: "Engagement Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'et',
       id: 4
     },
     {
       name: "Unit Outcomes",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'uo',
       id: 5
     },
     {
       name: "Needs Assessment Tracking",
-      icon: "🧭",
+      icon: "🔵",
       type: "pie",
       key: 'nat',
       id: 6
@@ -1177,6 +1178,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   
   // console.log("attendance tracking: ", attendanceBreakdown);
   
+  const getActionStatus = (bIds = [], observation = "") => {
+    const hasBids = Array.isArray(bIds) && bIds.length > 0;
+    const hasObservation = observation && observation.trim() !== "";
+  
+    if (!hasBids && !hasObservation) return "Open";
+    if (hasBids && hasObservation) return "Closed";
+    return "Pending";
+  };
+  
   const renderChartContent = () => {
     
     if (!selectedChart) {
@@ -1344,12 +1354,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     </td>
 
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      {item.bIds.length === 0
-                        ? "Open"
-                        : item.bIds.length === 5
-                        ? "Closed"
-                        : "Pending"}
+                      {getActionStatus(item.bIds, item.observation)}
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -1763,12 +1770,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={csdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={csdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
               <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
             </LineChart>
@@ -1787,14 +1795,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={usdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={usdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", offset: 9 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
-              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#f59e0b" dot />
-              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#10b981" dot />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#ef4444" dot />
             </LineChart>
           </ResponsiveContainer>
         );
@@ -1810,17 +1819,18 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line 
                 type="linear" 
                 dataKey="productivityCsd" 
                 name="Productivity CSD" 
-                stroke="#3b82f6"
+                stroke="#10b981"
                 dot 
               />
             </LineChart>
@@ -1839,17 +1849,19 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         }
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -5 }} />
-              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft", offset: 12 }} />
+              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft" }}
+               dy={0} textAnchor='middle' />
               <Tooltip />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Line 
                 type="linear" 
                 dataKey="productivityUsd" 
                 name="Productivity USD" 
-                stroke="#f59e0b"
+                stroke="#10b981"
                 dot 
               />
             </LineChart>
@@ -1857,7 +1869,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
 
-      if (selectedChart.key === 'at' && attendanceBreakdown.length > 0) {
+      if (selectedChart.key === 'at' ) {
+        if (!attendanceBreakdown || attendanceBreakdown.length === 0) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500">No data available for Attendance Breakdown chart</p>
+            </div>
+          );
+        }
+
         if (!hasPieDataAT) {
           return (
             <div className="flex items-center justify-center h-full">
@@ -2003,7 +2023,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         
         const scatterData = selectedChart.key === "bp-csd" ? BpCsdChartData : BpUsdChartData;
         const yLabel = selectedChart.key === "bp-csd" ? "Productivity CSD" : "Productivity USD";
-        const lineColor = selectedChart.key === "bp-csd" ? "#3b82f6" : "#f59e0b";
+        const lineColor = selectedChart.key === "bp-csd" ? "#10b981" : "#10b981";
         const dataKey = selectedChart.key === "bp-csd" ? "productivityCsd" : "productivityUsd";
 
         // Sort data by ppId to ensure proper ordering
@@ -2014,7 +2034,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+            <ScatterChart margin={{ top: 20, right: 20, left: 30, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="ppId" 
@@ -2022,11 +2042,21 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 allowDuplicatedCategory={false}
+                textAnchor='middle'
               />
               <YAxis 
-                label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 12 }} 
+                label={{
+                  value: yLabel,
+                  angle: -90,
+                  position: 'insideLeft',
+                  textAnchor: 'middle'
+                }}
                 type="number"
                 domain={['dataMin', 'dataMax']}
+                tickFormatter={(value) => value.toFixed(1)}
+                tickMargin={10}
+                offset={-10}
+                textAnchor='middle'
               />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3' }}
@@ -2036,12 +2066,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   `PP ID: ${props.payload.ppId}`
                 ]}
               />
-              <Legend verticalAlign="top" />
+              <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
               <Scatter 
                 name={yLabel} 
                 data={sortedData} 
                 fill={lineColor}
                 dataKey={dataKey}
+                
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -2052,22 +2084,210 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       // Default fallback chart
       return (
         <ResponsiveContainer width="100%" height="95%">
-          <LineChart data={floatChartData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+          <LineChart data={floatChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name">
               <Label value="Time Period (X)" offset={-10} position="insideBottom" />
             </XAxis>
             <YAxis>
-              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" offset={10} />
+              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" dy={0} />
             </YAxis>
             <Tooltip />
-            <Legend verticalAlign="top" />
+            <Legend verticalAlign="bottom"  align="center"
+                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
             <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
             <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
             <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
           </LineChart>
         </ResponsiveContainer>
       );
+    }
+  };
+
+
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+      
+      const fullWidth = container.scrollWidth;
+      const fullHeight = container.scrollHeight;
+
+      container.style.height = container.scrollHeight + 'px';
+      container.style.overflow = 'visible';
+
+
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.jpg`);
+      }, 'image/jpeg', 0.95);
+  
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
+  
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
+    try {
+      const container = chartContainerRef.current;
+      
+      // Find all scrollable children
+      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
+      const originalStyles = [];
+      
+      // Store and modify styles for container
+      const containerOriginalStyles = {
+        overflow: container.style.overflow,
+        maxHeight: container.style.maxHeight,
+        height: container.style.height,
+        width: container.style.width,
+      };
+      
+      container.style.overflow = 'visible';
+      container.style.maxHeight = 'none';
+      container.style.height = 'auto';
+      container.style.width = 'auto';
+      
+      // Store and modify styles for all scrollable children
+      scrollableElements.forEach((el) => {
+        originalStyles.push({
+          element: el,
+          overflow: el.style.overflow,
+          maxHeight: el.style.maxHeight,
+          height: el.style.height,
+        });
+        
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.height = 'auto';
+      });
+
+      const fullWidth = container.scrollWidth;
+      const fullHeight = container.scrollHeight;
+
+      container.style.height = container.scrollHeight + 'px';
+      container.style.overflow = 'visible';
+
+
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });      
+      
+  
+      // Restore container styles
+      container.style.overflow = containerOriginalStyles.overflow;
+      container.style.maxHeight = containerOriginalStyles.maxHeight;
+      container.style.height = containerOriginalStyles.height;
+      container.style.width = containerOriginalStyles.width;
+      
+      // Restore all scrollable children styles
+      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
+        element.style.overflow = overflow;
+        element.style.maxHeight = maxHeight;
+        element.style.height = height;
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const pdfWidth = imgWidth * 0.264583;
+      const pdfHeight = imgHeight * 0.264583;
+      
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      pdf.save(`chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.pdf`);
+  
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
     }
   };
 
@@ -2132,19 +2352,39 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     }
                   }}  />
               </button>
-              <button 
-                onClick={() => {
-                  if (selectedChart?.type === "table") {
-                    exportTableToExcel();
-                  } else {
-                    exportToExcelWithImage();
-                  }
-                }} 
-                title="Export"
-                className='text-red-600 hover:text-red-800 cursor-pointer'
-              >
-                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  title="Export Graph"
+                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                >
+                  <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+                </button>
+
+                {/* Export dropdown menu */}
+                {showExportMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        exportAsJPG();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as JPG
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAsPDF();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Export as PDF
+                    </button>
+                  </div>
+                )}
+              </div>
               
             </div>
           </div>
@@ -2177,14 +2417,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                       </div>
                     ))
                   ) : selectedSort === 'activateUnitLevel' ? (
-                    activateUnitLevel.map((chart) => (
+                    activateUnitLevel.map((chart, index) => (
                       <div
                         key={chart.id} // Use id instead of index
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 cursor-pointer  ${selectedChart?.name === chart.name ? "bg-gray-200" : "hover:bg-gray-200"} `}
                         onClick={() => setSelectedChart(chart)}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
-                        <div className="col-span-2 pl-3 text-xs text-gray-400">{chart.id}</div>
+                        <div className="col-span-2 pl-3 text-xs text-gray-400">{index + 1}</div>
                       </div>
                     ))
                   ) : (
