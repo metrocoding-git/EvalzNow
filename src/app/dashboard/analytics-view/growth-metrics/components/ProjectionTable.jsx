@@ -259,6 +259,13 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     return isNaN(parsed) ? 0 : parsed;
   };
 
+  const formatDayCount = (val) => {
+    if (val === "-" || val === null || val === undefined) return "-";
+    const num = Number(val);
+    return isNaN(num) ? "-" : num.toFixed(2);
+  };
+  
+
   const allPpIds = useMemo(
     () =>
       Array.from(new Set(projectionData.map((d) => Number(d.ppId))))
@@ -818,7 +825,7 @@ const handleSubmit = async () => {
                       <td className="px-2 py-1 border border-gray-300">{row.ΔARN}</td>
                     )}
 
-                    <td className="px-2 py-1 border border-gray-300">{row.DayCount}</td>
+                    <td className="px-2 py-1 border border-gray-300">{formatDayCount(row.DayCount)}</td>
 
                   </tr>
                 );

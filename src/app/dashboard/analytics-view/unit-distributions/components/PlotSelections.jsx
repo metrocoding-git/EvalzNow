@@ -344,12 +344,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     setSelectedKey(chartItem.key);
   };
 
-  // Prepare chart data based on selected distribution
+  const num = (v) => (v === null || v === undefined || isNaN(v) ? 0 : v);
+
+  const formatTableValue = (value) => {
+    if (value === null || value === undefined) return "-";
+  
+    // Only format finite numbers
+    if (typeof value === "number" && isFinite(value)) {
+      return value.toFixed(3);
+    }
+  
+    return value; // strings, labels, etc.
+  };  
  
-  // In your renderChart function, update the chartData preparation:
-// Update the chartData preparation for Weibull distributions
-const chartData = selectedChart.distribution.startsWith("weibull")
-  ? (() => {
+
+  // Update the chartData preparation for Weibull distributions
+  const chartData = selectedChart.distribution.startsWith("weibull") ? (() => {
     // Handle different Weibull distribution types
     const distribution = distributions[selectedKey];
     if (!distribution || !distribution.table) return [];
@@ -357,41 +367,41 @@ const chartData = selectedChart.distribution.startsWith("weibull")
     if (selectedChart.distribution === "weibull-cdf") {
       // For CDF/RDF, we need both F (CDF) and R (Reliability)
       return distribution.table.map((row) => ({
-        name: row.t,
-        cdf: row.F,
-        reliability: row.R,
+        name: num(row.t),
+        cdf: num(row.F),
+        reliability: num(row.R),
         pdf: null // We don't have PDF data here
       }));
     } else if (selectedChart.distribution === "weibull-pdf") {
       // For PDF, use the 'f' value from the table
       return distribution.table.map((row) => ({
-        name: row.t,
-        pdf: row.f, // This is the PDF value
-        cumulative: row.F || null // Keep CDF if available for reference
+        name: num(row.t),
+        pdf: num(row.f), // This is the PDF value
+        cumulative: num(row.F)  // Keep CDF if available for reference
       }));
     } else if (selectedChart.distribution === "weibull-risk") {
       // For RISK, calculate risk = 1 - reliability
       return distribution.table.map((row) => ({
-        name: row.t,
-        risk: row.h, // Calculate risk from reliability
-        reliability: row.R || null // Keep reliability for reference
+        name: num(row.t),
+        risk: num(row.h), // Calculate risk from reliability
+        reliability: num(row.R) // Keep reliability for reference
       }));
     }
     return [];
       })()
     : selectedChart.distribution === "chi-square" || selectedChart.distribution === "f"
     ? distributions?.distribution?.table?.map((row) => ({
-        name: row.x,
-        value: row.y,
+        name: num(row.x),
+        value: num(row.y),
       })) || []
     : selectedChart.distribution === "uniform"
     ? distributions[selectedKey]?.table?.map((row) => ({
-        name: row.stable,
-        value: row.x,
+        name: num(row.stable),
+        value: num(row.x),
       })) || []
     : distributions[selectedKey]?.table?.map((row) => ({
-        name: row.x,
-        value: row.y,
+        name: num(row.x),
+        value: num(row.y),
       })) || [];
   
 
@@ -592,7 +602,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
           return (
             <AreaChart {...commonProps} width={600} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name">
+              <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
                 <Label value="Time/Value" position="insideBottom"  textAnchor="middle" offset={-10} />
               </XAxis>
               <YAxis domain={[0, 1]}>
@@ -675,7 +685,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
       return (
         <AreaChart {...commonProps}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name">
+          <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
             <Label value={getXAxisLabel()} position="insideBottom"  textAnchor="middle" offset={-10} />
           </XAxis>
           <YAxis>
@@ -791,7 +801,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
 
       case "line":
         if (selectedChart.distribution === "weibull-pdf") {
-          const eta = Number(distributions[selectedKey].params.eta.toFixed(3));	
+          const eta = num(distributions?.[selectedKey]?.params?.eta);	
           console.log("eta value:: ", eta);
           return (
             <LineChart width={600} height={460} data={chartData}>
@@ -800,6 +810,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
                 dataKey="name"
                 label={{ value: "Time/Value (t)", position: "insideBottom", offset: -15 }}
                 textAnchor="middle"
+                tickFormatter={(value) => Number(value).toFixed(2)}
               />
               <YAxis
                 label={{
@@ -914,7 +925,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
             <LineChart width={600} height={400} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="name"
+                dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}
                 label={{ value: "Time/Value (t)", position: "insideBottom", offset: -14 }}
                 textAnchor="middle"
               />
@@ -1034,7 +1045,7 @@ const chartData = selectedChart.distribution.startsWith("weibull")
           return (
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name">
+            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
               <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
             <YAxis>
@@ -1435,7 +1446,7 @@ const getYAxisLabel = () => {
                                 key={colIndex}
                                 className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center"
                               >
-                                {value !== null && value !== undefined ? value : "-"}
+                                {formatTableValue(value)}
                               </td>
                             ))}
                           </tr>

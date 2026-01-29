@@ -348,27 +348,27 @@ const lobeData = [
           rows.push({
             ppId: pp.ppId,
             target: "Proficiency",
-            RMS1: lobes["Frontal Lobe - Left"]?.RMS?.toFixed(2) ?? "0",
-            RMS2: lobes["Occipital Lobe - Left"]?.RMS?.toFixed(2) ?? "0",
-            RMS3: lobes["Parietal Lobe - Left"]?.RMS?.toFixed(2) ?? "0",
-            RMS4: lobes["Temporal Lobe - Left"]?.RMS?.toFixed(2) ?? "0",
-            RMS5: lobes["Frontal Lobe - Right"]?.RMS?.toFixed(2) ?? "0",
-            RMS6: lobes["Occipital Lobe - Right"]?.RMS?.toFixed(2) ?? "0",
-            RMS7: lobes["Parietal Lobe - Right"]?.RMS?.toFixed(2) ?? "0",
-            RMS8: lobes["Temporal Lobe - Right"]?.RMS?.toFixed(2) ?? "0",
+            RMS1: lobes["Frontal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
+            RMS2: lobes["Occipital Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
+            RMS3: lobes["Parietal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
+            RMS4: lobes["Temporal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
+            RMS5: lobes["Frontal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
+            RMS6: lobes["Occipital Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
+            RMS7: lobes["Parietal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
+            RMS8: lobes["Temporal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
           });
   
           rows.push({
             ppId: pp.ppId,
             target: "Growth",
-            RMS1: lobes["Frontal Lobe - Left"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS2: lobes["Occipital Lobe - Left"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS3: lobes["Parietal Lobe - Left"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS4: lobes["Temporal Lobe - Left"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS5: lobes["Frontal Lobe - Right"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS6: lobes["Occipital Lobe - Right"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS7: lobes["Parietal Lobe - Right"]?.deltaRMS?.toFixed(2) ?? "0",
-            RMS8: lobes["Temporal Lobe - Right"]?.deltaRMS?.toFixed(2) ?? "0",
+            RMS1: lobes["Frontal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS2: lobes["Occipital Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS3: lobes["Parietal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS4: lobes["Temporal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS5: lobes["Frontal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS6: lobes["Occipital Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS7: lobes["Parietal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS8: lobes["Temporal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
           });
         });
   
