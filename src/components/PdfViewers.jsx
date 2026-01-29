@@ -10,6 +10,10 @@ export default function SecurePdfViewer({ file }) {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
+    setPageNum(1);
+  }, [file]);
+  
+  useEffect(() => {
     if (!file) return;
 
     const loadPdf = async () => {

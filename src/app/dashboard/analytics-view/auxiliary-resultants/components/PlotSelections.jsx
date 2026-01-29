@@ -120,6 +120,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const [selectedChart, setSelectedChart] = useState(null);
 
+  const [editingObservations, setEditingObservations] = useState({});
   const activateCandidateLevel = [
     {
       name: "Needs Assessment Table",
@@ -556,7 +557,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     fetchScoresWithAssessment();
   }, [unitId, candidateId]);
 
-
   const insertScoreMap = useMemo(() => {
     if (!Array.isArray(insertScores)) return {};
   
@@ -683,6 +683,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   }, [unitId, candidateId]);
   
   
+  useEffect(() => {
+    if (Object.keys(editingObservations).length === 0 && needAssessment.length > 0) {
+      const initialObservations = {};
+      sortedFinalTableData.forEach(row => {
+        const existing = needAssessment.find(n => n.ppId === row.ppId);
+        initialObservations[row.ppId] = existing ? existing.observation : "";
+      });
+      setEditingObservations(initialObservations);
+    }
+  }, [needAssessment, sortedFinalTableData, editingObservations]);
+  
+
   // console.log("need assesssment summary: ", needAssessmentSummary);
 
   const handleDeleteCurve = () => {
@@ -1097,7 +1109,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           columns: ["PP ID", "CSD Tenure Days", "Cumulative Duration"],
           rows: csdChartData.map(r => ({
             ppId: r.ppId,
-            a: r.csdTenureDays,
+            a: Number(r.csdTenureDays).toFixed(2),	
             b: r.duration
           }))
         };
@@ -1107,7 +1119,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           columns: ["PP ID", "USD Tenure Days", "Cumulative Duration"],
           rows: usdChartData.map(r => ({
             ppId: r.ppId,
-            a: r.usdTenureDays,
+            a: Number(r.usdTenureDays).toFixed(2),
             b: r.duration
           }))
         };
@@ -1298,63 +1310,53 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
                     {/* Observations */}
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                    <input
-                      type="text"
-                      value={item.observation ?? ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
+                      <input
+                        type="text"
+                        value={editingObservations[item.ppId] || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setEditingObservations(prev => ({
+                            ...prev,
+                            [item.ppId]: value
+                          }));
+                        }}
+                        onBlur={async (e) => {
+                          const newObservation = e.target.value.trim();
+                          try {
+                            const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
 
-                        // Optimistic UI update (no DB call)
-                        setNeedAssessment(prev =>
-                          prev.map(n =>
-                            n.ppId === item.ppId
-                              ? { ...n, observation: value }
-                              : n
-                          )
-                        );
-                      }}
-                      onBlur={async (e) => {
-                        const newObservation = e.target.value.trim();
+                            // Do nothing if empty AND no record exists
+                            if (!existingNeed && newObservation === "") return;
 
-                        try {
-                          const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
+                            const payload = {
+                              unitId,
+                              candidateId,
+                              ppId: item.ppId,
+                              bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
+                              benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
+                              observation: newObservation
+                            };
 
-                          // ❌ Do nothing if empty observation AND no existing record
-                          if (!existingNeed && newObservation === "") return;
+                            if (existingNeed) {
+                              await updateNeedAssessment(existingNeed.id, payload);
+                            } else {
+                              await createNeedAssessment(payload);
+                            }
 
-                          const payload = {
-                            unitId,
-                            candidateId,
-                            ppId: item.ppId,
-                            bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
-                            benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
-                            observation: newObservation
-                          };
+                            // Refresh backend state
+                            setRefreshBenchmarks(prev => !prev);
 
-                          if (existingNeed) {
-                            // ✅ UPDATE
-                            await updateNeedAssessment(existingNeed.id, payload);
-                          } else {
-                            // ✅ CREATE
-                            await createNeedAssessment(payload);
+                          } catch (error) {
+                            console.error("Observation save failed:", error);
+                            alert("Failed to save observation");
                           }
-
-                          // ✅ Refresh backend state
-                          setRefreshBenchmarks(prev => !prev);
-
-                        } catch (error) {
-                          console.error("Observation save failed:", error);
-                          alert("Failed to save observation");
-                        }
-                      }}
-                      className="py-2 px-3 border border-gray-300 rounded w-full"
-                    />
-
-
+                        }}
+                        className="py-2 px-3 border border-gray-300 rounded w-full"
+                      />
                     </td>
 
                     <td className="border border-gray-300 px-3 py-2 text-center">
-                      {getActionStatus(item.bIds, item.observation)}
+                     {getActionStatus(item.bIds, editingObservations[item.ppId])}
                     </td>
 
                   </tr>
@@ -1685,8 +1687,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                         <tr key={i} className="hover:bg-gray-50">
                           <td className="border px-3 py-2">{s.taskDeclaration}</td>
                           <td className="border px-3 py-2">{s.competency}</td>
-                          <td className="border px-3 py-2">{s.attainedScore}</td>
-                          <td className="border px-3 py-2">{s.maxScore}</td>
+                          <td className="border px-3 py-2">{Number(s.attainedScore).toFixed(2)}</td>
+                          <td className="border px-3 py-2">{Number(s.maxScore).toFixed(2)}</td>
                           <td className="border px-3 py-2">{s.workflowStage}</td>
                           <td className="border px-3 py-2">{s.assessmentType}</td>
                           <td className="border px-3 py-2">{s.scheduleImpact}</td>
@@ -2105,6 +2107,20 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   };
 
 
+  const isDayColumn = (colName = "") =>
+    /day|days|duration|tenure/i.test(colName);
+  
+  const formatCellValue = (value, colName) => {
+    if (value === null || value === undefined) return "—";
+  
+    // Only format day-based numeric columns
+    if (isDayColumn(colName) && !isNaN(value)) {
+      return Number(value).toFixed(2);
+    }
+  
+    return value;
+  };
+  
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
