@@ -66,7 +66,7 @@ export default function SettingsPage() {
         
         {/* ===== File Menu ===== */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold mb-2">File</h2>
+          {/* <h2 className="text-lg font-bold mb-2">File</h2> */}
 
           {/* Help Documentation */}
           <div className="ml-2 mb-2">
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                 {otherHotKeys.map((item) => (
                 <li
                     key={item.name}
-                    className="flex justify-between px-2 py-1 rounded hover:bg-gray-100"
+                    className="flex justify-between px-2 py-1 rounded "
                 >
                     <span>{item.name}</span>
 

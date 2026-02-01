@@ -255,53 +255,57 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   const getTableColumns = () => {
-    switch (selectedChart?.id) {
-      case "1": // IC vs PP ID
+    if (!selectedChart) return null;
+  
+    switch (selectedChart.id) {
+      case "1":
         return {
           xKey: "ppId",
-          xLabel: "PP ID",
           yKey: "IC",
-          yLabel: "Interaction Class"
+          xLabel: "PP ID",
+          yLabel: "Interaction Class (IC)"
         };
   
-      case "2": // PR vs RR
+      case "2":
         return {
           xKey: "RRN",
-          xLabel: "RR",
           yKey: "PRN",
+          xLabel: "RR",
           yLabel: "PR"
         };
   
-      case "3": // AR vs RR
+      case "3":
         return {
           xKey: "RRN",
-          xLabel: "RR",
           yKey: "ARN",
+          xLabel: "RR",
           yLabel: "AR"
         };
   
-      case "4": // PR vs AR
+      case "4":
         return {
           xKey: "PRN",
-          xLabel: "PR",
           yKey: "ARN",
+          xLabel: "PR",
           yLabel: "AR"
         };
   
-      case "5": // 3D
+      case "5": // 🔥 3D Scatter
         return {
           xKey: "RRN",
-          xLabel: "RR",
           yKey: "PRN",
-          yLabel: "PR",
           zKey: "ARN",
-          zLabel: "AR"
+          xLabel: "RR",
+          yLabel: "PR",
+          zLabel: "AR",
+          is3D: true
         };
   
       default:
         return null;
     }
   };
+  
 
   const applyChartStyling = {
     lineStrokeDasharray: (style) => {
@@ -1304,16 +1308,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               title: { text: "RECEPTIVE RATIO (RR)" },
               nticks: 10,
               range: [0, 1],
+              dtick: 0.1,
             },
             yaxis: {
               title: { text: "PRODUCTIVE RATIO (PR)" },
               nticks: 10,
               range: [0, 1],
+              dtick: 0.1,
             },
             zaxis: {
               title: { text: "ACUITY RATIO (AR)" },
               nticks: 10,
               range: [0, 1],
+              dtick: 0.1,
             },
           },
   
@@ -1990,15 +1997,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                           <tr>
                             <th className="border px-3 py-2">{cols.xLabel}</th>
                             <th className="border px-3 py-2">{cols.yLabel}</th>
+
+                            {cols.is3D && (
+                              <th className="border px-3 py-2">{cols.zLabel}</th>
+                            )}
                           </tr>
                         </thead>
 
                         <tbody>
                           {sortedData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-blue-50">
-                              <td className="border px-3 py-2 text-center">{row[cols.xKey]}</td>
-                              <td className="border px-3 py-2 text-center">{row[cols.yKey]}</td>
-                              
+                              <td className="border px-3 py-2 text-center">
+                                {row[cols.xKey]}
+                              </td>
+
+                              <td className="border px-3 py-2 text-center">
+                                {row[cols.yKey]}
+                              </td>
+
+                              {cols.is3D && (
+                                <td className="border px-3 py-2 text-center">
+                                  {row[cols.zKey]}
+                                </td>
+                              )}
                             </tr>
                           ))}
                         </tbody>
