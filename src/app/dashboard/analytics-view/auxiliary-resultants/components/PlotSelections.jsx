@@ -1276,7 +1276,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 {sortedFinalTableData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.criticalRefDate}</td>
+                    <td className="border border-gray-300 px-3 py-2 text-center">
+                      {item.criticalRefDate ? item.criticalRefDate.split("T")[0] : "-"}
+                    </td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
                     <td className="border border-gray-300 px-3 py-2 text-center">{item.PRN}</td>
 

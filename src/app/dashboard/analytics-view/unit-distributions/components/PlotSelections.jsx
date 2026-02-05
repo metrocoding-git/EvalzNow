@@ -252,6 +252,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+
+          console.log("key data: ", selectedChart.key);
+          console.log("key data: ", candidatePpList);
+
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "t") {
@@ -1045,10 +1049,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           return (
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
+            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)} >
               <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
-            <YAxis>
+            <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false}>
               <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
             </YAxis>
             <Tooltip />
@@ -1145,8 +1149,11 @@ const getYAxisLabel = () => {
     if (onCandidatesSelected) {
       onCandidatesSelected(selectionData);
     }
+    console.log("selectionData:: ", selectionData);
   };
   
+  console.log("candidatePpList:: ", candidatePpList);
+
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
