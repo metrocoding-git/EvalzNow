@@ -183,13 +183,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { name: 'C', uv: 200, pv: 980 },
   ];
 
+  const isCommunicativeOrTheory =
+  unitType === "Communicative I/O" || unitType === "Theory & Practice";
+
+  console.log("unit signature in plot selection: ", isCommunicativeOrTheory);
+  console.log("unit type in plot selection: ", unitType);
+
+
   const [selectedChart, setSelectedChart] = useState(null);
 
   const activateCandidateLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
       icon: "🔵",
-      type: "line", // Separate lines for -PP IDs and +PP IDs
+      type: "line",
       id: "1"
     },
     {
@@ -198,60 +205,75 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       type: "scatter-2d",
       id: "2"
     },
-    {
-      name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "🔵",
-      type: "scatter-2d",
-      id: "3"
-    },
-    {
-      name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "🔵",
-      type: "scatter-2d",
-      id: "4"
-    },
-    ...(unitType === "Third Parameter" ? [{
-      name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "🔵",
-      type: "scatter-3d",
-      id: "5"
-    }] : [])
-  ];
 
+    ...(unitType === "Third Parameter"
+      ? [
+          {
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "3"
+          },
+          {
+            name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "4"
+          },
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
+            icon: "🔵",
+            type: "scatter-3d",
+            id: "5"
+          }
+          
+        ]
+      : [])
+  ];
 
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
       icon: "🔵",
-      type: "scatter-2d", // Separate lines for -PP IDs and +PP IDs
+      type: "scatter-2d",
       id: "1"
     },
     {
       name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
       icon: "🔵",
       type: "scatter-2d",
-      id: "2",
+      id: "2"
     },
-    {
-      name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
-      icon: "🔵",
-      type: "scatter-2d",
-      id: "3"
-    },
-    {
-      name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
-      icon: "🔵",
-      type: "scatter-2d",
-      id: "4"
-    },
-    ...(unitType === "Third Parameter" ? [{
-      name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
-      icon: "🔵",
-      type: "scatter-3d",
-      id: "5"
-    }] : [])  
-
+  
+    ...(isCommunicativeOrTheory
+      ? [
+          {
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "3"
+          },
+          {
+            name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "4"
+          }
+        ]
+      : []),
+  
+    ...(unitType === "Third Parameter"
+      ? [
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
+            icon: "🔵",
+            type: "scatter-3d",
+            id: "5"
+          }
+        ]
+      : [])
   ];
+  
 
 
   const getTableColumns = () => {
@@ -818,8 +840,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   // Function to render IC curves on any chart
   const renderICCurves = (signatureProfile, unitType, chartType, xKey, yKey) => {
-    // Only show IC curves for specific unit types
-    if (unitType !== "Communicative I/O" && unitType !== "Theory & Practice") {
+    // Include "Third Parameter" in allowed unit types
+    if (
+      unitType !== "Communicative I/O" &&
+      unitType !== "Theory & Practice" &&
+      unitType !== "Third Parameter"
+    ) {
       return null;
     }
   
@@ -830,30 +856,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       const curveData = getICCurveData(signatureProfile, icLevel);
       if (!curveData) return null;
   
-      // For scatter charts, transform data to match the expected structure
       if (chartType === "scatter") {
         const scatterPoints = curveData.x.map((x, i) => ({
-          [xKey]: x,        // Use the actual xKey (RRN, PRN, etc.)
-          [yKey]: curveData.y[i], // Use the actual yKey
+          [xKey]: x,
+          [yKey]: curveData.y[i],
           IC: icLevel
         }));
         
         return (
           <Line 
-          key={icLevel}
-          data={scatterPoints}
-          dataKey={yKey}
-          name={icLevel}
-          stroke={colors[index]}
-          strokeWidth={2}
-          dot={false}
-          isAnimationActive={false}
-          legendType="none"
-        />
+            key={icLevel}
+            data={scatterPoints}
+            dataKey={yKey}
+            name={icLevel}
+            stroke={colors[index]}
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+            legendType="none"
+          />
         );
       }
-      
-      // For line charts
+  
+      // Line chart fallback
       return (
         <Line 
           key={icLevel}
@@ -869,6 +894,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       );
     });
   };
+  
 
   const generateTicks = (min, max, step = 0.1) => {
     const ticks = [];
