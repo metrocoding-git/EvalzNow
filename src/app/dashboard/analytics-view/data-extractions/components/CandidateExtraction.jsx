@@ -9,7 +9,7 @@ const safe = (value, type = "string") => {
   }
 
   if (type === "number") {
-    return `"${value}"`; // Excel treats it as text, avoids scientific notation
+    return value; // Excel treats it as text, avoids scientific notation
   }
 
   return value;
@@ -39,7 +39,7 @@ const downloadCSV = (headers, rows, filename) => {
     metaLines.join("\n") +
     headers.join(",") +
     "\n" +
-    rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    rows.map(r => r.map(v => v).join(",")).join("\n");
 
   const blob = new Blob(
     ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)

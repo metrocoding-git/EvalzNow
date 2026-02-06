@@ -259,6 +259,13 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     return isNaN(parsed) ? 0 : parsed;
   };
 
+  const clamp01 = (val) => {
+    const num = safeNum(val);
+    if (num < 0) return 0;
+    if (num > 1) return 1;
+    return num;
+  };  
+
   const formatDayCount = (val) => {
     if (val === "-" || val === null || val === undefined) return "-";
     const num = Number(val);
@@ -456,9 +463,17 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       const overshootRow15 = updated[4];
       const undershootRow15 = updated[5];
 
-      const avgRRN_15 = (safeNum(overshootRow15.RRN) + safeNum(undershootRow15.RRN)) / 2;
-      const avgPRN_15 = (safeNum(overshootRow15.PRN) + safeNum(undershootRow15.PRN)) / 2;
-      const avgARN_15 = (safeNum(overshootRow15.ARN) + safeNum(undershootRow15.ARN)) / 2;
+      const avgRRN_15_raw =
+        (safeNum(overshootRow15.RRN) + safeNum(undershootRow15.RRN)) / 2;
+      const avgPRN_15_raw =
+        (safeNum(overshootRow15.PRN) + safeNum(undershootRow15.PRN)) / 2;
+      const avgARN_15_raw =
+        (safeNum(overshootRow15.ARN) + safeNum(undershootRow15.ARN)) / 2;
+
+      const avgRRN_15 = clamp01(avgRRN_15_raw);
+      const avgPRN_15 = clamp01(avgPRN_15_raw);
+      const avgARN_15 = clamp01(avgARN_15_raw);
+
 
       const avgIC_15 = calculateInteractionClass(avgRRN_15, avgPRN_15, avgARN_15, unitType, signatureProfile);
       
@@ -535,9 +550,17 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       const overshootRow30 = updated[7];
       const undershootRow30 = updated[8];
 
-      const avgRRN_30 = (safeNum(overshootRow30.RRN) + safeNum(undershootRow30.RRN)) / 2;
-      const avgPRN_30 = (safeNum(overshootRow30.PRN) + safeNum(undershootRow30.PRN)) / 2;
-      const avgARN_30 = (safeNum(overshootRow30.ARN) + safeNum(undershootRow30.ARN)) / 2;
+      const avgRRN_30_raw =
+        (safeNum(overshootRow30.RRN) + safeNum(undershootRow30.RRN)) / 2;
+      const avgPRN_30_raw =
+        (safeNum(overshootRow30.PRN) + safeNum(undershootRow30.PRN)) / 2;
+      const avgARN_30_raw =
+        (safeNum(overshootRow30.ARN) + safeNum(undershootRow30.ARN)) / 2;
+
+      const avgRRN_30 = clamp01(avgRRN_30_raw);
+      const avgPRN_30 = clamp01(avgPRN_30_raw);
+      const avgARN_30 = clamp01(avgARN_30_raw);
+
 
       const avgIC_30 = calculateInteractionClass(avgRRN_30, avgPRN_30, avgARN_30, unitType, signatureProfile);
       

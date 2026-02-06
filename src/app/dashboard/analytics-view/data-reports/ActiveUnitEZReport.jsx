@@ -355,8 +355,6 @@ function extractStaffAssignments(staffAssignments = []) {
   }
   
 
-  
-
   function renderAverageBlock(averages = {}, unitType) {
     const lines = [];
   

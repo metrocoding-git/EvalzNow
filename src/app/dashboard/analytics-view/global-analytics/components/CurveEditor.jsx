@@ -794,8 +794,8 @@ export default function CurveEditor() {
                 <td className="border border-gray-300 px-3 py-2 font-mono">
                   {weightIndex !== null ? weightIndex.toFixed(4) : ""}
                 </td>
-                <td className="border border-gray-300 px-3 py-2"></td>
-                <td className="border border-gray-300 px-3 py-2"></td>
+                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
+                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
               </tr>
             </tbody>
 

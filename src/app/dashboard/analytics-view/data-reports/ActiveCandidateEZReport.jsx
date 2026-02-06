@@ -41,16 +41,22 @@ function extractStaffAssignments(staffAssignments = []) {
   function renderAssessmentBlocks(pps = []) {
     if (!pps || !pps.length) return "     XXX";
   
+    const indent = "     ";
+  
     return pps
-      .map(
-        (pp) =>
-          `     ${String(pp.ppId).padEnd(10)}` +
-          `     ${pp.periodType.padEnd(20)}` +
-          `     ${pp.delivery.padEnd(30)}` +
-          `     ${pp.shortDescription}`
+      .map((pp) =>
+        indent +
+        String(pp.ppId ?? "")
+          .padEnd(12) +
+        String(pp.periodType ?? "")
+          .padEnd(22) +
+        String(pp.delivery ?? "")
+          .padEnd(32) +
+        String(pp.shortDescription ?? "")
       )
       .join("\n");
   }
+  
   
   function renderCandidateMarksRows(candidateMarks = []) {
     if (!candidateMarks.length) {
@@ -59,9 +65,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return candidateMarks
       .sort((a, b) => a.entryNumber - b.entryNumber)
-      .map(mark => `
-       ${mark.entryNumber ?? "XXX"}          ${mark.impactType ?? "XXX"}           ${mark.concernIdentified ?? "XXX"}           ${mark.identityDate ?? "XXX"}           ${mark.concernResolved ?? "XXX"}           ${mark.resolutionDate ?? "XXX"}
-      `.trimEnd())
+      .map(mark => `       ${mark.entryNumber ?? "XXX"}          ${mark.impactType ?? "XXX"}           ${mark.concernIdentified ?? "XXX"}           ${mark.identityDate ?? "XXX"}           ${mark.concernResolved ?? "XXX"}           ${mark.resolutionDate ?? "XXX"}`)
       .join("\n");
   }
   
@@ -84,8 +88,8 @@ function extractStaffAssignments(staffAssignments = []) {
   
     "Third Parameter": {
       proficiency: ["XRVSR", "XPVSR", "XAVSR"],
-      averages: ["ARN"],          // ⬅ special average
-      growth: ["deltaARN"],            // ⬅ ARN applies only here
+      averages: ["ARN"],
+      growth: ["deltaARN"],
     },
   };
 
@@ -200,9 +204,6 @@ function extractStaffAssignments(staffAssignments = []) {
       return results
         .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
-          // const score = scores.find(s => s.ppId === r.ppId);
-          // const dayCount = score?.durationHrs ?? "XXX";
-    
           let row =
             `     ${String(r.ppId).padEnd(10)}  ` +
             `     ${fmt(r.totalDuration).padEnd(10)}  `;
@@ -225,9 +226,6 @@ function extractStaffAssignments(staffAssignments = []) {
     return results
       .sort((a, b) => a.ppId - b.ppId)
       .map(r => {
-        // const score = scores.find(s => s.ppId === r.ppId);
-        // const dayCount = score?.dayCount ?? "XXX";
-  
         return (
           `     ${String(r.ppId).padEnd(10)}  ` +
           `     ${fmt(r.totalDuration).padEnd(10)}  ` +
@@ -295,7 +293,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     const table1 = scores
       .map(s =>
-        `     ${String(s.ppId).padEnd(10)}` +
+        `      ${String(s.ppId).padEnd(10)}` +
         `     ${String(s.durationHrs ?? "XXX").padEnd(12)}` +
         `     ${String(s.remarks ?? "XXX").padEnd(28)}` +
         `     ${String(s.attainedScore ?? "XXX").padEnd(18)}` +
@@ -305,7 +303,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     const table2 = scores
       .map(s =>
-        `     ${String(s.ppId).padEnd(10)}` +
+        `      ${String(s.ppId).padEnd(10)}` +
         `     ${String(s.durationHrs ?? "XXX").padEnd(12)}` +
         `     ${String(s.workflowStage ?? "XXX").padEnd(20)}` +
         `     ${String(s.assessmentType ?? "XXX").padEnd(20)}` +
@@ -361,7 +359,7 @@ function extractStaffAssignments(staffAssignments = []) {
     }
   
     const renderedChains = assessmentChain
-      .map((chain,index) => {
+      .map((chain, index) => {
         const content = renderSingleChain(chain);
         if (!content) return null;
   
@@ -374,7 +372,6 @@ function extractStaffAssignments(staffAssignments = []) {
   
     if (!renderedChains.length) return "     XXX";
   
-    // Split into columns (side by side)
     const headers = renderedChains.map(c => c.header.padEnd(40)).join("     ");
     const bodies = renderedChains.map(c => c.body.split("\n"));
   
@@ -447,15 +444,13 @@ function extractStaffAssignments(staffAssignments = []) {
       );
     });
   
-    return `
-         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
-  
+    return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
+
   ${leftRows.join("\n")}
-  
+
          ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (R) - Frontal |||     ||| P/ RMS (R) - Occipital Lobe |||     ||| P/ RMS (R) - Parietal |||     ||| P/ RMS (R) - Temporal |||
-  
-  ${rightRows.join("\n")}
-  `.trim();
+
+  ${rightRows.join("\n")}`;
   }
   
 
@@ -488,15 +483,13 @@ function extractStaffAssignments(staffAssignments = []) {
       );
     });
   
-    return `
-         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
-  
+    return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
+
   ${leftRows.join("\n")}
-  
+
          ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (R) - Frontal |||     ||| G/ RMS (R) - Occipital Lobe |||     ||| G/ RMS (R) - Parietal |||     ||| G/ RMS (R) - Temporal |||
-  
-  ${rightRows.join("\n")}
-  `.trim();
+
+  ${rightRows.join("\n")}`;
   }  
   
   function fmt3(value) {
@@ -558,11 +551,9 @@ function extractStaffAssignments(staffAssignments = []) {
       );
     });
   
-    return `
-  ${profLines.join("\n")}
-  
-  ${growthLines.join("\n")}
-  `.trim();
+    return `${profLines.join("\n")}
+
+  ${growthLines.join("\n")}`;
   }
   
 
@@ -577,15 +568,11 @@ function extractStaffAssignments(staffAssignments = []) {
   
     if (unitType === "Third Parameter")
       lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
-  
-      lines.push(` `);
-      lines.push(`     Average Equivalent Proficiency - XEP      :     ${fmt(averages.XEP)}`);
-  
-    
-      lines.push(`     Average Composite Proficiency - XCP       :     ${fmt(averages.XCP)}`);
-  
-   
-      lines.push(`     Average Band Proficiency - XBP            :     ${fmt(averages.XBP)}`);
+
+    lines.push(` `);
+    lines.push(`     Average Equivalent Proficiency - XEP      :     ${fmt(averages.XEP)}`);
+    lines.push(`     Average Composite Proficiency - XCP       :     ${fmt(averages.XCP)}`);
+    lines.push(`     Average Band Proficiency - XBP            :     ${fmt(averages.XBP)}`);
   
     return lines.join("\n");
   }
@@ -631,7 +618,7 @@ function extractStaffAssignments(staffAssignments = []) {
         `     ${String(r.Productivity_USD ?? "X.XXX")}`
         );
       })
-      .join("\n    ");
+      .join("\n");
   }
   
   function renderIrregularitiesRows(irregularities = []) {
@@ -659,7 +646,12 @@ export function buildCandidateEZReport({
     assessmentChain,
     effortResults,
   }) {
-    const today = new Date().toDateString();
+    const today = new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+    
 
     const { leaders, assessors } = extractStaffAssignments(unitMeta.staffAssignments);
       
@@ -711,8 +703,7 @@ export function buildCandidateEZReport({
 
 
 
-    return `
-                                                     *******************************************************************************
+    return `                                                                                                               *******************************************************************************
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
@@ -730,10 +721,10 @@ export function buildCandidateEZReport({
                                                      **                            Competency Accounting                          **
                                                      **                                                                           **
                                                      **                      Analysis Report Level: Candidate                     **
-                                                     **                    Report Generation Date: ${today}                    **
+                                                     **                    Report Generation Date: ${today.padEnd(21)}**
                                                      **                                                                           **
                                                      *******************************************************************************
-                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                **
+                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                  **
                                                      **                   Compiled for Subscriber End User Use                    **
                                                      **     Decompilation or disassembly of this software strictly prohibited.    **
                                                      *******************************************************************************
@@ -746,7 +737,7 @@ export function buildCandidateEZReport({
      pertaining to the cerebral structure into exclusive categories prior to data processing for proficiency and growth.
 
      Proficiency, which passes the accountability to the candidate, is a static metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a 
-     baseline threshold.  This determination is based on the candidate’s ability to demonstrate mastery of core concepts/principles at a fixed point in time.
+     baseline threshold.  This determination is based on the candidate's ability to demonstrate mastery of core concepts/principles at a fixed point in time.
 
      Growth, which passes the accountability to the leader (instructor, manager, etc.), refers to the differential changes in productive skills and in receptive skills from one 
      performance point to another performance point. These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional
@@ -801,7 +792,7 @@ export function buildCandidateEZReport({
 
      ||| NOTE # |||     ||| IRREGULARITY TYPE |||     ||| COMMENTS |||
 
-     ${irregularityRows}
+${irregularityRows}
 
 ---------------------------------------
  ASSESSMENT BLOCKS:
@@ -809,7 +800,9 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| PERIOD TYPE |||     ||| DELIVERY |||     ||| SHORT DESCRIPTION |||
 
-     ${assessmentBlocks}
+${assessmentBlocks}
+
+
 *******************************************************                                  SECTION 03                               *******************************************************
 
 ---------------------------------------
@@ -823,13 +816,13 @@ export function buildCandidateEZReport({
      Unilateral Proficiency in Listening        :     PASS → ${unitMeta.XLR ?? "XXX"} ≥ 0.700
      Unilateral Proficiency in Speaking         :     PASS → ${unitMeta.XSR ?? "XXX"} ≥ 0.700
      Unilateral Proficiency in Writing          :     PASS → ${unitMeta.XWR ?? "XXX"} ≥ 0.700
-	 Equivalent Proficiency                     :     PASS → ${unitMeta.XEP ?? "XXX"} ≥ 0.700
+         Equivalent Proficiency                     :     PASS → ${unitMeta.XEP ?? "XXX"} ≥ 0.700
      Composite Proficiency                      :     PASS → ${unitMeta.XCP ?? "XXX"} ≥ 0.700
      Band Proficiency                           :     PASS → ${unitMeta.XBP ?? "XXX"} ≥ 0.700
 
      Receptive Growth Differential              :     PASS → ${unitMeta.deltaRRN ?? "XXX"} ≥ 0.000
      Productive Growth Differential             :     PASS → ${unitMeta.deltaPRN ?? "XXX"} ≥ 0.000
-     Equivalent Growth                          :     PASS → ${unitMeta["∆GEQ"] ?? "XXX"} ≥ 0.000
+         Equivalent Growth                          :     PASS → ${unitMeta["∆GEQ"] ?? "XXX"} ≥ 0.000
 
      Butler Interaction Proficiency             :     PASS → ${unitMeta.MSIP ?? "XXX"} ≤ 0.450
      Interaction Class                          :     PASS → ${unitMeta.IC ?? "XXX"} ≥ 2
@@ -843,6 +836,7 @@ export function buildCandidateEZReport({
 
      Unit Outcome for Candidate                 :     ${roster.unitOutcome ?? "XXX"}
 
+
 *******************************************************                                  SECTION 04                               *******************************************************
 
 ---------------------------------------
@@ -850,7 +844,7 @@ export function buildCandidateEZReport({
 ---------------------------------------
 
      Proficiency, which passes the accountability to the student/worker, is a metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a baseline 
-	 threshold.  This determination is normally based on the candidate’s ability to demonstrate mastery of core concepts at a fixed point in time. (Static Metric)
+     threshold.  This determination is normally based on the candidate's ability to demonstrate mastery of core concepts at a fixed point in time. (Static Metric)
 
           •	The Unilateral Proficiency is used to determine if a candidate can demonstrate mastery of individual skills.
           •	The Equivalent Proficiency is used to determine if a candidate can demonstrate mastery when skills are resolved into an equivocated scalar.
@@ -859,9 +853,9 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XRR |||     ||| XLR |||     ||| XSR |||     ||| XWR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||
 
-     ${proficiencyRows}
+${proficiencyRows}
 
-     ${renderAverageBlock(competencyAverages, unitMeta.unitType)}
+${renderAverageBlock(competencyAverages, unitMeta.unitType)}
 
 
 ---------------------------------------
@@ -869,10 +863,10 @@ export function buildCandidateEZReport({
 ---------------------------------------
 
      Growth, which passes the accountability to the instructor/manager, refers to the differential changes in skills from one performance point to another performance point. 
-	 These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional level, indicate the direction of candidate 
-	 progress. (Dynamic Metric)
+     These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional level, indicate the direction of candidate 
+     progress. (Dynamic Metric)
 
-     Candidate growth is based on the candidate’s incremental progress from one point in time to another point with respect to time.
+     Candidate growth is based on the candidate's incremental progress from one point in time to another point with respect to time.
 
           •	If the differential change in input variables and/or output variables is negative, then the direction of candidate progress decreases due to retarded growth.
           •	If the differential change in input variables and/or output variables is zero, then the direction of candidate progress remains unchanged with no growth.
@@ -880,9 +874,9 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ∆GEQ |||     ||| STA/G |||
 
-     ${growthRows}
+${growthRows}
 
-     ${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitType)}
+${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitType)}
 
 
 ---------------------------------------
@@ -894,10 +888,11 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| DAYCOUNT |||     ||| MSIP |||     ||| IC |||
 
-     ${hybridRows}
+${hybridRows}
 
      Butler Interaction Proficiency - MSIP    :     ${competencyAverages.MSIP ?? "XXX"}
      Average Interaction Class - IC           :     ${competencyAverages.IC ?? "XXX"}
+
 
 *******************************************************                                  SECTION 05                               *******************************************************
 
@@ -907,7 +902,7 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| DAYCOUNT |||     ||| PRODUCTIVITY RATES - CSD |||     ||| PRODUCTIVITY RATES - USD |||
 
-     ${productivityRows}
+${productivityRows}
 
      Effort -  CSD Reference                   :     ${effortResults.data.CSD}
      Effort -  USD Reference                   :     ${effortResults.data.USD}
@@ -940,7 +935,7 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| BIDs |||     ||| BENCHMARK TYPE |||     ||| BENCHMARK REF |||     ||| BENCHMARK DESCRIPTION |||
 
-     ${benchmarkRows}
+${benchmarkRows}
 
 ---------------------------------------
  CANDIDATE MARKS:
@@ -948,7 +943,7 @@ export function buildCandidateEZReport({
 
      ||| ENTRY |||     ||| IMPACT TYPE |||     ||| CONCERN IDENTIFIED |||     ||| IDENTITY DATE |||     ||| CONCERN RESOLVED |||     ||| RESOLUTION DATE |||
 
-     ${candidateMarksRows}
+${candidateMarksRows}
 
 ---------------------------------------
  NEEDS ASSESSMENT:
@@ -956,7 +951,7 @@ export function buildCandidateEZReport({
 
      ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| ACTION STATUS |||     ||| OBSERVATIONS & GOALS |||
 
-     ${needsAssessmentRows}
+${needsAssessmentRows}
 
 ---------------------------------------
  NEEDS ASSESSMENT CHAIN:
@@ -965,18 +960,20 @@ export function buildCandidateEZReport({
     ${assessmentChainBlock}
 
 
-*******************************************************                                  SECTION 07                   *******************************************************
+*******************************************************                                  SECTION 07                               *******************************************************
 
 ---------------------------------------
-  RECORD OF ASSIGNMENTS:
+ RECORD OF ASSIGNMENTS:
 ---------------------------------------
 
       ||| PP ID |||     ||| DAYCOUNT |||     ||| TASK DECLARATION |||     ||| ATTAINED SCORE |||     ||| MAX SCORE |||
 
-      ${assignmentRows1}
+${assignmentRows1}
 
       ||| PP ID |||     ||| DAYCOUNT |||     ||| WORKFLOW STAGE |||     ||| ASSESSMENT TYPE |||     ||| SCHEDULE IMPACT |||
-      ${assignmentRows2}
+
+${assignmentRows2}
+
 
 *******************************************************                                  SECTION 08                               *******************************************************
 
@@ -990,6 +987,7 @@ ${rmsProficiencyTables}
 ${cognitiveLoadBlock}
 
 ${rmsGrowthTables}
+
 
 *******************************************************                                  SECTION 09                               *******************************************************
 
@@ -1068,26 +1066,24 @@ ${rmsGrowthTables}
 ---------------------------------------
 
      Unless otherwise indicated, EvalzNow is the intellectual property of Ricky D. Butler (the Creator). All source codes, database builds, functionality, designs, logos, theories, 
-	 proprietary techniques, utilities, and methodologies are owned, are controlled, and are licensed to the Creator under applicable copyright laws and unfair competition laws of the 
-	 United States, foreign jurisdictions, and international conventions – whichever is more severe.
+     proprietary techniques, utilities, and methodologies are owned, are controlled, and are licensed to the Creator under applicable copyright laws and unfair competition laws of the 
+     United States, foreign jurisdictions, and international conventions – whichever is more severe.
 
      All rights reserved. No part of this application or works associated with the development of the application may be reproduced, may be distributed, may be rewritten, may be edited, 
-	 may be modified, or may be transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written consent
-	 of the Creator. This includes any derivative works, any parallel works, or seemingly similar works of any form of any industry-related field – public or private.
+     may be modified, or may be transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written consent
+     of the Creator. This includes any derivative works, any parallel works, or seemingly similar works of any form of any industry-related field – public or private.
 
      The aforementioned restrictions above also apply to the concept of Competency Accounting, which is an innovative idea that belongs to Ricky D. Butler.  This idea cannot be applied 
-	 in any manner, direct or indirect, without the written approval of the Creator.  Any unlawful use of the concept of Competency Accounting is subject to applicable copyright laws 
-	 and unfair competition laws of the United States, foreign jurisdictions, and international conventions – whichever is more severe.
+     in any manner, direct or indirect, without the written approval of the Creator.  Any unlawful use of the concept of Competency Accounting is subject to applicable copyright laws 
+     and unfair competition laws of the United States, foreign jurisdictions, and international conventions – whichever is more severe.
 
      For Fair Use cases, any entity using our copywritten material for, but not limited to, criticism, commentary, news reporting, teaching, scholarship, research, or informative 
-	 purposes must attribute the work to the Creator.  The attribution is required regardless of the non-commercial intent, the educational intent, the scientific intent, or the 
-	 historical intent even if the purpose is transformative.  Please reach out to the Creator or the EvalzNow team for general inquiries or official requests.
+     purposes must attribute the work to the Creator.  The attribution is required regardless of the non-commercial intent, the educational intent, the scientific intent, or the 
+     historical intent even if the purpose is transformative.  Please reach out to the Creator or the EvalzNow team for general inquiries or official requests.
 
      End Users, however, are free to use database feeds, data analytics, data extractions, and data reports at their lawful discretion.
 
                                                      *******************************************************************************
                                                      **                               End of Report                               **
-                                                     *******************************************************************************
-  `.trim();
+                                                     *******************************************************************************`;
   }
-  
