@@ -413,7 +413,7 @@ export default function CurveEditor() {
     "Global Percentage of Passing Candidates",
     "Global Percentage of Failed Candidates",
     "Global Percentage of Ongoing Candidates",
-    "Global Percentage of Average Passed Equivalent Proficiency - XEQ",
+    "Global Percentage of Average Passed Equivalent Proficiency - XEP",
     "Global Percentage of Average Passed Composite Proficiency - XCP",
     "Global Percentage of Average Passed Band Proficiency - XBP",
     "Global Percentages of Stable Proficiency - STA/P",
@@ -763,7 +763,7 @@ export default function CurveEditor() {
 
                   {/*  3rd Column: Assigned Weights */}
                   <td className="border border-gray-300 px-3 py-2 text-center font-medium">
-                    {row.assignedWeight}
+                    {row.assignedWeight.toFixed(3)}
                   </td>
 
                   <td className="border border-gray-300 px-3 py-2">
@@ -794,8 +794,8 @@ export default function CurveEditor() {
                 <td className="border border-gray-300 px-3 py-2 font-mono">
                   {weightIndex !== null ? weightIndex.toFixed(4) : ""}
                 </td>
-                <td className="border border-gray-300 px-3 py-2"></td>
-                <td className="border border-gray-300 px-3 py-2"></td>
+                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
+                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
               </tr>
             </tbody>
 

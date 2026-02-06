@@ -21,7 +21,7 @@ const downloadCSV = (headers, rows, filename) => {
       metaLines.join("\n") +
       headers.join(",") +
       "\n" +
-      rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+      rows.map(r => r.map(v => v).join(",")).join("\n");
   
     const blob = new Blob(
       ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
@@ -36,10 +36,11 @@ const downloadCSV = (headers, rows, filename) => {
   
   
 
-const safe = (v) =>
+  const safe = (v) =>
     v === null || v === undefined || v === ""
       ? "-"
-      : `"${String(v).replace(/"/g, '""')}"`;
+      : String(v);
+  
   
 
 const HEADERS = [

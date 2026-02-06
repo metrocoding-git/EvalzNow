@@ -32,9 +32,9 @@ export const getExponentialDistributionData = async (unitId, candidateId) => {
   }
 };
 
-export const getChiDistributionData = async (unitId, candidateId) => {
+export const getChiDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/chi-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/chi-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -43,9 +43,9 @@ export const getChiDistributionData = async (unitId, candidateId) => {
 };
 
 
-export const getFDistributionData = async (unitId, candidateId) => {
+export const getFDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/f-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/f-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -55,9 +55,9 @@ export const getFDistributionData = async (unitId, candidateId) => {
 
 
 
-export const getBetaDistributionData = async (unitId, candidateId) => {
+export const getBetaDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/beta-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/beta-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -66,9 +66,9 @@ export const getBetaDistributionData = async (unitId, candidateId) => {
 };
 
 
-export const getUniformDistributionData = async (unitId, candidateId) => {
+export const getUniformDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/uniform-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/uniform-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -77,9 +77,9 @@ export const getUniformDistributionData = async (unitId, candidateId) => {
 };
 
 
-export const getWeibullPDFDistributionData = async (unitId, candidateId, beta) => {
+export const getWeibullPDFDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-pdf-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/weibull-pdf-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -88,9 +88,9 @@ export const getWeibullPDFDistributionData = async (unitId, candidateId, beta) =
 };
 
 
-export const getWeibullCDFDistributionData = async (unitId, candidateId, beta) => {
+export const getWeibullCDFDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-cdf-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/weibull-cdf-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
@@ -99,9 +99,9 @@ export const getWeibullCDFDistributionData = async (unitId, candidateId, beta) =
 };
 
 
-export const getWeibullRiskDistributionData = async (unitId, candidateId, beta) => {
+export const getWeibullRiskDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/weibull-risk-dist?unitId=${unitId}&candidate_id=${candidateId}&beta=${beta}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/weibull-risk-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);

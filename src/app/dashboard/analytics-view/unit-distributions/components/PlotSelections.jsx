@@ -207,12 +207,27 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           onWeibullSelect(true);
           // Call appropriate API based on distribution type
           if (selectedChart.distribution === "weibull-cdf") {
-            data = await getWeibullCDFDistributionData(unitId, candidateIds, betaValue);
+            data = await getWeibullCDFDistributionData({
+              unitId,
+              candidatePpList,
+              beta: betaValue,
+              key: selectedChart.key
+            });
           } else if (selectedChart.distribution === "weibull-pdf") {
-            data = await getWeibullPDFDistributionData(unitId, candidateIds, betaValue);
+            data = await getWeibullPDFDistributionData({
+              unitId,
+              candidatePpList,
+              beta: betaValue,
+              key: selectedChart.key
+            });
           } else if (selectedChart.distribution === "weibull-risk") {
             // You might need a separate API for risk, or calculate it from CDF data
-            data = await getWeibullRiskDistributionData(unitId, candidateIds, betaValue);
+            data = await getWeibullRiskDistributionData({
+              unitId,
+              candidatePpList,
+              beta: betaValue,
+              key: selectedChart.key
+            });
           }
           
           console.log("weibull data: ", data);
@@ -252,6 +267,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+
+          console.log("key data: ", selectedChart.key);
+          console.log("key data: ", candidatePpList);
+
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "t") {
@@ -268,7 +287,11 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
           console.log("exponential data: ", getExponentialDistributionData(unitId, candidateIds));
         } else if (selectedChart.distribution === "chi-square") {
-          data = await getChiDistributionData(unitId, candidateIds);
+          data = await getChiDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          });
           onWeibullSelect(false);
 
           setDistributions(data);
@@ -278,7 +301,11 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           console.log("selected key:->", selectedKey);
           return;
         } else if (selectedChart.distribution === "f") {
-          data = await getChiDistributionData(unitId, candidateIds);
+          data = await getFDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          });
           onWeibullSelect(false);
           setDistributions(data);
           setTableData(data);
@@ -287,11 +314,19 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           console.log("selected key:->", selectedKey);
           return;
         } else if (selectedChart.distribution === "beta") {
-          data = await getBetaDistributionData(unitId, candidateIds);
+          data = await getBetaDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          });
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "uniform") {
-          data = await getUniformDistributionData(unitId, candidateIds);
+          data = await getUniformDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          });
           console.log("uniform dis: ", data);
           onWeibullSelect(false);
 
@@ -605,7 +640,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
                 <Label value="Time/Value" position="insideBottom"  textAnchor="middle" offset={-10} />
               </XAxis>
-              <YAxis domain={[0, 1]}>
+              <YAxis domain={[0, 1]} tickFormatter={(value) => Number(value).toFixed(2)} >
                 <Label value="Probability" angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip 
@@ -813,6 +848,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 tickFormatter={(value) => Number(value).toFixed(2)}
               />
               <YAxis
+                tickFormatter={(value) => Number(value).toFixed(2)} 
                 label={{
                   value: "Probability Density f(t)",
                   angle: -90,
@@ -931,6 +967,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               />
               <YAxis
                 domain={[0, 1]}
+                tickFormatter={(value) => Number(value).toFixed(2)} 
                 label={{
                   value: "Risk (1 - R(t))",
                   angle: -90,
@@ -1045,10 +1082,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           return (
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
+            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)} >
               <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
-            <YAxis>
+            <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(2)}>
               <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
             </YAxis>
             <Tooltip />
@@ -1145,8 +1182,11 @@ const getYAxisLabel = () => {
     if (onCandidatesSelected) {
       onCandidatesSelected(selectionData);
     }
+    console.log("selectionData:: ", selectionData);
   };
   
+  console.log("candidatePpList:: ", candidatePpList);
+
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
