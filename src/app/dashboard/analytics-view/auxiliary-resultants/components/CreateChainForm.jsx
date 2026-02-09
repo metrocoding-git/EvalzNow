@@ -48,6 +48,25 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
     return prevSelection ? prevSelection.ppId : -Infinity;
   };
 
+  // Function to get next valid ppIds based on selection order: -1, -2, -3, 1, 2, 3
+  const getNextValidPpIds = (prevSelection) => {
+    if (!prevSelection) return ppIdList;
+    
+    const prevPpId = prevSelection.ppId;
+    
+    return ppIdList.filter(item => {
+      // If previous was negative
+      if (prevPpId < 0) {
+        // Show smaller negatives (-2, -3... after -1) OR all positives
+        return item.ppId < prevPpId || item.ppId > 0;
+      }
+      // If previous was positive, show only larger positives
+      else {
+        return item.ppId > prevPpId;
+      }
+    });
+  };
+
   const selection1Min = getMinPpId(form.selection1);
 
   useEffect(() => {
@@ -78,17 +97,17 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
         // 3️⃣ Build lookup map: ppId → assessmentBlockId
         const ppToBlockMap = {};
         insertResults.forEach(row => {
-          if (row.ppId > 0 && row.assessmentBlockId) {
+          if (row.ppId !== 0 && row.assessmentBlockId) {
             ppToBlockMap[row.ppId] = row.assessmentBlockId;
           }
         });
   
         // 4️⃣ Merge datasets by ppId
         const mergedData = tabResults
-          .filter(row => row.ppId > 0 && ppToBlockMap[row.ppId])
+          .filter(row => row.ppId !== 0 && ppToBlockMap[row.ppId])
           .map(row => ({
             ppId: row.ppId,
-            assessmentBlockId: ppToBlockMap[row.ppId], // ✅ FIXED
+            assessmentBlockId: ppToBlockMap[row.ppId],
             RRN: row.RRN ?? 0,
             PRN: row.PRN ?? 0,
             ARN: row.ARN ?? 0,
@@ -115,11 +134,16 @@ console.log("table data check proper:", tableData)
 
 
   const ppIdList = tableData
-  .filter(item => item.ppId > 0)
   .map(item => ({
-    blockId: item.assessmentBlockId, // ✅ THIS is the key
+    blockId: item.assessmentBlockId,
     ppId: item.ppId
-  }));
+  }))
+  .sort((a, b) => {
+    // Sort: negatives first (descending: -1, -2, -3), then positives (ascending: 1, 2, 3)
+    if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // -1, -2, -3...
+    if (a.ppId >= 0 && b.ppId >= 0) return a.ppId - b.ppId; // 1, 2, 3...
+    return a.ppId < 0 ? -1 : 1; // negatives before positives
+  });
 
   useEffect(() => {
     setForm(prev => ({
@@ -246,7 +270,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection1))
+            {getNextValidPpIds(form.selection1)
               .map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -266,7 +290,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection2))
+            {getNextValidPpIds(form.selection2)
               .map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -286,7 +310,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection3))
+            {getNextValidPpIds(form.selection3)
               .map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -306,7 +330,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {ppIdList.filter(item => item.ppId > getMinPpId(form.selection4))
+            {getNextValidPpIds(form.selection4)
               .map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
