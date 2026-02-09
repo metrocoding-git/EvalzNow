@@ -22,9 +22,9 @@ export const getTDistributionData = async (payload) => {
   }
 };
 
-export const getExponentialDistributionData = async (unitId, candidateId) => {
+export const getExponentialDistributionData = async (payload) => {
   try {
-    const response = await api.get(`${API_ROUTES.UNITDISTRIBUTION}/exponential-dist?unitId=${unitId}&candidate_id=${candidateId}`);
+    const response = await api.post(`${API_ROUTES.UNITDISTRIBUTION}/exponential-dist`, payload);
     return response.data;
   } catch (error) {
     console.error("Error fetching Distribution:", error);
