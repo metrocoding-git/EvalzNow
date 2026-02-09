@@ -23,7 +23,8 @@ import {
   AreaChart,
   Area,
   BarChart,
-  Bar
+  Bar,
+  Cell
 } from "recharts";
 import html2canvas from "html2canvas-pro";
 import { saveAs } from 'file-saver';
@@ -135,14 +136,14 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     { id: 9, name: "Normal Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "normal" },
     { id: 10, name: "Normal Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "normal" },
   
-    { id: 11, name: "T Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "t" },
-    { id: 12, name: "T Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "t" },
-    { id: 13, name: "T Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "t" },
-    { id: 14, name: "T Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "t" },
-    { id: 15, name: "T Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "t" },
-    { id: 16, name: "T Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "t" },
-    { id: 17, name: "T Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "t" },
-    { id: 18, name: "T Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "t" },
+    // { id: 11, name: "T Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "t" },
+    // { id: 12, name: "T Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "t" },
+    // { id: 13, name: "T Distribution - AR", icon: "🔵", type: "line", key: "AR", distribution: "t" },
+    // { id: 14, name: "T Distribution - XEQ", icon: "🔵", type: "line", key: "XEQ", distribution: "t" },
+    // { id: 15, name: "T Distribution - ∆RR", icon: "🔵", type: "line", key: "deltaRR", distribution: "t" },
+    // { id: 16, name: "T Distribution - ∆PR", icon: "🔵", type: "line", key: "deltaPR", distribution: "t" },
+    // { id: 17, name: "T Distribution - ∆AR", icon: "🔵", type: "line", key: "deltaAR", distribution: "t" },
+    // { id: 18, name: "T Distribution - ∆GEQ", icon: "🔵", type: "line", key: "deltaGEQ", distribution: "t" },
   
     { id: 19, name: "Exponential Distribution - RR", icon: "🔵", type: "line", key: "RR", distribution: "exponential" },
     { id: 20, name: "Exponential Distribution - PR", icon: "🔵", type: "line", key: "PR", distribution: "exponential" },
@@ -282,10 +283,18 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "exponential") {
-          data = await getExponentialDistributionData(unitId, candidateIds);
+          data = await getExponentialDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          });
           onWeibullSelect(false);
 
-          console.log("exponential data: ", getExponentialDistributionData(unitId, candidateIds));
+          console.log("exponential data: ", getExponentialDistributionData({
+            unitId,
+            candidatePpList,
+            key: selectedChart.key
+          }));
         } else if (selectedChart.distribution === "chi-square") {
           data = await getChiDistributionData({
             unitId,
@@ -429,10 +438,12 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         name: num(row.x),
         value: num(row.y),
       })) || []
-    : selectedChart.distribution === "uniform"
-    ? distributions[selectedKey]?.table?.map((row) => ({
-        name: num(row.stable),
-        value: num(row.x),
+      : selectedChart.distribution === "uniform"
+    ? distributions[selectedKey]?.table?.map((row, index) => ({
+        name: num(row.x),  // X value on x-axis
+        value: num(row.stable),  // Stable (0 or 1) on y-axis
+        stable: row.stable,  // Keep original for tooltip
+        index: index  // Keep index for reference
       })) || []
     : distributions[selectedKey]?.table?.map((row) => ({
         name: num(row.x),
@@ -440,7 +451,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       })) || [];
   
 
-      // Map chartProperties into Recharts-friendly props
+  // Map chartProperties into Recharts-friendly props
   const getLineStyle = () => {
     const styleMap = {
       solid: "",
@@ -478,96 +489,157 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
     const distributionParams = distributions[selectedKey]?.params;
     const mean = distributions[selectedKey]?.mean || 0;
+
+    console.log("distribution mean: ",  mean);
+
+    console.log("getReferenceLines distribution:", selectedChart.distribution);
+
     // Calculate reference line positions
     const getReferenceLines = () => {
       if (selectedChart.distribution === "normal") {
-        const mean = distributions[selectedKey]?.params?.mu || 0;
-        const sigma = distributions[selectedKey]?.params?.sigma || 1;
-        return [
-          { value: mean, label: 'Mean', color: '#000000', strokeWidth: 2 },
-          { value: +sigma, label: '+σ', color: '#ef4444', strokeWidth: 1 },
-          { value: -sigma, label: '-σ', color: '#ef4444', strokeWidth: 1 },
-          { value: +2 * sigma, label: '+2σ', color: '#f59e0b', strokeWidth: 1 },
-          { value: -2 * sigma, label: '-2σ', color: '#f59e0b', strokeWidth: 1 },
-          { value: +3 * sigma, label: '+3σ', color: '#84cc16', strokeWidth: 1 },
-          { value: -3 * sigma, label: '-3σ', color: '#84cc16', strokeWidth: 1 },
-        ];
+        const table = distributions[selectedKey]?.table || [];
+      
+        const zTargets = [-3, -2, -1, 0, 1, 2, 3];
+      
+        return zTargets
+          .map(z => {
+            // Find matching z row (allow small float tolerance)
+            const row = table.find(r => Math.abs(r.z - z) < 1e-6);
+            if (!row) return null;
+      
+            return {
+              z,
+              value: row.x,              // <-- THIS is the key fix
+              label: z === 0 ? "Mean (z=0)" : `z = ${z}`,
+              color:
+                z === 0 ? "#000000" :
+                Math.abs(z) === 1 ? "#ef4444" :
+                Math.abs(z) === 2 ? "#f59e0b" :
+                "#84cc16",
+              strokeWidth: z === 0 ? 2 : 1,
+              strokeDasharray: z === 0 ? "0" : "3 3"
+            };
+          })
+          .filter(Boolean);
       }
+      
 
       if (selectedChart.distribution === "exponential") {
+        // const dist = distributions[selectedKey];
+        // if (!dist || typeof dist.mean !== "number") return [];
+      
+        // const mean = dist.mean;
         const mean = distributions[selectedKey]?.mean || 0;
+        console.log("exponential mean: ", mean);
         return [
-          { 
-            value: mean, 
-            label: `Mean (${mean.toFixed(3)})`, 
-            color: '#dc2626', 
+          {
+            value: mean,
+            label: `Mean (μ = ${mean.toFixed(3)})`,
+            color: "#dc2626",
             strokeWidth: 2,
-            strokeDasharray: "3 3"
+            strokeDasharray: "4 4"
           }
         ];
       }
+      
 
       if (selectedChart.distribution === "uniform") {
-        const lines = [];
-        
-        // For bar charts, these will be horizontal lines (Y-axis reference)
-        if (mean !== undefined) {
-          lines.push({
-            value: mean,
-            label: `Mean (${mean.toFixed(3)})`,
-            color: '#dc2626',
-            strokeWidth: 2,
-            strokeDasharray: "3 3"
-          });
-        }
-        
-        if (distributionParams?.a !== undefined) {
-          lines.push({
-            value: distributionParams.a,
-            label: `Min (${distributionParams.a})`,
-            color: '#10b981',
-            strokeWidth: 1,
-            strokeDasharray: "2 2"
-          });
-        }
-        
-        if (distributionParams?.b !== undefined) {
-          lines.push({
-            value: distributionParams.b,
-            label: `Max (${distributionParams.b})`,
-            color: '#10b981',
-            strokeWidth: 1,
-            strokeDasharray: "2 2"
-          });
-        }
-        
-        return lines;
-      }
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart {...commonProps}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="name" 
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                tickFormatter={(value) => Number(value).toFixed(2)}
+                label={{ 
+                  value: "X Value", 
+                  position: "insideBottom", 
+                  offset: -10 
+                }}
+              />
+              <YAxis 
+                domain={[0, 1]}
+                ticks={[0, 1]}
+                tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
+                label={{ 
+                  value: "Pattern Status", 
+                  angle: -90, 
+                  position: "insideLeft",
+                  style: { textAnchor: 'middle' }
+                }}
+              />
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>
+                          X Value: {data.name.toFixed(3)}
+                        </p>
+                        <p style={{ margin: '5px 0 0 0', color: data.stable === 1 ? '#10b981' : '#ef4444' }}>
+                          Status: {data.stable === 1 ? 'Stable' : 'Unstable'}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              {renderReferenceLines()}
+              <Bar 
+                dataKey="value" 
+                fill={(entry) => entry.stable === 1 ? '#10b981' : '#ef4444'}
+                stroke={chartProperties.lineColor}
+                strokeWidth={1}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`} 
+                    fill={entry.stable === 1 ? '#10b981' : '#ef4444'} 
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        );
+      } 
 
-      if (selectedChart.distribution === "chi-square") {
-        const xc = distributions?.distribution?.parameters?.xc;
-        const x2Statistic = distributions?.distribution?.parameters?.x2Statistic;
+      if (selectedChart.distribution?.includes("chi")) {
+        const params = distributions[selectedKey]?.params;
+        if (!params) return [];
+      
+        console.log("CHI PARAMS:", params);
+      
         const lines = [];
-        
-        if (xc) {
+      
+        if (Number.isFinite(params.xc)) {
           lines.push({
-            value: xc,
-            label: `Critical Value (${xc.toFixed(2)})`,
-            color: '#dc2626',
+            value: params.xc,
+            label: `Critical Value (χ²c = ${params.xc.toFixed(2)})`,
+            color: "#dc2626",
             strokeWidth: 2,
-            strokeDasharray: "3 3"
+            strokeDasharray: "4 4"
           });
         }
-        
-        if (x2Statistic) {
+      
+        if (Number.isFinite(params.x2Statistic)) {
           lines.push({
-            value: x2Statistic,
-            label: `X² Statistic (${x2Statistic.toFixed(2)})`,
-            color: '#3b82f6',
-            strokeWidth: 2
+            value: params.x2Statistic,
+            label: `χ² Statistic = ${params.x2Statistic.toFixed(2)}`,
+            color: "#2563eb",
+            strokeWidth: 2,
+            strokeDasharray: "2 2"
           });
         }
-        
+      
         return lines;
       }
 
@@ -609,15 +681,17 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               x={line.value}
               stroke={line.color}
               strokeWidth={line.strokeWidth}
-              strokeDasharray={line.value === mean ? "0" : line.strokeDasharray || "3 3"}
+              strokeDasharray={line.strokeDasharray || "3 3"}
+              ifOverflow="extendDomain"
               label={{
                 value: line.label,
-                position: 'top',
+                position: "top",
                 fill: line.color,
                 fontSize: 12,
-                fontWeight: 'bold'
+                fontWeight: "bold"
               }}
             />
+
           );
         }
       });
@@ -661,13 +735,13 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               
               {/* Add vertical line at eta value */}
               
-              {eta && (
+              {eta && !isNaN(eta) && (
                 <ReferenceLine
-                  x={eta}
-                  stroke="#ff0000" // Changed to RED for visibility
-                  strokeWidth={3} // Thicker
+                  x={Number(eta)}
+                  stroke="#ff0000"
+                  strokeWidth={2}
                   label={{
-                    value: `η = ${eta.toFixed(3)}`,
+                    value: `η = ${Number(eta).toFixed(3)}`,
                     position: 'top',
                     fill: '#ff0000',
                     fontSize: 14,
@@ -720,9 +794,17 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       return (
         <AreaChart {...commonProps}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
-            <Label value={getXAxisLabel()} position="insideBottom"  textAnchor="middle" offset={-10} />
+          <XAxis
+            dataKey="name"
+            type="number"
+            domain={['dataMin', 'dataMax']}
+            allowDataOverflow
+            tickFormatter={(v) => Number(v).toFixed(2)}
+          >
+            <Label value="Chi-Square Value" position="insideBottom" offset={-10} />
           </XAxis>
+
+
           <YAxis>
             <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
           </YAxis>
@@ -747,6 +829,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       case "bar":
         // For uniform distribution, we need special handling
         if (selectedChart.distribution === "uniform") {
+
+          const xAxisTicks = Array.from({ length: 11 }, (_, i) => i * 0.1);
           return (
             <BarChart 
               width={600} 
@@ -756,45 +840,38 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                // dataKey="name"
-                // label={{ 
-                //   value: "Stable Status", 
-                //   position: "insideBottom", 
-                //   offset: -10 
-                // }}
-                
+                dataKey="name"
+                type="number"  // Add this to treat as numerical
+                ticks={xAxisTicks}  // Add specific ticks for better readability
+                domain={['dataMin', 'dataMax']}  // Add this for proper range
+                tickFormatter={(value) => Number(value).toFixed(2)}  // Format to 2 decimals
               >
                 <Label 
-                  value="Stable Status" 
+                  value="X Value" 
                   position="insideBottom" 
                   offset={-10} 
                   textAnchor="middle"
                 />
               </XAxis>
-              <YAxis >
+              <YAxis 
+                domain={[0, 1]}
+                ticks={[0, 1]}
+                tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
+              >
                 <Label 
-                  value="X Value" 
+                  value="Pattern Status" 
                   angle={-90} 
                   position="insideLeft" 
                   offset={10} 
                   textAnchor="middle"
                 />
               </YAxis>
-              {/* In the uniform distribution bar chart section, update the Tooltip: */}
               <Tooltip 
                 formatter={(value, name, props) => {
                   const dataPoint = props.payload;
-                  if (dataPoint?.originalValues) {
-                    // Show all original x values for this stable status
-                    return [
-                      `Average X: ${value.toFixed(4)}`,
-                      `Values: ${dataPoint.originalValues.join(', ')}`,
-                      `Count: ${dataPoint.count}`
-                    ];
-                  }
-                  return [`X Value: ${value.toFixed(4)}`];
+                  return [`X: ${dataPoint.name.toFixed(3)}`, `Status: ${dataPoint.stable === 1 ? 'Stable' : 'Unstable'}`];
                 }}
-                labelFormatter={(label) => `Stable: ${label === '1' ? 'Yes' : 'No'}`}
+                labelFormatter={(label) => `X Value: ${Number(label).toFixed(3)}`}
               />
               <Legend
                 verticalAlign="bottom"
@@ -805,10 +882,17 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               <Bar 
                 dataKey="value" 
                 fill="#3b82f6" 
-                name="X Value"
-                barSize={60}
+                name="Pattern Status"
+                barSize={40}
                 radius={[4, 4, 0, 0]}
-              />
+              >
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.stable === 1 ? '#3b82f6' : '#ef4444'} 
+                  />
+                ))}
+              </Bar>
             </BarChart>
           );
         } else {
@@ -878,18 +962,18 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 }}
               />
 
-                <ReferenceLine 
-                  x={eta}
-                  stroke="#10b981"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: eta,
-                    position: 'top',
-                    fill: '#10b981',
-                    fontSize: 10
-                  }}
-                />
+              <ReferenceLine 
+                x={eta}
+                stroke="#10b981"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                label={{
+                  value: eta,
+                  position: 'top',
+                  fill: '#10b981',
+                  fontSize: 10
+                }}
+              />
 
               
               {/* Add vertical line at 0.700 if it's within the data range */}
@@ -956,12 +1040,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               )}
             </LineChart>
           );
-        } else if (selectedChart.distribution === "weibull-risk") {
+        }else if (selectedChart.distribution === "weibull-risk") {
+          // Get eta value from the distributions
+          const distribution = distributions[selectedKey];
+          const eta = distribution?.params?.eta;
+          const beta = distribution?.params?.beta;
+          
+          console.log("Weibull Risk Distribution:", distribution);
+          console.log("eta value:", eta);
+          console.log("beta value:", beta);
+          
           return (
             <LineChart width={600} height={400} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}
+                dataKey="name" 
+                tickFormatter={(value) => Number(value).toFixed(2)}
                 label={{ value: "Time/Value (t)", position: "insideBottom", offset: -14 }}
                 textAnchor="middle"
               />
@@ -976,7 +1070,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   dy: 0
                 }}
               />
-
+      
               <Tooltip 
                 formatter={(value, name) => {
                   const labels = {
@@ -996,17 +1090,16 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   paddingLeft: 60
                 }}
               />
-
-              
-              {/* Add vertical line at eta value */}
-              {selectedChart.distribution === "weibull-risk" && distributions[selectedKey]?.params?.eta && (
+      
+              {/* Add vertical line at eta value - FIXED */}
+              {eta !== undefined && eta !== null && !isNaN(Number(eta)) && (
                 <ReferenceLine 
-                  x={distributions[selectedKey].params.eta}
+                  x={Number(eta)}
                   stroke="#dc2626"
                   strokeWidth={2}
                   strokeDasharray="3 3"
                   label={{
-                    value: `η = ${distributions[selectedKey].params.eta.toFixed(3)}`,
+                    value: `η = ${Number(eta).toFixed(3)}`,
                     position: 'top',
                     fill: '#dc2626',
                     fontSize: 12
@@ -1014,29 +1107,31 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 />
               )}
               
-              {/* Add horizontal line at 0.5 (50% risk) */}
-              <ReferenceLine 
-                x={0.7}
-                stroke="#f59e0b"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                label={{
-                  value: '0.700',
-                  position: 'top',
-                  fill: '#f59e0b',
-                  fontSize: 10
-                }}
-              />
-              
               {/* Add information about beta */}
-              {distributions[selectedKey]?.params?.beta && (
+              {beta !== undefined && beta !== null && !isNaN(Number(beta)) && (
                 <ReferenceLine 
-                  x={chartData[chartData.length - 1]?.name * 0.95 || 0}
+                  x={chartData.length > 0 ? chartData[chartData.length - 1]?.name * 0.95 || 0 : 0}
                   stroke="transparent"
                   label={{
-                    value: `β = ${distributions[selectedKey].params.beta}`,
+                    value: `β = ${Number(beta).toFixed(3)}`,
                     position: 'top',
                     fill: '#6b7280',
+                    fontSize: 10
+                  }}
+                />
+              )}
+              
+              {/* Add vertical line at 0.700 (if applicable) */}
+              {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + 0.05) && (
+                <ReferenceLine 
+                  x={0.7}
+                  stroke="#f59e0b"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  label={{
+                    value: '0.700',
+                    position: 'top',
+                    fill: '#f59e0b',
                     fontSize: 10
                   }}
                 />
@@ -1077,12 +1172,19 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               )}
             </LineChart>
           );
-        }
+        }  
+        
         default:
           return (
             <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)} >
+            <XAxis
+              dataKey="name"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              allowDataOverflow={true}
+              tickFormatter={(value) => Number(value).toFixed(2)}
+            >
               <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
             </XAxis>
             <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(2)}>
@@ -1097,6 +1199,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
             {renderReferenceLines()}
             
+            {selectedChart.distribution === "exponential" && (
+              <ReferenceLine
+                x={mean}
+                stroke="#10b981"
+                strokeWidth={1}
+                strokeDasharray="4 4"
+                label={{
+                  value: `Mean (μ = ${mean.toFixed(3)})`,
+                  position: "top",
+                  fill: '#f59e0b',
+                  fontSize: 12,
+                  fontWeight: "bold"
+                }}
+              />
+            )}
+
             <Line 
               type="monotone" 
               dataKey="value" 

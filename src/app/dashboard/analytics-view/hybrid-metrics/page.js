@@ -136,6 +136,15 @@ export default function HybridMetrics() {
     setResetSignal((prev) => prev + 1);
   };
 
+  useEffect(() => {
+    // Reset secondary input values
+    setSecondaryValues(null);
+  
+    // Trigger SecondaryInputForm reset
+    setResetSignal((prev) => prev + 1);
+  }, [selectedSort]);
+  
+
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
