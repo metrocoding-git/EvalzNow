@@ -215,7 +215,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             id: "3"
           },
           {
-            name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
             icon: "🔵",
             type: "scatter-2d",
             id: "4"
@@ -245,7 +245,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       id: "2"
     },
   
-    ...(isCommunicativeOrTheory
+    ...(unitType === "Third Parameter"
       ? [
           {
             name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
@@ -254,16 +254,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             id: "3"
           },
           {
-            name: "Productive Ratio (PR) vs. Acuity Ratio (AR) Cross Plot",
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
             icon: "🔵",
             type: "scatter-2d",
             id: "4"
-          }
-        ]
-      : []),
-  
-    ...(unitType === "Third Parameter"
-      ? [
+          },
           {
             name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
             icon: "🔵",
@@ -306,10 +301,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       case "4":
         return {
-          xKey: "PRN",
-          yKey: "ARN",
-          xLabel: "PR",
-          yLabel: "AR"
+          xKey: "ARN",
+          yKey: "PRN",
+          xLabel: "AR",
+          yLabel: "PR"
         };
   
       case "5": // 🔥 3D Scatter
@@ -698,9 +693,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const renderBiasLines = (unitType, chartType, xKey, yKey) => {
     // Only show bias lines for specific unit types
-    if (unitType !== "Communicative I/O" && unitType !== "Theory & Practice") {
-      return null;
-    }
+    // if (unitType !== "Communicative I/O" && unitType !== "Theory & Practice") {
+    //   return null;
+    // }
   
     const biasLines = Object.keys(biasLinesData);
     const lineStyles = {
@@ -994,7 +989,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           >
             <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+          <Tooltip trigger="item"   formatter={(value, name) => [value.toFixed(2), name]} />
           <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
           {/* Reference Lines */}
@@ -1081,21 +1076,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={growthTargetPoints} 
               dataKey={yKey}
-              fill="#f59e0b" 
+              fill="#2563eb" // 🔵 blue
               name="Growth Targets"
               shape={(props) => (
-                <rect 
-                  x={props.cx - 3}  // ✅ Reduced from 5 to 3
-                  y={props.cy - 3}  // ✅ Reduced from 5 to 3
-                  width={6}         // ✅ Reduced from 10 to 6
-                  height={6}        // ✅ Reduced from 10 to 6
-                  fill="#f59e0b" 
-                  stroke="#000000"
-                  strokeWidth={1}
+                <circle 
+                  cx={props.cx}
+                  cy={props.cy}
+                  r={3}
+                  fill="#2563eb"
                 />
               )}
             />
           )}
+
           
           {/* IC Curves */}
           {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
@@ -1116,7 +1109,45 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // Check if we should show growth target data
     const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
 
+    const positiveData = tableData.filter(r => r.ppId > 0);
+    const negativeData = tableData.filter(r => r.ppId < 0);
 
+
+    const plotData = [];
+
+// 🟢 Positive PP IDs
+if (positiveData.length > 0) {
+  plotData.push({
+    x: positiveData.map(r => r.RRN),
+    y: positiveData.map(r => r.PRN),
+    z: positiveData.map(r => r.ARN),
+    type: "scatter3d",
+    mode: "markers",
+    marker: {
+      size: 4,
+      color: "#22c55e" // green
+    },
+    name: "Positive PP IDs"
+  });
+}
+
+// 🔴 Negative PP IDs
+if (negativeData.length > 0) {
+  plotData.push({
+    x: negativeData.map(r => r.RRN),
+    y: negativeData.map(r => r.PRN),
+    z: negativeData.map(r => r.ARN),
+    type: "scatter3d",
+    mode: "markers",
+    marker: {
+      size: 4,
+      color: "#ef4444" // red
+    },
+    name: "Negative PP IDs"
+  });
+}
+
+  
     if (showGrowthTarget && growthTargetData.length > 0) {
       const gtPoints3D = [];
       
@@ -1151,9 +1182,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           type: "scatter3d",
           mode: "markers",
           marker: { 
-            size: 8,
-            color: '#8b5cf6',
-            symbol: 'square'
+            size: 4,
+            color: '#2563eb',
+            symbol: 'circle'
           },
           name: "Growth Targets"
         });
@@ -1171,21 +1202,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const interaction4 = Interaction4();
     const interaction5 = Interaction5();
   
-    const plotData = [
-      {
-        x: tableData.map(r => r.RRN),
-        y: tableData.map(r => r.PRN),
-        z: tableData.map(r => r.ARN),
-        type: "scatter3d",
-        mode: "markers",
-        marker: { 
-          size: 4,
-          color: '#3b82f6'
-        },
-        name: "Data Points"
-      }
-    ];
-  
+    
     // Add average points if enabled
     if (showAverages) {
       plotData.push({
@@ -1212,11 +1229,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         type: "scatter3d",
         mode: "markers",
         marker: { 
-          size: 6,
-          color: '#10b981',
+          size: 4,
+          color: '#8b5cf6',
           symbol: 'star'
         },
-        name: "Growth Targets"
+        name: "Performance Points (G)"
       });
     }
   
@@ -1462,7 +1479,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         return renderScatter(tableData, "RRN", "ARN", "RR (X)", "AR (Y)", unitSignature, unitType);
   
       case "4": // PR vs AR
-        return renderScatter(tableData, "PRN", "ARN", "AR (X)", "PR (Y)", unitSignature, unitType);
+        return renderScatter(tableData, "ARN", "PRN", "PR (X)", "AR (Y)", unitSignature, unitType);
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
