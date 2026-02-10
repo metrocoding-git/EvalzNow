@@ -478,22 +478,21 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     if (loading) {
       return <p className="text-center">Loading...</p>;
     }
-
+  
     if (error) {
       return <p className="text-center text-red-600">{error}</p>;
     }
-
+  
     if (!chartData || chartData.length === 0) {
       return <p className="text-center">No data available for the selected chart.</p>;
     }
-
+  
     const distributionParams = distributions[selectedKey]?.params;
     const mean = distributions[selectedKey]?.mean || 0;
-
+  
     console.log("distribution mean: ",  mean);
-
     console.log("getReferenceLines distribution:", selectedChart.distribution);
-
+  
     // Calculate reference line positions
     const getReferenceLines = () => {
       if (selectedChart.distribution === "normal") {
@@ -503,13 +502,12 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       
         return zTargets
           .map(z => {
-            // Find matching z row (allow small float tolerance)
             const row = table.find(r => Math.abs(r.z - z) < 1e-6);
             if (!row) return null;
       
             return {
               z,
-              value: row.x,              // <-- THIS is the key fix
+              value: row.x,
               label: z === 0 ? "Mean (z=0)" : `z = ${z}`,
               color:
                 z === 0 ? "#000000" :
@@ -522,13 +520,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           })
           .filter(Boolean);
       }
-      
-
+  
       if (selectedChart.distribution === "exponential") {
-        // const dist = distributions[selectedKey];
-        // if (!dist || typeof dist.mean !== "number") return [];
-      
-        // const mean = dist.mean;
         const mean = distributions[selectedKey]?.mean || 0;
         console.log("exponential mean: ", mean);
         return [
@@ -541,79 +534,39 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           }
         ];
       }
+  
+      if (selectedChart.distribution === "f") {
+        const params = distributions?.distribution?.parameters;
+        if (!params) return [];
       
-
-      if (selectedChart.distribution === "uniform") {
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart {...commonProps}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                type="number"
-                domain={['dataMin', 'dataMax']}
-                tickFormatter={(value) => Number(value).toFixed(2)}
-                label={{ 
-                  value: "X Value", 
-                  position: "insideBottom", 
-                  offset: -10 
-                }}
-              />
-              <YAxis 
-                domain={[0, 1]}
-                ticks={[0, 1]}
-                tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
-                label={{ 
-                  value: "Pattern Status", 
-                  angle: -90, 
-                  position: "insideLeft",
-                  style: { textAnchor: 'middle' }
-                }}
-              />
-              <Tooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <div style={{
-                        backgroundColor: 'white',
-                        padding: '10px',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px'
-                      }}>
-                        <p style={{ margin: 0, fontWeight: 'bold' }}>
-                          X Value: {data.name.toFixed(3)}
-                        </p>
-                        <p style={{ margin: '5px 0 0 0', color: data.stable === 1 ? '#10b981' : '#ef4444' }}>
-                          Status: {data.stable === 1 ? 'Stable' : 'Unstable'}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              {renderReferenceLines()}
-              <Bar 
-                dataKey="value" 
-                fill={(entry) => entry.stable === 1 ? '#10b981' : '#ef4444'}
-                stroke={chartProperties.lineColor}
-                strokeWidth={1}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`} 
-                    fill={entry.stable === 1 ? '#10b981' : '#ef4444'} 
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      } 
-
-      if (selectedChart.distribution?.includes("chi")) {
-        const params = distributions[selectedKey]?.params;
+        const lines = [];
+      
+        if (Number.isFinite(params.fc)) {
+          lines.push({
+            value: params.fc,
+            label: `F Critical (Fc = ${params.fc.toFixed(3)})`,
+            color: "#dc2626",
+            strokeWidth: 2,
+            strokeDasharray: "4 4"
+          });
+        }
+      
+        if (Number.isFinite(params.fStatistic)) {
+          lines.push({
+            value: params.fStatistic,
+            label: `F Statistic = ${params.fStatistic.toFixed(3)}`,
+            color: "#2563eb",
+            strokeWidth: 2,
+            strokeDasharray: "2 2"
+          });
+        }
+      
+        return lines;
+      }
+  
+      if (selectedChart.distribution === "chi-square") {
+        // FIX: Use distributions?.distribution?.parameters instead of distributions[selectedKey]?.params
+        const params = distributions?.distribution?.parameters;
         if (!params) return [];
       
         console.log("CHI PARAMS:", params);
@@ -623,7 +576,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.xc)) {
           lines.push({
             value: params.xc,
-            label: `Critical Value (χ²c = ${params.xc.toFixed(2)})`,
+            label: `Critical Value (χ²c = ${params.xc.toFixed(3)})`,
             color: "#dc2626",
             strokeWidth: 2,
             strokeDasharray: "4 4"
@@ -633,7 +586,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.x2Statistic)) {
           lines.push({
             value: params.x2Statistic,
-            label: `χ² Statistic = ${params.x2Statistic.toFixed(2)}`,
+            label: `χ² Statistic = ${params.x2Statistic.toFixed(3)}`,
             color: "#2563eb",
             strokeWidth: 2,
             strokeDasharray: "2 2"
@@ -642,78 +595,66 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       
         return lines;
       }
-
+  
       return [];
     };
-
+  
     // Render reference lines
     const renderReferenceLines = () => {
       const lines = getReferenceLines();
       if (!lines || lines.length === 0) return null;
-      
-      // Check if we're rendering a bar chart (uniform distribution)
-      const isBarChart = selectedChart.distribution === "uniform" && selectedChart.type === "bar";
-      
-      return lines.map((line, index) => {
-        if (isBarChart) {
-          // For bar charts, use y prop for horizontal lines
-          return (
-            <ReferenceLine
-              key={index}
-              y={line.value}
-              stroke={line.color}
-              strokeWidth={line.strokeWidth}
-              strokeDasharray={line.strokeDasharray}
-              label={{
-                value: line.label,
-                position: 'right',
-                fill: line.color,
-                fontSize: 12,
-                fontWeight: 'bold'
-              }}
-            />
-          );
-        } else {
-          // For line/area charts, use x prop for vertical lines
-          return (
-            <ReferenceLine
-              key={index}
-              x={line.value}
-              stroke={line.color}
-              strokeWidth={line.strokeWidth}
-              strokeDasharray={line.strokeDasharray || "3 3"}
-              ifOverflow="extendDomain"
-              label={{
-                value: line.label,
-                position: "top",
-                fill: line.color,
-                fontSize: 12,
-                fontWeight: "bold"
-              }}
-            />
-
-          );
-        }
-      });
+    
+      return lines.map((line, index) => (
+        <ReferenceLine
+          key={index}
+          x={line.value}
+          stroke={line.color}
+          strokeWidth={line.strokeWidth}
+          strokeDasharray={line.strokeDasharray || "3 3"}
+          ifOverflow="extendDomain"
+          label={{
+            value: line.label,
+            position: "top",
+            fill: line.color,
+            fontSize: 12,
+            fontWeight: "bold"
+          }}
+        />
+      ));
     };
-
-
+  
     const commonProps = {
       data: chartData,
       margin: { top: 20, right: 30, left: 0, bottom: 20 }
     };
-
+  
     switch (selectedChart.type) {
       case "area":
         if (selectedChart.distribution === "weibull-cdf") {
-          const eta = Number(distributions[selectedKey].params.eta);
+          const eta = Number(distributions[selectedKey]?.params?.eta);
+          const xValues = chartData.map(d => Number(d.name));
+  
+          const minX = Math.min(...xValues, Number(eta));
+          const maxX = Math.max(...xValues, Number(eta));
+  
           console.log("eta value:: ", eta);
           return (
             <AreaChart {...commonProps} width={600} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tickFormatter={(value) => Number(value).toFixed(2)}>
-                <Label value="Time/Value" position="insideBottom"  textAnchor="middle" offset={-10} />
+              <XAxis
+                dataKey="name"
+                type="number"
+                domain={[minX, maxX]}
+                tickFormatter={(value) => Number(value).toFixed(2)}
+              >
+                <Label
+                  value="Time / Value (t)"
+                  position="insideBottom"
+                  offset={-10}
+                  textAnchor="middle"
+                />
               </XAxis>
+  
               <YAxis domain={[0, 1]} tickFormatter={(value) => Number(value).toFixed(2)} >
                 <Label value="Probability" angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
               </YAxis>
@@ -733,25 +674,23 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
               />
               
-              {/* Add vertical line at eta value */}
-              
-              {eta && !isNaN(eta) && (
+              {Number.isFinite(Number(eta)) && (
                 <ReferenceLine
                   x={Number(eta)}
-                  stroke="#ff0000"
+                  stroke="#dc2626"
                   strokeWidth={2}
+                  strokeDasharray="3 3"
+                  ifOverflow="extendDomain"
                   label={{
                     value: `η = ${Number(eta).toFixed(3)}`,
-                    position: 'top',
-                    fill: '#ff0000',
-                    fontSize: 14,
-                    fontWeight: 'bold'
+                    position: "top",
+                    fill: "#dc2626",
+                    fontSize: 12,
+                    fontWeight: "bold"
                   }}
                 />
               )}
-           
               
-              {/* Add vertical line at 0.700 (if applicable) */}
               <ReferenceLine 
                 x={0.700}
                 stroke="#10b981"
@@ -765,7 +704,6 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 }}
               />
               
-              {/* CDF Area */}
               <Area
                 type="monotone"
                 dataKey="cdf"
@@ -778,7 +716,6 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 name="Cumulative Distribution (F)"
               />
               
-              {/* Reliability Area */}
               <Area
                 type="monotone"
                 dataKey="reliability"
@@ -791,120 +728,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             </AreaChart>
           );
         }
-      return (
-        <AreaChart {...commonProps}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="name"
-            type="number"
-            domain={['dataMin', 'dataMax']}
-            allowDataOverflow
-            tickFormatter={(v) => Number(v).toFixed(2)}
-          >
-            <Label value="Chi-Square Value" position="insideBottom" offset={-10} />
-          </XAxis>
-
-
-          <YAxis>
-            <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
-          </YAxis>
-          <Tooltip />
-          <Legend
-            verticalAlign="bottom"
-            align="center"
-            wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-          />
-          {renderReferenceLines()}
-          <Area
-            type="monotone" 
-            dataKey="value" 
-            stroke="#3b82f6" 
-            fill="#3b82f6" 
-            fillOpacity={0.3} 
-            name="Chi-Square Distribution"
-          />
-        </AreaChart>
-      );
-
-      case "bar":
-        // For uniform distribution, we need special handling
-        if (selectedChart.distribution === "uniform") {
-
-          const xAxisTicks = Array.from({ length: 11 }, (_, i) => i * 0.1);
-          return (
-            <BarChart 
-              width={600} 
-              height={400}
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-            >
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
+              <XAxis
                 dataKey="name"
-                type="number"  // Add this to treat as numerical
-                ticks={xAxisTicks}  // Add specific ticks for better readability
-                domain={['dataMin', 'dataMax']}  // Add this for proper range
-                tickFormatter={(value) => Number(value).toFixed(2)}  // Format to 2 decimals
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                allowDataOverflow
+                tickFormatter={(v) => Number(v).toFixed(2)}
               >
-                <Label 
-                  value="X Value" 
-                  position="insideBottom" 
-                  offset={-10} 
-                  textAnchor="middle"
-                />
+                <Label value="Chi-Square Value" position="insideBottom" offset={-10} />
               </XAxis>
-              <YAxis 
-                domain={[0, 1]}
-                ticks={[0, 1]}
-                tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
-              >
-                <Label 
-                  value="Pattern Status" 
-                  angle={-90} 
-                  position="insideLeft" 
-                  offset={10} 
-                  textAnchor="middle"
-                />
-              </YAxis>
-              <Tooltip 
-                formatter={(value, name, props) => {
-                  const dataPoint = props.payload;
-                  return [`X: ${dataPoint.name.toFixed(3)}`, `Status: ${dataPoint.stable === 1 ? 'Stable' : 'Unstable'}`];
-                }}
-                labelFormatter={(label) => `X Value: ${Number(label).toFixed(3)}`}
-              />
-              <Legend
-                verticalAlign="bottom"
-                align="center"
-                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-              />
-              
-              <Bar 
-                dataKey="value" 
-                fill="#3b82f6" 
-                name="Pattern Status"
-                barSize={40}
-                radius={[4, 4, 0, 0]}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.stable === 1 ? '#3b82f6' : '#ef4444'} 
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          );
-        } else {
-          // For other bar charts (not uniform)
-          return (
-            <BarChart {...commonProps}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name">
-                <Label value={getXAxisLabel()} position="insideBottom" textAnchor="middle" offset={-10} />
-              </XAxis>
+  
               <YAxis>
-                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" offset={10} />
+                <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
               </YAxis>
               <Tooltip />
               <Legend
@@ -912,136 +751,230 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 align="center"
                 wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
               />
-              <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
-              <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
-            </BarChart>
+              
+              {renderReferenceLines()}
+              <Area
+                type="monotone" 
+                dataKey="value" 
+                stroke="#3b82f6" 
+                fill="#3b82f6" 
+                fillOpacity={0.3} 
+                name="Chi-Square Distribution"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        );
+  
+      case "bar":
+        if (selectedChart.distribution === "uniform") {
+          const xAxisTicks = Array.from({ length: 11 }, (_, i) => i * 0.1);
+          return (
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name"
+                  type="number"
+                  ticks={xAxisTicks}
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
+                >
+                  <Label 
+                    value="X Value" 
+                    position="insideBottom" 
+                    offset={-10} 
+                    textAnchor="middle"
+                  />
+                </XAxis>
+                <YAxis 
+                  domain={[0, 1]}
+                  ticks={[0, 1]}
+                  tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
+                >
+                  <Label 
+                    value="Pattern Status" 
+                    angle={-90} 
+                    position="insideLeft" 
+                    offset={10} 
+                    textAnchor="middle"
+                  />
+                </YAxis>
+                <Tooltip 
+                  formatter={(value, name, props) => {
+                    const dataPoint = props.payload;
+                    return [`X: ${dataPoint.name.toFixed(3)}`, `Status: ${dataPoint.stable === 1 ? 'Stable' : 'Unstable'}`];
+                  }}
+                  labelFormatter={(label) => `X Value: ${Number(label).toFixed(3)}`}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                />
+                
+                <Bar 
+                  dataKey="value" 
+                  fill="#3b82f6" 
+                  name="Pattern Status"
+                  barSize={40}
+                  radius={[4, 4, 0, 0]}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.stable === 1 ? '#3b82f6' : '#ef4444'} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          );
+        } else {
+          return (
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart {...commonProps}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name">
+                  <Label value={getXAxisLabel()} position="insideBottom" textAnchor="middle" offset={-10} />
+                </XAxis>
+                <YAxis>
+                  <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" offset={10} />
+                </YAxis>
+                <Tooltip />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                />
+                <Bar dataKey="xValue" fill="#3b82f6" name="X Values" />
+                <Bar dataKey="yValue" fill="#10b981" name="Y Values" />
+              </BarChart>
+            </ResponsiveContainer>
           );
         }
-
+  
       case "line":
         if (selectedChart.distribution === "weibull-pdf") {
           const eta = num(distributions?.[selectedKey]?.params?.eta);	
           console.log("eta value:: ", eta);
+  
+          const xValues = chartData.map(d => d.name);
+          const minX = Math.min(...xValues, Number(eta));
+          const maxX = Math.max(...xValues, Number(eta));
+  
           return (
-            <LineChart width={600} height={460} data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name"
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -15 }}
-                textAnchor="middle"
-                tickFormatter={(value) => Number(value).toFixed(2)}
-              />
-              <YAxis
-                tickFormatter={(value) => Number(value).toFixed(2)} 
-                label={{
-                  value: "Probability Density f(t)",
-                  angle: -90,
-                  position: "insideLeft",
-                  textAnchor: "middle",
-                  dy: 0
-                }}
-              />
-
-              <Tooltip 
-                formatter={(value, name) => {
-                  const labels = {
-                    pdf: 'Probability Density f(t)',
-                    cumulative: 'Cumulative F(t)'
-                  };
-                  return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
-                }}
-                labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
-              />
-              <Legend
-                verticalAlign="bottom"
-                align="center"
-                height={60}
-                wrapperStyle={{
-                  bottom: -25,
-                  paddingLeft: 10
-                }}
-              />
-
-              <ReferenceLine 
-                x={eta}
-                stroke="#10b981"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                label={{
-                  value: eta,
-                  position: 'top',
-                  fill: '#10b981',
-                  fontSize: 10
-                }}
-              />
-
-              
-              {/* Add vertical line at 0.700 if it's within the data range */}
-              {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + (distributions[selectedKey]?.params?.step || 0.05)) && (
-                <ReferenceLine 
-                  x={0.700}
-                  stroke="#10b981"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
+            <ResponsiveContainer width="100%" height={460}>
+              <LineChart data={chartData} margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name"
+                  type="number"
+                  domain={[minX, maxX]}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
+                  label={{ value: "Time / Value (t)", position: "insideBottom", offset: -15 }}
+                />
+  
+                <YAxis
+                  tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: '0.700',
-                    position: 'top',
-                    fill: '#10b981',
-                    fontSize: 10
+                    value: "Probability Density f(t)",
+                    angle: -90,
+                    position: "insideLeft",
+                    textAnchor: "middle",
+                    dy: 0
                   }}
                 />
-              )}
-              
-              {/* Add information about beta (shape parameter) */}
-              {distributions[selectedKey]?.params?.beta && (
-                <ReferenceLine 
-                  x={chartData[chartData.length - 1]?.name * 0.95 || 0}
-                  stroke="transparent"
-                  label={{
-                    value: `β = ${distributions[selectedKey].params.beta}`,
-                    position: 'top',
-                    fill: '#6b7280',
-                    fontSize: 10
+  
+                <Tooltip 
+                  formatter={(value, name) => {
+                    const labels = {
+                      pdf: 'Probability Density f(t)',
+                      cumulative: 'Cumulative F(t)'
+                    };
+                    return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                  }}
+                  labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  height={60}
+                  wrapperStyle={{
+                    bottom: -25,
+                    paddingLeft: 10
                   }}
                 />
-              )}
-              
-              <Line 
-                type="monotone"
-                dataKey="pdf"
-                stroke={chartProperties.lineColor}
-                strokeWidth={chartProperties.lineThickness}
-                strokeDasharray={getLineStyle()}
-                dot={chartProperties.hideSymbols ? false : {
-                  r: chartProperties.symbolScaleSize,
-                  stroke: chartProperties.symbolColor,
-                  fill: chartProperties.symbolColor
-                }}
-                activeDot={{
-                  r: chartProperties.symbolScaleSize + 1,
-                  stroke: chartProperties.symbolColor,
-                  fill: chartProperties.symbolColor
-                }}
-                hide={!chartProperties.visibility}
-                name="Weibull PDF f(t)"
-              />
-              
-              {/* Optionally show CDF as a dashed line for reference */}
-              {chartData[0]?.cumulative && (
+  
+                {Number.isFinite(Number(eta)) && (
+                  <ReferenceLine 
+                    x={Number(eta)}
+                    stroke="#dc2626"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    ifOverflow="extendDomain"
+                    label={{
+                      value: `η = ${Number(eta).toFixed(3)}`,
+                      position: "top",
+                      fill: "#dc2626",
+                      fontSize: 12,
+                      fontWeight: "bold"
+                    }}
+                  />
+                )}
+                
+                {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + (distributions[selectedKey]?.params?.step || 0.05)) && (
+                  <ReferenceLine 
+                    x={0.700}
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    label={{
+                      value: '0.700',
+                      position: 'top',
+                      fill: '#10b981',
+                      fontSize: 10
+                    }}
+                  />
+                )}
+                
                 <Line 
                   type="monotone"
-                  dataKey="cumulative"
-                  stroke="#9ca3af"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
-                  dot={false}
-                  name="CDF F(t) (reference)"
+                  dataKey="pdf"
+                  stroke={chartProperties.lineColor}
+                  strokeWidth={chartProperties.lineThickness}
+                  strokeDasharray={getLineStyle()}
+                  dot={chartProperties.hideSymbols ? false : {
+                    r: chartProperties.symbolScaleSize,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  activeDot={{
+                    r: chartProperties.symbolScaleSize + 1,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  hide={!chartProperties.visibility}
+                  name="Weibull PDF f(t)"
                 />
-              )}
-            </LineChart>
+                
+                {chartData[0]?.cumulative && (
+                  <Line 
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke="#9ca3af"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    dot={false}
+                    name="CDF F(t) (reference)"
+                  />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
           );
-        }else if (selectedChart.distribution === "weibull-risk") {
-          // Get eta value from the distributions
+        } else if (selectedChart.distribution === "weibull-risk") {
           const distribution = distributions[selectedKey];
           const eta = distribution?.params?.eta;
           const beta = distribution?.params?.beta;
@@ -1049,195 +982,191 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           console.log("Weibull Risk Distribution:", distribution);
           console.log("eta value:", eta);
           console.log("beta value:", beta);
-          
+          const xValues = chartData.map(d => d.name);
+  
+          const minX = Math.min(...xValues, 0.7, Number(eta));
+          const maxX = Math.max(...xValues, 0.7, Number(eta));
+  
           return (
-            <LineChart width={600} height={400} data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                tickFormatter={(value) => Number(value).toFixed(2)}
-                label={{ value: "Time/Value (t)", position: "insideBottom", offset: -14 }}
-                textAnchor="middle"
-              />
-              <YAxis
-                domain={[0, 1]}
-                tickFormatter={(value) => Number(value).toFixed(2)} 
-                label={{
-                  value: "Risk (1 - R(t))",
-                  angle: -90,
-                  position: "insideLeft",
-                  textAnchor: "middle",
-                  dy: 0
-                }}
-              />
-      
-              <Tooltip 
-                formatter={(value, name) => {
-                  const labels = {
-                    risk: 'Risk (1 - R)',
-                    reliability: 'Reliability R(t)'
-                  };
-                  return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
-                }}
-                labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
-              />
-              <Legend
-                verticalAlign="bottom"
-                align="center"
-                height={50}
-                wrapperStyle={{
-                  bottom: -20,
-                  paddingLeft: 60
-                }}
-              />
-      
-              {/* Add vertical line at eta value - FIXED */}
-              {eta !== undefined && eta !== null && !isNaN(Number(eta)) && (
-                <ReferenceLine 
-                  x={Number(eta)}
-                  stroke="#dc2626"
-                  strokeWidth={2}
-                  strokeDasharray="3 3"
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={chartData} 
+                margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="name"
+                  type="number"
+                  domain={[minX, maxX]}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
+                  label={{ value: "Time / Value (t)", position: "insideBottom", offset: -14 }}
+                />
+  
+                <YAxis
+                  domain={[0, 1]}
+                  tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: `η = ${Number(eta).toFixed(3)}`,
-                    position: 'top',
-                    fill: '#dc2626',
-                    fontSize: 12
+                    value: "Risk (1 - R(t))",
+                    angle: -90,
+                    position: "insideLeft",
+                    textAnchor: "middle",
+                    dy: 0
                   }}
                 />
-              )}
-              
-              {/* Add information about beta */}
-              {beta !== undefined && beta !== null && !isNaN(Number(beta)) && (
-                <ReferenceLine 
-                  x={chartData.length > 0 ? chartData[chartData.length - 1]?.name * 0.95 || 0 : 0}
-                  stroke="transparent"
-                  label={{
-                    value: `β = ${Number(beta).toFixed(3)}`,
-                    position: 'top',
-                    fill: '#6b7280',
-                    fontSize: 10
+        
+                <Tooltip 
+                  formatter={(value, name) => {
+                    const labels = {
+                      risk: 'Risk (1 - R)',
+                      reliability: 'Reliability R(t)'
+                    };
+                    return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                  }}
+                  labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  height={50}
+                  wrapperStyle={{
+                    bottom: -20,
+                    paddingLeft: 60
                   }}
                 />
-              )}
-              
-              {/* Add vertical line at 0.700 (if applicable) */}
-              {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + 0.05) && (
-                <ReferenceLine 
-                  x={0.7}
-                  stroke="#f59e0b"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
-                  label={{
-                    value: '0.700',
-                    position: 'top',
-                    fill: '#f59e0b',
-                    fontSize: 10
-                  }}
-                />
-              )}
-              
-              <Line 
-                type="monotone"
-                dataKey="risk"
-                stroke={chartProperties.lineColor}
-                strokeWidth={chartProperties.lineThickness}
-                strokeDasharray={getLineStyle()}
-                dot={chartProperties.hideSymbols ? false : {
-                  r: chartProperties.symbolScaleSize,
-                  stroke: chartProperties.symbolColor,
-                  fill: chartProperties.symbolColor
-                }}
-                activeDot={{
-                  r: chartProperties.symbolScaleSize + 1,
-                  stroke: chartProperties.symbolColor,
-                  fill: chartProperties.symbolColor
-                }}
-                hide={!chartProperties.visibility}
-                name="Risk Function (1 - R(t))"
-              />
-              
-              {/* Optionally show reliability as a dashed line for reference */}
-              {chartData[0]?.reliability !== undefined && (
+        
+                {Number.isFinite(Number(eta)) && (
+                  <ReferenceLine
+                    x={Number(eta)}
+                    stroke="#dc2626"
+                    strokeWidth={2}
+                    strokeDasharray="3 3"
+                    ifOverflow="extendDomain"
+                    label={{
+                      value: `η = ${Number(eta).toFixed(3)}`,
+                      position: "top",
+                      fill: "#dc2626",
+                      fontSize: 12,
+                      fontWeight: "bold"
+                    }}
+                  />
+                )}
+                
+                {beta !== undefined && beta !== null && !isNaN(Number(beta)) && (
+                  <ReferenceLine 
+                    x={chartData.length > 0 ? chartData[chartData.length - 1]?.name * 0.95 || 0 : 0}
+                    stroke="transparent"
+                    label={{
+                      value: `β = ${Number(beta).toFixed(3)}`,
+                      position: 'top',
+                      fill: '#6b7280',
+                      fontSize: 10
+                    }}
+                  />
+                )}
+                
+                {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + 0.05) && (
+                  <ReferenceLine 
+                    x={0.7}
+                    stroke="#f59e0b"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    label={{
+                      value: '0.700',
+                      position: 'top',
+                      fill: '#f59e0b',
+                      fontSize: 10
+                    }}
+                  />
+                )}
+                
                 <Line 
                   type="monotone"
-                  dataKey="reliability"
-                  stroke="#9ca3af"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
-                  dot={false}
-                  name="Reliability R(t) (reference)"
-                  legendType="none"
+                  dataKey="risk"
+                  stroke={chartProperties.lineColor}
+                  strokeWidth={chartProperties.lineThickness}
+                  strokeDasharray={getLineStyle()}
+                  dot={chartProperties.hideSymbols ? false : {
+                    r: chartProperties.symbolScaleSize,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  activeDot={{
+                    r: chartProperties.symbolScaleSize + 1,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  hide={!chartProperties.visibility}
+                  name="Risk Function (1 - R(t))"
                 />
-              )}
-            </LineChart>
+              </LineChart>
+            </ResponsiveContainer>
           );
         }  
         
         default:
           return (
-            <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="name"
-              type="number"
-              domain={['dataMin', 'dataMax']}
-              allowDataOverflow={true}
-              tickFormatter={(value) => Number(value).toFixed(2)}
-            >
-              <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
-            </XAxis>
-            <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(2)}>
-              <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
-            </YAxis>
-            <Tooltip />
-            <Legend
-              verticalAlign="bottom"
-              align="center"
-              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-            />
-
-            {renderReferenceLines()}
-            
-            {selectedChart.distribution === "exponential" && (
-              <ReferenceLine
-                x={mean}
-                stroke="#10b981"
-                strokeWidth={1}
-                strokeDasharray="4 4"
-                label={{
-                  value: `Mean (μ = ${mean.toFixed(3)})`,
-                  position: "top",
-                  fill: '#f59e0b',
-                  fontSize: 12,
-                  fontWeight: "bold"
-                }}
-              />
-            )}
-
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke={chartProperties.lineColor}
-              strokeWidth={chartProperties.lineThickness}
-              strokeDasharray={getLineStyle()}
-              dot={chartProperties.hideSymbols ? false : {
-                r: chartProperties.symbolScaleSize,
-                stroke: chartProperties.symbolColor,
-                fill: chartProperties.symbolColor
-              }}
-              activeDot={{
-                r: chartProperties.symbolScaleSize + 1,
-                stroke: chartProperties.symbolColor,
-                fill: chartProperties.symbolColor
-              }}
-              hide={!chartProperties.visibility}
-              name="Distribution"
-            />
-          </LineChart>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart {...commonProps}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="name"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  allowDataOverflow={true}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
+                >
+                  <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
+                </XAxis>
+                <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(2)}>
+                  <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
+                </YAxis>
+                <Tooltip />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                />
+  
+                {renderReferenceLines()}
+                
+                {selectedChart.distribution === "exponential" && (
+                  <ReferenceLine
+                    x={mean}
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                    label={{
+                      value: `Mean (μ = ${mean.toFixed(3)})`,
+                      position: "top",
+                      fill: '#f59e0b',
+                      fontSize: 12,
+                      fontWeight: "bold"
+                    }}
+                  />
+                )}
+  
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke={chartProperties.lineColor}
+                  strokeWidth={chartProperties.lineThickness}
+                  strokeDasharray={getLineStyle()}
+                  dot={chartProperties.hideSymbols ? false : {
+                    r: chartProperties.symbolScaleSize,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  activeDot={{
+                    r: chartProperties.symbolScaleSize + 1,
+                    stroke: chartProperties.symbolColor,
+                    fill: chartProperties.symbolColor
+                  }}
+                  hide={!chartProperties.visibility}
+                  name="Distribution"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           );
       }
-  };
+    };
 
   // Helper functions for axis labels
 const getXAxisLabel = () => {

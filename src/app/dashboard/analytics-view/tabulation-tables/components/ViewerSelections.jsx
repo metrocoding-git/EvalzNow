@@ -401,6 +401,84 @@ console.log("unit type check", tableData);
   };
   
 
+  const exportAsCSV = () => {
+    if (!tableData || tableData.length === 0) {
+      alert("No table data available to export");
+      return;
+    }
+  
+    try {
+      // Helper to escape CSV values safely
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+        const str = value.toString();
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+  
+      // Build CSV rows
+      const rows = [];
+  
+      // Header row
+      rows.push(
+        visibleHeaders.map(escapeCSV).join(",")
+      );
+  
+      // Data rows
+      tableData.forEach((row) => {
+        const csvRow = visibleHeaders.map((header) => {
+          const value = row[header];
+  
+          const skipFormatting = [
+            "PP ID",
+            "Critical Reference Date",
+            "Day Count (Days)",
+            "unitType",
+            "IC",
+            "STA/P",
+            "ΔRRN",
+            "ΔPRN",
+            "ΔARN",
+            "ΔGEQ",
+          ];
+  
+          if (skipFormatting.includes(header)) {
+            return escapeCSV(value ?? "");
+          }
+  
+          const num = parseFloat(value);
+          if (!isNaN(num) && value?.toString().includes(".")) {
+            return escapeCSV(num.toFixed(3));
+          }
+  
+          return escapeCSV(value ?? "");
+        });
+  
+        rows.push(csvRow.join(","));
+      });
+  
+      // Create CSV blob
+      const csvContent = rows.join("\n");
+      const BOM = "\uFEFF"; // UTF-8 BOM
+
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+
+  
+      saveAs(
+        blob,
+        `candidate-table-${candidate?.id ?? "export"}-${Date.now()}.csv`
+      );
+    } catch (error) {
+      console.error("CSV export failed:", error);
+      alert("Failed to export as CSV");
+    }
+  };
+  
+
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No table available to export");
@@ -579,24 +657,16 @@ console.log("unit type check", tableData);
                   <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
                     <button
                       onClick={() => {
-                        exportAsJPG();
+                        exportAsCSV();
                         setShowExportMenu(false);
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
-                      Export as JPG
-                    </button>
-                    <button
-                      onClick={() => {
-                        exportAsPDF();
-                        setShowExportMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                    >
-                      Export as PDF
+                      Export as CSV
                     </button>
                   </div>
                 )}
+
               </div>
             </div>
           </div>

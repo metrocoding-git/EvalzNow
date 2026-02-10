@@ -9,7 +9,11 @@ const safe = (value, type = "string") => {
   }
 
   if (type === "number") {
-    return value; // Excel treats it as text, avoids scientific notation
+    // ✅ If it's already a formatted string with decimals, preserve it
+    if (typeof value === "string" && value.includes(".")) {
+      return value;
+    }
+    return value;
   }
 
   return value;
@@ -17,6 +21,22 @@ const safe = (value, type = "string") => {
 
 const findByPpId = (arr = [], ppId) =>
   arr.find((item) => item.ppId === ppId) || {};
+
+const csvEscape = (value) => {
+  if (value === null || value === undefined) return "-";
+
+  const str = String(value);
+
+  // Escape double quotes
+  const escaped = str.replace(/"/g, '""');
+
+  // Wrap in quotes if needed
+  if (/[",\n]/.test(escaped)) {
+    return `"${escaped}"`;
+  }
+
+  return escaped;
+};
 
 const downloadCSV = (headers, rows, filename) => {
   const today = new Date();
@@ -35,11 +55,7 @@ const downloadCSV = (headers, rows, filename) => {
     " ", // blank line before table
   ];
 
-  const csv =
-    metaLines.join("\n") +
-    headers.join(",") +
-    "\n" +
-    rows.map(r => r.map(v => v).join(",")).join("\n");
+  const csv = metaLines.join("\n") + headers.map(csvEscape).join(",") + "\n" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
 
   const blob = new Blob(
     ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
@@ -50,6 +66,13 @@ const downloadCSV = (headers, rows, filename) => {
   link.href = URL.createObjectURL(blob);
   link.download = filename;
   link.click();
+};
+
+
+const formatToThreeDecimals = (v) => {
+  if (v === null || v === undefined || v === '-') return "-";
+  const n = Number(v);
+  return isNaN(n) ? "-" : n.toFixed(3);
 };
 
 
@@ -65,21 +88,24 @@ const resolveNeuro = (unit, candidate) => {
 
 const getRMS = (neuro, ppId, lobe) => {
   const row = neuro?.data?.find(d => d.ppId === ppId);
-  return row?.lobes?.[lobe]?.RMS ?? "-";
+  return formatToThreeDecimals(row?.lobes?.[lobe]?.RMS);
 };
 
 const getDeltaRMS = (neuro, ppId, lobe) => {
   const row = neuro?.data?.find(d => d.ppId === ppId);
-  return row?.lobes?.[lobe]?.deltaRMS ?? "-";
+  return formatToThreeDecimals(row?.lobes?.[lobe]?.deltaRMS);
 };
 
 const getLoadP = (neuro, ppId, lobe) =>
-  neuro?.cognitiveLoad?.[lobe]?.proficiency
-    ?.find(p => p.ppId === ppId)?.value ?? "-";
+  formatToThreeDecimals(
+    neuro?.cognitiveLoad?.[lobe]?.proficiency?.find(p => p.ppId === ppId)?.value
+  );
 
 const getLoadG = (neuro, ppId, lobe) =>
-  neuro?.cognitiveLoad?.[lobe]?.growth
-    ?.find(p => p.ppId === ppId)?.value ?? "-";
+  formatToThreeDecimals(
+    neuro?.cognitiveLoad?.[lobe]?.growth?.find(p => p.ppId === ppId)?.value
+  );
+
 
 export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
   if (!extractionData?.candidates?.length || !extractionData?.unit) return;
@@ -125,7 +151,7 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
         safe(pp.periodType),
         safe(pp.delivery),
         safe(competency.criticalRefDate, "date"),
-        safe(competency.totalDuration, "number"),
+        safe(competency.cumulativeDuration, "number"),
         safe(competency.Productivity_CSD, "number"),
         safe(competency.Productivity_USD, "number"),
         safe(competency.RRN, "number"),

@@ -725,6 +725,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             strokeWidth={1.5}
             dot={false}
             isAnimationActive={false}
+            activeDot={false}
             {...lineStyles[biasLine]}
           />
         );
@@ -869,6 +870,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             dot={false}
             isAnimationActive={false}
             legendType="none"
+            hide={false}
+            activeDot={false}
           />
         );
       }
@@ -989,24 +992,65 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           >
             <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
           </YAxis>
-          <Tooltip trigger="item"   formatter={(value, name) => [value.toFixed(2), name]} />
+          
+          {/*  Tooltip - only show for Scatter components */}
+          <Tooltip 
+            // trigger="click"
+            cursor={{ strokeDasharray: '3 3' }}
+            formatter={(value, name) => [value.toFixed(2), name]}
+            // Filter out Line data from tooltip
+            content={({ active, payload }) => {
+              if (!active || !payload || !payload.length) return null;
+              
+              // Only show tooltip for Scatter data (filter out Line components)
+              const scatterPayload = payload.filter(entry => 
+                entry.dataKey === yKey && 
+                entry.payload.ppId !== undefined // This ensures it's actual data, not IC curves or bias lines
+              );
+              
+              if (scatterPayload.length === 0) return null;
+              
+              return (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }}>
+                  {scatterPayload.map((entry, index) => (
+                    <div key={index}>
+                      <p style={{ margin: 0 }}>{xLabel}: {entry.payload[xKey]?.toFixed(2)}</p>
+                      <p style={{ margin: 0 }}>{yLabel}: {entry.payload[yKey]?.toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            }}
+          />
+          
           <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
           {/* Reference Lines */}
           {renderReferenceLinesForScatter(xKey, yKey)}
+          
+          {/* IC Curves - These will now be ignored by tooltip */}
+          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+
+          {/* Bias Lines - These will now be ignored by tooltip */}
+          {renderBiasLines(unitType, "scatter", xKey, yKey)}
           
           {/* Positive PP IDs (Red) */}
           {positiveData.length > 0 && (
             <Scatter 
               data={positiveData} 
               dataKey={yKey} 
-               name="Positive PP IDs"
-               fill={chartProperties.positiveLineColor}
+              name="Positive PP IDs"
+              fill={chartProperties.positiveLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  chartProperties.positiveSymbolColor, // Red color for positive PP IDs
+                  chartProperties.positiveSymbolColor,
                   chartProperties.symbolScaleSize
                 )
               }
@@ -1024,7 +1068,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  chartProperties.negativeSymbolColor, // Green color for negative PP IDs
+                  chartProperties.negativeSymbolColor,
                   chartProperties.symbolScaleSize
                 )
               }
@@ -1076,7 +1120,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <Scatter 
               data={growthTargetPoints} 
               dataKey={yKey}
-              fill="#2563eb" // 🔵 blue
+              fill="#2563eb"
               name="Growth Targets"
               shape={(props) => (
                 <circle 
@@ -1088,13 +1132,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               )}
             />
           )}
-
-          
-          {/* IC Curves */}
-          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
-
-          {/* Bias Lines */}
-          {renderBiasLines(unitType, "scatter", xKey, yKey)}
         </ScatterChart>
       </ResponsiveContainer>
     </div>
