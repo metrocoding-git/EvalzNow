@@ -3,6 +3,12 @@ const safe = (value, type = "string") => {
   if (value === null || value === undefined || value === "") return "-";
 
   if (type === "date") {
+    // Handle ISO date strings like "2025-12-05T00:00:00.000Z"
+    if (typeof value === "string" && value.includes("T")) {
+      return value.split("T")[0]; // Returns "2025-12-05"
+    }
+    
+    // Handle Date objects
     const d = new Date(value);
     if (isNaN(d)) return "-";
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
