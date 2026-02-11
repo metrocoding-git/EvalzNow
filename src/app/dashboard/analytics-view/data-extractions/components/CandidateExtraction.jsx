@@ -106,6 +106,19 @@ const getLoadG = (neuro, ppId, lobe) =>
     neuro?.cognitiveLoad?.[lobe]?.growth?.find(p => p.ppId === ppId)?.value
   );
 
+  const UNIT_TYPE_FIELDS = {
+    "Third Parameter": [
+      "ARN","deltaARN","XRVSR","XPVSR","XAVSR",
+      "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
+    ],
+    "Communicative I/O": [
+      "XRR","XLR","XSR","XWR"
+    ],
+    "Theory & Practice": [
+      "XTR","XPR"
+    ]
+  };
+  
 
 export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
   if (!extractionData?.candidates?.length || !extractionData?.unit) return;
@@ -116,6 +129,17 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
     "Last Name","First Name","Candidate ID","Candidate Start Date","Nationality","Gender","Ethnicity","Income","Religion","Marital Status","Job Type","Date of Birth","Special ID No.","Unit Name","Unit ID","Unit Start Date","Unit End Date","Signature Profile","Unit Type","Environment","PP ID","Short Description","Period Type","Delivery","Critical Reference Date","Day Count (Days)","Productivity_CSD","Productivity_USD","RRN","PRN","ARN","XRR","XLR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR","XEP","XCP","XBP","MSIP","STA/P","IC","ΔRRN","ΔPRN","ΔARN","GEQ","STA/G","RRGT1","PRGT1","ARGT1","RRGT2","PRGT2","ARGT2","RRGT3","PRGT3","ARGT3","RRGT4","PRGT4","ARGT4","RRGT5","PRGT5","ARGT5","Linked BIDs","RMS/P Frontal/L","RMS/P Occipital/L","RMS/P Parietal/L","RMS/P Temporal/L","RMS/P Frontal/R","RMS/P Occipital/R","RMS/P Parietal/R","RMS/P Temporal/R","Load/P Frontal/L","Load/P Occipital/L","Load/P Parietal/L","Load/P Temporal/L","Load/P Frontal/R","Load/P Occipital/R","Load/P Parietal/R","Load/P Temporal/R","RMS/G Frontal/L","RMS/G Occipital/L","RMS/G Parietal/L","RMS/G Temporal/L","RMS/G Frontal/R","RMS/G Occipital/R","RMS/G Parietal/R","RMS/G Temporal/R","Load/G Frontal/L","Load/G Occipital/L","Load/G Parietal/L","Load/G Temporal/L","Load/G Frontal/R","Load/G Occipital/R","Load/G Parietal/R","Load/G Temporal/R","Observations & Goals","Action Status"
   ];
 
+  const resolveMetric = (unitType, competency, field) => {
+    const allowed = UNIT_TYPE_FIELDS[unitType] || [];
+  
+    // ❌ Field not valid for this unit type
+    if (!allowed.includes(field)) return "-";
+  
+    const value = competency?.[field];
+  
+    return value === null || value === undefined ? "-" : value;
+  };
+  
   const rows = [];
 
   candidates.forEach(candidate => {
@@ -156,16 +180,17 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
         safe(competency.Productivity_USD, "number"),
         safe(competency.RRN, "number"),
         safe(competency.PRN, "number"),
-        safe(competency.ARN, "number"),
-        safe(competency.XRR, "number"),
-        safe(competency.XLR, "number"),
-        safe(competency.XSR, "number"),
-        safe(competency.XWR, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARN"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XRR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XLR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XSR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XWR"), "number"),
+
         safe(competency.XTR, "number"),
         safe(competency.XPR, "number"),
-        safe(competency.XRVSR, "number"),
-        safe(competency.XPVSR, "number"),
-        safe(competency.XAVSR, "number"),
+        safe(resolveMetric(unit.unitType, competency, "XRVSR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XPVSR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XAVSR"), "number"),
         safe(competency.XEP, "number"),
         safe(competency.XCP, "number"),
         safe(competency.XBP, "number"),
@@ -174,24 +199,24 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
         safe(competency.IC, "number"),
         safe(competency.deltaRRN, "number"),
         safe(competency.deltaPRN, "number"),
-        safe(competency.deltaARN, "number"),
+        safe(resolveMetric(unit.unitType, competency, "deltaARN"), "number"),
         safe(competency.GEQ, "number"),
         safe(competency.STAG, "number"),
         safe(competency.RRGT1, "number"),
         safe(competency.PRGT1, "number"),
-        safe(competency.ARGT1, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARGT1"), "number"),
         safe(competency.RRGT2, "number"),
         safe(competency.PRGT2, "number"),
-        safe(competency.ARGT2, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARGT2"), "number"),
         safe(competency.RRGT3, "number"),
         safe(competency.PRGT3, "number"),
-        safe(competency.ARGT3, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARGT3"), "number"),
         safe(competency.RRGT4, "number"),
         safe(competency.PRGT4, "number"),
-        safe(competency.ARGT4, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARGT4"), "number"),
         safe(competency.RRGT5, "number"),
         safe(competency.PRGT5, "number"),
-        safe(competency.ARGT5, "number"),
+        safe(resolveMetric(unit.unitType, competency, "ARGT5"), "number"),
         safe(need.bIds?.join(",")),
         
         safe(getRMS(neuro, pp.ppId, "Frontal Lobe - Left")),

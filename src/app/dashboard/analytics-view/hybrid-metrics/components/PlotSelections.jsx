@@ -724,8 +724,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             stroke="#000000" // Black color
             strokeWidth={1.5}
             dot={false}
+            tooltipType="none"
             isAnimationActive={false}
             activeDot={false}
+            legendType="none"   
+            hide={false} 
             {...lineStyles[biasLine]}
           />
         );
@@ -741,7 +744,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           stroke="#000000" // Black color
           strokeWidth={1.5}
           dot={false}
+          tooltipType="none"
           isAnimationActive={false}
+          legendType="none"   
+          hide={false} 
           {...lineStyles[biasLine]}
         />
       );
@@ -868,6 +874,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             stroke={colors[index]}
             strokeWidth={2}
             dot={false}
+            tooltipType="none"
             isAnimationActive={false}
             legendType="none"
             hide={false}
@@ -886,6 +893,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           stroke={colors[index]}
           strokeWidth={2}
           dot={false}
+          tooltipType="none"
           isAnimationActive={false}
           legendType="none"
         />
@@ -994,39 +1002,74 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           </YAxis>
           
           {/*  Tooltip - only show for Scatter components */}
-          <Tooltip 
-            // trigger="click"
-            cursor={{ strokeDasharray: '3 3' }}
-            formatter={(value, name) => [value.toFixed(2), name]}
-            // Filter out Line data from tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload || !payload.length) return null;
-              
-              // Only show tooltip for Scatter data (filter out Line components)
-              const scatterPayload = payload.filter(entry => 
-                entry.dataKey === yKey && 
-                entry.payload.ppId !== undefined // This ensures it's actual data, not IC curves or bias lines
-              );
-              
-              if (scatterPayload.length === 0) return null;
-              
-              return (
-                <div style={{
-                  backgroundColor: 'white',
-                  padding: '10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px'
-                }}>
-                  {scatterPayload.map((entry, index) => (
-                    <div key={index}>
-                      <p style={{ margin: 0 }}>{xLabel}: {entry.payload[xKey]?.toFixed(2)}</p>
-                      <p style={{ margin: 0 }}>{yLabel}: {entry.payload[yKey]?.toFixed(2)}</p>
-                    </div>
-                  ))}
-                </div>
-              );
-            }}
-          />
+          <Tooltip
+  cursor={{ strokeDasharray: '3 3' }}
+  // Add this to improve default behavior
+  allowEscapeViewBox={{ x: true, y: true }}
+  content={({ active, payload, label }) => {
+    if (!active || !payload || !payload.length) return null;
+
+    // ───────────────────────────────────────────────
+    // Filter to only show tooltip for ACTUAL scatter points
+    // We look for payload items that come from a Scatter series
+    // (they usually have .payload.ppId or similar real data marker)
+    // ───────────────────────────────────────────────
+    const realPoint = payload.find(item =>
+      item.payload &&
+      item.payload.seriesType &&     // 👈 strict discriminator
+      item.payload[xKey] !== undefined &&
+      item.payload[yKey] !== undefined
+    );
+    
+
+    if (!realPoint) return null;   // ← hide tooltip if hovering over line/bias/IC
+
+    const data = realPoint.payload;
+
+    const isGrowthTarget = data.gt !== undefined;
+    const isProjection  = data.callout !== undefined;
+    const isAverage     = averageData.some(avg => avg.ppId === data.ppId);
+
+    return (
+      <div style={{
+        backgroundColor: 'white',
+        padding: '10px 14px',
+        border: '1px solid #ccc',
+        borderRadius: '6px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        minWidth: '180px'
+      }}>
+        {isGrowthTarget && (
+          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#2563eb' }}>
+            Growth Target: {data.gt}
+          </p>
+        )}
+        {isProjection && (
+          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#7c3aed' }}>
+            Projection: {data.ppId} ({data.callout})
+          </p>
+        )}
+        {isAverage && (
+          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#ff6b6b' }}>
+            Average Point
+          </p>
+        )}
+        {!isGrowthTarget && !isProjection && !isAverage && (
+          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>
+            PP ID: {data.ppId}
+          </p>
+        )}
+
+        <p style={{ margin: '4px 0' }}>
+          {xLabel}: <strong>{Number(data[xKey]).toFixed(2)}</strong>
+        </p>
+        <p style={{ margin: '4px 0' }}>
+          {yLabel}: <strong>{Number(data[yKey]).toFixed(2)}</strong>
+        </p>
+      </div>
+    );
+  }}
+/>
           
           <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
@@ -1042,9 +1085,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {/* Positive PP IDs (Red) */}
           {positiveData.length > 0 && (
             <Scatter 
-              data={positiveData} 
+              data={positiveData.map(d => ({...d, seriesType: 'positive'}))} 
               dataKey={yKey} 
               name="Positive PP IDs"
+              isAnimationActive={false}
               fill={chartProperties.positiveLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
@@ -1056,13 +1100,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               }
             />
           )}
-          
-          {/* Negative PP IDs (Green) */}
+
           {negativeData.length > 0 && (
             <Scatter 
-              data={negativeData} 
+              data={negativeData.map(d => ({...d, seriesType: 'negative'}))} 
               dataKey={yKey} 
               name="Negative PP IDs"
+              isAnimationActive={false}
               fill={chartProperties.negativeLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
@@ -1074,13 +1118,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               }
             />
           )}
-          
-          {/* Average data points */}
+
           {showAverages && (
             <Scatter 
-              data={averageData} 
+              data={averageData.map(d => ({...d, seriesType: 'average'}))} 
               dataKey={yKey} 
               fill="#ff6b6b" 
+              isAnimationActive={false}
               name="Average Points"
               shape={(props) => (
                 <circle 
@@ -1098,10 +1142,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {/* Projection data points (Performance Points G) */}
           {showProjection && (
             <Scatter 
-              data={projectionData} 
+              data={projectionData.map(d => ({
+                ...d,
+                seriesType: "projection"
+              }))} 
               dataKey={yKey} 
               fill="#7c3aed" 
               name="Performance Points (G)"
+              isAnimationActive={false}
+              legendType="none"
               shape={(props) => (
                 <circle 
                   cx={props.cx} 
@@ -1118,10 +1167,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {/* Growth Target data points */}
           {showGrowthTarget && growthTargetPoints.length > 0 && (
             <Scatter 
-              data={growthTargetPoints} 
+              data={growthTargetPoints.map(d => ({
+                ...d,
+                seriesType: "growthTarget"
+              }))} 
               dataKey={yKey}
               fill="#2563eb"
               name="Growth Targets"
+              isAnimationActive={false}
+              legendType="none"
               shape={(props) => (
                 <circle 
                   cx={props.cx}
@@ -1516,7 +1570,7 @@ if (negativeData.length > 0) {
         return renderScatter(tableData, "RRN", "ARN", "RR (X)", "AR (Y)", unitSignature, unitType);
   
       case "4": // PR vs AR
-        return renderScatter(tableData, "ARN", "PRN", "PR (X)", "AR (Y)", unitSignature, unitType);
+        return renderScatter(tableData, "PRN", "ARN", "PR (X)", "AR (Y)", unitSignature, unitType);
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
@@ -2126,13 +2180,6 @@ if (negativeData.length > 0) {
           </div>
         </div>
       </div>
-
-
-
-
-
-
-
 
     </>
   );

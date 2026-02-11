@@ -34,6 +34,7 @@ import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
 import jsPDF from "jspdf";
+import { getUnitById } from "@/services/unitService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType, onResetBeta }) {
   const [distributions, setDistributions] = useState({});
@@ -118,6 +119,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
   const chartContainerRef = useRef(null);
 
+  const [unitData, setUnitData] = useState(null); 
   // Example line chart data
   const data = [
     { name: "A", uv: 400, pv: 240 },
@@ -184,6 +186,29 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
  
+  useEffect(() => {
+    if (!unitId) return;
+
+    const fetchUnitData = async () => {
+      try {
+        setLoading(true);
+        const unit = await getUnitById(unitId);
+
+        setUnitData(unit);
+        
+        console.log("units", unit);
+      } catch (err) {
+        console.error("Failed to fetch unit data:", err);
+        setError("Failed to load unit data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUnitData();
+  }, [unitId]);
+
+  console.log("unit data: ", unitData);
   useEffect(() => {
     const fetchDistributionData = async () => {
       if (!unitId) return;
@@ -473,6 +498,30 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   };
 
 
+  const getWeibullRiskReferenceValue = () => {
+    // Static 0.7 for RR / PR / AR
+    if (["RR", "PR", "AR"].includes(selectedChart.key)) {
+      return 0.7;
+    }
+  
+    if (!unitData) return null;
+  
+    // 🔥 unitData is already the unit object
+    if (selectedChart.key === "XEP") {
+      return Number(unitData.XEP);
+    }
+  
+    if (
+      selectedChart.key === "∆GEQ" ||
+      selectedChart.key === "deltaGEQ"
+    ) {
+      return Number(unitData["ΔGEQ"]);
+    }
+  
+    return null;
+  };
+  
+  
   // Render different chart types based on selected chart
   const renderChart = () => {
     if (loading) {
@@ -508,7 +557,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             return {
               z,
               value: row.x,
-              label: z === 0 ? "Mean (z=0)" : `z = ${z}`,
+              label: z === 0 ? "Mean (μ=0)" : `σ = ${z}`,
               color:
                 z === 0 ? "#000000" :
                 Math.abs(z) === 1 ? "#ef4444" :
@@ -544,7 +593,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.fc)) {
           lines.push({
             value: params.fc,
-            label: `F Critical (Fc = ${params.fc.toFixed(3)})`,
+            label: `Fc = ${params.fc.toFixed(3)}`,
             color: "#dc2626",
             strokeWidth: 2,
             strokeDasharray: "4 4"
@@ -554,7 +603,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.fStatistic)) {
           lines.push({
             value: params.fStatistic,
-            label: `F Statistic = ${params.fStatistic.toFixed(3)}`,
+            label: `Fstat = ${params.fStatistic.toFixed(3)}`,
             color: "#2563eb",
             strokeWidth: 2,
             strokeDasharray: "2 2"
@@ -576,7 +625,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.xc)) {
           lines.push({
             value: params.xc,
-            label: `Critical Value (χ²c = ${params.xc.toFixed(3)})`,
+            label: `Critical Value (Xc = ${params.xc.toFixed(3)})`,
             color: "#dc2626",
             strokeWidth: 2,
             strokeDasharray: "4 4"
@@ -586,7 +635,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         if (Number.isFinite(params.x2Statistic)) {
           lines.push({
             value: params.x2Statistic,
-            label: `χ² Statistic = ${params.x2Statistic.toFixed(3)}`,
+            label: `Chi Square = ${params.x2Statistic.toFixed(3)}`,
             color: "#2563eb",
             strokeWidth: 2,
             strokeDasharray: "2 2"
@@ -632,10 +681,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       case "area":
         if (selectedChart.distribution === "weibull-cdf") {
           const eta = Number(distributions[selectedKey]?.params?.eta);
+          const referenceValue = getWeibullRiskReferenceValue();
+
           const xValues = chartData.map(d => Number(d.name));
   
-          const minX = Math.min(...xValues, Number(eta));
-          const maxX = Math.max(...xValues, Number(eta));
+          const minX = Math.min(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : Infinity,
+            Number(eta)
+          );
+          
+          const maxX = Math.max(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : -Infinity,
+            Number(eta)
+          );
+          
   
           console.log("eta value:: ", eta);
           return (
@@ -648,7 +709,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 tickFormatter={(value) => Number(value).toFixed(2)}
               >
                 <Label
-                  value="Time / Value (t)"
+                  value="Value"
                   position="insideBottom"
                   offset={-10}
                   textAnchor="middle"
@@ -691,18 +752,22 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 />
               )}
               
-              <ReferenceLine 
-                x={0.700}
-                stroke="#10b981"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-                label={{
-                  value: '0.700',
-                  position: 'top',
-                  fill: '#10b981',
-                  fontSize: 10
-                }}
-              />
+              {Number.isFinite(referenceValue) && (
+                  <ReferenceLine
+                    x={referenceValue}
+                    stroke="#760fbf"
+                    strokeWidth={2}
+                    strokeDasharray="3 3"
+                    ifOverflow="extendDomain"
+                    label={{
+                      value: referenceValue.toFixed(3),
+                      position: "top",
+                      fill: "#760fbf",
+                      fontSize: 10,
+                      fontWeight: "bold"
+                    }}
+                  />
+                )}
               
               <Area
                 type="monotone"
@@ -767,18 +832,46 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   
       case "bar":
         if (selectedChart.distribution === "uniform") {
-          const xAxisTicks = Array.from({ length: 11 }, (_, i) => i * 0.1);
+          // Transform data for step function
+          const transformUniformData = (data) => {
+            const transformed = [];
+            
+            data.forEach((point, index) => {
+              if (index === 0) {
+                // First point - add as-is
+                transformed.push({ name: point.name, value: point.stable });
+              } else {
+                const prevPoint = data[index - 1];
+                
+                // Add horizontal segment endpoint (stays at previous height)
+                transformed.push({ 
+                  name: point.name, 
+                  value: prevPoint.stable 
+                });
+                
+                // Add current point (creates vertical drop/rise)
+                transformed.push({ 
+                  name: point.name, 
+                  value: point.stable 
+                });
+              }
+            });
+            
+            return transformed;
+          };
+      
+          const stepData = transformUniformData(chartData);
+      
           return (
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart 
-                data={chartData}
+              <LineChart 
+                data={stepData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name"
                   type="number"
-                  ticks={xAxisTicks}
                   domain={['dataMin', 'dataMax']}
                   tickFormatter={(value) => Number(value).toFixed(2)}
                 >
@@ -792,7 +885,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 <YAxis 
                   domain={[0, 1]}
                   ticks={[0, 1]}
-                  tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
+                  // tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
                 >
                   <Label 
                     value="Pattern Status" 
@@ -803,10 +896,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   />
                 </YAxis>
                 <Tooltip 
-                  formatter={(value, name, props) => {
-                    const dataPoint = props.payload;
-                    return [`X: ${dataPoint.name.toFixed(3)}`, `Status: ${dataPoint.stable === 1 ? 'Stable' : 'Unstable'}`];
-                  }}
+                  formatter={(value) => [value === 1 ? 'Stable' : 'Unstable', 'Status']}
                   labelFormatter={(label) => `X Value: ${Number(label).toFixed(3)}`}
                 />
                 <Legend
@@ -815,21 +905,15 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
                 />
                 
-                <Bar 
+                <Line 
+                  type="linear"
                   dataKey="value" 
-                  fill="#3b82f6" 
-                  name="Pattern Status"
-                  barSize={40}
-                  radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.stable === 1 ? '#3b82f6' : '#ef4444'} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Uniform Distribution"
+                />
+              </LineChart>
             </ResponsiveContainer>
           );
         } else {
@@ -861,9 +945,19 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           const eta = num(distributions?.[selectedKey]?.params?.eta);	
           console.log("eta value:: ", eta);
   
+          const referenceValue = getWeibullRiskReferenceValue();
           const xValues = chartData.map(d => d.name);
-          const minX = Math.min(...xValues, Number(eta));
-          const maxX = Math.max(...xValues, Number(eta));
+          const minX = Math.min(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : Infinity,
+            Number(eta)
+          );
+          
+          const maxX = Math.max(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : -Infinity,
+            Number(eta)
+          );
   
           return (
             <ResponsiveContainer width="100%" height={460}>
@@ -925,17 +1019,19 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   />
                 )}
                 
-                {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + (distributions[selectedKey]?.params?.step || 0.05)) && (
-                  <ReferenceLine 
-                    x={0.700}
-                    stroke="#10b981"
-                    strokeWidth={1}
+                {Number.isFinite(referenceValue) && (
+                  <ReferenceLine
+                    x={referenceValue}
+                    stroke="#760fbf"
+                    strokeWidth={2}
                     strokeDasharray="3 3"
+                    ifOverflow="extendDomain"
                     label={{
-                      value: '0.700',
-                      position: 'top',
-                      fill: '#10b981',
-                      fontSize: 10
+                      value: referenceValue.toFixed(3),
+                      position: "top",
+                      fill: "#760fbf",
+                      fontSize: 10,
+                      fontWeight: "bold"
                     }}
                   />
                 )}
@@ -978,14 +1074,26 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           const distribution = distributions[selectedKey];
           const eta = distribution?.params?.eta;
           const beta = distribution?.params?.beta;
-          
+          const referenceValue = getWeibullRiskReferenceValue();
+
           console.log("Weibull Risk Distribution:", distribution);
           console.log("eta value:", eta);
           console.log("beta value:", beta);
           const xValues = chartData.map(d => d.name);
   
-          const minX = Math.min(...xValues, 0.7, Number(eta));
-          const maxX = Math.max(...xValues, 0.7, Number(eta));
+          console.log("xValues: ", referenceValue);
+          const minX = Math.min(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : Infinity,
+            Number(eta)
+          );
+          
+          const maxX = Math.max(
+            ...xValues,
+            Number.isFinite(referenceValue) ? referenceValue : -Infinity,
+            Number(eta)
+          );
+          
   
           return (
             <ResponsiveContainer width="100%" height={400}>
@@ -1062,20 +1170,23 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   />
                 )}
                 
-                {chartData.some(point => point.name >= 0.700 && point.name <= 0.700 + 0.05) && (
-                  <ReferenceLine 
-                    x={0.7}
-                    stroke="#f59e0b"
-                    strokeWidth={1}
+                {Number.isFinite(referenceValue) && (
+                  <ReferenceLine
+                    x={referenceValue}
+                    stroke="#760fbf"
+                    strokeWidth={2}
                     strokeDasharray="3 3"
+                    ifOverflow="extendDomain"
                     label={{
-                      value: '0.700',
-                      position: 'top',
-                      fill: '#f59e0b',
-                      fontSize: 10
+                      value: referenceValue.toFixed(3),
+                      position: "top",
+                      fill: "#760fbf",
+                      fontSize: 10,
+                      fontWeight: "bold"
                     }}
                   />
                 )}
+
                 
                 <Line 
                   type="monotone"
@@ -1136,7 +1247,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                     label={{
                       value: `Mean (μ = ${mean.toFixed(3)})`,
                       position: "top",
-                      fill: '#f59e0b',
+                      fill: '#320ff7',
                       fontSize: 12,
                       fontWeight: "bold"
                     }}

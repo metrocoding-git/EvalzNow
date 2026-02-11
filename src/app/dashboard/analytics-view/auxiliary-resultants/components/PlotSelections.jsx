@@ -588,7 +588,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       ...row,
       benchmarkIds: matchedNeed ? JSON.parse(matchedNeed.benchmarkIds) : [],
       bIds: matchedNeed ? JSON.parse(matchedNeed.bIds) : [],
-      observation: matchedNeed ? matchedNeed.observation : "-"
+      observation: matchedNeed ? matchedNeed.observation : ""
     };
   });
 
@@ -1601,11 +1601,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
 
-      const computeActionStatus = (benchmarkIds = []) => {
-        if (!benchmarkIds.length) return "Open";
-        if (benchmarkIds.length < 5) return "Pending";
-        return "Closed";
+      const computeActionStatus = (benchmarkIds = [], observation = "") => {
+        if (benchmarkIds.length > 0 && observation) return "Closed";
+        if (
+          (benchmarkIds.length > 0 && !observation) ||
+          (benchmarkIds.length === 0 && observation)
+        ) return "Pending";
+        return "Open"; 
       };
+
       
       return (
         <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-8">
@@ -1650,7 +1654,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   <tr>
                     <td className="font-medium border px-3 py-2">Action Status</td>
                     <td className="border px-3 py-2 font-semibold">
-                      {computeActionStatus(sel.benchmarkIds)}
+                      {computeActionStatus(sel.benchmarkIds, sel.observation)}
                     </td>
                   </tr>
     

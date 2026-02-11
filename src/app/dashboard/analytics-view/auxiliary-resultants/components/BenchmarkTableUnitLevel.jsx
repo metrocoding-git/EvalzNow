@@ -5,7 +5,8 @@ import { useUnit } from "@/context/UnitContext";
 import { getUnitById } from "@/services/unitService";
 
 export default function BenchmarkTableUnitLevel({ onClose, selectedBenchmarks }) {
-  const { selectedUnitId } = useUnit();
+  // const { selectedUnitId } = useUnit();
+  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [benchmarkList, setBenchmarkList] = useState([]);   // <-- incoming benchmark data
   const [rows, setRows] = useState([]);                     // <-- editable table rows
   const [loading, setLoading] = useState(false);
