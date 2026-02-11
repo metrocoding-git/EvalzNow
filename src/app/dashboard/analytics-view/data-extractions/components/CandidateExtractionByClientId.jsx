@@ -35,10 +35,16 @@ const downloadCSV = (headers, rows, filename) => {
   };  
   
 
-  const safe = (v) =>
-    v === null || v === undefined || v === ""
-      ? "-"
-      : String(v);
+  const safe = (v) => {
+    if (v === null || v === undefined || v === "") return "-";
+    
+    // Handle ISO date strings - extract only the date part
+    if (typeof v === "string" && v.includes("T") && v.match(/^\d{4}-\d{2}-\d{2}T/)) {
+      return v.split("T")[0]; // Returns "2025-12-05"
+    }
+    
+    return String(v);
+  };
   
   const safeNumber = (v) => {
     if (v === null || v === undefined || isNaN(v)) return "-";
@@ -72,27 +78,45 @@ const HEADERS = [
     if (values.length !== HEADERS.length) {
       console.error("CSV column mismatch:", values.length, HEADERS.length);
     }
-    return values.map(safe);
+    return values.map(v => {
+      // Handle date fields specifically if you want to be extra sure
+      if (v && typeof v === "string" && v.includes("T") && v.match(/^\d{4}-\d{2}-\d{2}T/)) {
+        return v.split("T")[0];
+      }
+      return safe(v);
+    });
   };
   
+  const shouldShowDeltaARN = (unitType) => {
+    // Only show deltaARN for "Third Parameter" unit type
+    return unitType === "Third Parameter";
+  };
+
+  const formatToThreeDecimals = (v) => {
+    if (v === null || v === undefined || v === '-') return "-";
+    const n = Number(v);
+    return isNaN(n) ? "-" : n.toFixed(3);
+  };
+
   const getRMS = (neuro, ppId, lobe) => {
     const row = neuro?.data?.find(d => d.ppId === ppId);
-    return row?.lobes?.[lobe]?.RMS ?? "-";
+    return formatToThreeDecimals(row?.lobes?.[lobe]?.RMS);
   };
   
   const getDeltaRMS = (neuro, ppId, lobe) => {
     const row = neuro?.data?.find(d => d.ppId === ppId);
-    return row?.lobes?.[lobe]?.deltaRMS ?? "-";
+    return formatToThreeDecimals(row?.lobes?.[lobe]?.deltaRMS);
   };
   
-  
   const getLoadP = (neuro, ppId, lobe) =>
-    neuro?.cognitiveLoad?.[lobe]?.proficiency
-      ?.find(p => p.ppId === ppId)?.value ?? "-";
+    formatToThreeDecimals(
+      neuro?.cognitiveLoad?.[lobe]?.proficiency?.find(p => p.ppId === ppId)?.value
+    );
   
   const getLoadG = (neuro, ppId, lobe) =>
-    neuro?.cognitiveLoad?.[lobe]?.growth
-      ?.find(p => p.ppId === ppId)?.value ?? "-";
+    formatToThreeDecimals(
+      neuro?.cognitiveLoad?.[lobe]?.growth?.find(p => p.ppId === ppId)?.value
+    );
   
   
 /**
@@ -171,7 +195,7 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
             competency.IC,
             safeNumber(competency.deltaRRN),
             safeNumber(competency.deltaPRN),
-            safeNumber(competency.deltaARN),
+            shouldShowDeltaARN(unit.unitType) ? safeNumber(competency.deltaARN) : "-",
             safeNumber(competency.GEQ),
             competency.STAG,
             safeNumber(competency.RRGT1),
