@@ -46,12 +46,21 @@ const downloadCSV = (headers, rows, filename) => {
     link.click();
   };
   
+  const shouldShowDeltaARN = (unitType) => {
+    // Only show deltaARN for "Third Parameter" unit type
+    return unitType === "Third Parameter";
+  };
   
-
-  const safe = (v) =>
-    v === null || v === undefined || v === ""
-      ? "-"
-      : String(v);
+  const safe = (v) => {
+    if (v === null || v === undefined || v === "") return "-";
+    
+    // Handle ISO date strings - extract only the date part
+    if (typeof v === "string" && v.includes("T") && v.match(/^\d{4}-\d{2}-\d{2}T/)) {
+      return v.split("T")[0]; // Returns "2025-12-05"
+    }
+    
+    return String(v);
+  };
   
   const formatToThreeDecimals = (v) => {
     if (v === null || v === undefined || v === '-') return "-";
@@ -185,7 +194,7 @@ export const extractCandidateUnitsCSV = ({ extractionData, clientId, candidateId
             competency.IC,
             competency.deltaRRN,
             competency.deltaPRN,
-            competency.deltaARN,
+            shouldShowDeltaARN(unit.unitType) ? competency.deltaARN : "-",
             competency.GEQ,
             competency.STAG,
   
