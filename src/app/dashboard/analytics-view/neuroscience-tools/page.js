@@ -23,6 +23,8 @@ export default function NeuroscienceTools() {
     { label: "Session", path: "/dashboard/analytics-view/unit-distributions" },
   ];
 
+  const [neuroRefreshSignal, setNeuroRefreshSignal] = useState(0);
+
   const pathname = usePathname();
   const currentTab =
     tabs.find((tab) => pathname?.startsWith(tab.path))?.label || "Session";
@@ -64,6 +66,10 @@ export default function NeuroscienceTools() {
 
   const [openMenu, setopenMenu] = useState(true);
 
+  const triggerNeuroRefresh = () => {
+    setNeuroRefreshSignal(prev => prev + 1);
+  };
+  
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -289,7 +295,7 @@ export default function NeuroscienceTools() {
                     <div className="h-1/3 overflow-auto ">
                       <ClientEditor
                         onClose={() => setShowEdit(false)} unitId={unitData?.id} candidateId={activeCandidateId}
-                        client={true}
+                        client={true} refreshSignal={neuroRefreshSignal}
                         showForm={showEdit}
                       />
                     </div>
@@ -302,7 +308,7 @@ export default function NeuroscienceTools() {
                 {/* {ScoresOpen && <CurveEditor />} */}
 
                 <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
-                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} />
+                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} onNeuroRefresh={triggerNeuroRefresh} />
 
 
               </div>

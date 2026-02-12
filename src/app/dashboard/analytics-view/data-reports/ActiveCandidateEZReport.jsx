@@ -65,7 +65,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return candidateMarks
       .sort((a, b) => a.entryNumber - b.entryNumber)
-      .map(mark => `       ${mark.entryNumber ?? "XXX"}          ${mark.impactType ?? "XXX"}           ${mark.concernIdentified ?? "XXX"}           ${mark.identityDate ?? "XXX"}           ${mark.concernResolved ?? "XXX"}           ${mark.resolutionDate ?? "XXX"}`)
+      .map(mark => `         ${mark.entryNumber ?? "XXX"}          ${mark.impactType ?? "XXX"}           ${mark.concernIdentified ?? "XXX"}           ${mark.identityDate ?? "XXX"}           ${mark.concernResolved ?? "XXX"}           ${mark.resolutionDate ?? "XXX"}`)
       .join("\n");
   }
   
@@ -171,13 +171,16 @@ function extractStaffAssignments(staffAssignments = []) {
         ["XRVSR", 8],
         ["XPVSR", 8],
         ["XAVSR", 8],
-      ].filter(([key]) => hasMetric(unitType, key));
+        ["XEP", 8],   // ADDED - Equivalent Proficiency
+        ["XCP", 8],   // ADDED - Composite Proficiency
+        ["XBP", 8],   // ADDED - Band Proficiency
+      ].filter(([key]) => hasMetric(unitType, key) || ["XEP", "XCP", "XBP"].includes(key)); // Always include XEP, XCP, XBP
     
       return results
         .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
           let row =
-            `     ${String(r.ppId).padEnd(10)}  `;
+            `         ${String(r.ppId).padEnd(10)}  `;
     
           cols.forEach(([key, w]) => {
             row += `     ${fmt(r[key]).padEnd(w)}  `;
@@ -197,16 +200,16 @@ function extractStaffAssignments(staffAssignments = []) {
       const cols = [
         ["deltaRRN", 8],
         ["deltaPRN", 8],
+        ["deltaARN", 8],
         ["GEQ", 8],
-        ["ARN", 8],
-      ].filter(([key]) => hasMetric(unitType, key));
+      ].filter(([key]) => hasMetric(unitType, key) || key === "GEQ"); // Always include GEQ
     
       return results
         .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
           let row =
-            `     ${String(r.ppId).padEnd(10)}  ` +
-            `     ${fmt(r.totalDuration).padEnd(10)}  `;
+            `          ${String(r.ppId).padEnd(10)}  ` +
+            `     ${fmt(r.totalDuration).padEnd(14)}  `;
     
           cols.forEach(([key, w]) => {
             row += `     ${fmt(r[key]).padEnd(w)}  `;
@@ -227,9 +230,9 @@ function extractStaffAssignments(staffAssignments = []) {
       .sort((a, b) => a.ppId - b.ppId)
       .map(r => {
         return (
-          `     ${String(r.ppId).padEnd(10)}  ` +
-          `     ${fmt(r.totalDuration).padEnd(10)}  ` +
-          `     ${fmt(r.MSIP).padEnd(8)}  ` +
+          `          ${String(r.ppId).padEnd(10)}  ` +
+          `     ${fmt(r.totalDuration).padEnd(13)}  ` +
+          `     ${fmt(r.MSIP).padEnd(11)}  ` +
           `     ${(r.IC ?? "XXX").padEnd(8)}  `
         );
       })
@@ -273,11 +276,10 @@ function extractStaffAssignments(staffAssignments = []) {
         const observation = na.observation?.trim() || "-";
   
         return (
-          `     ${String(na.ppId).padEnd(10)}` +
-          `     ${String(criticalRefDate).padEnd(22)}` +
-          `     ${String(dayCount).padEnd(12)}` +
-          `     ${actionStatus.padEnd(10)}` +
-          `     ${observation}`
+          `       ${String(na.ppId).padEnd(15)}` +
+          `       ${String(criticalRefDate).padEnd(32)}` +
+          `       ${actionStatus.padEnd(20)}` +
+          `       ${observation}`
         );
       })
       .join("\n");
