@@ -1195,6 +1195,10 @@ const handleExportGraph = () => {
 
                   const positiveData = mappedData;
 
+                  const yValues = positiveData.map(d => d.value);
+                  const minY = Math.min(...yValues);
+                  const yDomainStart = minY < 0 ? minY : 0;
+
                   if (selectedChart.type === "line") {
                     // Determine stroke style based on lineStyle
                     const strokeDasharray =
@@ -1233,9 +1237,10 @@ const handleExportGraph = () => {
                             </XAxis>
 
                             <YAxis
-                              domain={[0, "auto"]}
+                              domain={[yDomainStart, "auto"]}
                               allowDataOverflow={true}
                             >
+
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
                                   value={`${selectedChart.name} (Y)`}

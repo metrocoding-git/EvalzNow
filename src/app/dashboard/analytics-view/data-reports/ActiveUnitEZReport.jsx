@@ -31,7 +31,7 @@ function extractStaffAssignments(staffAssignments = []) {
           `     ${String(b.benchmarkId).padEnd(12)}` +
           `     ${b.benchmarkType.padEnd(22)}` +
           `     ${b.benchmarkRef.padEnd(22)}` +
-          `     ${b.benchmarkDescription}`
+          `     ${b.benchmarkDescription.padEnd(5)}     `
         );
       })
       .join("\n");
@@ -454,16 +454,54 @@ function extractStaffAssignments(staffAssignments = []) {
     const { leaders, assessors } =
       extractStaffAssignments(staffAssignments);
 
-    const rosterRows = candidates.map(c => `
-        ${c.lastName.padEnd(15)}
-        ${c.firstName.padEnd(15)}
-        ${String(c.candidateId).padEnd(10)}
-        ${c.candidateStartDate ?? "XXX"}
-   `).join("\n");
+      const rosterRows = candidates.map(c => {
+        // Get unit outcome from roster data if available
+        const unitOutcome = c.unitOutcome ?? c.rosterEntry?.unitOutcome ?? "XXX";
+        const nationality = c.nationality ?? "XXX";
+        const candidateStartDate = c.candidateStartDate ?? c.startDate ?? "XXX";
+        
+        return (
+          `     ${(c.lastName ?? "XXX").padEnd(15)}` +
+          `     ${(c.firstName ?? "XXX").padEnd(19)}` +
+          `     ${String(c.candidateId ?? c.id ?? "XXX").padEnd(20)}` +
+          `     ${String(candidateStartDate).padEnd(28)}` +
+          `     ${nationality.padEnd(19)}` +
+          `     ${unitOutcome.padEnd(15)}`
+        );
+      }).join("\n");
    
    const engagementPercentages = engageLevelStats?.percentages ?? {};
 
-   const getAvg = key =>  tabulationAverages?.find(t => t.metric === key)?.value ?? "XXX";
+   // Replace the existing getAvg function with this:
+  const getAvg = key => {
+    // Handle tabulationAverages as array
+    if (Array.isArray(tabulationAverages)) {
+      const found = tabulationAverages.find(t => {
+        // Handle different possible field names
+        if (t.metric === key) return true;
+        if (key === "IC" && t.IC !== undefined) return true;
+        if (key === "STAP" && t.STAP !== undefined) return true;
+        if (key === "STAG" && t.STAG !== undefined) return true;
+        return false;
+      });
+      
+      if (found) {
+        // Return based on what's available
+        if (found.value !== undefined) return found.value;
+        if (found[key] !== undefined) return found[key];
+      }
+    }
+    
+    // Handle tabulationAverages as object
+    if (tabulationAverages && typeof tabulationAverages === 'object') {
+      if (tabulationAverages[key] !== undefined) return tabulationAverages[key];
+      if (key === "IC" && tabulationAverages.IC !== undefined) return tabulationAverages.IC;
+      if (key === "STAP" && tabulationAverages.STAP !== undefined) return tabulationAverages.STAP;
+      if (key === "STAG" && tabulationAverages.STAG !== undefined) return tabulationAverages.STAG;
+    }
+    
+    return "XXX";
+  };
   
    const benchmarkRows = renderBenchmarkRows(benchmarks);
 
@@ -471,26 +509,26 @@ function extractStaffAssignments(staffAssignments = []) {
 
     if (unitType === "Third Parameter") {
       proficiencyUnilateralLines.push(
-        `     Pass % Avg Productive Ratio - ARN         :     ${getAvg("ARN") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XRVSR             :     ${getAvg("XRVSR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XPVSR             :     ${getAvg("XPVSR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XAVSR             :     ${getAvg("XAVSR") ?? "XXX"}`
+        `     Pass % Avg Productive Ratio - ARN         :     ${fmt(getAvg("ARN") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XPVSR             :     ${fmt(getAvg("XPVSR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XAVSR             :     ${fmt(getAvg("XAVSR") ?? "XXX")}`
       );
     }
 
     if (unitType === "Communicative I/O") {
       proficiencyUnilateralLines.push(
-        `     Pass % Avg Unilateral - XRR               :     ${getAvg("XRR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XLR               :     ${getAvg("XLR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XSR               :     ${getAvg("XSR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XWR               :     ${getAvg("XWR") ?? "XXX"}`
+        ` Pass % Avg Unilateral - XRR               :     ${fmt(getAvg("XRR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XLR               :     ${fmt(getAvg("XLR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XSR               :     ${fmt(getAvg("XSR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XWR               :     ${fmt(getAvg("XWR") ?? "XXX")}`
       );
     }
 
     if (unitType === "Theory & Practice") {
       proficiencyUnilateralLines.push(
-        `     Pass % Avg Unilateral - XTR               :     ${getAvg("XTR") ?? "XXX"}`,
-        `     Pass % Avg Unilateral - XPR               :     ${getAvg("XPR") ?? "XXX"}`
+        `     Pass % Avg Unilateral - XTR               :     ${fmt(getAvg("XTR") ?? "XXX")}`,
+        `     Pass % Avg Unilateral - XPR               :     ${fmt(getAvg("XPR") ?? "XXX")}`
       );
     }
 
@@ -498,19 +536,18 @@ function extractStaffAssignments(staffAssignments = []) {
     const growthLines = [];
 
     growthLines.push(
-      `     Pass % Average Growth - ΔRRN              :     ${getAvg("deltaRRN") ?? "XXX"}`,
-      `     Pass % Average Growth - ΔPRN              :     ${getAvg("deltaPRN") ?? "XXX"}`
+      ` Pass % Average Growth - ΔRRN              :     ${fmt(getAvg("deltaRRN") ?? "XXX")}`,
+      `     Pass % Average Growth - ΔPRN              :     ${fmt(getAvg("deltaPRN") ?? "XXX")}`
     );
 
     if (unitType === "Third Parameter") {
       growthLines.push(
-        `     Pass % Average Growth - ΔARN              :     ${getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "XXX"}`
+        `     Pass % Average Growth - ΔARN              :     ${fmt(getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "XXX")}`
       );
     }
 
     growthLines.push(
-      `     
-            Pass % Avg Equivalent Growth - ∆GEQ       :     ${getAvg("GEQ") ?? "XXX"}`,
+      `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "XXX")}`,
       `     Pass % Stability in Growth                :     ${getAvg("STAG") ?? "XXX"}`
     );
 
@@ -566,10 +603,10 @@ function extractStaffAssignments(staffAssignments = []) {
                                                      **                            Competency Accounting                          **
                                                      **                                                                           **
                                                      **                      Analysis Report Level: Candidate                     **
-                                                     **                    Report Generation Date: ${today}                    **
+                                                     **                    Report Generation Date: ${today}                **
                                                      **                                                                           **
                                                      *******************************************************************************
-                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                **
+                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                  **
                                                      **                   Compiled for Subscriber End User Use                    **
                                                      **     Decompilation or disassembly of this software strictly prohibited.    **
                                                      *******************************************************************************
@@ -647,7 +684,7 @@ function extractStaffAssignments(staffAssignments = []) {
 
      Receptive Growth Differential              :     PASS → ${deltaRRN ?? "XXX"} ≥ 0.000
      Productive Growth Differential             :     PASS → ${deltaPRN ?? "XXX"} ≥ 0.000
-     Equivalent Growth                          :     PASS → ${deltaGEQ ?? "XXX"} ≥ 0.000
+           Equivalent Growth                          :     PASS → ${deltaGEQ ?? "XXX"} ≥ 0.000
 
      Butler Interaction Proficiency             :     PASS → ${MSIP ?? "XXX"} ≤ 0.450
      Interaction Class                          :     PASS → ${IC ?? "XXX"} ≥ 2
@@ -675,12 +712,12 @@ function extractStaffAssignments(staffAssignments = []) {
 
     ${proficiencyUnilateralLines.join("\n")}
 
-     Pass % Avg Receptive Ratio - RRN          :     ${getAvg("RRN") ?? "XXX"}
-     Pass % Avg Productive Ratio - PRN         :     ${getAvg("PRN") ?? "XXX"}
+     Pass % Avg Receptive Ratio - RRN          :     ${fmt(getAvg("RRN") ?? "XXX")}
+     Pass % Avg Productive Ratio - PRN         :     ${fmt(getAvg("PRN") ?? "XXX")}
 	 
-     Pass % Avg Equivalent Proficiency - XEP   :     ${getAvg("XEP") ?? "XXX"}
-     Pass % Avg Composite Proficiency - XCP    :     ${getAvg("XCP") ?? "XXX"}
-     Pass % Avg Band Proficiency - XBP         :     ${getAvg("XBP") ?? "XXX"}
+     Pass % Avg Equivalent Proficiency - XEP   :     ${fmt(getAvg("XEP") ?? "XXX")}
+     Pass % Avg Composite Proficiency - XCP    :     ${fmt(getAvg("XCP") ?? "XXX")}
+     Pass % Avg Band Proficiency - XBP         :     ${fmt(getAvg("XBP") ?? "XXX")}
 
      Pass % Stability in Proficiency           :     ${getAvg("STAP") ?? "XXX"}
 
@@ -711,7 +748,7 @@ function extractStaffAssignments(staffAssignments = []) {
           •	The Interaction Class is an interaction constant based on skills mastery within a pre-defined interaction envelope among all inclusive variables.
 
 
-     Butler Interaction Proficiency - MSIP    :     ${getAvg("MSIP") ?? "XXX"}
+     Butler Interaction Proficiency - MSIP    :     ${fmt(getAvg("MSIP") ?? "XXX")}
      Average Interaction Class - IC           :     ${getAvg("IC") ?? "XXX"}
 
 *******************************************************                                  SECTION 05                               *******************************************************
@@ -722,13 +759,29 @@ function extractStaffAssignments(staffAssignments = []) {
 
     Pass percentages below are based on the average values of each corresponding metric:
 
-     Pass % Avg Productivity Rates - CSD    :     ${getAvg("Productivity_CSD")}
-     Pass % Avg Productivity Rates - USD    :     ${getAvg("Productivity_USD")}
+     Pass % Avg Productivity Rates - CSD    :     ${fmt(getAvg("Productivity_CSD"))}
+     Pass % Avg Productivity Rates - USD    :     ${fmt(getAvg("Productivity_USD"))}
 
 
      ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| EFFORT - CSD |||     ||| EFFORT - USD |||
 
+     ${candidates.map(c => {
+      const lastName = c.lastName ?? "XXX";
+      const firstName = c.firstName ?? "XXX";
+      const candidateId = c.candidateId ?? c.id ?? "XXX";
+      const effortCSD = c.effort?.CSD ?? c.Productivity_CSD ?? "X.XXX";
+      const effortUSD = c.effort?.USD ?? c.Productivity_USD ?? "X.XXX";
+      
+      return (
+        `     ${lastName.padEnd(15)}` +
+        `     ${firstName.padEnd(15)}` +
+        `     ${String(candidateId).padEnd(15)}` +
+        `     ${String(effortCSD).padEnd(18)}` +
+        `     ${String(effortUSD).padEnd(18)}`
+      );
+    }).join("\n") || "     No effort data available"}
 
+    
 ---------------------------------------
  ATTENDANCE TRACKING:
 ---------------------------------------

@@ -557,7 +557,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             return {
               z,
               value: row.x,
-              label: z === 0 ? "Mean (μ=0)" : `σ = ${z}`,
+              label: z === 0 ? "Mean (σ=0)" : `σ = ${z}`,
               color:
                 z === 0 ? "#000000" :
                 Math.abs(z) === 1 ? "#ef4444" :

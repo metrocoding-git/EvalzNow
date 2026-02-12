@@ -58,7 +58,7 @@ function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
 
 
 
-export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters }) {
+export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters, onNeuroRefresh }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -80,6 +80,13 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const refetchNeuroData = () => {
     setRefreshKey(prev => prev + 1);
   };
+  
+  useEffect(() => {
+    if (onNeuroRefresh) {
+      onNeuroRefresh();
+    }
+  }, [refreshKey]);
+
   
   const [showExportMenu, setShowExportMenu] = useState(false);
   const neuroToolsTable = [
@@ -962,13 +969,10 @@ const handleExportGraph = () => {
                   </div>
                 )}
 
-
-
                 {activeAdjustPropertieTab === 'Neuro Tools Table' && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
                     
-                    {/* Simple Lobe Dropdown */}
-                    {/* Lobe selector + ON/OFF toggle */}
+                    {/* Lobe selector + Show Image button */}
                     <div className="mb-4 flex items-center gap-4">
                       <select
                         value={selectedLobe}
@@ -983,53 +987,22 @@ const handleExportGraph = () => {
                         ))}
                       </select>
 
-                      {/* ON / OFF toggle */}
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
-                        <span className="text-sm text-gray-600">Show</span>
-
-                        <input
-                          type="checkbox"
-                          checked={showLobeImage}
-                          onChange={handleToggleImage}
-                          className="sr-only"
-                        />
-
-                        <div
-                          className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
-                            ${showLobeImage ? "bg-gray-500" : "bg-gray-300"}`}
-                        >
-                          <div
-                            className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform
-                              ${showLobeImage ? "translate-x-5" : "translate-x-0"}`}
-                          />
-                        </div>
-
-                        <span className="text-xs font-medium text-gray-700">
-                          {showLobeImage ? "ON" : "OFF"}
-                        </span>
-                      </label>
+                      {/* Show Image button - opens modal directly */}
+                      <button
+                        onClick={() => {
+                          if (selectedLobe) {
+                            setShowLobeImage(true);
+                          } else {
+                            alert("Please select a lobe first");
+                          }
+                        }}
+                        className="px-4 py-2 text-sm bg-gray-200 text-black  hover:bg-gray-300 transition-colors whitespace-nowrap"
+                      >
+                        Show Image
+                      </button>
                     </div>
 
-
-                    {/* Image Display */}
-                    {/* {showLobeImage && selectedLobeData && (
-                      <div>
-                        <div className="relative w-64 h-64 mx-auto">
-                          <Image
-                            src={selectedLobeData.image}
-                            alt={selectedLobeData.name}
-                            fill
-                            style={{ objectFit: 'contain' }}
-                            className="p-4"
-                          />
-                        </div>
-
-                        <p className="text-center mt-2 text-gray-700 font-medium">
-                          {selectedLobeData.name}
-                        </p>
-                      </div>
-                    )} */}
-
+                    {/* Remove the commented out image display since we're using modal */}
                   </div>
                 )}
 

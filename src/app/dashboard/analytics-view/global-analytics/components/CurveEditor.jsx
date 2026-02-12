@@ -105,7 +105,12 @@ export default function CurveEditor() {
     { name: "Pending", value: 200 },
   ];
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+  const COLORS = [
+    "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AF19FF",
+    "#FF4560", "#00BFFF", "#FF69B4", "#7FFF00", "#FFD700",
+    "#40E0D0", "#FF8C00", "#8A2BE2", "#DC143C", "#00FA9A"
+  ];
+  
 
   const chart = [
     { id: 35, name: "Shared Global Analytics Index Table", icon: "🟦", type: "table" },
@@ -219,17 +224,23 @@ export default function CurveEditor() {
     fetchAnalytics();
   }, [activeClientId]);
 
-  const toPercentagePie = (rate) => {
+  const toPercentagePie = (rate, isProficiencyMetric = false) => {
     if (rate === null || rate === undefined) return [];
   
     const value = Number((rate * 100).toFixed(2));
   
+    if (isProficiencyMetric) {
+      return [
+        { name: "Pass", value },
+        { name: "Fail", value: 100 - value }
+      ];
+    }
+  
     return [
-      { name: "Achieved", value },
-      { name: "Remaining", value: 100 - value }
+      { name: "Positive", value },
+      { name: "Negative", value: 100 - value }
     ];
   };
-  
   
   const buildSTAPPieData = () => {
     if (!StableData?.totalByCandidate) return [];
@@ -319,57 +330,53 @@ export default function CurveEditor() {
       
       case 8: { 
         const rate = globalAnalytics.candidateMarks?.impactScore;
-        return toPercentagePie(rate);
+        return toPercentagePie(rate, false);
       }
       
       case 9: { 
         const rate = globalAnalytics.leaderMarks?.impactScore;
-        return toPercentagePie(rate);
+        return toPercentagePie(rate, false);
       }
           
       case 10:
         return Object.entries(globalAnalytics.unitOutcomes || {})
           .map(([name, value]) => ({ name, value }));
   
-      // ================= REGULAR METRICS (100%) =================
-      case 11: return toPercentagePie(regular?.XEP?.successRate);
-      case 12: return toPercentagePie(regular?.XRR?.successRate);
-      case 13: return toPercentagePie(regular?.XLR?.successRate);
-      case 14: return toPercentagePie(regular?.XWR?.successRate);
-      case 15: return toPercentagePie(regular?.XSR?.successRate);
-      case 16: return toPercentagePie(regular?.XTR?.successRate);
-      case 17: return toPercentagePie(regular?.XPR?.successRate);
-      case 18: return toPercentagePie(regular?.XRVSR?.successRate);
-      case 19: return toPercentagePie(regular?.XPVSR?.successRate);
-      case 20: return toPercentagePie(regular?.XAVSR?.successRate);
-      case 21: return toPercentagePie(regular?.XCP?.successRate);
-      case 22: return toPercentagePie(regular?.XBP?.successRate);
-      case 24: return toPercentagePie(regular?.MSIP?.successRate);
+      // ================= REGULAR METRICS - PROFICIENCY (Pass/Fail) =================
+      case 11: return toPercentagePie(regular?.XEP?.successRate, true);
+      case 12: return toPercentagePie(regular?.XRR?.successRate, true);
+      case 13: return toPercentagePie(regular?.XLR?.successRate, true);
+      case 14: return toPercentagePie(regular?.XWR?.successRate, true);
+      case 15: return toPercentagePie(regular?.XSR?.successRate, true);
+      case 16: return toPercentagePie(regular?.XTR?.successRate, true);
+      case 17: return toPercentagePie(regular?.XPR?.successRate, true);
+      case 18: return toPercentagePie(regular?.XRVSR?.successRate, true);
+      case 19: return toPercentagePie(regular?.XPVSR?.successRate, true);
+      case 20: return toPercentagePie(regular?.XAVSR?.successRate, true);
+      case 21: return toPercentagePie(regular?.XCP?.successRate, true);
+      case 22: return toPercentagePie(regular?.XBP?.successRate, true);
+      case 24: return toPercentagePie(regular?.MSIP?.successRate, true);
       case 25: return buildICPieData();
-      case 26: return toPercentagePie(regular?.GEQ?.successRate);
+      case 26: return toPercentagePie(regular?.GEQ?.successRate, true);
   
-      // ================= AVERAGE DELTA =================
-      case 27: return toPercentagePie(avgDelta?.avgDeltaRRN?.successRate);
-      case 28: return toPercentagePie(avgDelta?.avgDeltaPRN?.successRate);
-      case 29: return toPercentagePie(avgDelta?.avgDeltaARN?.successRate);
+      // ================= AVERAGE DELTA (Growth - Positive/Negative) =================
+      case 27: return toPercentagePie(avgDelta?.avgDeltaRRN?.successRate, true);
+      case 28: return toPercentagePie(avgDelta?.avgDeltaPRN?.successRate, true);
+      case 29: return toPercentagePie(avgDelta?.avgDeltaARN?.successRate, true);
   
-      // ================= CUMULATIVE DELTA =================
-      case 30: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
-      case 31: return toPercentagePie(sumDelta?.sumDeltaPRN?.successRate);
-      case 32: return toPercentagePie(sumDelta?.sumDeltaARN?.successRate);
+      // ================= CUMULATIVE DELTA (Growth - Positive/Negative) =================
+      case 30: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate, true);
+      case 31: return toPercentagePie(sumDelta?.sumDeltaPRN?.successRate, true);
+      case 32: return toPercentagePie(sumDelta?.sumDeltaARN?.successRate, true);
   
       // ================= STABILITY =================
-      // case 33: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate);
-
       case 23: // STA/P
         return buildSTAPPieData();
-
       case 33: // STA/G
         return buildSTAGPieData();
-       
       case 34:
         return buildProductivityPieData();
-
+  
       default:
         return [];
     }
@@ -816,7 +823,7 @@ export default function CurveEditor() {
     }
 
     return (
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={380}>
         <PieChart>
           <Pie
             data={pieData}
@@ -824,7 +831,8 @@ export default function CurveEditor() {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={100}
+            outerRadius={150}
+
             label
           >
             {pieData.map((_, index) => (
@@ -832,7 +840,7 @@ export default function CurveEditor() {
             ))}
           </Pie>
           <Tooltip />
-          <Legend />
+          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20 }} />
         </PieChart>
       </ResponsiveContainer>
     );
@@ -889,7 +897,7 @@ export default function CurveEditor() {
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.name}</h2>
             
-            <div className="h-full overflow-auto m-5">
+            <div className="h-full overflow-auto m-5 mb-7">
               {renderChartContent()}
             </div>
           </div>

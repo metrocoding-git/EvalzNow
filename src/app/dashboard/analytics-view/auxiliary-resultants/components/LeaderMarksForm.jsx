@@ -187,7 +187,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
             className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm"
             value={form.concernResolved}
             onChange={(e) => handleChange("concernResolved", e.target.value)}
-            required
+            
           >
             <option value="">Select Type</option>
             {concernResolved.map((type, index) => (

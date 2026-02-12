@@ -84,7 +84,7 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
 
           {/* Impact Type */}
           <label className="col-span-1 text-gray-700 flex items-center">
-            lesson: <span className="text-red-500 ml-1">*</span>
+            Lesson Learned & Improvement: <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="text"

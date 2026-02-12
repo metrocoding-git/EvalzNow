@@ -270,69 +270,80 @@ export default function DataReports() {
     } else if (selectedReport === "all-candidates-unit") {
       try {
         const response = await getDataReportByUnitAllCandidates(selectedUnitId);
-    
         const extracted = extractDataReportByCandidateId(response);
-    
         
         if (!extracted?.candidates?.length) {
           console.warn("No candidates found for this unit.");
           return;
         }
-    
+        
         // ✅ Loop per candidate
         for (const candidate of extracted.candidates) {
           const candidateId = candidate.id;
-
-          // console.log(
-          //   "EZ EXPORT:",
-          //   candidate.id,
-          //   competency?.results?.length,
-          //   effortResults?.length
-          // );
           
-    
-          // ✅ Fetch effort PER candidate
-          let effortResults = [];
+          // ✅ IMPORTANT: Fetch the FULL candidate data report for THIS specific candidate
+          let candidateDataReport;
           try {
-            effortResults = await getEffortBu(selectedUnitId, candidateId);
-          } catch (e) {
-            console.warn(
-              `Effort data missing for candidate ${candidateId}`,
-              e
+            candidateDataReport = await getDataReportByUnitCandidate(
+              selectedUnitId, 
+              candidateId
             );
+            
+            // Extract the data for this specific candidate
+            const candidateExtracted = extractDataReportByCandidateId(candidateDataReport);
+            
+            // Get the specific candidate's data from the extracted result
+            const candidateSpecificData = {
+              unitMeta: candidateExtracted.unitMeta,
+              candidate: candidateExtracted.candidates.find(c => c.id === candidateId),
+              roster: candidateExtracted.rosterByCandidate[candidateId],
+              scores: candidateExtracted.scoresByCandidate[candidateId] || [],
+              competency: candidateExtracted.competencyByCandidate[candidateId],
+              neuro: candidateExtracted.neuroByCandidate[candidateId],
+              engagement: candidateExtracted.engagementByCandidate[candidateId],
+              candidateMarks: candidateExtracted.candidateMarks[candidateId],
+              assessmentChain: candidateExtracted.assessmentChain[candidateId],
+              needAssessments: candidateExtracted.needAssessments[candidateId],
+            };
+            
+            // ✅ Fetch effort data for this candidate
+            let effortResults = [];
+            try {
+              effortResults = await getEffortBu(selectedUnitId, candidateId);
+            } catch (e) {
+              console.warn(`Effort data missing for candidate ${candidateId}`, e);
+            }
+            
+            // ✅ Build report with FRESH data for this candidate
+            const ezText = buildCandidateEZReport({
+              ...candidateSpecificData,
+              effortResults,
+            });
+            
+            downloadEZFile(
+              ezText,
+              `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
+            );
+            
+          } catch (e) {
+            console.error(`Failed to fetch data for candidate ${candidateId}`, e);
+            // Continue with other candidates even if one fails
+            continue;
           }
-    
-          // ✅ Build PURE candidate-specific report
-          const ezText = buildCandidateEZReport({
-            unitMeta: extracted.unitMeta,
-            candidate,
-            roster: extracted.rosterByCandidate[candidateId],
-            scores: extracted.scoresByCandidate[candidateId] || [],
-            competency: extracted.competencyByCandidate[candidateId],
-            neuro: extracted.neuroByCandidate[candidateId],
-            engagement: extracted.engagementByCandidate[candidateId],
-            candidateMarks: extracted.candidateMarks[candidateId],
-            assessmentChain: extracted.assessmentChain[candidateId],
-            needAssessments: extracted.needAssessments[candidateId],
-            effortResults, // ✅ CORRECT
-          });
-    
-          downloadEZFile(
-            ezText,
-            `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
-          );
         }
       } catch (err) {
         console.error("Failed to extract all candidate reports:", err);
       }
-      } else if (selectedReport === "unit-report") {
+    } else if (selectedReport === "unit-report") {
         try {
           const response = await getDataReportByUnit(selectedUnitId);
-      
+          console.log("Unit Report Response:", response);
           if (!response?.unit) {
             console.warn("No unit data found");
             return;
           }
+
+
       
           const ezText = buildUnitEZReport({
             unit: response.unit,

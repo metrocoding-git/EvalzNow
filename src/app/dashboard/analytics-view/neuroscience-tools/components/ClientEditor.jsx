@@ -139,7 +139,7 @@ const rows = [
   { lobe: "Temporal Lobe - Right", func: "Functional Capacity - Temporal Lobe (R)", value: "Yes" },
 ];
 
-export default function ClientEditor({ client, onClose, unitId, candidateId }) {
+export default function ClientEditor({ client, onClose, unitId, candidateId, refreshSignal, }) {
   const [ppId, setPpId] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -283,7 +283,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId }) {
     };
 
     fetchNeuroSessions();
-  }, [unitId, candidateId]);
+  }, [unitId, candidateId, refreshSignal]);
 
   // Group rows by lobe
   const grouped = rows.reduce((acc, row, idx) => {
