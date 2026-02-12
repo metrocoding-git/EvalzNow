@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const helpDocs = [
-  "1.0 INTRODUCTION.pdf",
-  "2.0 BRAIN FUNCTION AND MUTUAL CAUSALITY.pdf",
-  "3.0 EVALZNOW FUNDAMENTALS.pdf",
-  "4.0 RECOMMENDATIONS OF USE_GENERAL EDUCATIONAL PURPOSES.pdf",
-  "5.0 RECOMMENDATIONS FOR USE_HUMAN CAPITAL & INDUSTRY.pdf",
-  "6.0 PSYCHOMETRICS AND MACHINE LEARNING.pdf",
-  "7.0 ISSUES WITH OTHER PRE-EXISTING MODELS.pdf",
-  "8.0 POLICY & LEGAL.pdf"
+  "1.0 Introduction.pdf",
+  "2.0 Brain Function and Causality.pdf",
+  "3.0 Evalznow Fundamentals.pdf",
+  "4.0 General Use - Education.pdf",
+  "5.0 General Use - Industry.pdf",
+  "6.0 Psychometrics and ML.pdf",
+  "7.0 Issues - Pre-existing Models.pdf",
+  "8.0 Policy & Legal.pdf"
 ];
 
 const editActions = [
@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
           {/* Help Documentation */}
           <div className="ml-2 mb-2">
-            <h3 className="text-sm font-semibold mb-1">Help Documentation</h3>
+            <h3 className="text-lg text-center font-semibold mb-1">Help Documentation</h3>
             <ul className="space-y-1">
               {helpDocs.map((doc) => (
                 <li
@@ -99,7 +99,7 @@ export default function SettingsPage() {
         <br />
 
         {/* ===== Edit Menu ===== */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h2 className="text-lg font-bold mb-2">Edit Menu</h2>
           <ul className="ml-2 space-y-1">
             {editActions.map((action) => (
@@ -112,13 +112,13 @@ export default function SettingsPage() {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
-        <hr/>
-        <br />
+        {/* <hr/>
+        <br /> */}
 
         {/* ===== View Menu ===== */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h2 className="text-lg font-bold mb-2">View Menu</h2>
           <ul className="ml-2 space-y-1">
             {viewActions.map((view) => (
@@ -132,31 +132,31 @@ export default function SettingsPage() {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
-        <hr />
-        <br />
+        {/* <hr />
+        <br /> */}
 
         {/* ===== Other Hot Keys ===== */}
-        <div className="mb-6">
-            <h2 className="text-lg font-bold mb-2">Other Hot Keys</h2>
+        {/* <div className="mb-6">
+          <h2 className="text-lg font-bold mb-2">Other Hot Keys</h2>
 
-            <ul className="ml-2 space-y-1">
-                {otherHotKeys.map((item) => (
-                <li
-                    key={item.name}
-                    className="flex justify-between px-2 py-1 rounded "
-                >
-                    <span>{item.name}</span>
+          <ul className="ml-2 space-y-1">
+              {otherHotKeys.map((item) => (
+              <li
+                  key={item.name}
+                  className="flex justify-between px-2 py-1 rounded "
+              >
+                  <span>{item.name}</span>
 
-                    {/* Virtual Key Look */}
-                    <kbd className="bg-gray-200 border border-gray-300 px-2 py-0.5 rounded text-xs font-mono shadow-sm">
-                    {item.key}
-                    </kbd>
-                </li>
-                ))}
-            </ul>
-        </div>
+                  
+                  <kbd className="bg-gray-200 border border-gray-300 px-2 py-0.5 rounded text-xs font-mono shadow-sm">
+                  {item.key}
+                  </kbd>
+              </li>
+              ))}
+          </ul>
+        </div> */}
       </div>
 
       

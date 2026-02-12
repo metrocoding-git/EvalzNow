@@ -24,25 +24,27 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     }
   
     return (
-      <div className="p-4 bg-white rounded-xl shadow-sm">
+      <div className="py-4 px-2 bg-white rounded-xl shadow-sm">
         <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 0, bottom: 40 }}
+            margin={{ top: 20, right: 30, left: 5, bottom: 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="dayCount" 
               type="number"
-              label={{ value: 'Days', position: 'insideBottom', offset: -5 }}
+              label={{ value: 'Days', position: 'insideBottom', offset: -10 }}
               domain={['dataMin', 'dataMax']}
             />
             <YAxis 
-              label={{ value: 'Growth Differential', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Growth Differential', angle: -90, position: "insideLeft",
+                textAnchor: "middle",
+                dy: 6, }}
             />
             <Tooltip />
-            <Legend />
+            <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 35 }} />
 
             {ppPlus15 !== null && (
               <ReferenceLine
@@ -83,7 +85,6 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
               strokeWidth={2}
               dot={false}
               name="Linear Projection"
-              
             />
             
             {/* Red line (Spline Projection) */}
@@ -98,20 +99,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
           </LineChart>
         </ResponsiveContainer>
         
-        {/* Legend for Growth Projection Meaning */}
-        <div className="mt-3 text-xs text-gray-600 text-center space-y-1">
-          <div className="font-semibold">Projection Legend</div>
-          <div className="flex justify-center space-x-4 mt-1">
-            <div className="flex items-center space-x-1">
-              <span className="w-4 h-0.5 bg-blue-500 inline-block"></span>
-              <span>Linear Extrapolation</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="w-4 h-0.5 bg-red-500 inline-block"></span>
-              <span>Cubic Spline Extrapolation</span>
-            </div>
-          </div>
-        </div>
+      
       </div>
     );
   };
