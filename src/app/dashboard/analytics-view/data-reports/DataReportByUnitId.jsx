@@ -32,6 +32,8 @@ export function extractDataReportByUnitId(payload) {
         XRVSR: unit.XRVSR ?? null,
         XPVSR: unit.XPVSR ?? null,
         XAVSR: unit.XAVSR ?? null,
+
+        rosterStats: unit.rosterStats ?? { totalCount: 0 },
         benchmarks: unit.benchmarks,
         staffAssignments: unit.staffAssignments
     };
