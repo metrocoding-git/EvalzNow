@@ -10,7 +10,7 @@ function extractStaffAssignments(staffAssignments = []) {
       .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
   
     const pad = (arr, size = 3) =>
-      Array.from({ length: size }, (_, i) => arr[i] ?? "XXX");
+      Array.from({ length: size }, (_, i) => arr[i] ?? "-");
   
     return {
       leaders: pad(leaders),
@@ -27,7 +27,6 @@ function extractStaffAssignments(staffAssignments = []) {
     return benchmarks
       .map(b => {
         return (
-          `     ${String(b.id).padEnd(12)}` +
           `     ${String(b.benchmarkId).padEnd(12)}` +
           `     ${b.benchmarkType.padEnd(22)}` +
           `     ${b.benchmarkRef.padEnd(22)}` +
@@ -39,35 +38,55 @@ function extractStaffAssignments(staffAssignments = []) {
   
 
   function renderAssessmentBlocks(pps = []) {
-    if (!pps || !pps.length) return "     XXX";
+    if (!pps || !pps.length) return "     -";
   
     const indent = "     ";
+    const gap = "   "; 
   
     return pps
       .map((pp) =>
         indent +
-        String(pp.ppId ?? "")
-          .padEnd(12) +
-        String(pp.periodType ?? "")
-          .padEnd(22) +
-        String(pp.delivery ?? "")
-          .padEnd(32) +
+        String(pp.ppId ?? "").padEnd(12) + gap +
+        String(pp.periodType ?? "").padEnd(22) + gap +
+        String(pp.delivery ?? "").padEnd(32) + gap + 
         String(pp.shortDescription ?? "")
       )
       .join("\n");
   }
   
   
+  
   function renderCandidateMarksRows(candidateMarks = []) {
     if (!candidateMarks.length) {
-      return "     XXX";
+      return "     -";
     }
+  
+    // Define column widths
+    const colWidths = {
+      entryNumber: 14,
+      impactType: 20,
+      concernIdentified: 30,
+      identityDate: 20,
+      concernResolved: 25,
+      resolutionDate: 20
+    };
   
     return candidateMarks
       .sort((a, b) => a.entryNumber - b.entryNumber)
-      .map(mark => `         ${mark.entryNumber ?? "XXX"}          ${mark.impactType ?? "XXX"}           ${mark.concernIdentified ?? "XXX"}           ${mark.identityDate ?? "XXX"}           ${mark.concernResolved ?? "XXX"}           ${mark.resolutionDate ?? "XXX"}`)
+      .map(mark => {
+        return (
+          "         " +
+          String(mark.entryNumber ?? "-").padEnd(colWidths.entryNumber) +
+          String(mark.impactType ?? "-").padEnd(colWidths.impactType) +
+          String(mark.concernIdentified ?? "-").padEnd(colWidths.concernIdentified) +
+          String(mark.identityDate ?? "-").padEnd(colWidths.identityDate) +
+          String(mark.concernResolved ?? "-").padEnd(colWidths.concernResolved) +
+          String(mark.resolutionDate ?? "-").padEnd(colWidths.resolutionDate)
+        );
+      })
       .join("\n");
   }
+  
   
 
   const UNIT_TYPE_RULES = {
@@ -87,7 +106,7 @@ function extractStaffAssignments(staffAssignments = []) {
     },
   
     "Third Parameter": {
-      proficiency: ["XRVSR", "XPVSR", "XAVSR"],
+      proficiency: ["ARN", "XRVSR", "XPVSR", "XAVSR"],
       averages: ["ARN"],
       growth: ["deltaARN"],
     },
@@ -147,7 +166,8 @@ function extractStaffAssignments(staffAssignments = []) {
     return header;
   }
   
-  const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "XXX";
+  const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "-";
+  const fmt2 = (v) => typeof v === "number" ? v.toFixed(2) : "-";
   
   const hasMetric = (unitType, metric) =>
     UNIT_TYPE_RULES.ALL?.proficiency?.includes(metric) ||
@@ -157,7 +177,7 @@ function extractStaffAssignments(staffAssignments = []) {
     UNIT_TYPE_RULES[unitType]?.averages?.includes(metric);
 
     function renderCompetencyProficiencyRows(results = [], unitType) {
-      if (!results.length) return "     XXX";
+      if (!results.length) return "     -";
     
       const cols = [
         ["RRN", 8],
@@ -168,6 +188,7 @@ function extractStaffAssignments(staffAssignments = []) {
         ["XWR", 8],
         ["XTR", 8],
         ["XPR", 8],
+        ["ARN", 8],
         ["XRVSR", 8],
         ["XPVSR", 8],
         ["XAVSR", 8],
@@ -177,7 +198,6 @@ function extractStaffAssignments(staffAssignments = []) {
       ].filter(([key]) => hasMetric(unitType, key) || ["XEP", "XCP", "XBP"].includes(key)); // Always include XEP, XCP, XBP
     
       return results
-        .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
           let row =
             `         ${String(r.ppId).padEnd(10)}  `;
@@ -186,7 +206,7 @@ function extractStaffAssignments(staffAssignments = []) {
             row += `     ${fmt(r[key]).padEnd(w)}  `;
           });
     
-          row += `     ${(r.STAP ?? "XXX").padEnd(8)}  `;
+          row += `     ${(r.STAP ?? "-").padEnd(8)}  `;
           return row;
         })
         .join("\n");
@@ -195,7 +215,7 @@ function extractStaffAssignments(staffAssignments = []) {
 
   
     function renderCompetencyGrowthRows(results = [], scores = [], unitType) {
-      if (!results.length) return "     XXX";
+      if (!results.length) return "     -";
     
       const cols = [
         ["deltaRRN", 8],
@@ -205,17 +225,16 @@ function extractStaffAssignments(staffAssignments = []) {
       ].filter(([key]) => hasMetric(unitType, key) || key === "GEQ"); // Always include GEQ
     
       return results
-        .sort((a, b) => a.ppId - b.ppId)
         .map(r => {
           let row =
             `          ${String(r.ppId).padEnd(10)}  ` +
-            `     ${fmt(r.totalDuration).padEnd(14)}  `;
+            `     ${fmt2(r.totalDuration).padEnd(14)}  `;
     
           cols.forEach(([key, w]) => {
             row += `     ${fmt(r[key]).padEnd(w)}  `;
           });
     
-          row += `     ${(r.STAG ?? "XXX").padEnd(8)}  `;
+          row += `     ${(r.STAG ?? "-").padEnd(8)}  `;
           return row;
         })
         .join("\n");
@@ -224,16 +243,15 @@ function extractStaffAssignments(staffAssignments = []) {
 
   
   function renderCompetencyHybridRows(results = [], scores = []) {
-    if (!results.length) return "     XXX";
+    if (!results.length) return "     -";
   
     return results
-      .sort((a, b) => a.ppId - b.ppId)
       .map(r => {
         return (
           `          ${String(r.ppId).padEnd(10)}  ` +
-          `     ${fmt(r.totalDuration).padEnd(13)}  ` +
+          `     ${fmt2(r.totalDuration).padEnd(13)}  ` +
           `     ${fmt(r.MSIP).padEnd(11)}  ` +
-          `     ${(r.IC ?? "XXX").padEnd(8)}  `
+          `     ${(r.IC ?? "-").padEnd(8)}  `
         );
       })
       .join("\n");
@@ -254,31 +272,39 @@ function extractStaffAssignments(staffAssignments = []) {
     return lines.join("\n");
   }
   
-  function resolveActionStatus(bIds = []) {
-    if (!Array.isArray(bIds) || bIds.length === 0) return "OPEN";
-    if (bIds.length < 5) return "PENDING";
-    return "CLOSED";
+  function resolveActionStatus(bIds = [], observation = "") {
+    const hasBids = Array.isArray(bIds) && bIds.length > 0;
+    const hasObservation = Boolean(observation?.trim());
+  
+    if (hasBids && hasObservation) return "CLOSED";
+    if (hasBids || hasObservation) return "PENDING";
+    return "OPEN";
   }
+  
 
   function renderNeedsAssessmentRows(needAssessments = [], competencyRows = []) {
-    if (!needAssessments.length) return "     XXX";
+    if (!needAssessments.length) return "     ";
   
     return needAssessments
       .map(na => {
         const competencyRow = competencyRows.find(c => c.ppId === na.ppId);
   
-        const dayCount = competencyRow?.totalDuration ?? "XXX";
+        const dayCount = competencyRow?.totalDuration ?? "-";
         const criticalRefDate = competencyRow?.criticalRefDate
           ? new Date(competencyRow.criticalRefDate).toISOString().split("T")[0]
-          : "XXX";
+          : "-";
   
-        const actionStatus = resolveActionStatus(na.bIds);
+        const benchmarkText = na.bIds?.length
+        ? ` ${na.bIds.join(", ")}`
+        : ""; 
+        const actionStatus = resolveActionStatus(na.bIds, na.observation);
         const observation = na.observation?.trim() || "-";
   
         return (
-          `       ${String(na.ppId).padEnd(15)}` +
-          `       ${String(criticalRefDate).padEnd(32)}` +
-          `       ${actionStatus.padEnd(20)}` +
+          `       ${String(na.ppId).padEnd(13)}` +
+          `       ${String(criticalRefDate).padEnd(30)}` +
+          `       ${actionStatus.padEnd(18)}` +
+          `       ${benchmarkText.padEnd(15)}` +
           `       ${observation}`
         );
       })
@@ -288,28 +314,28 @@ function extractStaffAssignments(staffAssignments = []) {
   function renderRecordOfAssignments(scores = []) {
     if (!Array.isArray(scores) || scores.length === 0) {
       return {
-        table1: "     XXX",
-        table2: "     XXX"
+        table1: "     -",
+        table2: "     -"
       };
     }
   
     const table1 = scores
       .map(s =>
         `      ${String(s.ppId).padEnd(10)}` +
-        `     ${String(s.durationHrs ?? "XXX").padEnd(12)}` +
-        `     ${String(s.remarks ?? "XXX").padEnd(28)}` +
-        `     ${String(s.attainedScore ?? "XXX").padEnd(18)}` +
-        `     ${String(s.maxScore ?? "XXX")}`
+        `     ${String(Number(s.durationHrs).toFixed(2) ?? "-").padEnd(12)}` +
+        `     ${String(s.remarks ?? "-").padEnd(28)}` +
+        `     ${String(s.attainedScore ?? "-").padEnd(18)}` +
+        `     ${String(s.maxScore ?? "-")}`
       )
       .join("\n");
   
     const table2 = scores
       .map(s =>
         `      ${String(s.ppId).padEnd(10)}` +
-        `     ${String(s.durationHrs ?? "XXX").padEnd(12)}` +
-        `     ${String(s.workflowStage ?? "XXX").padEnd(20)}` +
-        `     ${String(s.assessmentType ?? "XXX").padEnd(20)}` +
-        `     ${String(s.scheduleImpact ?? "XXX")}`
+        `     ${String(Number(s.durationHrs).toFixed(2) ?? "-").padEnd(12)}` +
+        `     ${String(s.workflowStage ?? "-").padEnd(20)}` +
+        `     ${String(s.assessmentType ?? "-").padEnd(20)}` +
+        `     ${String(s.scheduleImpact ?? "-")}`
       )
       .join("\n");
   
@@ -341,13 +367,13 @@ function extractStaffAssignments(staffAssignments = []) {
   
         const crd = sel.criticalRefDate
           ? new Date(sel.criticalRefDate).toISOString().split("T")[0]
-          : "XXX";
+          : "-";
   
         return (
-          ` Performance Point ID ${sel.ppId ?? "XXX"}\n` +
+          ` Performance Point ID ${sel.ppId ?? "-"}\n` +
           ` IC #: ${ic}\n` +
           ` Benchmark IDs: ${bids}\n` +
-          ` Action Status: ${sel.actionStatus ?? "XXX"}\n` +
+          ` Action Status: ${sel.actionStatus ?? "-"}\n` +
           ` Critical Reference Date: ${crd}\n`
         );
       })
@@ -357,7 +383,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
   function renderAssessmentChain(assessmentChain = []) {
     if (!Array.isArray(assessmentChain) || !assessmentChain.length) {
-      return "     XXX";
+      return "     -";
     }
   
     const renderedChains = assessmentChain
@@ -372,7 +398,7 @@ function extractStaffAssignments(staffAssignments = []) {
       })
       .filter(Boolean);
   
-    if (!renderedChains.length) return "     XXX";
+    if (!renderedChains.length) return "     -";
   
     const headers = renderedChains.map(c => c.header.padEnd(40)).join("     ");
     const bodies = renderedChains.map(c => c.body.split("\n"));
@@ -404,7 +430,7 @@ function extractStaffAssignments(staffAssignments = []) {
   function getRms(entry, mode, lobeName) {
     const lobe = entry?.lobes?.[lobeName];
   
-    if (!lobe) return "XXX";
+    if (!lobe) return "-";
   
     if (mode === "proficiency") {
       return fmt3(lobe.RMS);
@@ -414,7 +440,7 @@ function extractStaffAssignments(staffAssignments = []) {
       return fmt3(lobe.deltaRMS);
     }
   
-    return "XXX";
+    return "-";
   }  
 
   function renderRmsProficiencyTables(neuro, competencyResults) {
@@ -427,7 +453,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     neuro.data.forEach(entry => {
       const dayCount =
-        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "XXX";
+        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "-";
   
       leftRows.push(
         `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
@@ -448,11 +474,11 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
 
-  ${leftRows.join("\n")}
+  ${leftRows.join("\n  ")}
 
          ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (R) - Frontal |||     ||| P/ RMS (R) - Occipital Lobe |||     ||| P/ RMS (R) - Parietal |||     ||| P/ RMS (R) - Temporal |||
 
-  ${rightRows.join("\n")}`;
+  ${rightRows.join("\n  ")}`;
   }
   
 
@@ -466,7 +492,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     neuro.data.forEach(entry => {
       const dayCount =
-        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "XXX";
+        dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "-";
   
       leftRows.push(
         `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
@@ -487,15 +513,15 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
 
-  ${leftRows.join("\n")}
+  ${leftRows.join("\n  ")}
 
          ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (R) - Frontal |||     ||| G/ RMS (R) - Occipital Lobe |||     ||| G/ RMS (R) - Parietal |||     ||| G/ RMS (R) - Temporal |||
 
-  ${rightRows.join("\n")}`;
+  ${rightRows.join("\n  ")}`;
   }  
   
   function fmt3(value) {
-    return Number.isFinite(value) ? value.toFixed(3) : "X.XXX";
+    return Number.isFinite(value) ? value.toFixed(3) : "-";
   }
 
   function sumCognitiveLoad(cognitiveLoad = {}) {
@@ -549,7 +575,7 @@ function extractStaffAssignments(staffAssignments = []) {
       );
   
       growthLines.push(
-        `     G/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.growth)}`
+        `    G/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.growth)}`
       );
     });
   
@@ -585,15 +611,19 @@ function extractStaffAssignments(staffAssignments = []) {
     if (hasMetric(unitType, "deltaRRN")) {
       lines.push(`     Cumulative Growth - ΔRRN                  :     ${fmt(cumulative.deltaRRN)}`);
       lines.push(`     Average Growth - ΔRRN                     :     ${fmt(averages.deltaRRN)}`);
+      lines.push(``);
     }
   
     if (hasMetric(unitType, "deltaPRN")) {
       lines.push(`     Cumulative Growth - ΔPRN                  :     ${fmt(cumulative.deltaPRN)}`);
       lines.push(`     Average Growth - ΔPRN                     :     ${fmt(averages.deltaPRN)}`);
+      lines.push(``);
     }
   
     if (unitType === "Third Parameter") {
+      lines.push(`     Cumulative Growth - ΔARN                  :     ${fmt(cumulative.deltaARN)}`);
       lines.push(`     Average Growth - ΔARN                     :     ${fmt(averages.deltaARN)}`);
+      lines.push(``);
     }
   
     lines.push(`     Average Equivalent Growth - ∆GEQ          :     ${fmt(averages.GEQ)}`);
@@ -603,21 +633,21 @@ function extractStaffAssignments(staffAssignments = []) {
   
   function renderButlerProductivityRows(productivity = []) {
     if (!Array.isArray(productivity) || productivity.length === 0) {
-      return "     XXX";
+      return "     -";
     }
   
     return productivity
       .map(r => {
         const date = r.criticalRefDate
           ? new Date(r.criticalRefDate).toISOString().split("T")[0]
-          : "XXX";
+          : "-";
   
         return (
         `     ${String(r.ppId).padEnd(10)}` +
         `     ${date.padEnd(30)}` +
-        `     ${String(r.totalDuration ?? "X.XXX").padEnd(12)}` + 
-        `     ${String(r.Productivity_CSD ?? "X.XXX").padEnd(28)}` +
-        `     ${String(r.Productivity_USD ?? "X.XXX")}`
+        `     ${String(r.totalDuration ?? "-").padEnd(12)}` + 
+        `     ${String(r.Productivity_CSD ?? "-").padEnd(28)}` +
+        `     ${String(r.Productivity_USD ?? "-")}`
         );
       })
       .join("\n");
@@ -630,7 +660,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return irregularities
       .map((item, index) => {
-        return `     ${String(index + 1).padEnd(10)}     ${String(item.type ?? "XXX").padEnd(28)}     ${item.comments ?? "XXX"}`;
+        return `     ${String(index + 1).padEnd(10)}     ${String(item.type ?? "-").padEnd(28)}     ${item.comments ?? "-"}`;
       })
       .join("\n");
   }
@@ -705,6 +735,59 @@ export function buildCandidateEZReport({
 
 
 
+    // Inside buildCandidateEZReport, before the template string
+
+    let unilateralProficiencySection = "";
+
+    if (unitMeta.unitType === "Communicative I/O") {
+      unilateralProficiencySection = `
+     Unilateral Proficiency in Reading          :     PASS → ≥ ${unitMeta.XRR ?? "-"}  
+     Unilateral Proficiency in Listening        :     PASS → ≥ ${unitMeta.XLR ?? "-"}  
+     Unilateral Proficiency in Speaking         :     PASS → ≥ ${unitMeta.XSR ?? "-"}  
+     Unilateral Proficiency in Writing          :     PASS → ≥ ${unitMeta.XWR ?? "-"}  `;
+    } else if (unitMeta.unitType === "Theory & Practice") {
+      unilateralProficiencySection = `
+     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ ${unitMeta.XTR ?? "-"}   
+     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ ${unitMeta.XPR ?? "-"}    `;
+    } else if (unitMeta.unitType === "Third Parameter") {
+      unilateralProficiencySection = `
+     Unilateral Proficiency - Receptive         :     PASS → ≥ ${unitMeta.XRVSR ?? "-"}   
+     Unilateral Proficiency - Productive        :     PASS → ≥ ${unitMeta.XPVSR ?? "-"} 
+     Unilateral Proficiency - Acuity            :     PASS → ≥ ${unitMeta.XAVSR ?? "-"} `;
+    } else {
+      // fallback in case unitType is missing or unknown
+      unilateralProficiencySection = `
+    Unilateral Proficiency                     :     PASS → -`;
+    }
+
+
+    // Determine Proficiency Table Header based on unitType
+    let proficiencyTableHeader = "";
+
+    if (unitMeta.unitType === "Communicative I/O") {
+      proficiencyTableHeader = `
+        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XRR |||     ||| XLR |||     ||| XSR |||     ||| XWR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
+    } else if (unitMeta.unitType === "Theory & Practice") {
+      proficiencyTableHeader = `
+        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XTR |||     ||| XPR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
+    } else if (unitMeta.unitType === "Third Parameter") {
+      proficiencyTableHeader = `
+        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| ARN |||     ||| XRVSR |||     ||| XPVSR |||     ||| XAVSR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
+    } else {
+      // fallback if unitType is unknown
+      proficiencyTableHeader = `
+        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
+    }
+
+
+    // Determine growth table header based on unitType
+    let growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ∆GEQ |||     ||| STA/G |||";
+
+    if (unitMeta.unitType === "Third Parameter") {
+      // Add ΔARN for Third Parameter units
+      growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ΔARN |||     ||| ∆GEQ |||     ||| STA/G |||";
+    }
+
     return `                                                                                                               *******************************************************************************
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
@@ -723,7 +806,7 @@ export function buildCandidateEZReport({
                                                      **                            Competency Accounting                          **
                                                      **                                                                           **
                                                      **                      Analysis Report Level: Candidate                     **
-                                                     **                    Report Generation Date: ${today.padEnd(21)}**
+                                                     **                    Report Generation Date: ${today.padEnd(21)}          **
                                                      **                                                                           **
                                                      *******************************************************************************
                                                      **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                  **
@@ -756,25 +839,25 @@ export function buildCandidateEZReport({
  CANDIDATE DETAILS :
 ---------------------------------------
 
-  Last Name                            :     ${candidate.lastName ?? "XXX"}
-  First Name                           :     ${candidate.firstName ?? "XXX"}
-  Candidate ID                         :     ${candidate.candidateId ?? "XXX"}
-  Candidate Start Date                 :     ${candidate.candidateStartDate ?? "XXX"}
-  Nationality                          :     ${candidate.nationality ?? "XXX"}
-  Date of Birth                        :     ${candidate.dateOfBirth ?? "XXX"}
-  Special ID No.                       :     ${candidate.specialIdNo ?? "XXX"}
+  Last Name                            :     ${candidate.lastName ?? "-"}
+  First Name                           :     ${candidate.firstName ?? "-"}
+  Candidate ID                         :     ${candidate.candidateId ?? "-"}
+  Candidate Start Date                 :     ${candidate.candidateStartDate ?? "-"}
+  Nationality                          :     ${candidate.nationality ?? "-"}
+  Date of Birth                        :     ${candidate.dateOfBirth ?? "-"}
+  Special ID No.                       :     ${candidate.specialIdNo ?? "-"}
 
 ---------------------------------------
  UNIT DETAILS :
 ---------------------------------------
 
-  Unit Name                            :     ${unitMeta.unitName ?? "XXX"}
-  Unit ID                              :     ${unitMeta.unitId ?? "XXX"}
-  Unit Start Date                      :     ${unitMeta.unitStartDate ?? "XXX"}
-  Unit End Date                        :     ${unitMeta.unitEndDate ?? "XXX"}
-  Signature Profile                    :     ${unitMeta.signatureProfile ?? "XXX"}
-  Unit Type                            :     ${unitMeta.unitType ?? "XXX"}
-  Unit Roster Count                    :     ${roster.totalTally ?? "XXX"}
+  Unit Name                            :     ${unitMeta.unitName ?? "-"}
+  Unit ID                              :     ${unitMeta.unitId ?? "-"}
+  Unit Start Date                      :     ${unitMeta.unitStartDate ?? "-"}
+  Unit End Date                        :     ${unitMeta.unitEndDate ?? "-"}
+  Signature Profile                    :     ${unitMeta.signatureProfile ?? "-"}
+  Unit Type                            :     ${unitMeta.unitType ?? "-"}
+  Unit Roster Count                    :     ${unitMeta.rosterStats.totalCount ?? "-"}
   
   Assigned Leader #1                   :     ${leaders[0]}
   Assigned Leader #2                   :     ${leaders[1]}
@@ -814,20 +897,17 @@ ${assessmentBlocks}
      Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth 
      thresholds of all courses are as follow:
 
-     Unilateral Proficiency in Reading          :     PASS → ${unitMeta.XRR ?? "XXX"} ≥ 0.700
-     Unilateral Proficiency in Listening        :     PASS → ${unitMeta.XLR ?? "XXX"} ≥ 0.700
-     Unilateral Proficiency in Speaking         :     PASS → ${unitMeta.XSR ?? "XXX"} ≥ 0.700
-     Unilateral Proficiency in Writing          :     PASS → ${unitMeta.XWR ?? "XXX"} ≥ 0.700
-         Equivalent Proficiency                     :     PASS → ${unitMeta.XEP ?? "XXX"} ≥ 0.700
-     Composite Proficiency                      :     PASS → ${unitMeta.XCP ?? "XXX"} ≥ 0.700
-     Band Proficiency                           :     PASS → ${unitMeta.XBP ?? "XXX"} ≥ 0.700
+     ${unilateralProficiencySection}
+     Equivalent Proficiency                     :     PASS → ≥ ${unitMeta.XEP ?? "-"}  
+     Composite Proficiency                      :     PASS → ≥ ${unitMeta.XCP ?? "-"}  
+     Band Proficiency                           :     PASS → ≥ ${unitMeta.XBP ?? "-"}  
 
-     Receptive Growth Differential              :     PASS → ${unitMeta.deltaRRN ?? "XXX"} ≥ 0.000
-     Productive Growth Differential             :     PASS → ${unitMeta.deltaPRN ?? "XXX"} ≥ 0.000
-         Equivalent Growth                          :     PASS → ${unitMeta["∆GEQ"] ?? "XXX"} ≥ 0.000
+     Receptive Growth Differential              :     PASS → ≥ ${unitMeta["ΔRRN"] ?? "-"} 
+     Productive Growth Differential             :     PASS → ≥ ${unitMeta["ΔPRN"] ?? "-"} 
+     Equivalent Growth                          :     PASS → ≥ ${unitMeta["ΔGEQ"] ?? "-"} 
 
-     Butler Interaction Proficiency             :     PASS → ${unitMeta.MSIP ?? "XXX"} ≤ 0.450
-     Interaction Class                          :     PASS → ${unitMeta.IC ?? "XXX"} ≥ 2
+     Butler Interaction Proficiency             :     PASS → ≤ ${unitMeta.MSIP ?? "-"}  
+     Interaction Class                          :     PASS → ≥ ${unitMeta.IC ?? "-"} 
 
      Interaction Class 0: Failing
      Interaction Class 1: At-Risk
@@ -836,7 +916,7 @@ ${assessmentBlocks}
      Interaction Class 4: Advanced
      Interaction Class 5: Exceptional
 
-     Unit Outcome for Candidate                 :     ${roster.unitOutcome ?? "XXX"}
+     Unit Outcome for Candidate                 :     ${roster.unitOutcome ?? "-"}
 
 
 *******************************************************                                  SECTION 04                               *******************************************************
@@ -853,7 +933,7 @@ ${assessmentBlocks}
           •	The Composite Proficiency is used to determine if a candidate can demonstrate mastery across all skills.
           •	The Band Proficiency is used to determine if a candidate can demonstrate mastery by averaging scores across all skills.
 
-     ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XRR |||     ||| XLR |||     ||| XSR |||     ||| XWR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||
+     ${proficiencyTableHeader}
 
 ${proficiencyRows}
 
@@ -874,7 +954,7 @@ ${renderAverageBlock(competencyAverages, unitMeta.unitType)}
           •	If the differential change in input variables and/or output variables is zero, then the direction of candidate progress remains unchanged with no growth.
           •	If the differential change in input variables and/or output variables is positive, then the direction of candidate progress increases due to value-added growth.
 
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ∆GEQ |||     ||| STA/G |||
+     ${growthTableHeader}
 
 ${growthRows}
 
@@ -892,8 +972,8 @@ ${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitTyp
 
 ${hybridRows}
 
-     Butler Interaction Proficiency - MSIP    :     ${competencyAverages.MSIP ?? "XXX"}
-     Average Interaction Class - IC           :     ${competencyAverages.IC ?? "XXX"}
+     Average MSIP                             :     ${competencyAverages.MSIP ?? "-"}
+     Average Interaction Class - IC           :     ${competencyAverages.IC ?? "-"}
 
 
 *******************************************************                                  SECTION 05                               *******************************************************
@@ -913,20 +993,20 @@ ${productivityRows}
  ATTENDANCE TRACKING:
 ---------------------------------------
 
-     Attendance % - Present                    :     ${roster.percentages.present ?? "XXX"}
-     Attendance % - Excused Absences           :     ${roster.percentages.excusedAbsences ?? "XXX"}
-     Attendance % - Unexcused Absences         :     ${roster.percentages.unexcusedAbsences ?? "XXX"}
-     Attendance % - Excused Tardies            :     ${roster.percentages.excusedTardies ?? "XXX"}
-     Attendance % - Unexcused Tardies          :     ${roster.percentages.unexcusedTardies ?? "XXX"}
+     Attendance % - Present                    :     ${roster.percentages.present ?? "-"}
+     Attendance % - Excused Absences           :     ${roster.percentages.excusedAbsences ?? "-"}
+     Attendance % - Unexcused Absences         :     ${roster.percentages.unexcusedAbsences ?? "-"}
+     Attendance % - Excused Tardies            :     ${roster.percentages.excusedTardies ?? "-"}
+     Attendance % - Unexcused Tardies          :     ${roster.percentages.unexcusedTardies ?? "-"}
 
 ---------------------------------------
  ENGAGEMENT TRACKING:
 ---------------------------------------
 
-     Engagement Level % - High                :     ${engagementPercentages.High ?? "XXX"}
-     Engagement Level % - Medium              :     ${engagementPercentages.Medium ?? "XXX"}
-     Engagement Level % - Low                 :     ${engagementPercentages.Low ?? "XXX"}
-     Engagement Level % - Not Applicable      :     ${engagementPercentages["N/A"] ?? "XXX"}
+     Engagement Level % - High                :     ${engagementPercentages.High != null ? engagementPercentages.High.toFixed(3) : "-"}
+     Engagement Level % - Medium              :     ${engagementPercentages.Medium != null ? engagementPercentages.Medium.toFixed(3) : "-"}
+     Engagement Level % - Low                 :     ${engagementPercentages.Low != null ? engagementPercentages.Low.toFixed(3) : "-"}
+     Engagement Level % - Not Applicable      :     ${engagementPercentages["N/A"] != null ? engagementPercentages["N/A"].toFixed(3) : "-"}
 
 
 *******************************************************                                  SECTION 06                               *******************************************************
@@ -935,7 +1015,7 @@ ${productivityRows}
  BENCHMARKS:
 ---------------------------------------
 
-     ||| PP ID |||     ||| BIDs |||     ||| BENCHMARK TYPE |||     ||| BENCHMARK REF |||     ||| BENCHMARK DESCRIPTION |||
+     ||| BIDs |||     ||| BENCHMARK TYPE |||     ||| BENCHMARK REF |||     ||| BENCHMARK DESCRIPTION |||
 
 ${benchmarkRows}
 
@@ -951,7 +1031,7 @@ ${candidateMarksRows}
  NEEDS ASSESSMENT:
 ---------------------------------------
 
-     ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| ACTION STATUS |||     ||| OBSERVATIONS & GOALS |||
+     ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| ACTION STATUS |||          ||| BIDS |||     ||| OBSERVATIONS & GOALS |||
 
 ${needsAssessmentRows}
 

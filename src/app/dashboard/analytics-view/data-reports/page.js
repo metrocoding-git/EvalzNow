@@ -210,6 +210,7 @@ export default function DataReports() {
       try {
         const response = await getDataReportByUnit(selectedUnitId);
         
+        console.log("Unit Data Report Response:", response);
       } catch (err) {
         console.error(err);
       }
@@ -336,16 +337,15 @@ export default function DataReports() {
       }
     } else if (selectedReport === "unit-report") {
         try {
+          
           const response = await getDataReportByUnit(selectedUnitId);
           console.log("Unit Report Response:", response);
           if (!response?.unit) {
             console.warn("No unit data found");
             return;
           }
-
-
       
-          const ezText = buildUnitEZReport({
+          const ezText = await buildUnitEZReport({
             unit: response.unit,
           });
       
@@ -371,7 +371,7 @@ export default function DataReports() {
           for (const unit of response.units) {
             if (!unit?.unitId) continue;
       
-            const ezText = buildUnitEZReport({
+            const ezText = await buildUnitEZReport({
               unit
             });
       
@@ -389,7 +389,8 @@ export default function DataReports() {
      else if (selectedReport === "global-data") {
       try {
         const response = await getGlobalDataReportByClient(activeClientId);
-    
+
+        const totalCandidates = response.totalUniqueCandidates || 0;
         const analytics = response.summary?.[0]?.globalAnalytics;
         const thresholds = response.summary?.[0]?.globalAnalyticsThreshold?.summary;
     
@@ -400,6 +401,7 @@ export default function DataReports() {
     
         const ezText = buildGlobalEZReport({
           client: response.client,
+          totalCandidates,
           analytics,
           thresholds,
         });
