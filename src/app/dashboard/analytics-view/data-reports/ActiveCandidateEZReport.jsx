@@ -358,7 +358,7 @@ function extractStaffAssignments(staffAssignments = []) {
     if (!validSelections.length) return null;
   
     return validSelections
-      .map(sel => {
+      .map((sel, index) => {
         const ic = sel.ARN != null ? `<${fmt(sel.RRN)},${fmt(sel.PRN)},${fmt(sel.ARN)}>`
   : `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
         const bids =
@@ -370,9 +370,11 @@ function extractStaffAssignments(staffAssignments = []) {
           ? new Date(sel.criticalRefDate).toISOString().split("T")[0]
           : "-";
   
+        const seq = index + 1;
+
         return (
           ` Performance Point ID ${sel.ppId ?? "-"}\n` +
-          ` IC #: ${ic}\n` +
+          ` IC #${seq}: ${ic}\n` +
           ` Benchmark IDs: ${bids}\n` +
           ` Action Status: ${sel.actionStatus ?? "-"}\n` +
           ` Critical Reference Date: ${crd}\n`
@@ -789,7 +791,7 @@ export function buildCandidateEZReport({
       growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ΔARN |||     ||| ∆GEQ |||     ||| STA/G |||";
     }
 
-    return `                                                                                                               *******************************************************************************
+    return `                                                                                                               
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
