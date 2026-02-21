@@ -224,6 +224,18 @@ export default function CurveEditor() {
     fetchAnalytics();
   }, [activeClientId]);
 
+
+  console.log("Global Analytics:", globalAnalytics);
+
+  const TWO_DECIMAL_CHART_IDS = new Set([
+    11, 12, 13, 14, 15, 16, 17,
+    18, 19, 20, 21, 22, 24,
+    26, 27, 28, 29, 30, 31, 32
+  ]);
+  
+  const shouldFormatTwoDecimals = (chartId) =>
+    TWO_DECIMAL_CHART_IDS.has(chartId);
+
   const toPercentagePie = (rate, isProficiencyMetric = false) => {
     if (rate === null || rate === undefined) return [];
   
@@ -243,25 +255,21 @@ export default function CurveEditor() {
   };
   
   const buildSTAPPieData = () => {
-    if (!StableData?.totalByCandidate) return [];
+    if (!StableData?.STAP) return [];
   
-    return StableData.totalByCandidate
-      .filter(c => c.totalStableSTAPCount > 0)
-      .map(c => ({
-        name: `Candidate ${c.candidateId}`,
-        value: c.totalStableSTAPCount
-      }));
+    return [
+      { name: "Stable", value: StableData.STAP.STABLE ?? 0 },
+      { name: "Unstable", value: StableData.STAP.UNSTABLE ?? 0 },
+    ];
   };
   
   const buildSTAGPieData = () => {
-    if (!StableData?.totalByCandidate) return [];
+    if (!StableData?.STAG) return [];
   
-    return StableData.totalByCandidate
-      .filter(c => c.totalStableSTAGCount > 0)
-      .map(c => ({
-        name: `Candidate ${c.candidateId}`,
-        value: c.totalStableSTAGCount
-      }));
+    return [
+      { name: "Stable", value: StableData.STAG.STABLE ?? 0 },
+      { name: "Unstable", value: StableData.STAG.UNSTABLE ?? 0 },
+    ];
   };
   
   const buildProductivityPieData = () => {
@@ -303,28 +311,42 @@ export default function CurveEditor() {
       case 3:
         return buildCandidateStaffRatioPie();
           
-      case 4:
-        return Object.entries(globalAnalytics.benchmarkCounts || {})
-          .map(([name, value]) => ({ name, value }));
+        case 4: {
+          const bc = globalAnalytics.benchmarkCounts || {};
+        
+          const ORDER = [
+            "BC > 25",
+            "BC ≤ 10",
+            "10 < BC ≤ 25",
+          ];
+        
+          return ORDER
+            .filter(key => bc[key] !== undefined)
+            .map(key => ({
+              name: key,
+              value: bc[key],
+            }));
+        }
   
       case 5:
         return Object.entries(globalAnalytics.assessmentBlocks || {})
           .map(([name, value]) => ({ name, value }));
   
       case 6:
-        return Object.entries(globalAnalytics.attendance || {})
-          .map(([name, value]) => ({ name, value }));
+        return Object.entries(globalAnalytics.attendance || {}).map(([key, value]) => ({
+            name: humanizeKey(key),
+            value,
+        }));
       
       case 7: {
-        const total = globalAnalytics.needAssessments?.total ?? 0;
-        const open = globalAnalytics.needAssessments?.open ?? 0;
-        const closed = total - open;
-      
-        if (total === 0) return [];
-      
+        const open = globalAnalytics.needAssessments?.Open ?? 0;
+        const pending = globalAnalytics.needAssessments?.Pending ?? 0;
+        const closed = globalAnalytics.needAssessments?.Closed ?? 0;
+    
         return [
           { name: "Open", value: open },
-          { name: "Pending/Closed", value: closed },
+          { name: "Pending", value: pending },
+          { name: "Closed", value: closed },
         ];
       }    
       
@@ -444,34 +466,34 @@ export default function CurveEditor() {
     "Global Percentage of Productivity Rates, UR > 0.600",
   ];
 
-  const stableSTAPRate = () => {
-    if (!StableData?.totalByCandidate) return null;
-  
-    const totalStable = StableData.totalByCandidate.reduce(
-      (sum, c) => sum + (c.totalStableSTAPCount ?? 0),
-      0
-    );
-  
-    const totalPossible = totalStabilityOpportunities();
-    if (!totalPossible) return null;
-  
-    return Number((totalStable / totalPossible).toFixed(4));
-  };
-  
-  
-  const stableSTAGRate = () => {
-    if (!StableData?.totalByCandidate) return null;
-  
-    const totalStable = StableData.totalByCandidate.reduce(
-      (sum, c) => sum + (c.totalStableSTAGCount ?? 0),
-      0
-    );
-  
-    const totalPossible = totalStabilityOpportunities();
-    if (!totalPossible) return null;
-  
-    return Number((totalStable / totalPossible).toFixed(4));
-  };
+  const humanizeKey = (key) =>
+    key
+      .replace(/([a-z])([A-Z])/g, "$1 $2") // camelCase → camel Case
+      .replace(/^./, (c) => c.toUpperCase()); // capitalize first letter
+
+      const stableSTAPRate = () => {
+        if (!StableData?.STAP) return null;
+      
+        const stable = StableData.STAP.STABLE ?? 0;
+        const unstable = StableData.STAP.UNSTABLE ?? 0;
+        const total = stable + unstable;
+      
+        if (!total) return null;
+      
+        return Number((stable / total).toFixed(4));
+      };
+      
+      const stableSTAGRate = () => {
+        if (!StableData?.STAG) return null;
+      
+        const stable = StableData.STAG.STABLE ?? 0;
+        const unstable = StableData.STAG.UNSTABLE ?? 0;
+        const total = stable + unstable;
+      
+        if (!total) return null;
+      
+        return Number((stable / total).toFixed(4));
+      };
   
   
   const buildCandidateStaffRatioPie = () => {
@@ -480,10 +502,16 @@ export default function CurveEditor() {
   
     const total = globalAnalytics.totalUnits;
   
+    const labelMap = {
+      "≤ 20": "CTL ≤ 20",
+      "20–30": "20 < CTL ≤ 30",
+      "≥ 30": "CTL > 30",
+    };
+  
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
-      ([name, count]) => ({
-        name,
-        value: Number(((count / total) * 100).toFixed(2)), // pie expects %
+      ([key, count]) => ({
+        name: labelMap[key] ?? key,
+        value: Number(((count / total) * 100).toFixed(2)), // Pie expects %
       })
     );
   };
@@ -584,8 +612,15 @@ export default function CurveEditor() {
         : null,
 
     // ===== Open Items =====
-    "Global Percentage Open Items for All Courses": (g) =>
-      percent(g.needAssessments?.open, g.needAssessments?.total),
+    "Global Percentage Open Items for All Courses": (g) => {
+
+      const open = g.needAssessments?.Open ?? 0;
+      const pending = g.needAssessments?.Pending ?? 0;
+      const closed = g.needAssessments?.Closed ?? 0;
+    
+      const total = open + pending + closed;
+      return total ? open / total : null;
+    },
   
     // ===== Outcomes =====
     "Global Percentage of Passing Candidates": (g) =>
@@ -598,7 +633,7 @@ export default function CurveEditor() {
       percent(g.unitOutcomes?.ongoing, totalOutcomeCount(g)),
   
     // ===== Proficiency =====
-    "Global Percentage of Average Passed Equivalent Proficiency - XEQ": (_, t) =>
+    "Global Percentage of Average Passed Equivalent Proficiency - XEP": (_, t) =>
       t.summary?.regularMetrics?.XEP?.successRate,
   
     "Global Percentage of Average Passed Composite Proficiency - XCP": (_, t) =>
@@ -728,6 +763,8 @@ export default function CurveEditor() {
   const totalAssignedWeight = indexResult?.[3] ?? null;
   const totalMetricWeight = indexResult?.[4] ?? null;
 
+  console.log("benchmarks:", globalAnalytics);
+
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -832,15 +869,23 @@ export default function CurveEditor() {
             cx="50%"
             cy="50%"
             outerRadius={150}
-
-            label
+            label={({ name, value }) =>
+              shouldFormatTwoDecimals(selectedChart.id)
+                ? `${Number(value).toFixed(2)}`
+                : `${value}`
+            }
           >
             {pieData.map((_, index) => (
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip />
-          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20 }} />
+          <Tooltip formatter={(value) =>
+            shouldFormatTwoDecimals(selectedChart.id)
+              ? `${Number(value).toFixed(2)}%`
+              : value
+            } 
+          />
+          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20 }} itemSorter={() => 0} />
         </PieChart>
       </ResponsiveContainer>
     );
