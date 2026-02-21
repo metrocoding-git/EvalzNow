@@ -9,7 +9,12 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
     const fmtFraction = (v) =>
       v === null || v === undefined ? "0.000" : (Number(v) / 100).toFixed(3);
     
-    return `*******************************************************************************
+    const totalAssessmentBlocks = Object.values(analytics.assessmentBlocks || {})
+  .reduce((sum, v) => sum + (Number(v) || 0), 0);
+
+    const totalUnitOutcomes = Object.values(analytics.unitOutcomes || {})
+    .reduce((sum, v) => sum + (Number(v) || 0), 0);
+    return `
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
@@ -97,9 +102,9 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Benchmark Counts, 10 < BC ≤ 25          :     ${pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits)}
   % Benchmark Counts, BC > 25               :     ${pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits)}
   
-  % Assessment Blocks, AB > 20              :     ${pct(analytics.assessmentBlocks["AB > 20"], analytics.totalUnits)}
-  % Assessment Blocks, 8 < AB ≤ 20          :     ${pct(analytics.assessmentBlocks[ "8 < AB ≤ 20"], analytics.totalUnits)}
-  % Assessment Blocks, AB > 20              :     ${pct(analytics.assessmentBlocks["AB > 20"], analytics.totalUnits)}
+  % Assessment Blocks, AB ≤ 8               :     ${pct(analytics.assessmentBlocks["AB ≤ 8"], totalAssessmentBlocks)}
+  % Assessment Blocks, 8 < AB ≤ 20          :     ${pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks)}
+  % Assessment Blocks, AB > 20              :     ${pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks)}
 
   % Attendance - Present                    :     ${fmtFraction(analytics.attendance.present)}
   % Attendance - Excused Absences           :     ${fmtFraction(analytics.attendance.excusedAbsences)}
@@ -111,9 +116,9 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Positive Candidate Marks                :     ${fmtFraction(analytics.candidateMarks.impactScore)}
   % Positive Leader Marks                   :     ${fmtFraction(analytics.leaderMarks.impactScore)}
 
-  % Passing Candidates                      :     ${fmtFraction(analytics.unitOutcomes.ongoing)}
-  % Failed Candidates                       :     ${fmtFraction(analytics.unitOutcomes.pass)}
-  % Ongoing Candidates                      :     ${fmtFraction(analytics.unitOutcomes.fail)}
+  % Passing Candidates                      :     ${pct(analytics.unitOutcomes.Pass, totalUnitOutcomes)}
+  % Failed Candidates                       :     ${pct(analytics.unitOutcomes.Fail, totalUnitOutcomes)}
+  % Ongoing Candidates                      :     ${pct(analytics.unitOutcomes.Ongoing, totalUnitOutcomes)}
 
 
   
@@ -245,6 +250,6 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
 
                                                      *******************************************************************************
                                                      **                               End of Report                               **
-                                                     *******************************************************************************`.trim();
+                                                     *******************************************************************************`;
   }
   

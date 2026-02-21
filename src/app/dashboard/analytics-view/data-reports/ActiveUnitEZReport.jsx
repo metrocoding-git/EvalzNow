@@ -578,7 +578,7 @@ function extractStaffAssignments(staffAssignments = []) {
       growthLines.push(
         `     Pass % Average Growth - ΔARN              :     ${fmt(getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "-")}`
       );
-    }
+    }           
 
     growthLines.push(
       `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
@@ -655,8 +655,7 @@ function extractStaffAssignments(staffAssignments = []) {
     Unilateral Proficiency                     :     PASS → -`;
     }
 
-    return (
-    `                                                     *******************************************************************************
+    return `                                                    
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
@@ -1005,6 +1004,6 @@ function extractStaffAssignments(staffAssignments = []) {
                                                      *******************************************************************************
                                                      **                               End of Report                               **
                                                      *******************************************************************************
-                                                     `.trim()
-  )};
+                                                     `
+  };
   

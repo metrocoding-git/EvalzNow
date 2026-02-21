@@ -517,9 +517,9 @@ export default function CurveEditor() {
   };
   
   const totalOutcomeCount = (g) =>
-    (g.unitOutcomes?.pass ?? 0) +
-    (g.unitOutcomes?.fail ?? 0) +
-    (g.unitOutcomes?.ongoing ?? 0);
+    (g.unitOutcomes?.Pass ?? 0) +
+    (g.unitOutcomes?.Fail ?? 0) +
+    (g.unitOutcomes?.Ongoing ?? 0);
     
   
   const totalAttendanceCount = (g) =>
@@ -624,13 +624,13 @@ export default function CurveEditor() {
   
     // ===== Outcomes =====
     "Global Percentage of Passing Candidates": (g) =>
-      percent(g.unitOutcomes?.pass, totalOutcomeCount(g)),
+      percent(g.unitOutcomes?.Pass, totalOutcomeCount(g)),
 
     "Global Percentage of Failed Candidates": (g) =>
-      percent(g.unitOutcomes?.fail, totalOutcomeCount(g)),
+      percent(g.unitOutcomes?.Fail, totalOutcomeCount(g)),
 
     "Global Percentage of Ongoing Candidates": (g) =>
-      percent(g.unitOutcomes?.ongoing, totalOutcomeCount(g)),
+      percent(g.unitOutcomes?.Ongoing, totalOutcomeCount(g)),
   
     // ===== Proficiency =====
     "Global Percentage of Average Passed Equivalent Proficiency - XEP": (_, t) =>
