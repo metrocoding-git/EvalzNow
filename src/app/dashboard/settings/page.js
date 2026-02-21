@@ -58,6 +58,10 @@ export default function SettingsPage() {
     setSelectedDoc(file);
   };
 
+  // Helper function to remove .pdf extension
+  const removePdfExtension = (filename) => {
+    return filename.replace(/\.pdf$/i, '');
+  };
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50">
       
@@ -78,7 +82,7 @@ export default function SettingsPage() {
                   className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
                   onClick={() => openDoc(doc)}
                 >
-                  {doc}
+                  {removePdfExtension(doc)}
                 </li>
               ))}
             </ul>

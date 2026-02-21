@@ -359,7 +359,8 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return validSelections
       .map(sel => {
-        const ic = `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
+        const ic = sel.ARN != null ? `<${fmt(sel.RRN)},${fmt(sel.PRN)},${fmt(sel.ARN)}>`
+  : `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
         const bids =
           Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length
             ? sel.benchmarkIds.join(", ")
@@ -571,7 +572,7 @@ function extractStaffAssignments(staffAssignments = []) {
       const short = lobeShortName(lobe);
   
       profLines.push(
-        `     P/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.proficiency)}`
+        `    P/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.proficiency)}`
       );
   
       growthLines.push(
@@ -581,7 +582,7 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return `${profLines.join("\n")}
 
-  ${growthLines.join("\n")}`;
+${growthLines.join("\n")}`;
   }
   
 

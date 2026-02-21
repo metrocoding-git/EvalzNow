@@ -644,13 +644,13 @@ console.log("unit type check", tableData);
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => setScoreAdd(true)} />
               </button> */}
               <div className="relative">
-                <button
+                {/* <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
                   className="text-red-600 hover:text-red-800 cursor-pointer"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
-                </button>
+                </button> */}
 
                 {/* Export dropdown menu */}
                 {showExportMenu && (

@@ -34,7 +34,7 @@ function extractStaffAssignments(staffAssignments = []) {
           `     ${b.benchmarkDescription.padEnd(5)}     `
         );
       })
-      .join("\n");
+      .join("\n     ");
   }
   
 
@@ -451,6 +451,7 @@ function extractStaffAssignments(staffAssignments = []) {
       rosterPercentages,
       tabulationAverages,
       assessmentSummary,
+      competencyStability
     } = unit;
   
     const { leaders, assessors } =
@@ -543,8 +544,7 @@ function extractStaffAssignments(staffAssignments = []) {
 
     if (unitType === "Third Parameter") {
       proficiencyUnilateralLines.push(
-        `Pass % Avg Productive Ratio - ARN         :     ${fmt(getAvg("ARN") ?? "-")}`,
-        `     Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "-")}`,
+        `Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "-")}`,
         `     Pass % Avg Unilateral - XPVSR             :     ${fmt(getAvg("XPVSR") ?? "-")}`,
         `     Pass % Avg Unilateral - XAVSR             :     ${fmt(getAvg("XAVSR") ?? "-")}`
       );
@@ -582,7 +582,7 @@ function extractStaffAssignments(staffAssignments = []) {
 
     growthLines.push(
       `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
-      `     Pass % Stability in Growth                :     ${getAvg("STAG") ?? "-"}`
+      `     Pass % Stability in Growth                :     ${fmt(competencyStability?.stagStableFraction) ?? "-"}`
     );
 
 
@@ -597,7 +597,7 @@ function extractStaffAssignments(staffAssignments = []) {
           `     ${String(mark.resolutionDate ?? "—").padEnd(18)}`
         );
       });
-    }).join("\n") || "     —";
+    }).join("\n     ") || "     —";
     
     
     const unitImprovementRows = candidates.flatMap(candidate => {
@@ -629,7 +629,7 @@ function extractStaffAssignments(staffAssignments = []) {
           `     ${benchmarkIds.padEnd(20)}`
         );
       });
-    }).join("\n") || "     —";
+    }).join("\n     ") || "    —";
     
 
     let unilateralProficiencySection = "";
@@ -787,12 +787,13 @@ function extractStaffAssignments(staffAssignments = []) {
 
      Pass % Avg Receptive Ratio - RRN          :     ${fmt(getAvg("RRN") ?? "-")}
      Pass % Avg Productive Ratio - PRN         :     ${fmt(getAvg("PRN") ?? "-")}
+     ${unitType === "Third Parameter" ? `Pass % Avg Productive Ratio - ARN         :     ${fmt(getAvg("ARN") ?? "-")}` : ""}
 	 
      Pass % Avg Equivalent Proficiency - XEP   :     ${fmt(getAvg("XEP") ?? "-")}
      Pass % Avg Composite Proficiency - XCP    :     ${fmt(getAvg("XCP") ?? "-")}
      Pass % Avg Band Proficiency - XBP         :     ${fmt(getAvg("XBP") ?? "-")}
 
-     Pass % Stability in Proficiency           :     ${getAvg("STAP") ?? "-"}
+     Pass % Stability in Proficiency           :     ${fmt(competencyStability?.stapStableFraction) ?? "-"}
 
 ---------------------------------------
  TABULATIONS - GROWTH:
@@ -846,13 +847,13 @@ function extractStaffAssignments(staffAssignments = []) {
       const USD = c.effortBu?.data?.USD ?? "-";
     
       return (
-        `     ${lastName.padEnd(15)}` +
-        `     ${firstName.padEnd(15)}` +
-        `     ${String(candidateId).padEnd(20)}` +
-        `     ${String(CSD).padEnd(18)}` +
-        `     ${String(USD).padEnd(18)}`
+        `   ${lastName.padEnd(15)}` +
+        `   ${firstName.padEnd(15)}` +
+        `   ${String(candidateId).padEnd(20)}` +
+        `   ${String(CSD).padEnd(18)}` +
+        `   ${String(USD).padEnd(18)}`
       );
-    }).join("\n") || "     No effort data available"}
+    }).join("\n     ") || "     No effort data available"}
     
 
 ---------------------------------------
@@ -878,9 +879,9 @@ function extractStaffAssignments(staffAssignments = []) {
  NEEDS ASSESSMENT TRACKING:
 ---------------------------------------
 
-     Action Status % - Open                   :     ${assessmentSummary?.statusPercentages?.Open ?? 0}
-     Action Status % - Closed                 :     ${assessmentSummary?.statusPercentages?.Open ?? 0}
-     Action Status % - Pending                :     ${assessmentSummary?.statusPercentages?.Closed ?? 0}
+     Action Status % - Open                   :     ${Number(assessmentSummary?.statusPercentages?.Open).toFixed(2) ?? 0}
+     Action Status % - Closed                 :     ${Number(assessmentSummary?.statusPercentages?.Pending).toFixed(2) ?? 0}
+     Action Status % - Pending                :     ${Number(assessmentSummary?.statusPercentages?.Closed).toFixed(2) ?? 0}
 
 *******************************************************                                  SECTION 06                               *******************************************************
 
