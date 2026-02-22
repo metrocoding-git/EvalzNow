@@ -371,10 +371,9 @@ function extractStaffAssignments(staffAssignments = []) {
           : "-";
   
         const seq = index + 1;
-
         return (
           ` Performance Point ID ${sel.ppId ?? "-"}\n` +
-          ` IC #${seq}: ${ic}\n` +
+          ` IC #${sel.IC}: ${ic}\n` +
           ` Benchmark IDs: ${bids}\n` +
           ` Action Status: ${sel.actionStatus ?? "-"}\n` +
           ` Critical Reference Date: ${crd}\n`
@@ -389,6 +388,7 @@ function extractStaffAssignments(staffAssignments = []) {
       return "     -";
     }
   
+    
     const renderedChains = assessmentChain
       .map((chain, index) => {
         const content = renderSingleChain(chain);

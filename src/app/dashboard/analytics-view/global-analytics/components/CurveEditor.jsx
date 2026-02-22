@@ -860,7 +860,7 @@ export default function CurveEditor() {
     }
 
     return (
-      <ResponsiveContainer width="100%" height={380}>
+      <ResponsiveContainer width="100%" height={450}>
         <PieChart>
           <Pie
             data={pieData}
@@ -942,7 +942,7 @@ export default function CurveEditor() {
           <div className="h-full overflow-auto m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.name}</h2>
             
-            <div className="h-full overflow-auto m-5 mb-7">
+            <div className="h-full overflow-auto m-5 mb-7 mt-5">
               {renderChartContent()}
             </div>
           </div>
