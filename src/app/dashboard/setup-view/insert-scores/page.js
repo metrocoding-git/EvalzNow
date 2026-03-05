@@ -61,14 +61,20 @@ export default function EntitiesManager() {
   const [error, setError] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [formParams, setFormParams] = useState({ unitId: null, assessmentBlockId: null, ppId: null });
-
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const router = useRouter();
   // const searchParams = useSearchParams();
   const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");
   const { activeClientId, setActiveClientId } = useClient();
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   useEffect(() => {
     if (!unitQuery) {
       toast.error("No Unit Selected")

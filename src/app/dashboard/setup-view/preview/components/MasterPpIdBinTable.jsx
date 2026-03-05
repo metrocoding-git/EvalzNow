@@ -41,9 +41,15 @@ const MasterPpIdBinTable = ({ data }) => {
 
   // const searchParams = useSearchParams();
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const unitId = selectedUnitId;
 
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   useEffect(() => {
     const fetchBlocks = async () => {
       if (!unitId) return;

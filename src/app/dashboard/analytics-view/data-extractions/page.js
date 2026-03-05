@@ -34,7 +34,8 @@ export default function DataExtractions() {
   const [showSecondary, setShowSecondary] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState(null);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [RightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
   const [unitData, setUnitData] = useState(null); 
@@ -139,6 +140,12 @@ export default function DataExtractions() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUnitId = sessionStorage.getItem("selectedUnitId");
+      setSelectedUnitId(storedUnitId);
+    }
+  }, []);
 
   useEffect(() => {
     const dataExtractionByUnitId = async () => {

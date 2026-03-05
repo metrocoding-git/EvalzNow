@@ -35,7 +35,8 @@ export default function DataReports() {
   const [RightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeCandidateId, setActiveCandidateId] = useState(null);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [unitData, setUnitData] = useState(null); 
   const [data, setData] = useState([]); 
   const [loading, setLoading] = useState(false);
@@ -59,6 +60,11 @@ export default function DataReports() {
   const [needAssessment, setNeedAssessment] = useState({});
   const [effortResults, setEffortResults] = useState([]);
 
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   const sortedData = [...data].sort((a, b) => {
     let valA = a[sortKey];
     let valB = b[sortKey];

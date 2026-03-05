@@ -248,7 +248,8 @@ const [formData, setFormData] = useState({
   const { setFormStatus } = useFormStatus();
 
   // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const unitId = selectedUnitId;
   const environment = unit.environment;
   // const rawType = searchParams.get("type") || "communicative";
@@ -256,6 +257,11 @@ const [formData, setFormData] = useState({
   const [criticalRange, setCriticalRange] = useState(null);
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
 
   console.log(" unit data: ", unit);
   const handleChange = (label, value) => {

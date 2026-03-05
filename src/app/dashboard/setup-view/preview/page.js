@@ -101,7 +101,14 @@ export default function PreviewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   // const searchParams = useSearchParams();
   const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");

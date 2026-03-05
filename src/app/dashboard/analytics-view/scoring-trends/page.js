@@ -39,7 +39,8 @@ export default function ScoringTrends() {
   const [error, setError] = useState(null);
 
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]);  
   const [secondaryValues, setSecondaryValues] = useState(null);
@@ -47,6 +48,11 @@ export default function ScoringTrends() {
   const [activeCandidateId, setActiveCandidateId] = useState(
     data.length > 0 ? data[0].id : null
   );
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
 
   // if(!selectedUnitId) {
   //   redirect('/dashboard/analytics-view');
