@@ -190,7 +190,8 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
   const { setFormStatus } = useFormStatus();
   
   // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const unitId = selectedUnitId;
   const environment = unit?.environment || "";
   const [ppIds, setPpIds] = useState([]);
@@ -200,6 +201,11 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
   const [customCriteria, setCustomCriteria] = useState([]);
   const [scoringSystem, setScoringSystem] = useState();
 
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   // Get the appropriate competencies based on type
   const currentCompetencies = competencyTypes[type] || competencyTypes.communicative;
 

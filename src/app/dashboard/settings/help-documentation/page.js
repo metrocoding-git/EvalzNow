@@ -1,23 +1,16 @@
+// app/dashboard/settings/help-documentation/page.jsx
 "use client";
+import { Suspense } from "react";
+import HelpViewer from "./components/HelpViewer";
 
-import { useSearchParams } from "next/navigation";
+ // ← add this
 
-export default function HelpViewer() {
-  const searchParams = useSearchParams();
-  const file = searchParams.get("file");
+// import HelpViewer from "./HelpViewer";
 
-  if (!file) return <div className="text-center mt-20">No file selected</div>;
-
-  // URL encode filename to prevent 404
-  const encodedFile = encodeURIComponent(file);
-
+export default function HelpDocumentationPage() {
   return (
-    <div className="w-full h-screen">
-      <iframe
-        src={`/docs/${encodedFile}`}
-        className="w-full h-full"
-        title={file}
-      />
-    </div>
-  );
+    <Suspense fallback={<div>Loading...</div>}>
+      <HelpViewer />
+    </Suspense>
+  )
 }

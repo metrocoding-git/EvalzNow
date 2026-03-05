@@ -5,11 +5,13 @@ import * as pdfjsLib from "pdfjs-dist/webpack";
 
 export default function SecurePdfViewer({ file }) {
   const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+
   const [pageNum, setPageNum] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    setPageNum(1); // Reset page when file changes
+    setPageNum(1);
   }, [file]);
 
   useEffect(() => {
@@ -17,31 +19,58 @@ export default function SecurePdfViewer({ file }) {
 
     const loadPdf = async () => {
       try {
-        const encodedFile = encodeURIComponent(file); // Encode spaces and special chars
+        const encodedFile = encodeURIComponent(file);
         const pdf = await pdfjsLib.getDocument(`/docs/${encodedFile}`).promise;
 
         setTotalPages(pdf.numPages);
 
         const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 });
+
+        // Get the viewport with scale
+        const viewport = page.getViewport({ scale: 1.5, rotation: page.rotate || 0 });
 
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
+
+        // Reset canvas and clear any previous transforms
+        context.setTransform(1, 0, 0, 1, 0, 0); // reset any rotation/scaling
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        await page.render({ canvasContext: context, viewport }).promise;
+        // Cancel previous render if running
+        if (renderTaskRef.current) {
+          renderTaskRef.current.cancel();
+        }
+
+        const renderTask = page.render({
+          canvasContext: context,
+          viewport,
+        });
+
+        renderTaskRef.current = renderTask;
+        await renderTask.promise;
       } catch (error) {
-        console.error("Error loading PDF:", error);
+        if (error?.name !== "RenderingCancelledException") {
+          console.error("Error loading PDF:", error);
+        }
       }
     };
 
     loadPdf();
+
+    return () => {
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel();
+      }
+    };
   }, [file, pageNum]);
 
   return (
     <div className="flex flex-col items-center h-full">
       <canvas ref={canvasRef} className="border shadow mb-4" />
+
       <div className="flex items-center gap-4">
         <button
           disabled={pageNum <= 1}
@@ -50,9 +79,11 @@ export default function SecurePdfViewer({ file }) {
         >
           ◀ Prev
         </button>
+
         <span className="text-sm">
           Page {pageNum} / {totalPages}
         </span>
+
         <button
           disabled={pageNum >= totalPages}
           onClick={() => setPageNum((p) => p + 1)}
