@@ -36,11 +36,17 @@ export default function ProficiencyMetrics() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [unitData, setUnitData] = useState(null);
   const [data, setData] = useState([]);  
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
 
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe" },
   //   { id: 2, firstName: "Jane", lastName: "Smith" },

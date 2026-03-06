@@ -52,7 +52,14 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   };
 
   // const { selectedUnitId, setSelectedUnitId } = useUnit(); 
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+
   // const searchParams = useSearchParams();
   const environment = unit.environment;
 

@@ -32,7 +32,13 @@ export default function TabulationTables() {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
 
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe", candidateStartDate: "2023-01-10", unitStartDate: "2023-01-15" },
@@ -48,9 +54,9 @@ export default function TabulationTables() {
   // ];
   
 
-  if(!selectedUnitId) {
-    redirect('/dashboard/analytics-view'); 
-  }
+  // if(!selectedUnitId) {
+  //   redirect('/dashboard/analytics-view'); 
+  // }
 
 
   const [unitData, setUnitData] = useState(null); 

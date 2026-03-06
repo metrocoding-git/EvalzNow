@@ -36,7 +36,8 @@ export default function UnitDistributions() {
   const [sortOrder, setSortOrder] = useState("asc");
   // const [activeCandidateId, setActiveCandidateId] = useState(null);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]); 
@@ -65,6 +66,11 @@ export default function UnitDistributions() {
 
   const DEFAULT_BETA = 1.5;
 
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
+  
   const handleBetaReset = () => {
     setBeta(DEFAULT_BETA);
     setShowBetaValue(false); 

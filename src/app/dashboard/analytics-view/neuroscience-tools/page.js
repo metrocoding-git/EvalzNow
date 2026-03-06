@@ -48,7 +48,8 @@ export default function NeuroscienceTools() {
   const [error, setError] = useState(null);
 
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
-  const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
+  const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [unitData, setUnitData] = useState(null);      // store unit details
   const [data, setData] = useState([]); 
   const [activeCandidateId, setActiveCandidateId] = useState(
@@ -63,6 +64,11 @@ export default function NeuroscienceTools() {
       setScoresOpen(true);
     }
   }, [activeCandidateId]);
+
+  useEffect(() => {
+    const storedId = sessionStorage.getItem("selectedUnitId");
+    setSelectedUnitId(storedId);
+  }, []);
 
   const [openMenu, setopenMenu] = useState(true);
 
