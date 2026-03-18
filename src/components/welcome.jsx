@@ -19,6 +19,7 @@ export default function Welcome() {
     // const isAdmin = loggedInUser?.role === "admin";
     // const isStaff = loggedInUser?.role === "staff";
 
+    const currentYear = new Date().getFullYear();
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Centered Image */}
@@ -51,8 +52,8 @@ export default function Welcome() {
 
       {/* Footer Section */}
       <div className="px-6 py-4 mt-auto text-left text-gray-600 text-sm">
-        <p className="font-bold text-lg">2025</p>
-        <p>Copyright 2025 Ricky Butler. All Rights Reserved</p>
+        <p className="font-bold text-lg">{currentYear}</p>
+        <p>Copyright {currentYear} Ricky Butler. All Rights Reserved</p>
       </div>
     </div>
   );

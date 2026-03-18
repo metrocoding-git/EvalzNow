@@ -183,7 +183,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
 
      
       <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 text-xs p-2 h-full">
+        <div className="grid grid-cols-5 gap-1 text-xs p-2 h-full">
           {[
             "Executive Last Name",
             "Executive First Name",
@@ -195,7 +195,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
             "Business Registration No.",
           ].map((label, idx) => (
             <React.Fragment key={idx}>
-              <label className="col-span-1 flex items-center text-gray-700">
+              <label className="col-span-2 flex items-center text-gray-700">
                 {label}:
               </label>
               <input
@@ -203,7 +203,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
                 value={form[label] || ""}
                 onFocus={() => setFormStatus("Editing...")}
                 onBlur={() => setFormStatus("Ready...")}
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />
             </React.Fragment>
@@ -211,13 +211,13 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
 
 
           {/* Country */}
-          <label className="col-span-1 flex items-center text-gray-700">
+          <label className="col-span-2 flex items-center text-gray-700">
               Country:
           </label>
           <select required value={form["Country"] || ""} onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
             onChange={(e) => handleChange("Country", e.target.value)}
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="" disabled>
               Select Country
@@ -230,24 +230,24 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
           </select>
 
           {/* Executive ID */}
-          <label className="col-span-1 flex items-center text-gray-700">Executive ID:</label>
+          <label className="col-span-2 flex items-center text-gray-700">Executive ID:</label>
           <input
             type="text"
             value={client.executiveId}
             onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
             disabled
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-xs"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-gray-100 text-xs"
           />
 
           {/* Company Size */}
-          <label className="col-span-1 flex items-center text-gray-700">Company Size:</label>
+          <label className="col-span-2 flex items-center text-gray-700">Company Size:</label>
           <select
             value={form["Company Size"] || ""}
             onChange={(e) => handleChange("Company Size", e.target.value)}
             onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="">Select Size</option>
             {companySize.map((size, i) => (
@@ -258,19 +258,19 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
           </select>
 
           {/* Status */}
-          <label className="col-span-1 flex items-center text-gray-700">Status:</label>
+          <label className="col-span-2 flex items-center text-gray-700">Status:</label>
           <select
             value={form["Status"] || "Activate"} onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
             onChange={(e) => handleChange("Status", e.target.value)}
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="Activate">Activate</option>
             <option value="Deactivate">Deactivate</option>
           </select>
 
           {/* Save Button */}
-          <div className="col-span-2 pt-4 flex justify-end gap-2">
+          <div className="col-span-5 pt-4 flex justify-end gap-2">
             <button
                 type="button"
                 onClick={handleSubmit}

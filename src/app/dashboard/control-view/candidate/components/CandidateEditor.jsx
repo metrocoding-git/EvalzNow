@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Edit3, X, Plus, Edit, Trash2 } from "lucide-react";
+import { Edit3, X, Plus, Edit, Trash2, Trash } from "lucide-react";
 import { updateCandidate } from "@/services/candidateService";
 import { getAllEthinicities } from "@/services/ethinictyService";
 import { getAllIncomes } from "@/services/incomeService";
@@ -332,7 +332,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
     </div>
 
     <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-2 gap-1 text-xs p-2 h-full">
+      <div className="grid grid-cols-3 gap-1 text-xs p-2 h-full">
         {/* Basic Information */}
         {[
           "Last Name",
@@ -348,7 +348,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
             </label>
             <input
               type={label.includes("Date") ? "date" : "text"}
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
               onFocus={() => setFormStatus("Editing...")}
               onBlur={() => setFormStatus("Ready...")}
@@ -373,7 +373,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
             </label>
             {label === "Ethnicity" ? (
             <select
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
               onFocus={() => setFormStatus("Editing...")}
               onBlur={() => setFormStatus("Ready...")}
@@ -388,7 +388,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
             </select>
           ) : label === "Income" ? (
             <select
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
               onFocus={() => setFormStatus("Editing...")}
               onBlur={() => setFormStatus("Ready...")}
@@ -403,7 +403,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
             </select>
           ) : (
             <select
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
               value={form[label]}
               onFocus={() => setFormStatus("Editing...")}
               onBlur={() => setFormStatus("Ready...")}
@@ -422,7 +422,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
         ))}
 
         {/* Irregularities Table */}
-        <div className="col-span-2 pt-4 border-t border-gray-200">
+        <div className="col-span-3 pt-4 border-t border-gray-200">
           <h3 className="pb-2 font-semibold text-gray-800">Irregularities</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-xs border border-gray-300">
@@ -489,7 +489,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
                       }}
                       className="px-1 py-1 text-red-600 hover:text-red-800"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash className="w-4 h-4" />
                     </button>
 
                     </td>
@@ -510,7 +510,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
         </div>
 
         {/* Buttons */}
-        <div className="col-span-2 pt-4 flex justify-end gap-2">
+        <div className="col-span-3 pt-4 flex justify-end gap-2">
           <button className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs" type="submit" >
             Edit
           </button>

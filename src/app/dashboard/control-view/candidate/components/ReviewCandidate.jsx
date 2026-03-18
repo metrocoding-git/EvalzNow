@@ -59,7 +59,7 @@ export default function ReviewCandidate({ candidate }) {
         <h3 className="text-md font-medium text-gray-800 mb-2">
           Connected Units
         </h3>
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-2 gap-3">
 
           {units.length === 0 && !loading && (
             <li className="text-gray-500">No units found.</li>

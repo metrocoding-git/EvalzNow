@@ -481,10 +481,10 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       )} */}
 
       {showUnitForm && !showUnitRoster &&(
-        <form onSubmit={handleSubmit} className="flex-1 overflow-auto flex flex-col">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-x-hidden flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
-            <div className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
+            <div className="grid grid-cols-5 gap-x-2 gap-y-3 text-sm items-center">
               {[
                 { label: "Unit Name", key: "unitName" },
                 { label: "Unit ID", key: "unitId" },
@@ -492,7 +492,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 { label: "End Date", key: "endDate", type: "date" },
               ].map(({ label, key, type }) => (
                 <React.Fragment key={key}>
-                  <label className="text-gray-700 font-medium text-xs">{label}:</label>
+                  <label className="col-span-2 text-gray-700 font-medium text-sm">{label}:</label>
                   <input
                     name={key}
                     value={unit[key] || ""}
@@ -500,68 +500,67 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onBlur={() => setFormStatus("Ready...")}
                     onChange={(e) => handleChange(key, e.target.value)}
                     type={type || "text"}
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
                 </React.Fragment>
               ))}
 
               {/* Staff Assignment */}
-              <label className="col-span-1 flex items-center text-gray-700">
+              <label className="col-span-2 flex items-center text-gray-700 text-sm">
                 Assigned Leaders:
               </label>
-              <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setLookupFor("leaders");
-                  setShowLookup(true);
+              <div className="col-span-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLookupFor("leaders");
+                    setShowLookup(true);
 
-                  // Pass already assigned leaders to the lookup modal
-                  const assignedLeaders = unit.assignedLeaders || [];
-                  // setInitialSelectedIds(assignedLeaders);
-                }}
-                className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
-              >
-                + Add Leader
-              </button>
+                    // Pass already assigned leaders to the lookup modal
+                    const assignedLeaders = unit.assignedLeaders || [];
+                    // setInitialSelectedIds(assignedLeaders);
+                  }}
+                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                >
+                  + Add Leader
+                  </button>
 
-                <div className="text-sm text-gray-700">
-                  {/* {form.assignedLeaders?.length || 0} selected */}
-                  Max 3
-                </div>
+                  <div className="text-sm text-gray-700">
+                    {/* {form.assignedLeaders?.length || 0} selected */}
+                    Max 3
+                  </div>
               </div>
 
-
-              <label className="col-span-1 flex items-center text-gray-700">
+              <label className="col-span-2 text-gray-700 text-sm font-medium whitespace-nowrap">
                 Assigned Assessors:
               </label>
-              <div className="flex items-center gap-2">
+
+              <div className="col-span-3 flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setLookupFor("assessors");
                     setShowLookup(true);
                   }}
-                  className="px-1 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 "
                 >
                   + Add Assessor
                 </button>
-                <div className="text-sm text-gray-700">
-                  {/* {form.assignedAssessors?.length || 0} selected */}
+
+                <span className="text-sm text-gray-700 ">
                   Max 3
-                </div>
+                </span>
               </div>
 
-              <label className="col-span-1 flex items-center text-gray-700">
+              <label className="col-span-2 flex items-center text-gray-700">
                 Unit Director:
               </label>
               <select
                 required
                 value={unit.unitDirector || ""}
                 onChange={(e) => handleChange("unitDirector", e.target.value)}
-                className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                className="col-span-3 w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               >
-                <option value="">Select Unit Director</option>
                 {unitDirectors.map((staff) => (
                   <option key={staff.id} value={staff.id}>
                     {staff.firstName} {staff.lastName}
@@ -569,7 +568,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 ))}
               </select>
 
-              <label className="text-gray-700 font-medium text-xs">Unit Type:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-sm">Unit Type:</label>
               <input
                     name="unitType"
                     disabled
@@ -577,11 +576,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
              
 
-              <label className="text-gray-700 font-medium text-xs">Signature Profile:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-sm">Signature Profile:</label>
               <input
                     name="signatureProfile"
                     disabled
@@ -589,11 +588,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
               
 
-              <label className="text-gray-700 font-medium text-xs">Environment:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-sm">Environment:</label>
               <input
                     name="environment"
                     disabled
@@ -601,12 +600,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
             
               {unit.environment === "Workforce" && (
                 <>
-                  <label className="text-gray-700 font-medium text-xs">Scoring System:</label>
+                  <label className="col-span-2 text-gray-700 font-medium text-sm">Scoring System:</label>
                   <input
                     name="scoringSystem"
                     disabled
@@ -614,7 +613,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
                  
                 </>
@@ -630,11 +629,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   {Object.entries(unit.passThresholds).map(([k, v]) => (
                     <div key={k} className="space-y-1 relative group">
                       {/* Tooltip */}
-                      <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
+                      <div className="absolute -top-8 left-0 bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
                         {THRESHOLD_NAMES[k] || k}
                       </div>
 
-                      <label className="block text-gray-700 font-medium text-xs">
+                      <label className="block text-gray-700 font-medium text-sm">
                         {k}:
                       </label>
                       <input
@@ -659,7 +658,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
             <div className="mt-6 pt-4 border-t border-gray-200">
               <h3 className="pb-2 font-semibold text-gray-800 text-base">Unit Benchmarks</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs border border-gray-300">
+                <table className="w-full text-sm border border-gray-300">
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="whitespace-nowrap border border-gray-300 px-8 py-1 text-left">BID</th>
@@ -723,7 +722,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                             onClick={(e) => { e.stopPropagation(); deleteBenchmark(index)}}
                             className="px-1 py-1 text-red-600 hover:text-red-800"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -837,7 +836,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
           </div>
 
           {/* Bottom Actions */}
-          <div className="border-t border-gray-200 p-2 bg-gray-50">
+          <div className="border-t border-gray-200 px-3 py-2 bg-gray-50">
             <div className="flex justify-end">
               <button
                 type="submit"
@@ -851,25 +850,25 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         </form>
       )}
 
-{showLookup && (
-  <StaffLookup
-    onClose={() => {
-      setShowLookup(false);
-      setLookupFor(null);
-    }}
-    onSelect={handleStaffSelect}
-    selectedIds={
-      lookupFor === "leaders"
-        ? unit.assignedLeaders
-        : lookupFor === "assessors"
-        ? unit.assignedAssessors
-        : lookupFor === "director"
-        ? unit.unitDirector ? [unit.unitDirector] : []
-        : []
-    }
-    lookupFor={lookupFor}
-  />
-)}
+      {showLookup && (
+        <StaffLookup
+          onClose={() => {
+            setShowLookup(false);
+            setLookupFor(null);
+          }}
+          onSelect={handleStaffSelect}
+          selectedIds={
+            lookupFor === "leaders"
+              ? unit.assignedLeaders
+              : lookupFor === "assessors"
+              ? unit.assignedAssessors
+              : lookupFor === "director"
+              ? unit.unitDirector ? [unit.unitDirector] : []
+              : []
+          }
+          lookupFor={lookupFor}
+        />
+      )}
 
 
     </div>

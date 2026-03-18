@@ -10,6 +10,7 @@ import {
   FolderSync,
   ArrowUp,
   ArrowDown,
+  Trash,
 } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
@@ -730,11 +731,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
                 {selectedRow && (
                   <button
-                    className="p-1 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                    className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                     onClick={handleDeleteSelectedScore}
                   >
                     <span className="flex items-center gap-2 ">
-                      <Trash2 className="w-3.5 h-3.5 " />
+                      <Trash className="w-3.5 h-3.5 " />
                     </span>
 
                   </button>

@@ -171,7 +171,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
     
         {/* Scrollable form content */}
         <div className="flex-1 p-4 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
+          <div className="grid grid-cols-3 gap-1 space-y-3 text-sm">
             {[
               "Executive Last Name",
               "Executive First Name",
@@ -188,7 +188,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
                 </label>
                 <input
                    type={label.includes("E-mail") ? "email" : "text"}
-                  className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                   onChange={(e) => handleChange(label, e.target.value)}
                   required
                 />
@@ -204,10 +204,10 @@ export default function CreateClientForm({ onClose, onCreate }) {
               defaultValue=""
               required 
               onChange={(e) => handleChange("Country", e.target.value)}
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
               <option value="" disabled>
-                Select Size
+                Select Country
               </option>
               {countries.map((country, i) => (
                 <option key={i} value={country}>
@@ -224,7 +224,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
               type="text"
               value={executiveId}
               disabled
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             />
 
             {/* Company Size */}
@@ -235,7 +235,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
               defaultValue=""
               required 
               onChange={(e) => handleChange("Company Size", e.target.value)}
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             >
               <option value="" disabled>
                 Select Size
@@ -253,7 +253,7 @@ export default function CreateClientForm({ onClose, onCreate }) {
             </label>
             <select
               defaultValue="Activate"
-              className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onChange={(e) => handleChange("Status", e.target.value)}
             >
               <option value="Activate">Activate</option>
