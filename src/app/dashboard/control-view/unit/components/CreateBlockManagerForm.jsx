@@ -129,7 +129,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
 
       {/* Scrollable Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-[150px_1fr] gap-y-4 gap-x-4 text-sm max-w-xl">
+        <div className="grid grid-cols-[200px_1fr] gap-y-4 gap-x-4 text-sm max-w-2xl w-full">
           {/* Period Type */}
           <label className="flex items-center text-gray-700">Period Type:</label>
           <select

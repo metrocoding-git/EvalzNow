@@ -720,9 +720,9 @@ const filteredCandidates = unitRosterData
 
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
-      <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
+    <div className="flex w-full h-full overflow-hidden">
+      <div className="w-1/2 lg:w-4/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+        <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
           
@@ -766,7 +766,7 @@ const filteredCandidates = unitRosterData
                     {selectedUnit && (
                       <div className="flex gap-1 unit-item">
                         <button
-                          className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                          className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
                           onClick={() => handleDelete(selectedUnit.id)}
                         >
                           <Trash className="w-3.5 h-3.5" />
@@ -1161,9 +1161,9 @@ const filteredCandidates = unitRosterData
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/2 lg:w-9/12 bg-white">
+      <div className="flex-1 bg-white">
         {showAdd && (
-          <div className="h-full flex flex-col w-96" ref={createFormRef}>
+          <div className="h-full flex flex-col" ref={createFormRef}>
             <CreateUnitForm onClose={() => {
                setShowAdd(false)
                setUnitToDuplicate([])}} onSubmit={handleCreate} unitData={unitToDuplicate}  />
@@ -1171,7 +1171,7 @@ const filteredCandidates = unitRosterData
         )}
 
         {showAddBlockManager && (
-          <div className="h-full flex flex-col w-96">
+          <div className="h-full flex flex-col">
             <CreateBlockManagerForm onClose={() => setShowAddBlockManager(false)} activeTab={activeTab} />
           </div>
         )}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, Trash } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
 import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId, updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
@@ -516,7 +516,7 @@ const moveRowDown = () => {
     <div className="flex flex-col h-full ">
      
       <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200 relative">
-        <span className="pl-2 text-md text-gray-800">Unit Config</span>
+        <span className="pl-2 text-md">Unit Config</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
         
         {showCreateBlockForm && (
@@ -534,9 +534,9 @@ const moveRowDown = () => {
       </h2>
 
        {/* Unit Roster */}
-      <div className="h-1/2 border border-gray-300 flex flex-col m-1">
+      <div className="h-1/3 border border-gray-300 flex flex-col m-1">
 
-        <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
+        <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-black ">
           <h2 className="text-sm font-semibold mx-1">Unit Roster</h2>
 
           <div className="flex items-center gap-2">
@@ -552,14 +552,11 @@ const moveRowDown = () => {
               <button
                 onClick={handleUnitRosterDeleteCurve}
                 title="Delete Selected Row(s)"
-                className="text-gray-600 hover:text-red-600 cursor-pointer"
+                className="text-red-600 hover:text-red-800 cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash className="w-3.5 h-3.5" />
               </button>
             )}
-
-
-
           </div>
         </div>
 
@@ -681,10 +678,10 @@ const moveRowDown = () => {
       </div>
 
       {/* Assessment Block Manager */}
-      <div className="h-1/2 flex flex-col m-1 ">
+      <div className="h-2/3 flex flex-col m-1 ">
         <div className="border border-gray-300 flex flex-col">
           <div className="flex flex-col">
-            <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700 ">
+            <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-black ">
               <h2 className="text-sm font-semibold mx-1">Assessment Block Manager</h2>
 
               <div className="flex items-center gap-1">
@@ -710,11 +707,11 @@ const moveRowDown = () => {
 
                 {selectedRow !== null && (
                   <button
-                    className="p-1.5 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                    className="p-1.5 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                     onClick={handleDeleteBlock}
                   >
                     <span className="flex items-center gap-2 ">
-                      <Trash2 className="w-3.5 h-3.5 " />
+                    <Trash className="w-3.5 h-3.5" />
                     </span>
                   </button>
                 )}

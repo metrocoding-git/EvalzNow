@@ -64,78 +64,82 @@ export default function StaffLookup({ onClose, onSelect, selectedIds: initialSel
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50"
+      className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50 border shadow-2xl border-gray-200"
     >
-      <div className="bg-white p-4 w-[600px] border shadow-2xl border-gray-200">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white w-[600px] border shadow-2xl border-gray-200">
+        <div className="flex justify-between items-center  bg-gray-100 px-4 py-2 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Staff Lookup</h2>
-          <button onClick={onClose} className="cursor-pointer">
+          <button onClick={onClose} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
             <X className="w-5 h-5 text-gray-700" />
           </button>
         </div>
 
-        <input
-          type="text"
-          placeholder="Search Staff..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border p-2 w-full mb-3 text-sm"
-        />
+        <div className="flex-1 p-4 overflow-y-auto">
+          <input
+            type="text"
+            placeholder="Search Staff..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border p-2 w-full mb-3 text-sm"
+          />
 
-        <table className="w-full border text-xs">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border p-1">Action</th>
-              <th className="border p-1">Last Name</th>
-              <th className="border p-1">First Name</th>
-              <th className="border p-1">Job Title</th>
-              <th className="border p-1">Department</th>
-              <th className="border p-1">Company E-mail Address</th>
-            </tr>
-          </thead>
-          <tbody>
-            {staffs.map((c) => (
-              <tr
-                key={c.id}
-                onClick={() => handleRowClick(c.id)}
-                className={`cursor-pointer ${selectedIds.includes(c.id) ? "bg-gray-200" : "hover:bg-gray-100"}`}
-              >
-                <td className="border p-1 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(c.id)}
-                    onChange={() => handleRowClick(c.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-4 h-4 text-sm text-center accent-black font-medium text-gray-900 rounded focus:ring-blue-500"
-                  />
-                </td>
-                <td className="border p-1">{c.lastName}</td>
-                <td className="border p-1">{c.firstName}</td>
-                <td className="border p-1">{c.jobTitle}</td>
-                <td className="border p-1">{c.department}</td>
-                <td className="border p-1">{c.emailAddress}</td>
-              </tr>
-            ))}
-            {staffs.length === 0 && (
+          <table className="w-full border text-xs">
+            <thead className="bg-gray-100">
               <tr>
-                <td colSpan={6} className="text-center p-2 text-gray-500">
-                  No matching Staff found.
-                </td>
+                <th className="border p-1">Action</th>
+                <th className="border p-1">Last Name</th>
+                <th className="border p-1">First Name</th>
+                <th className="border p-1">Job Title</th>
+                <th className="border p-1">Department</th>
+                <th className="border p-1">Company E-mail Address</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-
-        <div className="flex justify-between items-center mt-4">
-          <span className="text-sm text-gray-600">{selectedIds.length} / {lookupFor === "director" ? 1 : 3} selected</span>
-          <button
-            onClick={handleSubmit}
-            disabled={selectedIds.length === 0}
-            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-1 rounded"
-          >
-            Submit
-          </button>
-        </div>
+            </thead>
+            <tbody>
+              {staffs.map((c) => (
+                <tr
+                  key={c.id}
+                  onClick={() => handleRowClick(c.id)}
+                  className={`cursor-pointer ${selectedIds.includes(c.id) ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                >
+                  <td className="border p-1 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(c.id)}
+                      onChange={() => handleRowClick(c.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-4 h-4 text-sm text-center accent-black font-medium text-gray-900 rounded focus:ring-blue-500"
+                    />
+                  </td>
+                  <td className="border p-1">{c.lastName}</td>
+                  <td className="border p-1">{c.firstName}</td>
+                  <td className="border p-1">{c.jobTitle}</td>
+                  <td className="border p-1">{c.department}</td>
+                  <td className="border p-1">{c.emailAddress}</td>
+                </tr>
+              ))}
+              {staffs.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center p-2 text-gray-500">
+                    No matching Staff found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          </div>
+        
+          <div className="border-t border-gray-300 py-2 px-6 bg-gray-50 flex-shrink-0">
+            <div className="flex justify-between items-center ">
+              <span className="text-sm text-gray-600">{selectedIds.length} / {lookupFor === "director" ? 1 : 3} selected</span>
+              <button
+                onClick={handleSubmit}
+                disabled={selectedIds.length === 0}
+                className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
       </div>
     </div>
   );

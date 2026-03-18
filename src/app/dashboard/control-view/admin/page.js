@@ -302,9 +302,9 @@ export default function AdminControl() {
 
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden w-full">
       
-      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+      <div className="w-1/2 lg:w-4/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="h-1/2 flex flex-col border-1 border-gray-200 overflow-hidden">
           {/* Header with controls */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
@@ -329,7 +329,7 @@ export default function AdminControl() {
                   {selectedClient && (
                     <div className="flex gap-1 client-item">
                       <button
-                        className="p-1.5 text-gray-600 bg-gray-200 hover:bg-gray-400 hover:text-white transition-colors"
+                        className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
                         onClick={() => {
                           handleDelete(selectedClient.id)
                         }}
@@ -497,7 +497,7 @@ export default function AdminControl() {
               
             >
               <span className="flex items-center gap-2">
-                <Trash2 className="w-4 h-4" /> Delete
+                <Trash className="w-4 h-4" /> Delete
               </span>
               <span className="text-gray-400 text-xs ml-4">Del</span>
             </button>
@@ -554,8 +554,8 @@ export default function AdminControl() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/2 lg:w-9/12 bg-white">
-        <div className="h-full flex flex-col w-96" ref={createFormRef} >
+      <div className="flex-1 bg-white">
+        <div className="h-full flex flex-col" ref={createFormRef} >
           {showAdd && <CreateClientForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />}
         </div>
       </div>
