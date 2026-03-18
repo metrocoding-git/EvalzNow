@@ -546,7 +546,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                       }}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash className="w-5 h-5" />
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 </div>

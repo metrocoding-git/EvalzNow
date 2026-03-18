@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  Trash,
+  Trash2,
   Plus,
   ChevronRight,
   ChevronDown,
   Search,
-  Trash2,
+  Trash,
   Check,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -334,7 +334,7 @@ export default function AdminControl() {
                           handleDelete(selectedClient.id)
                         }}
                       >
-                        <Trash className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
@@ -497,7 +497,7 @@ export default function AdminControl() {
               
             >
               <span className="flex items-center gap-2">
-                <Trash className="w-4 h-4" /> Delete
+                <Trash2 className="w-4 h-4" /> Delete
               </span>
               <span className="text-gray-400 text-xs ml-4">Del</span>
             </button>

@@ -614,7 +614,7 @@ const isDuplicateIncomeName = (value, idx) => {
                       className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
                       onClick={() => handleDelete(selectedCandidate.id)}
                     >
-                      <Trash className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
@@ -770,7 +770,7 @@ const isDuplicateIncomeName = (value, idx) => {
                                 : "text-red-600 hover:text-red-600"
                             }`}
                           >
-                            <Trash className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       ))}

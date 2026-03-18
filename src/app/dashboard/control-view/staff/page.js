@@ -308,7 +308,7 @@ export default function StaffControl() {
                       onClick={() => handleDelete(selectedStaff.id)}
                       disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
                     >
-                      <Trash className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}

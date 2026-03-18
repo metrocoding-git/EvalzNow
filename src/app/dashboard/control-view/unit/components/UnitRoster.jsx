@@ -554,7 +554,7 @@ const moveRowDown = () => {
                 title="Delete Selected Row(s)"
                 className="text-red-600 hover:text-red-800 cursor-pointer"
               >
-                <Trash className="w-3.5 h-3.5" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -711,7 +711,7 @@ const moveRowDown = () => {
                     onClick={handleDeleteBlock}
                   >
                     <span className="flex items-center gap-2 ">
-                    <Trash className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5" />
                     </span>
                   </button>
                 )}

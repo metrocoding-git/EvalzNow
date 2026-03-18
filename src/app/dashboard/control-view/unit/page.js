@@ -769,7 +769,7 @@ const filteredCandidates = unitRosterData
                           className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
                           onClick={() => handleDelete(selectedUnit.id)}
                         >
-                          <Trash className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}

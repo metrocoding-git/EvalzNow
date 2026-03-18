@@ -438,7 +438,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
                         }}
                         className="px-2 py-1 text-red-600 hover:text-red-800"
                       >
-                        <Trash className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
