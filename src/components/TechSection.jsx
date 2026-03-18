@@ -9,12 +9,12 @@ export default function TextSection() {
         <Image
           src={loginImg}
           alt="Login illustration"
-          width={160}
-          height={160}
+          width={200}
+          height={200}
           className="mx-auto mb-6 "
           priority
         />
-                <p className="text-2xl">
+                <p className="text-lg">
           EvalzNow, which is derived from cognitive science, educational
           psychology, and complex mathematical modelling, is the first human
           capital assessment tool that calculates proficiency scores, growth

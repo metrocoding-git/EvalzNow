@@ -487,7 +487,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
                         updatedRows.splice(index, 1);
                         setRows(updatedRows); // allow empty
                       }}
-                      className="px-1 py-1 text-red-600 hover:text-red-800"
+                      className="px-1 py-1 text-gray-800 hover:text-gray-900"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

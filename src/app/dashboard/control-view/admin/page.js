@@ -329,7 +329,7 @@ export default function AdminControl() {
                   {selectedClient && (
                     <div className="flex gap-1 client-item">
                       <button
-                        className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
+                        className="p-1.5 text-gray-800 bg-gray-200 hover:bg-gray-400 hover:text-gray-900 transition-colors"
                         onClick={() => {
                           handleDelete(selectedClient.id)
                         }}
@@ -464,7 +464,7 @@ export default function AdminControl() {
               </div>
             )}
 
-            <div className=" border-gray-200">
+            {/* <div className=" border-gray-200">
               <div
                 className="flex items-center cursor-pointer select-none text-sm font-medium text-gray-900 px-4 py-2 hover:text-gray-700 transition-colors"
                 onClick={() => setShowObjects((prev) => !prev)}
@@ -476,7 +476,7 @@ export default function AdminControl() {
                 )}
                 SaaS Service Usage Report
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

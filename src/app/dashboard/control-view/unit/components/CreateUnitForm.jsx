@@ -505,7 +505,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
 
                   {/* Benchmark Ref */}
                   <div className="flex flex-col">
-                    <label className="text-gray-700 font-medium text-xs">Ref:</label>
+                    <label className="text-gray-700 font-medium text-xs">Reference:</label>
                     <input
                       type="text"
                       maxLength={40}
@@ -544,7 +544,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                         const reordered = updated.map((bm, i) => ({ ...bm, id: String(i + 1) }));
                         setForm((f) => ({ ...f, benchmarks: reordered }));
                       }}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-gray-900 hover:text-gray-900"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>

@@ -436,7 +436,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
                           const updatedRows = rows.filter((_, i) => i !== index);
                           setRows(updatedRows);
                         }}
-                        className="px-2 py-1 text-red-600 hover:text-red-800"
+                        className="px-2 py-1 text-gray-800 hover:text-gray-900"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -552,7 +552,7 @@ const moveRowDown = () => {
               <button
                 onClick={handleUnitRosterDeleteCurve}
                 title="Delete Selected Row(s)"
-                className="text-red-600 hover:text-red-800 cursor-pointer"
+                className="text-gray-800 hover:text-gray-900 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -707,7 +707,7 @@ const moveRowDown = () => {
 
                 {selectedRow !== null && (
                   <button
-                    className="p-1.5 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                    className="p-1.5 text-gray-800 hover:text-gray-900 transition-colors cursor-pointer"
                     onClick={handleDeleteBlock}
                   >
                     <span className="flex items-center gap-2 ">

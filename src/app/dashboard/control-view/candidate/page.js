@@ -611,7 +611,7 @@ const isDuplicateIncomeName = (value, idx) => {
                 {selectedCandidate && (
                   <div className="flex gap-1 candidate-item">
                     <button
-                      className="p-1.5 text-red-600 bg-gray-200 hover:bg-gray-400 hover:text-red-800 transition-colors"
+                      className="p-1.5 text-gray-800 bg-gray-200 hover:bg-gray-400 hover:text-gray-900 transition-colors"
                       onClick={() => handleDelete(selectedCandidate.id)}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -767,7 +767,7 @@ const isDuplicateIncomeName = (value, idx) => {
                             className={`px-2 py-1 text-xs rounded ${
                               isEthnicityUsed(eth)
                                 ? "text-gray-400 cursor-not-allowed"
-                                : "text-red-600 hover:text-red-600"
+                                : "text-gray-800 hover:text-gray-900"
                             }`}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -821,7 +821,7 @@ const isDuplicateIncomeName = (value, idx) => {
                             className={`px-2 py-1 text-xs rounded ${
                               isIncomeUsed(income)
                                 ? "text-gray-400 cursor-not-allowed"
-                                : "text-red-500 "
+                                : "text-gray-800 hover:text-gray-900"
                             }`} 
                           >
                             <Trash2 className="w-4 h-4" />

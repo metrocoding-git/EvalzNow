@@ -720,7 +720,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); deleteBenchmark(index)}}
-                            className="px-1 py-1 text-red-600 hover:text-red-800"
+                            className="px-1 py-1 text-gray-800 hover:text-gray-900"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

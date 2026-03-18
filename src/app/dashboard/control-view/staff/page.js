@@ -300,10 +300,10 @@ export default function StaffControl() {
                 {selectedStaff && loggedInUser?.role !== "staff" && (
                   <div className="flex gap-1 staff-item">
                     <button
-                      className={`p-1.5 text-red-600 hover:text-red-800 bg-gray-200 transition-colors ${
+                      className={`p-1.5 text-gray-800 hover:text-gray-900 bg-gray-200 transition-colors ${
                         selectedStaff.accessLevel === "Full Access" && user.role === "staff"
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-400 hover:text-red-800"
+                          : "hover:bg-gray-400 hover:text-gray-900"
                       }`}
                       onClick={() => handleDelete(selectedStaff.id)}
                       disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
