@@ -4,7 +4,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 import { getAllCandidates } from "@/services/candidateService";
 import { getAllEthinicities } from "@/services/ethinictyService";
 import { getAllIncomes } from "@/services/incomeService";
-import { ListFilterPlus, Plus, Trash2, X } from "lucide-react";
+import { ListFilterPlus, Plus, Trash, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -280,7 +280,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
 
       {/* Scrollable Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm">
+        <div className="grid grid-cols-3 gap-1 space-y-3 text-sm">
           {/* Basic Info */}
           {[
             "Last Name",
@@ -297,7 +297,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
               <input
                 type={label.includes("Date") ? "date" : "text"}
                 max={label === "Date of Birth" ? todayStr : undefined} // prevents picking future DOB
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               />
             </React.Fragment>
@@ -308,6 +308,8 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             Socioeconomic Factors
           </h3>
 
+          <br />
+
           {[
             { label: "Gender", options: genderOptions },
             { label: "Religion", options: religionOptions },
@@ -317,7 +319,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             <React.Fragment key={idx}>
               <label className="col-span-1 flex items-center text-gray-700">{label}:</label>
               <select
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               >
                 <option value="">Select {label}</option>
@@ -332,7 +334,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Income handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Nationality:</label>
           <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Nationality", e.target.value)}
           >
              <option value="">Select Nationality</option>
@@ -346,7 +348,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Income handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Income:</label>
           <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Income", e.target.value)}
           >
             <option value="">Select Income</option>
@@ -361,7 +363,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Ethnicity handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Ethnicity:</label>
           <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Ethnicity", e.target.value)}
           >
             <option value="">Select Ethnicity</option>
@@ -379,7 +381,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             Irregularities
           </h3>
 
-          <div className="col-span-2 overflow-x-auto">
+          <div className="col-span-3 overflow-x-auto">
             <table className="w-full text-sm border border-gray-300">
               <thead className="bg-gray-100 text-center">
                 <tr>
@@ -436,7 +438,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
                         }}
                         className="px-2 py-1 text-red-600 hover:text-red-800"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>

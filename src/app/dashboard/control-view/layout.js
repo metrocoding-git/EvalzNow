@@ -140,7 +140,7 @@ export default function ControlViewLayout({ children }) {
               <span
                 onClick={() => setActiveTab(tab.label)}
                 className={
-                  `relative px-5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
+                  `relative px-8.5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                   (activeTab === tab.label
                     ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white")

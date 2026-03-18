@@ -88,7 +88,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
         </div>
       ) : showForm ? (
         <form
-          className="p-2 text-xs grid grid-cols-2 gap-1 overflow-y-auto"
+          className="p-2 text-xs grid grid-cols-5 gap-1 overflow-y-auto"
           onSubmit={(e) => e.preventDefault()}
         >
           {[
@@ -103,14 +103,14 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
             "Company E-mail Address",
           ].map((label, idx) => (
             <React.Fragment key={idx}>
-              <label className="flex items-center text-gray-700">
+              <label className="col-span-2 flex items-center text-gray-700">
                 {label}:
               </label>
               <input
                 type={label.includes("Date") ? "date" : "text"}
                 onFocus={() => setFormStatus("Editing...")}
                 onBlur={() => setFormStatus("Ready...")}
-                className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
                 value={form[label] || ""}
                 onChange={(e) => handleChange(label, e.target.value)}
               />
@@ -118,11 +118,11 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           ))}
 
           {/* Access Level */}
-          <label className="flex items-center text-gray-700">
+          <label className="col-span-2 flex items-center text-gray-700">
             Access Level:
           </label>
           <select
-            className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={form["Access Level"]}
             onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
@@ -136,11 +136,11 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           </select>
 
           {/* Account Status */}
-          <label className="flex items-center text-gray-700">
+          <label className="col-span-2 flex items-center text-gray-700">
             Account Status:
           </label>
           <select
-            className="border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={form["Account Status"]}
             onFocus={() => setFormStatus("Editing...")}
             onBlur={() => setFormStatus("Ready...")}
@@ -154,7 +154,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
           </select>
 
           {/* Buttons */}
-          <div className="col-span-2 pt-4 flex justify-end gap-2">
+          <div className="col-span-5 pt-4 flex justify-end gap-2">
             <button
               type="button"
               onClick={handleSubmit}

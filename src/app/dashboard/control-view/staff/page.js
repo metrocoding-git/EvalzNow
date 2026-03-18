@@ -277,8 +277,8 @@ export default function StaffControl() {
   // console.log("staffs: ", dataList);
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="w-1/2 lg:w-3/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+    <div className="flex w-full h-full overflow-hidden">
+      <div className="w-1/2 lg:w-4/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/2">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
@@ -300,10 +300,10 @@ export default function StaffControl() {
                 {selectedStaff && loggedInUser?.role !== "staff" && (
                   <div className="flex gap-1 staff-item">
                     <button
-                      className={`p-1.5 text-gray-600 bg-gray-200 transition-colors ${
+                      className={`p-1.5 text-red-600 hover:text-red-800 bg-gray-200 transition-colors ${
                         selectedStaff.accessLevel === "Full Access" && user.role === "staff"
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-400 hover:text-white"
+                          : "hover:bg-gray-400 hover:text-red-800"
                       }`}
                       onClick={() => handleDelete(selectedStaff.id)}
                       disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
@@ -462,8 +462,8 @@ export default function StaffControl() {
       </div>
 
       {/* Right Panel - Create Staff */}
-      <div className="w-1/2 lg:w-9/12 bg-white">
-        <div className="h-full flex flex-col w-96" ref={createFormRef}>
+      <div className="flex-1 bg-white">
+        <div className="h-full flex flex-col" ref={createFormRef}>
           {showAdd && (
             <CreateStaffForm onClose={() => setShowAdd(false)} onCreate={handleCreate} />
           )}

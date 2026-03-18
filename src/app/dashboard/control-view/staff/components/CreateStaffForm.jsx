@@ -135,7 +135,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 space-y-3 text-sm max-w-xl">
+        <div className="grid grid-cols-3 gap-1 space-y-3 text-sm ">
           {[
             "Last Name",
             "First Name",
@@ -154,7 +154,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
               <input
                 type={label.includes("Date") ? "date" : "text"}
                 max={label === "Date of Birth" ? todayStr : undefined} // prevents picking future DOB
-                className="col-span-1 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
                 required
               />
@@ -164,7 +164,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
           {/* Access Level Dropdown */}
           <label className="col-span-1 flex items-center text-gray-700">Access Level:</label>
           <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
+            className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             onChange={(e) => handleChange("Access Level", e.target.value)} 
             required
           >
@@ -181,7 +181,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
 
           <label className="col-span-1 flex items-center text-gray-700">Account Status:</label>
           <select
-            className="col-span-1 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
+            className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             onChange={(e) => handleChange("Account Status", e.target.value)}
             required
           >
