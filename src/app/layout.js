@@ -13,7 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'EvalzNow - 2025',
+  title: 'EvalzNow',
+  icons: {
+    icon: [
+      { url: '/images/loading-icon.png' }
+    ],
+  },
 };
 
 export default function RootLayout({ children }) {
