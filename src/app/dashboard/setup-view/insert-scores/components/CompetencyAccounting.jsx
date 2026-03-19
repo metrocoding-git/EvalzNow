@@ -590,7 +590,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
       {/* Scoring Criteria is only applicable to the 'Workforce' Environment otherwise disable it. */}
       {environment !== 'Classroom' && (
-        <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col">
+        <div className="h-[35%] overflow-hidden border border-gray-300 m-1 flex flex-col">
           {/* Only hide the scoring criteria section when environment is classroom */}
           <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700">
 
@@ -602,7 +602,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
             <div className="flex-1  overflow-auto">
               {/* Scoring Criteria Table */}
 
-              <table className="w-full mx-auto my-1 text-left text-sm">
+              <table className="table-auto text-xs text-left border-collapse">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
@@ -634,7 +634,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                       <td className="border-1 text-center border-gray-400 px-2 py-1">
                         <input
                           type="text"
-                          className="w-full border border-gray-200 text-center focus:outline-gray-200 px-1 py-0.5 text-sm"
+                          className="w-20 border border-gray-200 text-center focus:outline-gray-200 px-1 py-1 text-xs"
                           placeholder="Enter custom criteria"
                           value={customCriteria[index]?.name || ""}
                           onChange={(e) => {
@@ -681,7 +681,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         </div>
       )}
 
-      <div className={` ${environment === 'Classroom' ? 'h-full' : 'h-1/2'} border border-gray-300 flex flex-col m-1`}>
+      <div className={` ${environment === 'Classroom' ? 'h-full' : 'h-[65%]'} border border-gray-300 flex flex-col m-1`}>
         <div className="flex flex-col flex-1 p-1 overflow-hidden">
           {/* Tab Buttons */}
           <div className="flex flex-col">
@@ -731,11 +731,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
                 {selectedRow && (
                   <button
-                    className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                    className="p-1 text-black hover:text-red-800 transition-colors cursor-pointer"
                     onClick={handleDeleteSelectedScore}
                   >
                     <span className="flex items-center gap-2 ">
-                      <Trash className="w-3.5 h-3.5 " />
+                      <Trash2 className="w-3.5 h-3.5 " />
                     </span>
 
                   </button>
