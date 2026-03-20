@@ -230,7 +230,7 @@ export default function EntitiesManager() {
     )  : ( */}
       <>
         {/* Sidebar */}
-        <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
+        <div className="w-1/2 lg:w-4/12 flex flex-col border-1 h-full border-gray-200">
           <div className="flex-grow flex flex-col h-1/2">
             {/* Header */}
             <div className="flex flex-col items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
