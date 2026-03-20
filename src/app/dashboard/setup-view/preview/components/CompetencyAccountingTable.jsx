@@ -162,7 +162,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
         </div>
       </div>
       <div className="flex-1 overflow-auto">
-      <table className="table-auto text-xs text-left border-collapse">
+      <table className="min-w-full table-auto text-xs text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">
             <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>
