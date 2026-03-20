@@ -156,8 +156,8 @@ const abbreviateLabel = (label) => {
 
 
   return (
-    <div className="overflow-x-hidden border-1 border-gray-200 shadow-sm h-full">
-      <table className="table-auto text-xs text-left border-collapse">
+    <div className="overflow-x-auto border-1 border-gray-200 shadow-sm h-full">
+      <table className="w-full table-auto text-xs text-left border-collapse">
         <thead className="bg-gray-100">
           <tr>
             <th className="whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1">Master PP ID Callout</th>

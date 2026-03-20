@@ -190,9 +190,9 @@ export default function PreviewPage() {
   });
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-x-hidden">
       {/* Sidebar */}
-      <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
+      <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200">
         <div className="flex-grow flex flex-col">
           {/* Header */}
           <div className="flex flex-col justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">

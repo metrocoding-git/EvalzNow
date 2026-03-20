@@ -599,10 +599,10 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
           </div>
 
           <div className="flex-1 overflow-auto px-3 ">
-            <div className="flex-1  overflow-auto">
+            <div className="flex-1 overflow-auto">
               {/* Scoring Criteria Table */}
 
-              <table className="table-auto text-xs text-left border-collapse">
+              <table className="w-full mx-auto my-1 text-left text-xs">
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="border-1 border-gray-400 px-2 py-1 text-center font-semibold">
@@ -634,7 +634,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                       <td className="border-1 text-center border-gray-400 px-2 py-1">
                         <input
                           type="text"
-                          className="w-20 border border-gray-200 text-center focus:outline-gray-200 px-1 py-1 text-xs"
+                          className="w-full border border-gray-200 text-center focus:outline-gray-200 px-1 py-1 text-xs"
                           placeholder="Enter custom criteria"
                           value={customCriteria[index]?.name || ""}
                           onChange={(e) => {
