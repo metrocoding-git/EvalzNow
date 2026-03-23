@@ -23,7 +23,7 @@ const competencyTypes = {
   ]
 };
 
-const MasterPpIdBinTable = ({ data }) => {
+const MasterPpIdBinTable = ({ data,  candidateId  }) => {
 
   // Sort data by absolute ppId value, with negative values first
   const sortedData = [...data].sort((a, b) => {
@@ -53,9 +53,11 @@ const MasterPpIdBinTable = ({ data }) => {
   useEffect(() => {
     const fetchBlocks = async () => {
       if (!unitId) return;
+
+      if (!candidateId) return;
       try {
         setLoading(true);
-        const blocks = await getScoreByUnitGroup(unitId);
+        const blocks = await getScoreByUnitGroup(unitId, candidateId);
         // Ensure it's always an array
         setAssessmentBlocks(Array.isArray(blocks) ? blocks : [blocks]);
       } catch (err) {
@@ -66,7 +68,7 @@ const MasterPpIdBinTable = ({ data }) => {
       }
     };
     fetchBlocks();
-  }, [unitId]);
+  }, [unitId, candidateId]);
 
   // Sort by ppId
   const sortedBlocks = [...assessmentBlocks].sort((a, b) => {
@@ -171,15 +173,13 @@ const abbreviateLabel = (label) => {
                 <th className="relative group whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 bg-gray-50">
                   {abbreviateLabel(comp.attained) === "ASS" ? "ASP" : abbreviateLabel(comp.attained)}
 
-                  {/* Tooltip */}
+                  {/* Tooltip - aligned to right edge to prevent overflow */}
                   <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                                  top-full left-1/2 -translate-x-1/2 mt-2
+                                  top-full right-0 mt-2
                                   bg-black text-white text-xs px-2 py-1 rounded shadow-lg
                                   whitespace-nowrap z-50">
                     {comp.attained}
-
-                    {/* Arrow */}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 
+                    <div className="absolute -top-1 right-2
                                     border-4 border-transparent border-b-black"></div>
                   </div>
                 </th>
@@ -188,15 +188,13 @@ const abbreviateLabel = (label) => {
                 <th className="relative group whitespace-nowrap text-center border-1 border-gray-400 px-2 py-1 bg-gray-50">
                   {abbreviateLabel(comp.max)}
 
-                  {/* Tooltip */}
+                  {/* Tooltip - aligned to right edge to prevent overflow */}
                   <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                                  top-full left-1/2 -translate-x-1/2 mt-2
+                                  top-full right-0 mt-2
                                   bg-black text-white text-xs px-2 py-1 rounded shadow-lg
                                   whitespace-nowrap z-50">
                     {comp.max}
-
-                    {/* Arrow */}
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 
+                    <div className="absolute -top-1 right-2
                                     border-4 border-transparent border-b-black"></div>
                   </div>
                 </th>

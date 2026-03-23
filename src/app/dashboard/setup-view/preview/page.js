@@ -322,13 +322,13 @@ export default function PreviewPage() {
         {selectedCandidate && (
           <>
             {/* Master PP ID Bin Totals */}
-            <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col">
-
-              <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-gray-700">
-                <h2 className="text-sm font-semibold mx-1"> Master PP ID Bin Totals</h2>
+            <div className="h-1/2 border border-gray-300 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between border-b border-gray-400 px-2 py-1 text-gray-700 flex-shrink-0">
+                <h2 className="text-sm font-semibold">Master PP ID Bin Totals</h2>
               </div>
-
-              <MasterPpIdBinTable data={masterPPIDData} />
+              <div className="flex-1 overflow-hidden">
+                <MasterPpIdBinTable data={masterPPIDData} candidateId={selectedCandidate?.id} />
+              </div>
             </div>
 
             {/* Competency Accounting Table */}
