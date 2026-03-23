@@ -31,6 +31,19 @@ import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 
+const COMPETENCY_COLORS = {
+  Listening:  "#3b82f6",
+  Reading:    "#10b981",
+  Writing:    "#f59e0b",
+  Speaking:   "#ef4444",
+  Theory:     "#8b5cf6",
+  Practice:   "#06b6d4",
+  Productive: "#f97316",
+  Receptive:  "#84cc16",
+  Acuity:     "#ec4899",
+  Unknown:    "#6b7280",
+};
+
 export default function PlotSelections({ filters, unitId, environment, candidateId, onResetFilters }) {
   const [curves, setCurves] = useState([
     { id: 1, name: "curve1" },
@@ -70,27 +83,27 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     // Curve Label
     showLabel: true,
     labelType: "X Type",
-    // showLabelPrefix: false,
-    // labelPrefix: "X File name",
-    // showLabelSuffix: false,
-    // labelSuffix: "Y subcase",
 
     // Line Attribute
     lineStyle: "solid",
     lineColor: "#3b82f6",
     lineThickness: 2,
+    positiveLineStyle: "solid",
+    positiveLineThickness: 2,
+    negativeLineStyle: "solid",
+    negativeLineThickness: 2,
 
     // Symbol Attribute
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
-    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    positiveSymbolColor: "#10b981",
     negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
 
     // Shade area
     shadeArea: "#ffffff",
-    positiveLineColor: "#10b981", // Green for positive
+    positiveLineColor: "#10b981",
     negativeLineColor: "#ef4444",
   });
 
@@ -105,7 +118,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   const canvasRef = useRef(null);
   const chartContainerRef = useRef(null);
 
-  // Example line chart data
   const data = [
     { name: "A", uv: 400, pv: 240 },
     { name: "B", uv: 300, pv: 139 },
@@ -135,11 +147,9 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     { name: "Working Alone (MC18) vs. Insert Score Row Counter", key: "mc18", icon: "🔵", id: "18" },
     { name: "Initiative (MC19) vs. Insert Score Row Counter", key: "mc19", icon: "🔵", id: "19" },
     { name: "Sick/Injury Avoidance (MC20) vs. Insert Score Row Counter ", key: "mc20", icon: "🔵", id: "20" },
-    { name: "Attained Score vs. Insert Score Row Counter ", key: "attained", icon: "🔵", id: "21" },
-    { name: "Maximum Score vs. Insert Score Row Counter ", key: "max", icon: "🔵", id: "22" }
-  ]
-  );
-  
+    { name: "Attained Score vs. PP ID ", key: "attained", icon: "🔵", id: "21" },
+    { name: "Maximum Score vs. PP ID ", key: "max", icon: "🔵", id: "22" }
+  ]);
 
   const [selectedChart, setSelectedChart] = useState(chart[0]);
   const [customCriteria, setCustomCriteria] = useState([]);
@@ -176,11 +186,9 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     if (chartProperties) {
 
     }
-  }, [chartProperties.shadeArea] );
-
+  }, [chartProperties.shadeArea]);
 
   console.log("Shade color:", chartProperties.shadeArea);
-
 
   useEffect(() => {
     const fetchCriteria = async () => {
@@ -190,25 +198,20 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
-        // Sort by criteriaId
         const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
   
         setChart((prev) => {
-          // Find the max current numeric ID in chart (or just start from 22)
           const startId = 23;
-        
-          // Map new criteria with sequential IDs starting from 23 and keys starting from cc1
           const mappedCharts = sorted.map((c, index) => ({
             name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter (Workforce Only - Line Graph)`,
-            key: `cc${index + 1}`, // cc1, cc2, ...
+            key: `cc${index + 1}`,
             icon: "🔵",
             id: (startId + index).toString(),
           }));
         
-          return [...chart.slice(0, 22), ...mappedCharts]; // append to existing chart array
+          return [...chart.slice(0, 22), ...mappedCharts];
         });
         
-  
         setCustomCriteria(data);
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
@@ -218,7 +221,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     fetchCriteria();
   }, [unitId]);
 
-  
   useEffect(() => {
     const fetchScoringData = async () => {
       if (!unitId || !candidateId) return;
@@ -226,7 +228,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
       try {
         const data = await getScoringTrendsSummary({
           unitId: unitId,
-          candidate_id: candidateId,       // make sure filters contains candidate_id
+          candidate_id: candidateId,
           ppIdFrom: filters?.ppIdFrom ?? undefined,    
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
@@ -242,8 +244,8 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     fetchScoringData();
   }, [unitId, filters, candidateId]);
 
-  console.log("positve score:", positiveScoringData);
-  console.log("ngative score:", negativeScoringData);
+  console.log("positive score:", positiveScoringData);
+  console.log("negative score:", negativeScoringData);
 
   useEffect(() => {
     const fetchAttainedScoreData = async () => {
@@ -252,7 +254,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
       try {
         const data = await getAttainedScoreSummary({
           unitId: unitId,
-          candidate_id: candidateId,       // make sure filters contains candidate_id
+          candidate_id: candidateId,
           ppIdFrom: filters?.ppIdFrom ?? undefined,    
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
@@ -267,7 +269,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     fetchAttainedScoreData();
   }, [unitId, filters, candidateId]);
 
-
   useEffect(() => {
     const fetchMaxScoreData = async () => {
       if (!unitId || !candidateId) return;
@@ -275,7 +276,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
       try {
         const data = await getMaxScoresSummary({
           unitId: unitId,
-          candidate_id: candidateId,       // make sure filters contains candidate_id
+          candidate_id: candidateId,
           ppIdFrom: filters?.ppIdFrom ?? undefined,    
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
@@ -297,104 +298,97 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     maxScoreData,
     selectedChart
   ) => {
-    if (!selectedChart) return { positive: [], negative: [] };
+    if (!selectedChart) return { positiveCompetencies: {}, negativeCompetencies: {} };
   
     const key = selectedChart.key;
-    const isMC = key.startsWith("mc");
   
-    // ✅ Attained Score Chart
-    if (key === "attained") {
-      if (!attainedScoreData) return { positive: [], negative: [] };
+    // ── Attained Score & Max Score — x = ppId, grouped by competency ──
+    if (key === "attained" || key === "max") {
+      const source = key === "attained"
+        ? attainedScoreData
+        : (maxScoreData?.data ?? attainedScoreData ?? []);
+      if (!source) return { positiveCompetencies: {}, negativeCompetencies: {} };
   
-      const positivePoints = attainedScoreData
-        .filter((row) => (row.ppId ?? 0) > 0)
-        .map((row) => ({
-          x: Number(row.serialNo ?? 0),
-          y: Number(row.attainedScore ?? 0),
-          ppId: row.ppId,
-          label: `Row ${row.serialNo}`,
-          type: "attained",
-        }))
-        .sort((a, b) => a.x - b.x);
+      const positiveGroups = {};
+      const negativeGroups = {};
   
-      const negativePoints = attainedScoreData
-        .filter((row) => (row.ppId ?? 0) <= 0)
-        .map((row) => ({
-          x: Number(row.serialNo ?? 0),
-          y: Number(row.attainedScore ?? 0),
-          ppId: row.ppId,
-          label: `Row ${row.serialNo}`,
-          type: "attained",
-        }))
-        .sort((a, b) => a.x - b.x);
+      source.forEach((row) => {
+        const comp = row.competency || "Unknown";
+        const ppId = Number(row.ppId ?? 0);
+        const score = key === "attained"
+          ? Number(row.attainedScore ?? 0)
+          : Number(row.maxScore ?? 0);
   
-      return { positive: positivePoints, negative: negativePoints };
+        const target = ppId > 0 ? positiveGroups : ppId < 0 ? negativeGroups : null;
+        if (!target) return;
+  
+        if (!target[comp]) target[comp] = {};
+        if (!target[comp][ppId]) target[comp][ppId] = { totalScore: 0, rowCount: 0 };
+  
+        target[comp][ppId].totalScore += score;
+        target[comp][ppId].rowCount += 1;
+      });
+  
+      const toPoints = (groups) => {
+        const result = {};
+        Object.entries(groups).forEach(([comp, ppIdMap]) => {
+          result[comp] = Object.entries(ppIdMap)
+            .map(([ppId, { totalScore, rowCount }]) => ({
+              x: Number(ppId),
+              y: totalScore,
+              rowCount,
+              ppId: Number(ppId),
+              label: `${ppId}`,
+              competency: comp,
+            }))
+            .sort((a, b) => a.x - b.x);
+        });
+        return result;
+      };
+  
+      return {
+        positiveCompetencies: toPoints(positiveGroups),
+        negativeCompetencies: toPoints(negativeGroups),
+      };
     }
   
-    // ✅ Max Score Chart
-    if (key === "max") {
-      const source = maxScoreData?.data ?? attainedScoreData ?? [];
-      if (!source) return { positive: [], negative: [] };
+    // ── MC / CC Charts — x = row counter (serialNo), one line per positive/negative ──
+    // MC/CC only exist for Workforce environment
+    if (!positiveData && !negativeData)
+      return { positiveCompetencies: {}, negativeCompetencies: {} };
   
-      const positivePoints = source
-        .filter((row) => (row.ppId ?? 0) > 0)
-        .map((row) => ({
-          x: Number(row.serialNo ?? 0),
-          y: Number(row.maxScore ?? 0),
-          ppId: row.ppId,
-          label: `Row ${row.serialNo}`,
-          type: "max",
-        }))
-        .sort((a, b) => a.x - b.x);
-  
-      const negativePoints = source
-        .filter((row) => (row.ppId ?? 0) <= 0)
-        .map((row) => ({
-          x: Number(row.serialNo ?? 0),
-          y: Number(row.maxScore ?? 0),
-          ppId: row.ppId,
-          label: `Row ${row.serialNo}`,
-          type: "max",
-        }))
-        .sort((a, b) => a.x - b.x);
-  
-      return { positive: positivePoints, negative: negativePoints };
-    }
-  
-    // ✅ Handle MC/CC Charts (normal case)
-    if ((!positiveData && !negativeData) || !key)
-      return { positive: [], negative: [] };
-  
-    const buildPoints = (data, type) => {
+    const buildMCCCPoints = (data) => {
       if (!data) return [];
       return data
         .map((row) => {
-          const val =
-            key.startsWith("mc")
-              ? row.mcValues?.[key] ?? 0
-              : row.ccValues?.[key] ?? 0;
-  
+          const val = key.startsWith("mc")
+            ? row.mcValues?.[key] ?? 0
+            : row.ccValues?.[key] ?? 0;
           return {
-            x: Number(row.serialNo ?? 0),
+            x: Number(row.serialNo ?? 0),   // ✅ row counter as X
             y: Number(val ?? 0),
             ppId: row.ppId,
             label: `${row.ppId}`,
-            type,
+            rowCount: 1,
           };
         })
-        .sort((a, b) => a.x - b.x); // ✅ SORT BY X VALUE HERE
+        .sort((a, b) => a.x - b.x);
     };
   
-    const positivePoints = buildPoints(positiveData, "positive");
-    const negativePoints = buildPoints(negativeData, "negative");
-  
-    return { positive: positivePoints, negative: negativePoints };
+    // ✅ Use a fixed key name so legend shows "Positive" / "Negative"
+    return {
+      positiveCompetencies: positiveData?.length
+        ? { "Positive": buildMCCCPoints(positiveData) }
+        : {},
+      negativeCompetencies: negativeData?.length
+        ? { "Negative": buildMCCCPoints(negativeData) }
+        : {},
+    };
   };
   
   useEffect(() => {
     if (!chart || chart.length === 0) return;
   
-    // Apply the SAME filter logic used in render
     const visibleCharts = chart.filter((item) => {
       if (environment === "Workforce") return true;
       return ["attained", "max"].includes(item.key);
@@ -402,7 +396,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   
     if (visibleCharts.length === 0) return;
   
-    // If selectedChart is missing or not visible → reset
     const isSelectedVisible = visibleCharts.some(
       (item) => item.key === selectedChart?.key
     );
@@ -412,9 +405,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     }
   }, [environment, chart]);
   
-  
-  
-  const { positive: positiveData, negative: negativeData } = buildXYChartData(
+  const { positiveCompetencies = {}, negativeCompetencies = {} } = buildXYChartData(
     positiveScoringData,
     negativeScoringData,
     attainedScoreData,
@@ -422,16 +413,9 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     selectedChart
   );
 
-  // For table display - combine both datasets
-  const combinedData = [...positiveData, ...negativeData].sort((a, b) => a.x - b.x);
-
-  // const positiveData = xyData
-  // .filter((p) => p.y >= 0)
-  // .sort((a, b) => a.x - b.x);
-
-  // const negativeData = xyData
-  //   .filter((p) => p.y < 0)
-  //   .sort((a, b) => a.x - b.x);
+  // Combine all competencies for table display
+  const allCompetencies = [...Object.keys(positiveCompetencies), ...Object.keys(negativeCompetencies)]
+    .filter((value, index, self) => self.indexOf(value) === index);
 
   // Function to render dot based on symbol style
   const renderCustomDot = (props, color) => {
@@ -475,7 +459,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     }
   };
 
- 
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
@@ -501,7 +484,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     }
   };
   
-  // Function to export as PDF
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
@@ -544,36 +526,31 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2 mx-1">
-        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1">
-          <div className="flex items-center justify-between px-1 mx-1  text-gray-700 ">
+        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1">
+          <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
                   if (typeof onResetFilters === "function") {
-                    onResetFilters(); // ✅ reset filters in parent
+                    onResetFilters();
                   }
-                  // setScoreAdd(true); 
                 }}
                 title="Reset"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
-                <RefreshCw
-                  className="w-4 h-4 hover:text-green-600"
-                  // onClick={() => setScoreAdd(true)}
-                />
+                <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
               
               <div className="relative">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
 
-                {/* Export dropdown menu */}
                 {showExportMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
                     <button
@@ -600,55 +577,50 @@ export default function PlotSelections({ filters, unitId, environment, candidate
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-2">
-            <div className=" h-1/2 flex flex-col border border-gray-200  ">
-              <div className="flex-1 overflow-auto  ">
+          <div className="h-full overflow-hidden w-full my-2">
+            <div className="h-[45%] flex flex-col border border-gray-200">
+              <div className="flex-1 overflow-auto">
                 <div className="h-full overflow-hidden flex flex-col">
-                    {/* Table Header - Fixed */}
-                    <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm">
-                      <div className="col-span-10 px-2 py-1 text-left font-medium">Entities</div>
-                      <div className="col-span-2 py-1 text-left font-medium">ID</div>
-                    </div>
-                    
-                    <div className="flex-1 overflow-y-auto">
-                      {chart
-                        .filter((item) => {
-                          // 🔹 If environment is Workforce → show everything
-                          if (environment === "Workforce") return true;
-
-                          // 🔹 For other types (like Classroom) → show only Attained & Max
-                          return ["attained", "max"].includes(item.key);
-                        })
-                        .map((item, index) => (
-                          <div
-                            key={index}
-                            className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${
-                              selectedChart.name === item.name ? "bg-gray-100" : ""
-                            }`}
-                            onClick={() => setSelectedChart(item)}
-                          >
-                            <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
-                              <div className="flex items-center">
-                                <span className="truncate">{item.icon} {item.name}</span>
-                              </div>
-                            </div>
-                            <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
-                              {index + 1}
+                  <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm">
+                    <div className="col-span-10 px-2 py-1 text-left font-medium">Entities</div>
+                    <div className="col-span-2 py-1 text-left font-medium">ID</div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto">
+                    {chart
+                      .filter((item) => {
+                        if (environment === "Workforce") return true;
+                        return ["attained", "max"].includes(item.key);
+                      })
+                      .map((item, index) => (
+                        <div
+                          key={index}
+                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${
+                            selectedChart.name === item.name ? "bg-gray-100" : ""
+                          }`}
+                          onClick={() => setSelectedChart(item)}
+                        >
+                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-xs">
+                            <div className="flex items-center">
+                              <span className="truncate">{item.icon} {item.name}</span>
                             </div>
                           </div>
-                        ))
-                      }
-                    </div>
+                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-xs">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))
+                    }
                   </div>
+                </div>
               </div>
             </div>
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
-              {/* Tab Buttons */}
+            <div className="h-[55%] flex flex-col border border-gray-200">
               <div className="flex space-x-2 border-b p-2">
                 <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Property editor"
-                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Property editor"
+                      ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
@@ -656,8 +628,8 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                   Property editor
                 </button>
                 <button
-                  className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Table"
-                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                  className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Table"
+                      ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
@@ -666,7 +638,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                 </button>
               </div>
 
-              {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
                 {activeAdjustPropertieTab === "Property editor" && (
                   <PropertyEditor
@@ -675,72 +646,87 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                   />
                 )}
 
-                {activeAdjustPropertieTab === "Table" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
-                    {(() => {
-                      const positiveRows = combinedData.filter((r) => (r.ppId ?? 0) > 0);
-                      const negativeRows = combinedData.filter((r) => (r.ppId ?? 0) <= 0);
+{activeAdjustPropertieTab === "Table" && (
+  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
+    {(() => {
+      const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
 
-                      const renderTable = (title, rows, color) => (
-                        <div className="mb-6">
-                          <h3
-                            className={`text-sm font-semibold mb-2 px-2 py-1 rounded ${color} text-gray-400`}
-                          >
-                            {title}
-                          </h3>
-                          <table className="table-auto w-full text-sm ">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                                  PP Id / Label
-                                </th>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                                  X Axis Value
-                                </th>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
-                                  Y Axis Value
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {rows.length > 0 ? (
-                                rows.map((row, idx) => (
-                                  <tr key={idx} className="hover:bg-blue-50">
-                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                      {row.label ?? row.ppId ?? `#${idx + 1}`}
-                                    </td>
-                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                      {row.x}
-                                    </td>
-                                    <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
-                                      {row.y}
-                                    </td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td
-                                    colSpan={3}
-                                    className="text-center text-gray-500 border border-gray-300 px-3 py-2"
-                                  >
-                                    No data available
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      );
-
-                      return (
-                        <>
-                          {renderTable("Positive PP ID", positiveRows)}
-                          {renderTable("Negative PP ID", negativeRows )}
-                        </>
-                      );
-                    })()}
-                  </div>
+      const renderTable = (title, competencies, textColor) => {
+        if (Object.keys(competencies).length === 0) return null;
+        return (
+          <div className="mb-6">
+            <h3 className={`text-sm font-semibold mb-2 px-2 py-1 rounded text-gray-700`}>
+              {title}
+            </h3>
+            <table className="table-auto w-full text-xs">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                    {isAttainedMax ? "PP ID" : "Row Counter"}
+                  </th>
+                  {isAttainedMax && (
+                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                      Row Count
+                    </th>
+                  )}
+                  {!isAttainedMax && (
+                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                      PP ID
+                    </th>
+                  )}
+                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                    {isAttainedMax ? "Competency" : selectedChart?.key?.toUpperCase()}
+                  </th>
+                  {/* <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                    Value
+                  </th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(competencies).flatMap(([comp, points]) =>
+                  points.map((row, idx) => (
+                    <tr key={`${comp}-${idx}`} className="hover:bg-blue-50">
+                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                        {row.x}
+                      </td>
+                      {isAttainedMax && (
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                          {row.rowCount}
+                        </td>
+                      )}
+                      {!isAttainedMax && (
+                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                          {row.ppId}
+                        </td>
+                      )}
+                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
+                          style={{ color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151", fontWeight: isAttainedMax ? "500" : "400" }}>
+                        {isAttainedMax ? comp : selectedChart?.key?.toUpperCase()}
+                      </td>
+                      {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                        {row.y.toFixed(2)}
+                      </td> */}
+                    </tr>
+                  ))
                 )}
+              </tbody>
+            </table>
+          </div>
+        );
+      };
+
+      return (
+        <>
+          {renderTable("Positive PP IDs", positiveCompetencies)}
+          {renderTable("Negative PP IDs", negativeCompetencies)}
+          {Object.keys(positiveCompetencies).length === 0 && Object.keys(negativeCompetencies).length === 0 && (
+            <div className="text-center text-gray-500 py-4">No data available</div>
+          )}
+        </>
+      );
+    })()}
+  </div>
+)}
               </div>
             </div>
           </div>
@@ -749,7 +735,6 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
           <div className="h-full overflow-auto mx-5 mt-5 mb-2">
-            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name.replace(/\s*vs\. Insert Score Row Counter.*$/i, "").trim()}</h2> */}
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
 
             <ResponsiveContainer width="100%" height="95%">
@@ -757,142 +742,131 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                 key={
                   chartProperties.positiveLineColor +
                   chartProperties.negativeLineColor +
-                  chartProperties.lineStyle +
+                  chartProperties.positiveLineStyle +
+                  chartProperties.negativeLineStyle +
                   chartProperties.symbolStyle +
                   chartProperties.symbolScaleSize +
-                  chartProperties.shadeArea
+                  chartProperties.shadeArea +
+                  selectedChart.key
                 }
                 margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
 
-                {/* X Axis */}
                 <XAxis
                   dataKey="x"
                   type="number"
-                  domain={[0, "dataMax"]}
+                  domain={["dataMin", "dataMax"]}
                   allowDecimals={false}
-                >
-                  {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                    <Label
-                      value="Total Rows (X)"
-                      position="insideBottom"
-                      offset={-10}
-                      textAnchor="middle"
-                    />
-                  )}
-                </XAxis>
+                  label={{
+                    value: ["attained", "max"].includes(selectedChart?.key)
+                      ? "PP ID (X)"
+                      : "Row Counter (X)",
+                    position: "insideBottom",
+                    offset: -10
+                  }}
+                />
 
-
-                {/* Y Axis */}
-                <YAxis type="number" dataKey="y">
-                  {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                    <Label
-                      value={`${selectedChart.key} (Y)`}
-                      angle={-90}
-                      position="insideLeft"
-                      textAnchor="middle"
-                      offset={0}
-                    />
-                  )}
-                </YAxis>
+                <YAxis
+                  type="number"
+                  dataKey="y"
+                  label={{
+                    value: `${selectedChart.key === "attained" ? "Attained Score" : 
+                            selectedChart.key === "max" ? "Max Score" : 
+                            selectedChart.key} (Y)`,
+                    angle: -90,
+                    position: "insideLeft",
+                    textAnchor: "middle",
+                  }}
+                />
 
                 <Tooltip
-                  formatter={(value, name) => [value, name === "positive" ? "Positive" : "Negative"]}
-                  labelFormatter={(label) => `Value: ${label}`}
-                  contentStyle={{ fontSize: 12 }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                    return (
+                      <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
+                        <p style={{ fontWeight: 600, marginBottom: 4 }}>
+                          {isAttainedMax ? `PP ID: ${label}` : `Row: ${label}`}
+                        </p>
+                        {payload.map((entry, i) => {
+                          const point = entry.payload;
+                          return (
+                            <div key={i} style={{ color: entry.stroke, marginBottom: 2 }}>
+                              <span>{entry.name}: {Number(entry.value).toFixed(2)}</span>
+                              {point?.rowCount !== undefined && point.rowCount > 1 && (
+                                <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                  ({point.rowCount} rows)
+                                </span>
+                              )}
+                              {!isAttainedMax && point?.ppId !== undefined && (
+                                <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                  PP ID: {point.ppId}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
                 />
 
                 <Legend
                   verticalAlign="bottom"
                   align="center"
-                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                  wrapperStyle={{ paddingTop: 30, paddingLeft: 50 }}
                 />
 
+                {/* Draw lines for each competency in positive PP IDs */}
+                {Object.entries(positiveCompetencies).map(([comp, points]) => (
+                  <Line
+                    key={`positive-${comp}`}
+                    type="linear"
+                    data={points}
+                    dataKey="y"
+                    name={`Positive: ${comp}`}
+                    stroke={COMPETENCY_COLORS[comp] || `#${Math.floor(Math.random()*16777215).toString(16)}`}
+                    strokeDasharray={chartProperties.positiveLineStyle === "dashed" ? "6 4"
+                      : chartProperties.positiveLineStyle === "dotted" ? "2 4"
+                      : chartProperties.positiveLineStyle === "dashdot" ? "8 4 2 4"
+                      : "0"}
+                    strokeWidth={chartProperties.positiveLineThickness || 2}
+                    isAnimationActive={false}
+                    hide={!chartProperties.positiveVisibility}
+                    dot={(props) => {
+                      const { index } = props;
+                      if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                      return renderCustomDot(props, COMPETENCY_COLORS[comp] || "#6b7280");
+                    }}
+                  />
+                ))}
 
-                {/* Shade Area (behind the lines) */}
-                
-                {chartProperties.shadeArea !== "#ffffff" && (
-                  <>
-                    {/* Positive Shade */}
-                    <Area
-                      type="linear"
-                      data={positiveData}
-                      dataKey="y"
-                      stroke="none"
-                      fill={chartProperties.shadeArea}
-                      fillOpacity={0.1}
-                      hide={!chartProperties.positiveVisibility}
-                    />
-
-                    {/* Negative Shade */}
-                    <Area
-                      type="linear"
-                      data={negativeData}
-                      dataKey="y"
-                      stroke="none"
-                      fill={chartProperties.shadeArea}
-                      fillOpacity={0.1}
-                      hide={!chartProperties.negativeVisibility}
-                    />
-                  </>
-                )}
-
-                {/* Positive Data Line */}
-                <Line
-                  type="linear"
-                  data={positiveData}
-                  dataKey="y"
-                  name="Positive PP IDs"
-                  stroke={chartProperties.positiveLineColor}
-                  strokeDasharray={
-                    chartProperties.positiveLineStyle === "dashed"
-                      ? "6 4"
-                      : chartProperties.positiveLineStyle === "dotted"
-                      ? "2 4"
-                      : chartProperties.positiveLineStyle === "dashdot"
-                      ? "8 4 2 4"
-                      : "0"
-                  }
-                  strokeWidth={chartProperties.positiveLineThickness}
-                  isAnimationActive={false}
-                  hide={!chartProperties.positiveVisibility}
-                  dot={(props) => {
-                    const { index } = props;
-                    if (index % chartProperties.symbolFrequency !== 0) return null;
-                    return renderCustomDot(props, chartProperties.positiveSymbolColor);
-                  }}
-                />
-
-                {/* Negative Data Line */}
-                <Line
-                  type="linear"
-                  data={negativeData}
-                  dataKey="y"
-                  name="Negative PP IDs"
-                  stroke={chartProperties.negativeLineColor}
-                  strokeDasharray={
-                    chartProperties.negativeLineStyle === "dashed"
-                      ? "6 4"
-                      : chartProperties.negativeLineStyle === "dotted"
-                      ? "2 4"
-                      : chartProperties.negativeLineStyle === "dashdot"
-                      ? "8 4 2 4"
-                      : "0"
-                  }
-                  strokeWidth={chartProperties.negativeLineThickness}
-                  isAnimationActive={false}
-                  hide={!chartProperties.negativeVisibility}
-                  dot={(props) => {
-                    const { index } = props;
-                    if (index % chartProperties.symbolFrequency !== 0) return null;
-                    return renderCustomDot(props, chartProperties.negativeSymbolColor);
-                  }}
-                />
-
+                {/* Draw lines for each competency in negative PP IDs */}
+                {Object.entries(negativeCompetencies).map(([comp, points]) => (
+                  <Line
+                    key={`negative-${comp}`}
+                    type="linear"
+                    data={points}
+                    dataKey="y"
+                    name={`Negative: ${comp}`}
+                    stroke={COMPETENCY_COLORS[comp] || `#${Math.floor(Math.random()*16777215).toString(16)}`}
+                    strokeDasharray={chartProperties.negativeLineStyle === "dashed" ? "6 4"
+                      : chartProperties.negativeLineStyle === "dotted" ? "2 4"
+                      : chartProperties.negativeLineStyle === "dashdot" ? "8 4 2 4"
+                      : "0"}
+                    strokeWidth={chartProperties.negativeLineThickness || 2}
+                    isAnimationActive={false}
+                    hide={!chartProperties.negativeVisibility}
+                    dot={(props) => {
+                      const { index } = props;
+                      if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                      return renderCustomDot(props, COMPETENCY_COLORS[comp] || "#6b7280");
+                    }}
+                  />
+                ))}
               </LineChart>
             </ResponsiveContainer>
-
           </div>
         </div>
       </div>

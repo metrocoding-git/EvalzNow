@@ -74,14 +74,14 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
 
     // Move this above your return
   const headers = {
-    'PP ID': 'Performance Profile Identifier',
-    'Critical Reference Date': 'The key date for assessment',
-    'Day Count (Days)': 'Number of days in assessment period',
-    'Productivity_CSD': 'Productivity score at candidate start date',
-    'Productivity_USD': 'Productivity score at unit start date',
-    'RRN': 'Receptive Ratio of the Performance Point',
-    'PRN': 'Productive Ratio of the Performance Point',
-    'ARN': 'Acuity Ratio of the Performance Point',
+    'PP ID': '',
+    'Critical Reference Date': '',
+    'Day Count (Days)': '',
+    'Productivity_CSD': 'Productivity Score at Candidate Start Date',
+    'Productivity_USD': 'Productivity Score at Unit Start Date',
+    'RRN': 'Receptive Ratio',
+    'PRN': 'Productive Ratio',
+    'ARN': 'Acuity Ratio',
     'XLR': 'Listening Ratio',
     'XRR': 'Reading Ratio',
     'XSR': 'Speaking Ratio',
@@ -96,27 +96,27 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
     'XBP': 'Band Proficiency',
     'MSIP': 'Margins of Interaction Proficiency',
     'STA/P': 'Stability in Proficiency',
-    'IC': 'Interaction Class Based on Performance Point',
+    'IC': 'Interaction Class',
     'ΔRRN': 'Receptive Ratio Growth Differential',
     'ΔPRN': 'Productive Ratio Growth Differential',
     'ΔARN': 'Acuity Ratio Growth Differential',
     'ΔGEQ': 'Equivalent Growth',
     'STA/G': 'Stability in Growth',
-    'RRGT1': 'Projected Receptive Ratio Component for Growth Target 1',
-    'PRGT1': 'Projected Productive Ratio Component for Growth Target 1',
-    'ARGT1': 'Projected Acuity Ratio Component for Growth Target 1',
-    'RRGT2': 'Projected Receptive Ratio Component for Growth Target 2',
-    'PRGT2': 'Projected Productive Ratio Component for Growth Target 2',
-    'ARGT2': 'Projected Acuity Ratio Component for Growth Target 2',
-    'RRGT3': 'Projected Receptive Ratio Component for Growth Target 3',
-    'PRGT3': 'Projected Productive Ratio Component for Growth Target 3',
-    'ARGT3': 'Projected Acuity Ratio Component for Growth Target 3',
-    'RRGT4': 'Projected Receptive Ratio Component for Growth Target 4',
-    'PRGT4': 'Projected Productive Ratio Component for Growth Target 4',
-    'ARGT4': 'Projected Acuity Ratio Component for Growth Target 4',
-    'RRGT5': 'Projected Receptive Ratio Component for Growth Target 5',
-    'PRGT5': 'Projected Productive Ratio Component for Growth Target 5',
-    'ARGT5': 'Projected Acuity Ratio Component for Growth Target 5',
+    'RRGT1': 'Receptive Ratio Component for Growth Target 1',
+    'PRGT1': 'Productive Ratio Component for Growth Target 1',
+    'ARGT1': 'Acuity Ratio Component for Growth Target 1',
+    'RRGT2': 'Receptive Ratio Component for Growth Target 2',
+    'PRGT2': 'Productive Ratio Component for Growth Target 2',
+    'ARGT2': 'Acuity Ratio Component for Growth Target 2',
+    'RRGT3': 'Receptive Ratio Component for Growth Target 3',
+    'PRGT3': 'Productive Ratio Component for Growth Target 3',
+    'ARGT3': 'Acuity Ratio Component for Growth Target 3',
+    'RRGT4': 'Receptive Ratio Component for Growth Target 4',
+    'PRGT4': 'Productive Ratio Component for Growth Target 4',
+    'ARGT4': 'Acuity Ratio Component for Growth Target 4',
+    'RRGT5': 'Receptive Ratio Component for Growth Target 5',
+    'PRGT5': 'Productive Ratio Component for Growth Target 5',
+    'ARGT5': 'Acuity Ratio Component for Growth Target 5',
   };
 
 console.log("tabulation table unit id:", unitId);
@@ -632,7 +632,7 @@ console.log("unit type check", tableData);
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center">
-        <span className="pl-2 text-md text-gray-800">Viewer</span>
+        <span className="pl-2 text-md text-gray-800">Tabulation Viewer</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2 mx-1">
@@ -679,26 +679,26 @@ console.log("unit type check", tableData);
                     {/* Always show candidate details */}
                     <div className="items-center justify-center px-4">
                       <div className="p-1 rounded-lg mt-1 space-y-1">
-                        <div className="grid grid-cols-5 text-sm text-gray-400">
+                        <div className="grid grid-cols-5 text-xs text-gray-400">
                           <span>First Name:</span>
                           <span>{candidate.firstName}</span>
                         </div>
-                        <div className="grid grid-cols-5 text-sm text-gray-400">
+                        <div className="grid grid-cols-5 text-xs text-gray-400">
                           <span>Last Name:</span>
                           <span>{candidate.lastName}</span>
                         </div>
-                        <div className="grid grid-cols-5 text-sm text-gray-400">
-                          <span>ID:</span>
+                        <div className="grid grid-cols-5 text-xs text-gray-400">
+                          <span>Candidate ID:</span>
                           <span>{candidate.id}</span>
                         </div>
                         {candidate.startDate && (
-                          <div className="grid grid-cols-5 text-sm text-gray-400">
+                          <div className="grid grid-cols-5 text-xs text-gray-400">
                             <span>Candidate Start Date:</span>
                             <span>{candidate.startDate}</span>
                           </div>
                         )}
                         {unitStartDate && (
-                          <div className="grid grid-cols-5 text-sm text-gray-400">
+                          <div className="grid grid-cols-5 text-xs text-gray-400">
                             <span>Unit Start Date:</span>
                             <span>{unitStartDate}</span>
                           </div>
@@ -721,7 +721,7 @@ console.log("unit type check", tableData);
                       {visibleHeaders.map((header) => (
                         <th
                           key={header}
-                          className="whitespace-nowrap text-center border border-gray-200 px-2 py-1 group relative bg-gray-50"
+                          className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50"
                         >
                           {header}
                           <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
@@ -746,7 +746,7 @@ console.log("unit type check", tableData);
                             {visibleHeaders.map((header) => (
                               <td
                                 key={header}
-                                className="border text-center border-gray-200 px-2 py-1 whitespace-nowrap"
+                                className="border text-center border-black px-2 py-1 whitespace-nowrap"
                               >
                                 {(() => {
                                 const value = row[header];

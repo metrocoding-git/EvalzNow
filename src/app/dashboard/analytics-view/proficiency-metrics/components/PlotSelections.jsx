@@ -674,7 +674,7 @@ const CustomTooltip = ({ active, payload }) => {
     const yAxisLabel = selectedChart?.name ?? "Value";
 
     return (
-      <div className="bg-white p-2 border rounded shadow text-sm">
+      <div className="bg-white p-2 border rounded shadow text-xs">
         <div><strong>PP ID (X):</strong> {point.ppId}</div>
         <div>
           <strong>{yAxisLabel} (Y):</strong> {point.value}
@@ -803,7 +803,7 @@ const exportAsPDF = async () => {
           </div>
 
           <div className="h-full overflow-hidden w-full my-2">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[45%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -882,7 +882,7 @@ const exportAsPDF = async () => {
               </div>
             </div>
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[55%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -922,7 +922,7 @@ const exportAsPDF = async () => {
                         if (!selectedChart) {
                           return (
                             <div className="text-center text-gray-400 py-4 italic">
-                              Select a chart to display data
+                              Not Available at Unit Level
                             </div>
                           );
                         }
@@ -991,16 +991,16 @@ const exportAsPDF = async () => {
                               </div>
 
                               {/* Table for this candidate */}
-                              <table className="table-auto w-full text-sm border border-gray-300">
+                              <table className="table-auto w-full text-xs border border-gray-300">
                                 <thead className="bg-gray-100">
                                   <tr>
-                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                       PP Id / Label
                                     </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                       X Axis Value
                                     </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                       {keyName}
                                     </th>
                                   </tr>
@@ -1009,20 +1009,20 @@ const exportAsPDF = async () => {
                                   {sortedData.length > 0 ? (
                                     sortedData.map((row, idx) => (
                                       <tr key={idx} className="hover:bg-blue-50">
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                           {row.ppId}
                                         </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                           {row.ppId}
                                         </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                           {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                         </td>
                                       </tr>
                                     ))
                                   ) : (
                                     <tr>
-                                      <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                      <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
                                         No data available
                                       </td>
                                     </tr>
@@ -1039,14 +1039,14 @@ const exportAsPDF = async () => {
                         {/* Positive PP IDs Table */}
                         <div>
                           <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
-                          <table className="table-auto w-full text-sm border border-gray-300">
+                          <table className="table-auto w-full text-xs border border-gray-300">
                             <thead className="bg-gray-100">
                               <tr>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                   PP Id / Label
                                 </th>
                                 
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                   {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
                                 </th>
                               </tr>
@@ -1085,18 +1085,18 @@ const exportAsPDF = async () => {
                                 return positiveData.length > 0 ? (
                                   positiveData.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-blue-50">
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {row.ppId}
                                       </td>
                                      
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                       </td>
                                     </tr>
                                   ))
                                 ) : (
                                   <tr>
-                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
                                       No positive data available
                                     </td>
                                   </tr>
@@ -1109,14 +1109,14 @@ const exportAsPDF = async () => {
                         {/* Negative PP IDs Table */}
                         <div>
                           <h3 className="text-gray-600 font-semibold mb-2 ml-2">Negative PP IDs</h3>
-                          <table className="table-auto w-full text-sm border border-gray-300">
+                          <table className="table-auto w-full text-xs border border-gray-300">
                             <thead className="bg-gray-100">
                               <tr>
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                   PP Id / Label
                                 </th>
                                
-                                <th className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center">
+                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                   {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
                                 </th>
                               </tr>
@@ -1155,18 +1155,18 @@ const exportAsPDF = async () => {
                                 return negativeData.length > 0 ? (
                                   negativeData.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-blue-50">
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {row.ppId}
                                       </td>
                                       
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                       </td>
                                     </tr>
                                   ))
                                 ) : (
                                   <tr>
-                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-3 py-2">
+                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
                                       No negative data available
                                     </td>
                                   </tr>
@@ -1456,7 +1456,7 @@ const exportAsPDF = async () => {
                 })()
               ) : (
                 <div className="flex justify-center items-center h-full text-gray-400 text-lg">
-                  Select a plot to visualize
+                  Select Plot 
                 </div>
               )}
             </div>
