@@ -112,9 +112,9 @@ export const getCriticalRefbyPpId = async (ppId, unitId, candidate_id) => {
 
 
   // Get insert scores by pp id summary
-  export const getScoreByUnitGroup = async (unitId) => {
+  export const getScoreByUnitGroup = async (unitId, candidateId) => {
     try {
-      const response = await api.get(`${API_ROUTES.INSERT_SCORE}/insert/unit/${unitId}`);
+      const response = await api.get(`${API_ROUTES.INSERT_SCORE}/insert/unit/${unitId}/${candidateId}`);
       return response.data;
     } catch (error) {
       console.error(
