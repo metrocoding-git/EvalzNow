@@ -66,6 +66,11 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
     { id: 2, firstName: "Jane", lastName: "Smith", candidateStartDate: "2022-01-01", unitStartDate: "2022-01-01" },
   ]
 
+  const noTooltipHeaders = [
+    "PP ID",
+    "Critical Reference Date",
+    "Day Count (Days)"
+  ];
 
   const [tableData, setTableData] = useState([
     
@@ -671,11 +676,11 @@ console.log("unit type check", tableData);
             </div>
           </div>
 
-          <div className=" h-full overflow-auto w-full my-1 flex-col gap-1 mb-11">
+          <div className=" h-full overflow-auto w-full flex-col gap-1 mb-11">
             <div className=" flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {candidate && (
-                  <div className="px-3 py-1">
+                  <div className="px-3 ">
                     {/* Always show candidate details */}
                     <div className="items-center justify-center px-4">
                       <div className="p-1 rounded-lg mt-1 space-y-1">
@@ -711,8 +716,9 @@ console.log("unit type check", tableData);
               </div>
             </div>
 
+            {/* candidate table */}
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
-              <h2 className="text-sm font-semibold mx-1 p-2 text-gray-700">Candidate</h2>
+              <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
               
               <div ref={chartContainerRef} className="flex-1 overflow-auto mx-1">
                 <table className="w-full text-left text-xs border-collapse">
@@ -724,9 +730,13 @@ console.log("unit type check", tableData);
                           className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50"
                         >
                           {header}
-                          <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
-                            {headers[header]}
-                          </div>
+
+                          {/* Tooltip */}
+                          {!noTooltipHeaders.includes(header) && headers[header] && (
+                            <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
+                              {headers[header]}
+                            </div>
+                          )}
                         </th>
                       ))}
                     </tr>
@@ -734,14 +744,12 @@ console.log("unit type check", tableData);
 
                   <tbody>
                     {tableData.length > 0 ? (
-                      tableData.map((row, rowIndex) => {
-                        const isSummaryRow = ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]);
-                        return (
+                      tableData
+                        .filter((row) => !["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
+                        .map((row, rowIndex) => (
                           <tr
                             key={rowIndex}
-                            className={`cursor-pointer hover:bg-gray-100 ${
-                              isSummaryRow ? 'bg-gray-200 font-semibold' : ''
-                            }`}
+                            className="cursor-pointer hover:bg-gray-100"
                           >
                             {visibleHeaders.map((header) => (
                               <td
@@ -749,9 +757,60 @@ console.log("unit type check", tableData);
                                 className="border text-center border-black px-2 py-1 whitespace-nowrap"
                               >
                                 {(() => {
+                                  const value = row[header];
+
+                                  const skipFormatting = [
+                                    "PP ID",
+                                    "Critical Reference Date",
+                                    "Day Count (Days)",
+                                    "unitType",
+                                    "IC",
+                                    "STA/P",
+                                    "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
+                                  ];
+
+                                  if (skipFormatting.includes(header)) {
+                                    return value ?? '-';
+                                  }
+
+                                  const num = parseFloat(value);
+                                  const isFloat = !isNaN(num) && value.toString().includes('.');
+
+                                  if (isFloat) {
+                                    return num.toFixed(3);
+                                  }
+
+                                  return value ?? '-';
+                                })()}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={visibleHeaders.length} className="text-center py-4">
+                          No data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+
+                  <tfoot className="sticky bottom-0 z-10">
+                    {tableData
+                      .filter((row) => ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
+                      .map((row, rowIndex) => (
+                        <tr
+                          key={`summary-${rowIndex}`}
+                          className="bg-gray-200 font-semibold cursor-pointer hover:bg-gray-100"
+                        >
+                          {visibleHeaders.map((header) => (
+                            <td
+                              key={header}
+                              className="border text-center border-black px-2 py-1 whitespace-nowrap bg-gray-200"
+                            >
+                              {(() => {
                                 const value = row[header];
 
-                                // columns that should NEVER be formatted (keep exactly as backend sends)
                                 const skipFormatting = [
                                   "PP ID",
                                   "Critical Reference Date",
@@ -766,32 +825,20 @@ console.log("unit type check", tableData);
                                   return value ?? '-';
                                 }
 
-                                // check if value is a float (not an integer or text)
                                 const num = parseFloat(value);
-                                const isFloat = !isNaN(num) && value.toString().includes('.');
+                                const isFloat = !isNaN(num) && value?.toString().includes('.');
 
                                 if (isFloat) {
                                   return num.toFixed(3);
                                 }
 
-                                // default case: show as-is
                                 return value ?? '-';
                               })()}
-
-
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan={visibleHeaders.length} className="text-center py-4">
-                          No data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tfoot>
 
                 </table>
               </div>

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, unitType }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
@@ -128,7 +128,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
+      <div className="flex-1 overflow-y-auto px-3 py-1 text-xs">
         {/* PP ID Range */}
         <div className="gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">
@@ -229,7 +229,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
               <strong>Cumulative Growth For Receptive Ratio:</strong>
               <input
                 readOnly
-                value={growthMetrics.receptive.cumulative}
+                value={growthMetrics.receptive.cumulative.toFixed(3)}
                 className="border px-2 py-1 w-full"
               />
             </div>
@@ -238,7 +238,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
               <strong>Average Growth For Receptive Ratio:</strong>
               <input
                 readOnly
-                value={growthMetrics.receptive.average}
+                value={growthMetrics.receptive.average.toFixed(3)}
                 className="border px-2 py-1 w-full"
               />
             </div>
@@ -247,7 +247,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
               <strong>Cumulative Growth For Productive Ratio:</strong>
               <input
                 readOnly
-                value={growthMetrics.productive.cumulative}
+                value={growthMetrics.productive.cumulative.toFixed(3)}
                 className="border px-2 py-1 w-full"
               />
             </div>
@@ -256,28 +256,33 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
               <strong>Average Growth For Productive Ratio:</strong>
               <input
                 readOnly
-                value={growthMetrics.productive.average}
+                value={growthMetrics.productive.average.toFixed(3)}
                 className="border px-2 py-1 w-full"
               />
             </div>
 
-            <div>
-              <strong>Cumulative Growth For Acuity Ratio:</strong>
-              <input
-                readOnly
-                value={growthMetrics.acuity.cumulative}
-                className="border px-2 py-1 w-full"
-              />
-            </div>
+            {/* Show ONLY for Third Parameter */}
+            {unitType === "Third Parameter" && (
+              <>
+                <div>
+                  <strong>Cumulative Growth For Acuity Ratio:</strong>
+                  <input
+                    readOnly
+                    value={growthMetrics.acuity.cumulative.toFixed(3)}
+                    className="border px-2 py-1 w-full"
+                  />
+                </div>
 
-            <div>
-              <strong>Average Growth For Acuity Ratio:</strong>
-              <input
-                readOnly
-                value={growthMetrics.acuity.average}
-                className="border px-2 py-1 w-full"
-              />
-            </div>
+                <div>
+                  <strong>Average Growth For Acuity Ratio:</strong>
+                  <input
+                    readOnly
+                    value={growthMetrics.acuity.average.toFixed(3)}
+                    className="border px-2 py-1 w-full"
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
 
