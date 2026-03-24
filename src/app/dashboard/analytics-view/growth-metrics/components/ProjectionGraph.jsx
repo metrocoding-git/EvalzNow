@@ -2,6 +2,28 @@ import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContai
 
 export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thirdPPDayCount }) {
 
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border rounded shadow text-sm">
+          {/* ✅ Add "Days:" label */}
+          <div>
+            <strong>Days:</strong> {Number(label).toFixed(2)}
+          </div>
+  
+          {/* Show values */}
+          {payload.map((entry, index) => (
+            <div key={index}>
+              <strong>{entry.name}:</strong>{" "}
+              {Number(entry.value).toFixed(3)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+  
   const ppPlus15 =
     typeof thirdPPDayCount === "number"
       ? thirdPPDayCount + 15
@@ -43,7 +65,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
                 textAnchor: "middle",
                 dy: 6, }}
             />
-            <Tooltip />
+            <Tooltip content={<CustomTooltip />} />
             <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 35 }} />
 
             {ppPlus15 !== null && (

@@ -769,7 +769,7 @@ const exportAsPDF = async () => {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -803,7 +803,7 @@ const exportAsPDF = async () => {
           </div>
 
           <div className="h-full overflow-hidden w-full my-2">
-            <div className="h-[45%] flex flex-col border border-gray-200">
+            <div className="h-[40%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -882,7 +882,7 @@ const exportAsPDF = async () => {
               </div>
             </div>
 
-            <div className="h-[55%] flex flex-col border border-gray-200">
+            <div className="h-[60%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -917,41 +917,42 @@ const exportAsPDF = async () => {
                 {activeAdjustPropertieTab === "Table" && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3 space-y-10">
                     {selectedSort === 'activateUnitLevel' ? (
-                      // UNIT LEVEL: Separate tables for each candidate
                       (() => {
                         if (!selectedChart) {
                           return (
                             <div className="text-center text-gray-400 py-4 italic">
-                              Not Available at Unit Level
+                              NOT AVAILABLE AT UNIT LEVEL
                             </div>
                           );
                         }
 
-                        // Extract key name from chart selection (e.g., "XEP", "XRR")
+                        // Pie charts have no tabular data
+                        if (selectedChart.type === "pie") {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              NOT AVAILABLE FOR SELECTED CHART
+                            </div>
+                          );
+                        }
+
                         const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-                        
+
                         if (!keyName) {
                           return (
                             <div className="text-center text-gray-400 py-4 italic">
-                              Invalid chart selection
+                              INVALID CHART DATA
                             </div>
                           );
                         }
 
-                        // Group data by candidate ID
                         const candidateGroups = {};
-                        
+
                         tableData.forEach(row => {
                           const cId = row.candidateId;
-                          
-                          if (!cId) return; // Skip if no candidateId
-                          
-                          // Initialize candidate group if it doesn't exist
+                          if (!cId) return;
                           if (!candidateGroups[cId]) {
                             candidateGroups[cId] = [];
                           }
-                          
-                          // Add all PP IDs with valid metric values
                           const metricValue = row[keyName];
                           if (metricValue !== undefined && metricValue !== null && !isNaN(metricValue)) {
                             candidateGroups[cId].push({
@@ -961,46 +962,41 @@ const exportAsPDF = async () => {
                           }
                         });
 
-                        // Sort candidates by ID
                         const candidateIds = Object.keys(candidateGroups).sort((a, b) => parseInt(a) - parseInt(b));
 
                         if (candidateIds.length === 0) {
                           return (
                             <div className="text-center text-gray-400 py-4 italic">
-                              No data available for {selectedChart.name}
+                              NOT AVAILABLE FOR SELECTED CHART
                             </div>
                           );
                         }
 
-                        // Create a table for each candidate
                         return candidateIds.map((cId) => {
-                          // Sort PP IDs: negatives descending, then positives ascending
                           const sortedData = candidateGroups[cId].sort((a, b) => {
-                            if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // negative: descending
-                            if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId; // positive: ascending
-                            if (a.ppId < 0 && b.ppId > 0) return -1; // negatives first
+                            if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId;
+                            if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId;
+                            if (a.ppId < 0 && b.ppId > 0) return -1;
                             if (a.ppId > 0 && b.ppId < 0) return 1;
                             return 0;
                           });
 
                           return (
                             <div key={cId}>
-                              {/* Candidate ID Header */}
-                              <div className=" text-gray-600 px-4 py-1 font-semibold text-md mb-0">
+                              <div className="text-gray-600 px-4 py-1 font-semibold text-md mb-0">
                                 Candidate ID: {cId}
                               </div>
 
-                              {/* Table for this candidate */}
-                              <table className="table-auto w-full text-xs border border-gray-300">
+                              <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
                                 <thead className="bg-gray-100">
                                   <tr>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                      PP Id / Label
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
+                                      PP ID
                                     </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
                                       X Axis Value
                                     </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
                                       {keyName}
                                     </th>
                                   </tr>
@@ -1009,13 +1005,13 @@ const exportAsPDF = async () => {
                                   {sortedData.length > 0 ? (
                                     sortedData.map((row, idx) => (
                                       <tr key={idx} className="hover:bg-blue-50">
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
                                           {row.ppId}
                                         </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
                                           {row.ppId}
                                         </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
                                           {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
                                         </td>
                                       </tr>
@@ -1023,7 +1019,7 @@ const exportAsPDF = async () => {
                                   ) : (
                                     <tr>
                                       <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
-                                        No data available
+                                        NO DATA AVAILABLE
                                       </td>
                                     </tr>
                                   )}
@@ -1034,171 +1030,150 @@ const exportAsPDF = async () => {
                         });
                       })()
                     ) : (
-                      // CANDIDATE LEVEL: Separate tables for Positive and Negative PP IDs
-                      <>
-                        {/* Positive PP IDs Table */}
-                        <div>
-                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
-                          <table className="table-auto w-full text-xs border border-gray-300">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                  PP Id / Label
-                                </th>
-                                
-                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                  {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(() => {
-                                if (!selectedChart) {
-                                  return (
-                                    <tr>
-                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
-                                        Select a chart to display data
-                                      </td>
-                                    </tr>
-                                  );
-                                }
+                      // CANDIDATE LEVEL
+                      (() => {
+                        // No chart selected
+                        if (!selectedChart) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              SELECT A CHART TO DISPLAY DATA
+                            </div>
+                          );
+                        }
 
-                                const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-                                if (!keyName) {
-                                  return (
-                                    <tr>
-                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
-                                        Invalid chart selection
-                                      </td>
-                                    </tr>
-                                  );
-                                }
+                        // Pie charts have no tabular data
+                        if (selectedChart.type === "pie") {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              NOT AVAILABLE FOR SELECTED CHART
+                            </div>
+                          );
+                        }
 
-                                const positiveData = tableData
-                                  .filter(row => row.ppId > 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
-                                  .sort((a, b) => a.ppId - b.ppId)
-                                  .map(row => ({
-                                    ppId: row.ppId,
-                                    value: row[keyName],
-                                  }));
+                        const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
 
-                                return positiveData.length > 0 ? (
-                                  positiveData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-blue-50">
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                                        {row.ppId}
-                                      </td>
-                                     
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                                        {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
+                        if (!keyName) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              INVALID CHART SELECTION
+                            </div>
+                          );
+                        }
+
+                        const positiveData = tableData
+                          .filter(row => row.ppId > 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
+                          .sort((a, b) => a.ppId - b.ppId)
+                          .map(row => ({ ppId: row.ppId, value: row[keyName] }));
+
+                        const negativeData = tableData
+                          .filter(row => row.ppId < 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
+                          .sort((a, b) => b.ppId - a.ppId)
+                          .map(row => ({ ppId: row.ppId, value: row[keyName] }));
+
+                        // No data at all for this chart
+                        if (positiveData.length === 0 && negativeData.length === 0) {
+                          return (
+                            <div className="text-center text-gray-400 py-4 italic">
+                              NOT AVAILABLE FOR SELECTED CHART
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <>
+                            {/* Positive PP IDs Table */}
+                            <div>
+                              <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                              <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
+                                <thead className="bg-gray-100">
                                   <tr>
-                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
-                                      No positive data available
-                                    </td>
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
+                                      PP ID
+                                    </th>
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
+                                      {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                                    </th>
                                   </tr>
-                                );
-                              })()}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Negative PP IDs Table */}
-                        <div>
-                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">Negative PP IDs</h3>
-                          <table className="table-auto w-full text-xs border border-gray-300">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                  PP Id / Label
-                                </th>
-                               
-                                <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                  {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(() => {
-                                if (!selectedChart) {
-                                  return (
+                                </thead>
+                                <tbody>
+                                  {positiveData.length > 0 ? (
+                                    positiveData.map((row, idx) => (
+                                      <tr key={idx} className="hover:bg-blue-50">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
+                                          {row.ppId}
+                                        </td>
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
+                                          {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
                                     <tr>
-                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
-                                        Select a chart to display data
+                                      <td colSpan={2} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
+                                        NO POSITIVE DATA AVAILABLE
                                       </td>
                                     </tr>
-                                  );
-                                }
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
 
-                                const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-                                if (!keyName) {
-                                  return (
-                                    <tr>
-                                      <td colSpan={3} className="text-center text-gray-400 py-4 italic">
-                                        Invalid chart selection
-                                      </td>
-                                    </tr>
-                                  );
-                                }
-
-                                const negativeData = tableData
-                                  .filter(row => row.ppId < 0 && row[keyName] !== undefined && !isNaN(row[keyName]))
-                                  .sort((a, b) => b.ppId - a.ppId) // Descending for negatives
-                                  .map(row => ({
-                                    ppId: row.ppId,
-                                    value: row[keyName],
-                                  }));
-
-                                return negativeData.length > 0 ? (
-                                  negativeData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-blue-50">
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                                        {row.ppId}
-                                      </td>
-                                      
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                                        {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
+                            {/* Negative PP IDs Table */}
+                            <div>
+                              <h3 className="text-gray-600 font-semibold mb-2 ml-2">Negative PP IDs</h3>
+                              <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
+                                <thead className="bg-gray-100">
                                   <tr>
-                                    <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
-                                      No negative data available
-                                    </td>
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
+                                      PP ID
+                                    </th>
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
+                                      {selectedChart?.name?.match(/\(([^)]+)\)/)?.[1] || selectedChart?.name}
+                                    </th>
                                   </tr>
-                                );
-                              })()}
-                            </tbody>
-                          </table>
-                        </div>
-                      </>
+                                </thead>
+                                <tbody>
+                                  {negativeData.length > 0 ? (
+                                    negativeData.map((row, idx) => (
+                                      <tr key={idx} className="hover:bg-blue-50">
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
+                                          {row.ppId}
+                                        </td>
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
+                                          {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={2} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
+                                        NO NEGATIVE DATA AVAILABLE
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </>
+                        );
+                      })()
                     )}
                   </div>
                 )}
-
-
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white  mb-4" >
-          <div className="h-full overflow-auto pb-4">
-            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-            </h2> */}
-            {/* <h2 className="text-lg text-center font-semibold text-gray-700 mb-4"></h2>{selectedChart.icon} {selectedChart.name} </h2> */}
-            
-            {/* 🔵 DYNAMIC CHART SECTION */}
-            <div className="space-y-8">
+        <div className="w-6/12 lg:w-9/12 flex flex-col h-full bg-white">
+          <div className="h-full overflow-auto flex flex-col">
+
+            {/* DYNAMIC CHART SECTION */}
+            <div className="flex-1 flex flex-col">
               {selectedChart ? (
                 (() => {
                   const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-                  if (!keyName) return <div className="text-gray-500">Invalid chart selection</div>;
+                  if (!keyName) return <div className="text-gray-500">INVALID CHART SELECTION</div>;
 
                   // Split data into positive and negative ppIds
                   const negativeData = [...tableData]
@@ -1232,7 +1207,7 @@ const exportAsPDF = async () => {
                     
                   
                     return (
-                      <div ref={chartContainerRef} className="p-6 bg-white rounded-xl shadow-sm mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
@@ -1450,18 +1425,15 @@ const exportAsPDF = async () => {
                       </div>
                     );
                   }
-                  
 
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()
               ) : (
                 <div className="flex justify-center items-center h-full text-gray-400 text-lg">
-                  Select Plot 
+                  SELECT PLOT
                 </div>
               )}
             </div>
-
-
           </div>
         </div>
       </div>

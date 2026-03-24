@@ -346,7 +346,8 @@ export default function GrowthMetrics() {
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
                     <SecondaryArea onClose={() => setShowSecondary(false)} unitId={selectedUnitId} candidateId={activeCandidateId}
-                    selectedSort={selectedSort} onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal} />
+                    selectedSort={selectedSort} onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal} 
+                    unitType= {unitData?.unitType} />
                   </div>
                 )}
               </div>

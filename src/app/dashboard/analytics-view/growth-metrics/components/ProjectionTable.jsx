@@ -1,5 +1,6 @@
 "use client";
 import { createProjection, getProjection, updateProjection, updateProjectionPoints } from "@/services/projectionService";
+import { X } from "lucide-react";
 import React, { useState, useMemo, useEffect } from "react";
 
 
@@ -785,22 +786,23 @@ const handleSubmit = async () => {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-5xl p-4 overflow-auto max-h-[90vh]">
-        <div className="flex justify-between items-center mb-2">
+      <div className="bg-white  shadow-lg w-11/12 max-w-5xl overflow-auto max-h-[90vh]">
+        <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Projection Table</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 font-bold">
-            X
+          <button onClick={onClose} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+            <X className="w-5 h-5 text-gray-700" />
           </button>
         </div>
+        
 
-        <div className="w-full overflow-auto border border-gray-200 rounded-lg">
+        <div className="w-full overflow-auto border border-gray-200 rounded-lg p-4 ">
           <table className="w-full whitespace-nowrap text-center text-xs divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col}
-                    className="px-2 py-1 border border-gray-300 font-semibold text-gray-700"
+                    className="p-1 border border-black font-semibold text-gray-700"
                   >
                     {col}
                   </th>
@@ -812,9 +814,9 @@ const handleSubmit = async () => {
                 const availablePpIds = idx < 3 ? availableByIndex[idx] : [];
 
                 return (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-2 py-1 border border-gray-300">{row.Callout}</td>
-                    <td className="px-2 py-1 border border-gray-300">
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors ">
+                    <td className="px-2 py-1 border border-black">{row.Callout}</td>
+                    <td className="px-2 py-1 border border-black">
                       {idx < 3 ? (
                         <select
                           className="border rounded px-1 py-0.5 w-full text-xs text-center"
@@ -833,22 +835,22 @@ const handleSubmit = async () => {
                       )}
                     </td>
 
-                    <td className="px-2 py-1 border border-gray-300">{row.RRN}</td>
-                    <td className="px-2 py-1 border border-gray-300">{row.PRN}</td>
+                    <td className="px-2 py-1 border border-black">{row.RRN}</td>
+                    <td className="px-2 py-1 border border-black">{row.PRN}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="px-2 py-1 border border-gray-300">{row.ARN}</td>
+                      <td className="px-2 py-1 border border-black">{row.ARN}</td>
                     )}
 
-                    <td className="px-2 py-1 border border-gray-300">{row.IC}</td>
-                    <td className="px-2 py-1 border border-gray-300">{row.ΔRRN}</td>
-                    <td className="px-2 py-1 border border-gray-300">{row.ΔPRN}</td>
+                    <td className="px-2 py-1 border border-black">{row.IC}</td>
+                    <td className="px-2 py-1 border border-black">{row.ΔRRN}</td>
+                    <td className="px-2 py-1 border border-black">{row.ΔPRN}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="px-2 py-1 border border-gray-300">{row.ΔARN}</td>
+                      <td className="px-2 py-1 border border-black">{row.ΔARN}</td>
                     )}
 
-                    <td className="px-2 py-1 border border-gray-300">{formatDayCount(row.DayCount)}</td>
+                    <td className="px-2 py-1 border border-black">{formatDayCount(row.DayCount)}</td>
 
                   </tr>
                 );
@@ -857,9 +859,10 @@ const handleSubmit = async () => {
           </table>
         </div>
 
-        <div className="flex justify-end items-center my-2">
+        <div className="flex justify-end items-center border-t border-gray-300 py-2 px-6 bg-gray-50 ">
         
-          <button onClick={handleSubmit} className="text-gray-700 hover:bg-gray-300 bg-gray-200 p-1 rounded">
+          <button onClick={handleSubmit} 
+            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors">
             Submit 
           </button>
         </div>
