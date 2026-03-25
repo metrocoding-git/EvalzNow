@@ -249,7 +249,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
             onBlur={() => setFormStatus("Ready...")}
             className="col-span-3 border border-gray-300 px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
-            <option value="">Select Size</option>
+            <option value="" disabled>Select Size</option>
             {companySize.map((size, i) => (
                 <option key={i} value={size.id}> {/* Use size.id as value if needed */}
                   {size.tier} - {size.size}: {size.candidate}{/* Access the properties you want to display */}

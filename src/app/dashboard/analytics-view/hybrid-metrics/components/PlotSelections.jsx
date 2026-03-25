@@ -277,45 +277,47 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     switch (selectedChart.id) {
       case "1":
         return {
-          xKey: "ppId",
-          yKey: "IC",
-          xLabel: "PP ID",
-          yLabel: "Interaction Class (IC)"
+          columns: [
+            { key: "ppId", label: "PP ID" },
+            { key: "IC", label: "Interaction Class (IC)" }
+          ]
         };
   
       case "2":
         return {
-          xKey: "RRN",
-          yKey: "PRN",
-          xLabel: "RR",
-          yLabel: "PR"
+          columns: [
+            { key: "ppId", label: "PP ID" },
+            { key: "RRN", label: "RR" },
+            { key: "PRN", label: "PR" }
+          ]
         };
   
       case "3":
         return {
-          xKey: "RRN",
-          yKey: "ARN",
-          xLabel: "RR",
-          yLabel: "AR"
+          columns: [
+            { key: "ppId", label: "PP ID" },
+            { key: "RRN", label: "RR" },
+            { key: "ARN", label: "AR" }
+          ]
         };
   
       case "4":
         return {
-          xKey: "ARN",
-          yKey: "PRN",
-          xLabel: "AR",
-          yLabel: "PR"
+          columns: [
+            { key: "ppId", label: "PP ID" },
+            { key: "PRN", label: "PR" },
+            { key: "ARN", label: "AR" }
+          ]
         };
   
-      case "5": // 🔥 3D Scatter
+      case "5": // 3D
         return {
-          xKey: "RRN",
-          yKey: "PRN",
-          zKey: "ARN",
-          xLabel: "RR",
-          yLabel: "PR",
-          zLabel: "AR",
-          is3D: true
+          columns: [
+            { key: "ppId", label: "PP ID" },
+            { key: "RRN", label: "RR" },
+            { key: "PRN", label: "PR" },
+            { key: "ARN", label: "AR" }
+          ]
         };
   
       default:
@@ -915,7 +917,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const containerStyle = {
     backgroundColor: chartProperties.shadeArea,
     width: '100%',
-    height: '600px',
+    aspectRatio: '1 / 1',
     padding: '10px',
     borderRadius: '8px'
   };
@@ -1003,73 +1005,73 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           
           {/*  Tooltip - only show for Scatter components */}
           <Tooltip
-  cursor={{ strokeDasharray: '3 3' }}
-  // Add this to improve default behavior
-  allowEscapeViewBox={{ x: true, y: true }}
-  content={({ active, payload, label }) => {
-    if (!active || !payload || !payload.length) return null;
+            cursor={{ strokeDasharray: '3 3' }}
+            // Add this to improve default behavior
+            allowEscapeViewBox={{ x: true, y: true }}
+            content={({ active, payload, label }) => {
+              if (!active || !payload || !payload.length) return null;
 
-    // ───────────────────────────────────────────────
-    // Filter to only show tooltip for ACTUAL scatter points
-    // We look for payload items that come from a Scatter series
-    // (they usually have .payload.ppId or similar real data marker)
-    // ───────────────────────────────────────────────
-    const realPoint = payload.find(item =>
-      item.payload &&
-      item.payload.seriesType &&     // 👈 strict discriminator
-      item.payload[xKey] !== undefined &&
-      item.payload[yKey] !== undefined
-    );
-    
+              // ───────────────────────────────────────────────
+              // Filter to only show tooltip for ACTUAL scatter points
+              // We look for payload items that come from a Scatter series
+              // (they usually have .payload.ppId or similar real data marker)
+              // ───────────────────────────────────────────────
+              const realPoint = payload.find(item =>
+                item.payload &&
+                item.payload.seriesType &&     
+                item.payload[xKey] !== undefined &&
+                item.payload[yKey] !== undefined
+              );
+              
 
-    if (!realPoint) return null;   // ← hide tooltip if hovering over line/bias/IC
+              if (!realPoint) return null;   // ← hide tooltip if hovering over line/bias/IC
 
-    const data = realPoint.payload;
+              const data = realPoint.payload;
 
-    const isGrowthTarget = data.gt !== undefined;
-    const isProjection  = data.callout !== undefined;
-    const isAverage     = averageData.some(avg => avg.ppId === data.ppId);
+              const isGrowthTarget = data.gt !== undefined;
+              const isProjection  = data.callout !== undefined;
+              const isAverage     = averageData.some(avg => avg.ppId === data.ppId);
 
-    return (
-      <div style={{
-        backgroundColor: 'white',
-        padding: '10px 14px',
-        border: '1px solid #ccc',
-        borderRadius: '6px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        minWidth: '180px'
-      }}>
-        {isGrowthTarget && (
-          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#2563eb' }}>
-            Growth Target: {data.gt}
-          </p>
-        )}
-        {isProjection && (
-          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#7c3aed' }}>
-            Projection: {data.ppId} ({data.callout})
-          </p>
-        )}
-        {isAverage && (
-          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#ff6b6b' }}>
-            Average Point
-          </p>
-        )}
-        {!isGrowthTarget && !isProjection && !isAverage && (
-          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>
-            PP ID: {data.ppId}
-          </p>
-        )}
+              return (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '10px 14px',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  minWidth: '180px'
+                }}>
+                  {isGrowthTarget && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#2563eb' }}>
+                      Growth Target: {data.gt}
+                    </p>
+                  )}
+                  {isProjection && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#7c3aed' }}>
+                      Projection: {data.ppId} ({data.callout})
+                    </p>
+                  )}
+                  {isAverage && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#ff6b6b' }}>
+                      Average Point
+                    </p>
+                  )}
+                  {!isGrowthTarget && !isProjection && !isAverage && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>
+                      PP ID: {data.ppId}
+                    </p>
+                  )}
 
-        <p style={{ margin: '4px 0' }}>
-          {xLabel}: <strong>{Number(data[xKey]).toFixed(2)}</strong>
-        </p>
-        <p style={{ margin: '4px 0' }}>
-          {yLabel}: <strong>{Number(data[yKey]).toFixed(2)}</strong>
-        </p>
-      </div>
-    );
-  }}
-/>
+                  <p style={{ margin: '4px 0' }}>
+                    {xLabel}: <strong>{Number(data[xKey]).toFixed(2)}</strong>
+                  </p>
+                  <p style={{ margin: '4px 0' }}>
+                    {yLabel}: <strong>{Number(data[yKey]).toFixed(2)}</strong>
+                  </p>
+                </div>
+              );
+            }}
+          />
           
           <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
           
@@ -1203,40 +1205,39 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const positiveData = tableData.filter(r => r.ppId > 0);
     const negativeData = tableData.filter(r => r.ppId < 0);
 
-
     const plotData = [];
 
-// 🟢 Positive PP IDs
-if (positiveData.length > 0) {
-  plotData.push({
-    x: positiveData.map(r => r.RRN),
-    y: positiveData.map(r => r.PRN),
-    z: positiveData.map(r => r.ARN),
-    type: "scatter3d",
-    mode: "markers",
-    marker: {
-      size: 4,
-      color: "#22c55e" // green
-    },
-    name: "Positive PP IDs"
-  });
-}
+    // 🟢 Positive PP IDs
+    if (positiveData.length > 0) {
+      plotData.push({
+        x: positiveData.map(r => r.RRN),
+        y: positiveData.map(r => r.PRN),
+        z: positiveData.map(r => r.ARN),
+        type: "scatter3d",
+        mode: "markers",
+        marker: {
+          size: 4,
+          color: "#22c55e" // green
+        },
+        name: "Positive PP IDs"
+      });
+    }
 
-// 🔴 Negative PP IDs
-if (negativeData.length > 0) {
-  plotData.push({
-    x: negativeData.map(r => r.RRN),
-    y: negativeData.map(r => r.PRN),
-    z: negativeData.map(r => r.ARN),
-    type: "scatter3d",
-    mode: "markers",
-    marker: {
-      size: 4,
-      color: "#ef4444" // red
-    },
-    name: "Negative PP IDs"
-  });
-}
+    // 🔴 Negative PP IDs
+    if (negativeData.length > 0) {
+      plotData.push({
+        x: negativeData.map(r => r.RRN),
+        y: negativeData.map(r => r.PRN),
+        z: negativeData.map(r => r.ARN),
+        type: "scatter3d",
+        mode: "markers",
+        marker: {
+          size: 4,
+          color: "#ef4444" // red
+        },
+        name: "Negative PP IDs"
+      });
+    }
 
   
     if (showGrowthTarget && growthTargetData.length > 0) {
@@ -1423,17 +1424,17 @@ if (negativeData.length > 0) {
     }
   
     return (
-      <Plot
+      <Plot 
         data={plotData}
         layout={{
-          height: 800,
-          width: 800,
+          autosize: true,
+          height: undefined,
           title: "Butler Hybrid Model",
   
           // 🔥 All 3D properties must be inside scene
           scene: {
             camera: {
-              eye: { x: 0, y: 0, z: 0 }
+              eye: { x: 1.5, y: 1.5, z: 1.5 }
             },
   
             aspectratio: { x: 1, y: 1, z: 1 },
@@ -1467,6 +1468,7 @@ if (negativeData.length > 0) {
           }
         }}
         style={{ width: "100%", height: "100%" }}
+        useResizeHandler={true}
       />
     );
   };
@@ -1488,7 +1490,7 @@ if (negativeData.length > 0) {
         const negatives = tableData.filter(r => r.ppId < 0);
   
         return (
-          <div style={containerStyle}>
+          <div style={{ width: '100%', aspectRatio: '1 / 1' }}>
             <ResponsiveContainer width="100%" height="95%">
               <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1496,7 +1498,7 @@ if (negativeData.length > 0) {
                   <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
                 </XAxis>
                 <YAxis dataKey="IC">
-                  <Label value="Interaction Class (IC)" angle={-90} position="center" offset={-6} 
+                  <Label value="Interaction Class (IC)" angle={-90} position="insideLeft" offset={10} 
                   textAnchor='middle' />
                 </YAxis>
                 <Tooltip />
@@ -1564,18 +1566,28 @@ if (negativeData.length > 0) {
         );
   
       case "2": // PR vs RR
-        return renderScatter(tableData, "RRN", "PRN", "RR (X)", "PR (Y)", unitSignature, unitType);
+        return renderScatter(tableData, "RRN", "PRN", 
+          "Receptive Ratio (RR)",  
+          "Productive Ratio (PR)", unitSignature, unitType);
   
       case "3": // AR vs RR
-        return renderScatter(tableData, "RRN", "ARN", "RR (X)", "AR (Y)", unitSignature, unitType);
+        return renderScatter(tableData, "RRN", "ARN", 
+          "Receptive Ratio (RR)",
+          "Acuity Ratio (AR)", unitSignature, unitType);
   
       case "4": // PR vs AR
-        return renderScatter(tableData, "PRN", "ARN", "PR (X)", "AR (Y)", unitSignature, unitType);
+        return renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)",
+          "Acuity Ratio (AR)",
+          unitSignature, unitType);
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
           <div style={{ position: 'relative', width: '100%', height: '400px' }}>
-            {render3DScatter(tableData, unitType)}
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full max-w-[600px] h-full">
+                {render3DScatter(tableData, unitType)}
+              </div>
+            </div>
             <div style={{ 
               position: 'absolute', 
               top: 10, 
@@ -2000,7 +2012,7 @@ if (negativeData.length > 0) {
               <button onClick={() => setShowCreateMaterial(true)} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
                   if (typeof onResetFilters === "function") {
-                    onResetFilters(); // ✅ reset filters in parent
+                    onResetFilters(); // reset filters in parent
                   }
                 }} />
               </button>
@@ -2008,7 +2020,7 @@ if (negativeData.length > 0) {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -2025,7 +2037,7 @@ if (negativeData.length > 0) {
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -2033,7 +2045,7 @@ if (negativeData.length > 0) {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
@@ -2042,7 +2054,7 @@ if (negativeData.length > 0) {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[40%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -2077,8 +2089,9 @@ if (negativeData.length > 0) {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4 text-sm text-gray-500">
+                    <div className="text-center py-4 text-sm text-gray-500 uppercase">
                       No data available for this selection
+
                     </div>
                   )}
                 </div>
@@ -2086,7 +2099,7 @@ if (negativeData.length > 0) {
             </div>
 
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[60%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -2122,42 +2135,42 @@ if (negativeData.length > 0) {
 
                 {activeAdjustPropertieTab === "Table" && (() => {
                   const cols = getTableColumns();
-                  if (!cols) return <div className="text-center text-gray-500">Select a chart</div>;
-
+                  if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;
+                  
                   return (
-                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-16 pb-1">
-                      <table className="table-auto w-full text-sm border border-gray-300">
-                        <thead className="bg-gray-100">
-                          <tr>
-                            <th className="border px-3 py-2">{cols.xLabel}</th>
-                            <th className="border px-3 py-2">{cols.yLabel}</th>
-
-                            {cols.is3D && (
-                              <th className="border px-3 py-2">{cols.zLabel}</th>
-                            )}
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {sortedData.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-blue-50">
-                              <td className="border px-3 py-2 text-center">
-                                {row[cols.xKey]}
-                              </td>
-
-                              <td className="border px-3 py-2 text-center">
-                                {row[cols.yKey]}
-                              </td>
-
-                              {cols.is3D && (
-                                <td className="border px-3 py-2 text-center">
-                                  {row[cols.zKey]}
-                                </td>
-                              )}
+                    <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16 pb-1">
+                      {sortedData.length === 0 ? (
+                        <div className="flex justify-center items-center py-6 text-gray-500 uppercase">
+                          No Data Available
+                        </div>
+                      ) : (
+                        <table className="table-auto text-xs border-collapse w-auto">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {cols.columns.map(col => (
+                                <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                                  {col.label}
+                                </th>
+                              ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+
+                          <tbody>
+                            {sortedData.map((row, idx) => (
+                              <tr key={idx} className="hover:bg-blue-50">
+                                {cols.columns.map(col => (
+                                  <td
+                                    key={col.key}
+                                    className="border px-3 py-1 text-center whitespace-nowrap"
+                                  >
+                                    {row[col.key]}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   );
                 })()}
@@ -2171,7 +2184,7 @@ if (negativeData.length > 0) {
   
           <div ref={chartContainerRef} className="flex flex-col h-full">
             <h2 className="text-lg text-center font-semibold text-gray-700 my-2">
-              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
+              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'SELECT PLOT'}
             </h2>
 
             <div className="h-full overflow-auto mb-2 p-3">

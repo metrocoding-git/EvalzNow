@@ -36,6 +36,16 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
   };
   
 
+  const getAvailablePpIds = (currentSelectionKey) => {
+    const selectedBlockIds = Object.entries(form)
+      .filter(([key, value]) => key !== currentSelectionKey && value)
+      .map(([_, value]) => value.blockId);
+  
+    return ppIdList.filter(
+      item => !selectedBlockIds.includes(item.blockId)
+    );
+  };
+  
   // Validate required fields
   
 
@@ -250,7 +260,7 @@ console.log("table data check proper:", tableData)
             required
             >
             <option value="">Select PP ID</option>
-              {ppIdList.map((item, index) => (
+            {getAvailablePpIds("selection1").map(item => (
                   <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
                 </option>
@@ -270,8 +280,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {getNextValidPpIds(form.selection1)
-              .map(item => (
+            {getAvailablePpIds("selection2").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
                 </option>
@@ -290,8 +299,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {getNextValidPpIds(form.selection2)
-              .map(item => (
+            {getAvailablePpIds("selection3").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
                 </option>
@@ -310,8 +318,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {getNextValidPpIds(form.selection3)
-              .map(item => (
+            {getAvailablePpIds("selection4").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
                 </option>
@@ -330,8 +337,7 @@ console.log("table data check proper:", tableData)
            
             >
             <option value="">Select PP ID</option>
-            {getNextValidPpIds(form.selection4)
-              .map(item => (
+            {getAvailablePpIds("selection5").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
                 </option>

@@ -379,7 +379,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
               onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
-              <option value="">Select {label}</option>
+              <option value="" disabled>Select {label}</option>
               {ethnicities.map((eth) => (
               <option key={eth.id || eth.name} value={eth.name}>
                 {eth.name}
@@ -394,7 +394,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
               onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
-              <option value="">Select {label}</option>
+              <option value="" disabled>Select {label}</option>
               {incomes.map((inc) => (
                 <option key={inc.id || inc.name} value={inc.name}>
                   {inc.name}
@@ -409,7 +409,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
               onBlur={() => setFormStatus("Ready...")}
               onChange={(e) => handleChange(label, e.target.value)}
             >
-              <option value="">Select {label}</option>
+              <option value="" disabled>Select {label}</option>
               {options.map((opt, i) => (
                 <option key={i} value={opt}>
                   {opt}
@@ -453,7 +453,7 @@ const CandidateEditor = ({ candidate, showForm, onSave, ethnicities = [], income
                         onBlur={() => setFormStatus("Ready...")}
                         className="w-full px-2 py-1 border"
                       >
-                        <option value="">Select</option>
+                        <option value="" disabled>Select</option>
                         {irregularityOptions.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}

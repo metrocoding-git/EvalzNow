@@ -727,7 +727,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                 onChange={(e) => handleChange("workflowStage", e.target.value)}
                 className="border px-2 py-1 w-full"
               >
-                <option value="">Select Stage</option>
+                <option value="" disabled>Select Stage</option>
                 {workflowStages.map((stage, i) => (
                   <option key={i} value={stage}>
                     {stage}
@@ -744,7 +744,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                 onChange={(e) => handleChange("assessmentType", e.target.value)}
                 className="border px-2 py-1 w-full"
               >
-                <option value="">Select Assessment Type</option>
+                <option value="" disabled>Select Assessment Type</option>
                 {assessmentTypes.map((type, i) => (
                   <option key={i} value={type}>
                     {type}
@@ -761,7 +761,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                 onChange={(e) => handleChange("scheduleImpact", e.target.value)}
                 className="border px-2 py-1 w-full"
               >
-                <option value="">Select Schedule Impact</option>
+                <option value="" disabled>Select Schedule Impact</option>
                 {scheduleImpacts.map((impact, i) => (
                   <option key={i} value={impact}>
                     {impact}

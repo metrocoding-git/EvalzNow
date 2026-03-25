@@ -168,7 +168,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Access Level", e.target.value)} 
             required
           >
-            <option value="">Select Access Level</option>
+            <option value="" disabled>Select Access Level</option>
             {accessLevels.map((level, i) => (
               <option key={i} value={level}>
                 {level}
@@ -185,7 +185,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
             onChange={(e) => handleChange("Account Status", e.target.value)}
             required
           >
-            <option value="">Select Status</option>
+            <option value="" disabled>Select Status</option>
             {accountStatuses.map((status, i) => (
               <option key={i} value={status}>
                 {status}

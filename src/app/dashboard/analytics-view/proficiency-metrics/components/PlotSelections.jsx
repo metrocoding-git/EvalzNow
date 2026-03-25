@@ -693,17 +693,32 @@ const exportAsJPG = async () => {
   }
 
   try {
-    const canvas = await html2canvas(chartContainerRef.current, {
-      scale: 2,
+    const chartEl = chartContainerRef.current;
+
+    // Save original styles
+    const originalHeight = chartEl.style.height;
+    const originalOverflow = chartEl.style.overflow;
+
+    // Expand container to full content height
+    chartEl.style.height = `${chartEl.scrollHeight}px`;
+    chartEl.style.overflow = 'visible';
+
+    const canvas = await html2canvas(chartEl, {
+      scale: 2,              // increase resolution
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
+      scrollY: -window.scrollY, // prevent viewport scroll offset
     });
 
     canvas.toBlob((blob) => {
       saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
     }, 'image/jpeg', 0.95);
+
+    // Restore original styles
+    chartEl.style.height = originalHeight;
+    chartEl.style.overflow = originalOverflow;
 
   } catch (error) {
     console.error('JPG Export failed:', error);
@@ -711,7 +726,6 @@ const exportAsJPG = async () => {
   }
 };
 
-// Function to export as PDF
 const exportAsPDF = async () => {
   if (!chartContainerRef.current) {
     alert("No chart available to export");
@@ -719,12 +733,23 @@ const exportAsPDF = async () => {
   }
 
   try {
-    const canvas = await html2canvas(chartContainerRef.current, {
+    const chartEl = chartContainerRef.current;
+
+    // Save original styles
+    const originalHeight = chartEl.style.height;
+    const originalOverflow = chartEl.style.overflow;
+
+    // Expand container to full content height
+    chartEl.style.height = `${chartEl.scrollHeight}px`;
+    chartEl.style.overflow = 'visible';
+
+    const canvas = await html2canvas(chartEl, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
+      scrollY: -window.scrollY,
     });
 
     const imgData = canvas.toDataURL('image/png');
@@ -736,6 +761,10 @@ const exportAsPDF = async () => {
 
     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
     pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
+
+    // Restore original styles
+    chartEl.style.height = originalHeight;
+    chartEl.style.overflow = originalOverflow;
 
   } catch (error) {
     console.error('PDF Export failed:', error);
@@ -786,7 +815,7 @@ const exportAsPDF = async () => {
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -794,7 +823,7 @@ const exportAsPDF = async () => {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
@@ -803,7 +832,7 @@ const exportAsPDF = async () => {
           </div>
 
           <div className="h-full overflow-hidden w-full my-2">
-            <div className="h-[40%] flex flex-col border border-gray-200">
+            <div className="h-[35%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -882,7 +911,7 @@ const exportAsPDF = async () => {
               </div>
             </div>
 
-            <div className="h-[60%] flex flex-col border border-gray-200">
+            <div className="h-[65%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -926,108 +955,11 @@ const exportAsPDF = async () => {
                           );
                         }
 
-                        // Pie charts have no tabular data
-                        if (selectedChart.type === "pie") {
                           return (
                             <div className="text-center text-gray-400 py-4 italic">
-                              NOT AVAILABLE FOR SELECTED CHART
+                              NOT AVAILABLE AT UNIT LEVEL
                             </div>
                           );
-                        }
-
-                        const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-
-                        if (!keyName) {
-                          return (
-                            <div className="text-center text-gray-400 py-4 italic">
-                              INVALID CHART DATA
-                            </div>
-                          );
-                        }
-
-                        const candidateGroups = {};
-
-                        tableData.forEach(row => {
-                          const cId = row.candidateId;
-                          if (!cId) return;
-                          if (!candidateGroups[cId]) {
-                            candidateGroups[cId] = [];
-                          }
-                          const metricValue = row[keyName];
-                          if (metricValue !== undefined && metricValue !== null && !isNaN(metricValue)) {
-                            candidateGroups[cId].push({
-                              ppId: row.ppId,
-                              value: metricValue,
-                            });
-                          }
-                        });
-
-                        const candidateIds = Object.keys(candidateGroups).sort((a, b) => parseInt(a) - parseInt(b));
-
-                        if (candidateIds.length === 0) {
-                          return (
-                            <div className="text-center text-gray-400 py-4 italic">
-                              NOT AVAILABLE FOR SELECTED CHART
-                            </div>
-                          );
-                        }
-
-                        return candidateIds.map((cId) => {
-                          const sortedData = candidateGroups[cId].sort((a, b) => {
-                            if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId;
-                            if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId;
-                            if (a.ppId < 0 && b.ppId > 0) return -1;
-                            if (a.ppId > 0 && b.ppId < 0) return 1;
-                            return 0;
-                          });
-
-                          return (
-                            <div key={cId}>
-                              <div className="text-gray-600 px-4 py-1 font-semibold text-md mb-0">
-                                Candidate ID: {cId}
-                              </div>
-
-                              <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
-                                <thead className="bg-gray-100">
-                                  <tr>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
-                                      PP ID
-                                    </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
-                                      X Axis Value
-                                    </th>
-                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20">
-                                      {keyName}
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {sortedData.length > 0 ? (
-                                    sortedData.map((row, idx) => (
-                                      <tr key={idx} className="hover:bg-blue-50">
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
-                                          {row.ppId}
-                                        </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
-                                          {row.ppId}
-                                        </td>
-                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20">
-                                          {typeof row.value === 'number' ? row.value.toFixed(3) : row.value}
-                                        </td>
-                                      </tr>
-                                    ))
-                                  ) : (
-                                    <tr>
-                                      <td colSpan={3} className="text-center text-gray-500 border border-gray-300 px-2 py-1">
-                                        NO DATA AVAILABLE
-                                      </td>
-                                    </tr>
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          );
-                        });
                       })()
                     ) : (
                       // CANDIDATE LEVEL
@@ -1211,119 +1143,121 @@ const exportAsPDF = async () => {
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <ResponsiveContainer width="100%" height={400}>
-                          <LineChart margin={{ top: 20, right: 30, left:30, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                              type="number"
-                              dataKey="ppId"
-                              domain={["auto", "auto"]}
-                            >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                              <Label value={`PP ID`}  position="insideBottom"
-                                offset={-10}
-                                textAnchor="middle" 
-                              />
-                            )}
-                            </XAxis>
-                            <YAxis
-                              // label={{
-                              //   value: selectedChart.name,
-                              //   angle: -90,
-                              //   position: "insideLeft",
-                              // }}
-                            >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                                <Label
-                                  value={`${selectedChart.name}`}
-                                  angle={-90}
-                                  position="insideLeft"
-                                  textAnchor="middle"
-                                  offset={-2}
-                                  // dy={80}
+                        <div className="w-full aspect-square">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 40 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis
+                                type="number"
+                                dataKey="ppId"
+                                domain={["auto", "auto"]}
+                              >
+                                {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                <Label value={`PP ID`}  position="insideBottom"
+                                  offset={-10}
+                                  textAnchor="middle" 
                                 />
                               )}
-                            </YAxis>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend
-                              verticalAlign="bottom"
-                              align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                              
-                            />
+                              </XAxis>
+                              <YAxis
+                                // label={{
+                                //   value: selectedChart.name,
+                                //   angle: -90,
+                                //   position: "insideLeft",
+                                // }}
+                              >
+                                {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                  <Label
+                                    value={`${selectedChart.name}`}
+                                    angle={-90}
+                                    position="insideLeft"
+                                    textAnchor="middle"
+                                    offset={-2}
+                                    // dy={80}
+                                  />
+                                )}
+                              </YAxis>
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend
+                                verticalAlign="bottom"
+                                align="center"
+                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                                
+                              />
 
-                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
-                              <ReferenceLine
-                                y={thresholdValue[keyName]}
-                                stroke="#000000"        // Amber (you can change this)
-                                strokeWidth={2}
-                                strokeDasharray="7 4 1 4"
-                                label={{
-                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
-                                  position: "right",
-                                  fill: "#f59e0b",
-                                  fontSize: 12,
-                                }}
-                              />
-                            )}
-                  
-                            {/* 🔴 Negative PP IDs */}
-                            {chartProperties.negativeVisibility && (
-                              <Line
-                                name="Negative PP IDs"
-                                type="linear"
-                                dataKey="value"
-                                data={negativeData}
-                                stroke={chartProperties.negativeLineColor}
-                                strokeDasharray={
-                                  chartProperties.negativeLineStyle === "dashed"
-                                    ? "6 4"
-                                    : chartProperties.negativeLineStyle === "dotted"
-                                    ? "2 4"
-                                    : chartProperties.negativeLineStyle === "dashdot"
-                                    ? "8 4 2 4"
-                                    : "0"
-                                }
-                                strokeWidth={chartProperties.negativeLineThickness}
-                                dot={(props) => {
-                                  const { index } = props;
-                                  if (index % chartProperties.symbolFrequency !== 0) return null;
-                                  return renderCustomDot(props, chartProperties.symbolColor);
-                                }}
-                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
-                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
-                              />
-                            )}
+                              {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                                <ReferenceLine
+                                  y={thresholdValue[keyName]}
+                                  stroke="#000000"        // Amber (you can change this)
+                                  strokeWidth={2}
+                                  strokeDasharray="7 4 1 4"
+                                  label={{
+                                    // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                    position: "right",
+                                    fill: "#f59e0b",
+                                    fontSize: 12,
+                                  }}
+                                />
+                              )}
+                    
+                              {/* 🔴 Negative PP IDs */}
+                              {chartProperties.negativeVisibility && (
+                                <Line
+                                  name="Negative PP IDs"
+                                  type="linear"
+                                  dataKey="value"
+                                  data={negativeData}
+                                  stroke={chartProperties.negativeLineColor}
+                                  strokeDasharray={
+                                    chartProperties.negativeLineStyle === "dashed"
+                                      ? "6 4"
+                                      : chartProperties.negativeLineStyle === "dotted"
+                                      ? "2 4"
+                                      : chartProperties.negativeLineStyle === "dashdot"
+                                      ? "8 4 2 4"
+                                      : "0"
+                                  }
+                                  strokeWidth={chartProperties.negativeLineThickness}
+                                  dot={(props) => {
+                                    const { index } = props;
+                                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                                    return renderCustomDot(props, chartProperties.symbolColor);
+                                  }}
+                                  // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                  // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                                />
+                              )}
 
-                            {/* 🔵 Positive PP IDs */}
-                            {chartProperties.positiveVisibility && (
-                              <Line
-                                name="Positive PP IDs"
-                                type="linear"
-                                dataKey="value"
-                                data={positiveData}
-                                stroke={chartProperties.positiveLineColor}
-                                strokeDasharray={
-                                  chartProperties.positiveLineStyle === "dashed"
-                                    ? "6 4"
-                                    : chartProperties.positiveLineStyle === "dotted"
-                                    ? "2 4"
-                                    : chartProperties.positiveLineStyle === "dashdot"
-                                    ? "8 4 2 4"
-                                    : "0"
-                                }
-                                strokeWidth={chartProperties.positiveLineThickness}
-                                dot={(props) => {
-                                  const { index } = props;
-                                  if (index % chartProperties.symbolFrequency !== 0) return null;
-                                  return renderCustomDot(props, chartProperties.symbolColor);
-                                }}
-                                // activeDot={getSymbolShape(chartProperties.symbolStyle)}
-                                // shape={getSymbolShape(chartProperties.symbolStyle)} 
-                              />
-                            )}
-                          </LineChart>
-                        </ResponsiveContainer>
+                              {/* 🔵 Positive PP IDs */}
+                              {chartProperties.positiveVisibility && (
+                                <Line
+                                  name="Positive PP IDs"
+                                  type="linear"
+                                  dataKey="value"
+                                  data={positiveData}
+                                  stroke={chartProperties.positiveLineColor}
+                                  strokeDasharray={
+                                    chartProperties.positiveLineStyle === "dashed"
+                                      ? "6 4"
+                                      : chartProperties.positiveLineStyle === "dotted"
+                                      ? "2 4"
+                                      : chartProperties.positiveLineStyle === "dashdot"
+                                      ? "8 4 2 4"
+                                      : "0"
+                                  }
+                                  strokeWidth={chartProperties.positiveLineThickness}
+                                  dot={(props) => {
+                                    const { index } = props;
+                                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                                    return renderCustomDot(props, chartProperties.symbolColor);
+                                  }}
+                                  // activeDot={getSymbolShape(chartProperties.symbolStyle)}
+                                  // shape={getSymbolShape(chartProperties.symbolStyle)} 
+                                />
+                              )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }
@@ -1333,62 +1267,64 @@ const exportAsPDF = async () => {
                     return (
                       <div ref={chartContainerRef} className="p-6 bg-white rounded-xl shadow-sm mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <ResponsiveContainer width="100%" height={400}>
-                          <ScatterChart margin={{ top: 20, right: 20, left:30, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" dataKey="ppId" name="PP ID" >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value={`PP ID`} offset={-10} position="insideBottom" />
-                              )}
-                            </XAxis>
-                            <YAxis type="number" dataKey="value" name={selectedChart.name}>
-                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                                <Label
-                                  value={`${selectedChart.name}`}
-                                  angle={-90}
-                                  position="insideLeft"
-                                  offset={-3}
-                                  dy={90}
+                        <div className="w-full aspect-square">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ScatterChart margin={{ top: 20, right: 20, left:30, bottom: 40 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis type="number" dataKey="ppId" name="PP ID" >
+                                {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                  <Label value={`PP ID`} offset={-10} position="insideBottom" />
+                                )}
+                              </XAxis>
+                              <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                                {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                  <Label
+                                    value={`${selectedChart.name}`}
+                                    angle={-90}
+                                    position="insideLeft"
+                                    offset={-3}
+                                    dy={90}
+                                  />
+                                )}
+                              </YAxis>
+                              <Tooltip content={<CustomTooltip />} />
+
+                              <Legend
+                                verticalAlign="bottom"
+                                align="center"
+                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                              />
+
+                              {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                                <ReferenceLine
+                                  y={thresholdValue[keyName]}
+                                  stroke="#000000"        // Amber (you can change this)
+                                  strokeWidth={2}
+                                  strokeDasharray="7 4 1 4"
+                                  label={{
+                                    // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                    position: "right",
+                                    fill: "#f59e0b",
+                                    fontSize: 12,
+                                  }}
                                 />
                               )}
-                            </YAxis>
-                            <Tooltip content={<CustomTooltip />} />
-
-                            <Legend
-                              verticalAlign="bottom"
-                              align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                            />
-
-                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
-                              <ReferenceLine
-                                y={thresholdValue[keyName]}
-                                stroke="#000000"        // Amber (you can change this)
-                                strokeWidth={2}
-                                strokeDasharray="7 4 1 4"
-                                label={{
-                                  // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
-                                  position: "right",
-                                  fill: "#f59e0b",
-                                  fontSize: 12,
-                                }}
+                              
+                              <Scatter
+                                name="Negative PP IDs"
+                                data={negativeData}
+                                fill={chartProperties.negativeLineColor} // red
+                                shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
                               />
-                            )}
-                            
-                            <Scatter
-                              name="Negative PP IDs"
-                              data={negativeData}
-                              fill={chartProperties.negativeLineColor} // red
-                              shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
-                            />
-                            <Scatter
-                              name="Positive PP IDs"
-                              data={positiveData}
-                              fill={chartProperties.positiveLineColor} // blue
-                              shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
-                            />
-                          </ScatterChart>
-                        </ResponsiveContainer>
+                              <Scatter
+                                name="Positive PP IDs"
+                                data={positiveData}
+                                fill={chartProperties.positiveLineColor} // blue
+                                shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
+                              />
+                            </ScatterChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }
@@ -1429,7 +1365,7 @@ const exportAsPDF = async () => {
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()
               ) : (
-                <div className="flex justify-center items-center h-full text-gray-400 text-lg">
+                <div className="flex justify-center h-full text-gray-400 text-lg">
                   SELECT PLOT
                 </div>
               )}

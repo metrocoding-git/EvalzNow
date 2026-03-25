@@ -909,7 +909,7 @@ const handleExportGraph = () => {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -926,7 +926,7 @@ const handleExportGraph = () => {
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -934,7 +934,7 @@ const handleExportGraph = () => {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
@@ -1231,86 +1231,88 @@ const handleExportGraph = () => {
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <ResponsiveContainer width="100%" height={450}>
-                          <LineChart 
-                            data={positiveData}
-                            margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                            type="number"
-                            dataKey={isGTchart ? "ppId" : "dayCount"}
-                            domain={[0, "auto"]}
-                            tickFormatter={(value) =>
-                              isGTchart
-                                ? parseInt(value, 10) // ✅ whole number for ppId
-                                : Number(value).toFixed(2) // ✅ decimal for days
-                            }
-                            allowDataOverflow={true}
+                        <div className="w-full aspect-square">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart 
+                              data={positiveData}
+                              margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
                             >
-                            {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                              <Label 
-                                value={isGTchart ? "PP ID" : "Days"} 
-                                offset={-10} 
-                                position="insideBottom" 
-                                textAnchor="middle"
-                              />
-                            )}
-                            </XAxis>
-
-                            <YAxis
-                              domain={[yDomainStart, "auto"]}
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis
+                              type="number"
+                              dataKey={isGTchart ? "ppId" : "dayCount"}
+                              domain={[0, "auto"]}
+                              tickFormatter={(value) =>
+                                isGTchart
+                                  ? parseInt(value, 10) // ✅ whole number for ppId
+                                  : Number(value).toFixed(2) // ✅ decimal for days
+                              }
                               allowDataOverflow={true}
-                            >
-
-                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                                <Label
-                                  value={`${selectedChart.name}`}
-                                  angle={-90}
-                                  position="insideLeft"
-                                  offset={5}
+                              >
+                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                <Label 
+                                  value={isGTchart ? "PP ID" : "Days"} 
+                                  offset={-10} 
+                                  position="insideBottom" 
                                   textAnchor="middle"
                                 />
                               )}
-                            </YAxis>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend verticalAlign="bottom"
-                              align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                              />
+                              </XAxis>
 
-                            {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
-                              <ReferenceLine
-                                y={thresholdValue[keyName]}
-                                stroke="#000000"
-                                strokeWidth={2}
-                                strokeDasharray="7 4 1 4"
-                                label={{
-                                  position: "right",
-                                  fill: "#f59e0b",
-                                  fontSize: 12,
-                                }}
-                              />
-                            )}
+                              <YAxis
+                                domain={[yDomainStart, "auto"]}
+                                allowDataOverflow={true}
+                              >
 
-                            {/* 🔵 Positive PP IDs */}
-                            {chartProperties.visibility && (
-                              <Line
-                                type="linear"
-                                dataKey="value"
-                                name={selectedChart.name} 
-                                stroke={chartProperties.positiveLineColor}
-                                strokeWidth={chartProperties.lineThickness}
-                                strokeDasharray={strokeDasharray}
-                                dot={(props) => {
-                                  const { index } = props;
-                                  if (index % chartProperties.symbolFrequency !== 0) return null;
-                                  return renderCustomDot(props, chartProperties.symbolColor);
-                                }}
-                              />
-                            )}
-                          </LineChart>
-                        </ResponsiveContainer>
+                                {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                  <Label
+                                    value={`${selectedChart.name}`}
+                                    angle={-90}
+                                    position="insideLeft"
+                                    offset={5}
+                                    textAnchor="middle"
+                                  />
+                                )}
+                              </YAxis>
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend verticalAlign="bottom"
+                                align="center"
+                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                                />
+
+                              {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                                <ReferenceLine
+                                  y={thresholdValue[keyName]}
+                                  stroke="#000000"
+                                  strokeWidth={2}
+                                  strokeDasharray="7 4 1 4"
+                                  label={{
+                                    position: "right",
+                                    fill: "#f59e0b",
+                                    fontSize: 12,
+                                  }}
+                                />
+                              )}
+
+                              {/* 🔵 Positive PP IDs */}
+                              {chartProperties.visibility && (
+                                <Line
+                                  type="linear"
+                                  dataKey="value"
+                                  name={selectedChart.name} 
+                                  stroke={chartProperties.positiveLineColor}
+                                  strokeWidth={chartProperties.lineThickness}
+                                  strokeDasharray={strokeDasharray}
+                                  dot={(props) => {
+                                    const { index } = props;
+                                    if (index % chartProperties.symbolFrequency !== 0) return null;
+                                    return renderCustomDot(props, chartProperties.symbolColor);
+                                  }}
+                                />
+                              )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }
@@ -1319,40 +1321,42 @@ const handleExportGraph = () => {
                     return (
                       <div ref={chartContainerRef} className="p-4 bg-white  shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
-                        <ResponsiveContainer width="100%" height={450}>
-                          <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value={`Days`} offset={-10} position="insideBottom" />
-                              )}
-                            </XAxis>
-                            <YAxis type="number" dataKey="value" name={selectedChart.name}>
-                              {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                                <Label
-                                  value={`${selectedChart.name}`}
-                                  angle={-90}
-                                  position="insideLeft"
-                                  offset={10}
-                                  dy={90}
+                        <div className="w-full aspect-square">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
+                                {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                  <Label value={`Days`} offset={-10} position="insideBottom" />
+                                )}
+                              </XAxis>
+                              <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                                {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                  <Label
+                                    value={`${selectedChart.name}`}
+                                    angle={-90}
+                                    position="insideLeft"
+                                    offset={10}
+                                    dy={90}
+                                  />
+                                )}
+                              </YAxis>
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend verticalAlign="bottom"
+                                align="center"
+                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+                                />
+                              {chartProperties.visibility && (
+                                <Scatter
+                                  name="Positive PP IDs"
+                                  data={positiveData}
+                                  fill={chartProperties.positiveLineColor}
+                                  shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
                                 />
                               )}
-                            </YAxis>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend verticalAlign="bottom"
-                              align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                               />
-                            {chartProperties.visibility && (
-                              <Scatter
-                                name="Positive PP IDs"
-                                data={positiveData}
-                                fill={chartProperties.positiveLineColor}
-                                shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
-                              />
-                            )}
-                          </ScatterChart>
-                        </ResponsiveContainer>
+                            </ScatterChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }
