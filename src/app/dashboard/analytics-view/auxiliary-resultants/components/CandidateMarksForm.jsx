@@ -106,7 +106,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
             onChange={(e) => handleChange("impactType", e.target.value)}
             required
           >
-            <option value="">Select Type</option>
+            <option value="" disabled>Select Type</option>
             {impactTypes.map((type, index) => (
               <option key={index} value={type}>
                 {type}

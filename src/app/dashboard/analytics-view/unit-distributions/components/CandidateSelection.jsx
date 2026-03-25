@@ -141,16 +141,17 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
   const isSubmitEnabled = selectedCount >= 3;
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Distribution Form</h2>
-          <X className="w-5 h-5 text-gray-500 hover:bg-gray-400 cursor-pointer" onClick={handleCloseClick} />
+    <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50 border shadow-2xl border-gray-200">
+      <div className="bg-white w-[900px] border shadow-2xl border-gray-200">
+        <div className="flex justify-between items-center  bg-gray-100 px-4 py-2 border-b border-gray-200">
+          <h2 className="text-lg font-semibold">Distribution Form</h2>
+          <button onClick={onClose} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+            <X className="w-5 h-5 text-gray-700" />
+          </button>
         </div>
 
         {/* Table */}
-        <div className="p-4">
+        <div className="p-6 text-sm">
           <table className="min-w-full border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
@@ -212,15 +213,18 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t flex justify-end">
-          <button
-            onClick={handleCloseClick}
-            disabled={!isSubmitEnabled}
-            className={`px-2 py-2 text-white ${isSubmitEnabled ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-300 cursor-not-allowed"}`}
-          >
-            Close
-          </button>
+        
+
+        <div className="border-t border-gray-300 py-2 px-6 bg-gray-50 flex-shrink-0">
+          <div className="flex justify-end items-center ">
+            <button
+              onClick={handleCloseClick}
+              disabled={!isSubmitEnabled}
+              className={`px-4 py-1 text-sm transition-colors ${isSubmitEnabled ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-300 cursor-not-allowed"}`}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -736,7 +736,7 @@ const validateCriticalDate = (inputDateStr) => {
             onChange={(e) => handleChange("workflowStage", e.target.value)}
             className="flex-1 border px-2 py-1"
           >
-            <option value="">Select Stage</option>
+            <option value="" disabled>Select Stage</option>
             {workflowStages.map((stage, i) => (
               <option key={i} value={stage}>
                 {stage}
@@ -755,7 +755,7 @@ const validateCriticalDate = (inputDateStr) => {
             onChange={(e) => handleChange("assessmentType", e.target.value)}
             className="flex-1 border px-2 py-1"
           >
-            <option value="">Select Assessment Type</option>
+            <option value="" disabled>Select Assessment Type</option>
             {assessmentTypes.map((type, i) => (
               <option key={i} value={type}>
                 {type}
@@ -774,7 +774,7 @@ const validateCriticalDate = (inputDateStr) => {
             onChange={(e) => handleChange("scheduleImpact", e.target.value)}
             className="flex-1 border px-2 py-1"
           >
-            <option value="">Select Schedule Impact</option>
+            <option value="" disabled>Select Schedule Impact</option>
             {scheduleImpacts.map((impact, i) => (
               <option key={i} value={impact}>
                 {impact}
@@ -813,7 +813,7 @@ const validateCriticalDate = (inputDateStr) => {
             onChange={(e) => handleChange("competency", e.target.value)}
             className="flex-1 border px-2 py-1"
           >
-            <option value="" >
+            <option value="" disabled>
               Select Competency
             </option>
             {currentCompetencies.map((comp, i) => (

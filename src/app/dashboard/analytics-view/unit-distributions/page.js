@@ -154,7 +154,7 @@ export default function UnitDistributions() {
   });
   return (
     <div className="w-full flex flex-col">
-      <div className="h-full flex flex-col overflow-hidden m-1 p-1 ">
+      <div className="h-full flex flex-col overflow-hidden p-1 ">
         {/* Tab buttons */}
         <div className="flex space-x-0 px-0   bg-gray-50 ">
           {/* <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200  p-1">
@@ -292,7 +292,7 @@ export default function UnitDistributions() {
                 
 
                 {/* Editor */}
-                <div className="h-1/2 overflow-auto ">
+                <div className="h-1/2 overflow-auto my-2">
                   <ClientEditor
                     onClose={() => setShowEdit(false)}
                     client={true}

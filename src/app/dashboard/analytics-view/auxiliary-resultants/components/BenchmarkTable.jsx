@@ -104,17 +104,17 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
   const totalCount = rows.length;
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Create Benchmark Links</h2>
-          <X className="w-5 h-5 text-gray-500 cursor-pointer" onClick={handleCloseClick} />
+    <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50 border shadow-2xl border-gray-200">
+      <div className="bg-white w-[650px] border shadow-2xl border-gray-200">
+        <div className="flex justify-between items-center  bg-gray-100 px-4 py-2 border-b border-gray-200">
+          <h2 className="text-lg font-semibold">Create Benchmark Links</h2>
+          <button onClick={handleCloseClick} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+            <X className="w-5 h-5 text-gray-700" />
+          </button>
         </div>
 
         {/* Table */}
-        <div className="p-4 overflow-x-auto">
+        <div className="p-4 overflow-x-auto text-xs flex justify-center">
           <table className="min-w-max border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
@@ -161,10 +161,15 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t flex justify-end">
-          <button onClick={handleCloseClick} className={`px-4 py-2 text-white bg-gray-600 hover:bg-gray-700`}>
-            Close
-          </button>
+        <div className="border-t border-gray-300 py-2 px-6 bg-gray-50 flex-shrink-0">
+          <div className="flex justify-end items-center ">
+            <button
+              onClick={handleCloseClick}
+              className={`px-4 py-1 text-sm transition-colors bg-gray-200 hover:bg-gray-300`}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

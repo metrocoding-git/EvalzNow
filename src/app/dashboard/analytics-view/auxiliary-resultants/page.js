@@ -181,13 +181,13 @@ export default function AuxiliaryResultants() {
                   <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${selectedSort === "activateUnitLevel"
                    ? "grid-cols-4 px-4" : "grid-cols-3 px-4"  } text-gray-800 font-semibold text-sm`}>
 
-                   {/* 👇 Header for checkbox column (blank) */}
+                   {/*  Header for checkbox column (blank) */}
                     {selectedSort === "activateUnitLevel" && <div></div>}
                     <div
                       onClick={() => handleSort("lastName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer flex items-center gap-1 whitespace-nowrap"
                     >
-                      Last <br/> Name
+                      Last Name
                       {/* {" "}
                       {sortKey === "lastName" ? (
                         sortOrder === "asc" ? (
@@ -201,7 +201,7 @@ export default function AuxiliaryResultants() {
                     </div>
                     <div
                       onClick={() => handleSort("firstName")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer flex items-center gap-1 whitespace-nowrap"
                     >
                       First Name
                       {/* {" "}
@@ -217,7 +217,7 @@ export default function AuxiliaryResultants() {
                     </div>
                     <div
                       onClick={() => handleSort("id")}
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer flex items-center gap-1 whitespace-nowrap"
                     >
                       Candidate ID
                       {/* {" "}

@@ -63,7 +63,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
 
   const [ScoreAdd, setScoreAdd] = useState(false);
-
+  const chartInnerRef = useRef(null);
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -413,6 +413,20 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     selectedChart
   );
 
+  // Stable fallback colors — computed once per unique competency key, never random on re-render
+const stableColorMap = useRef({});
+
+const getStableColor = (key) => {
+  if (stableColorMap.current[key]) return stableColorMap.current[key];
+  const palette = [
+    "#6366f1","#f59e0b","#14b8a6","#f43f5e","#8b5cf6",
+    "#0ea5e9","#84cc16","#fb923c","#a78bfa","#34d399",
+  ];
+  const idx = Object.keys(stableColorMap.current).length % palette.length;
+  stableColorMap.current[key] = palette[idx];
+  return stableColorMap.current[key];
+};
+
   // Combine all competencies for table display
   const allCompetencies = [...Object.keys(positiveCompetencies), ...Object.keys(negativeCompetencies)]
     .filter((value, index, self) => self.indexOf(value) === index);
@@ -459,25 +473,62 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     }
   };
 
+  const captureFullChart = async () => {
+    const inner = chartInnerRef.current;
+    const outer = chartContainerRef.current;
+    if (!inner || !outer) throw new Error("Chart not found");
+  
+    const savedInnerHeight   = inner.style.height;
+    const savedInnerMaxH     = inner.style.maxHeight;
+    const savedInnerOverflow = inner.style.overflow;
+    const savedInnerWidth    = inner.style.width;      // ← save width
+    const savedOuterOverflow = outer.style.overflow;
+    const savedOuterHeight   = outer.style.height;
+  
+    const captureWidth = outer.scrollWidth;            // ← lock to outer width
+  
+    inner.style.height   = `${inner.scrollHeight}px`;
+    inner.style.maxHeight = 'none';
+    inner.style.overflow = 'visible';
+    inner.style.width    = `${captureWidth}px`;        // ← pin width explicitly
+    outer.style.overflow = 'visible';
+    outer.style.height   = `${inner.scrollHeight + 40}px`;
+  
+    await new Promise((r) => setTimeout(r, 400));
+  
+    const canvas = await html2canvas(inner, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: chartProperties.shadeArea || '#ffffff',
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: captureWidth,                             // ← use same locked width
+      height: inner.scrollHeight,
+      windowWidth: captureWidth,
+      windowHeight: inner.scrollHeight,
+    });
+  
+    // Restore everything
+    inner.style.height   = savedInnerHeight;
+    inner.style.maxHeight = savedInnerMaxH;
+    inner.style.overflow = savedInnerOverflow;
+    inner.style.width    = savedInnerWidth;            // ← restore width
+    outer.style.overflow = savedOuterOverflow;
+    outer.style.height   = savedOuterHeight;
+  
+    return canvas;
+  };
+  
   const exportAsJPG = async () => {
-    if (!chartContainerRef.current) {
-      alert("No chart available to export");
-      return;
-    }
-  
     try {
-      const canvas = await html2canvas(chartContainerRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-  
-      canvas.toBlob((blob) => {
-        saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
-      }, 'image/jpeg', 0.95);
-  
+      const canvas = await captureFullChart();
+      canvas.toBlob(
+        (blob) => saveAs(blob, `chart-${selectedChart.key}-${Date.now()}.jpg`),
+        'image/jpeg',
+        0.95
+      );
     } catch (error) {
       console.error('JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
@@ -485,30 +536,18 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   };
   
   const exportAsPDF = async () => {
-    if (!chartContainerRef.current) {
-      alert("No chart available to export");
-      return;
-    }
-  
     try {
-      const canvas = await html2canvas(chartContainerRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-  
+      const canvas = await captureFullChart();
       const imgData = canvas.toDataURL('image/png');
+      const w = canvas.width / 2;
+      const h = canvas.height / 2;
       const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        orientation: w > h ? 'landscape' : 'portrait',
         unit: 'px',
-        format: [canvas.width, canvas.height]
+        format: [w, h],
       });
-  
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
-  
+      pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+      pdf.save(`chart-${selectedChart.key}-${Date.now()}.pdf`);
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
@@ -562,7 +601,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -570,7 +609,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
@@ -578,7 +617,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
           </div>
 
           <div className="h-full overflow-hidden w-full my-2">
-            <div className="h-[45%] flex flex-col border border-gray-200">
+            <div className="h-[35%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto">
                 <div className="h-full overflow-hidden flex flex-col">
                   <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm">
@@ -616,7 +655,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
               </div>
             </div>
 
-            <div className="h-[55%] flex flex-col border border-gray-200">
+            <div className="h-[65%] flex flex-col border border-gray-200">
               <div className="flex space-x-2 border-b p-2">
                 <button
                   className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Property editor"
@@ -646,87 +685,87 @@ export default function PlotSelections({ filters, unitId, environment, candidate
                   />
                 )}
 
-{activeAdjustPropertieTab === "Table" && (
-  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
-    {(() => {
-      const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                {activeAdjustPropertieTab === "Table" && (
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-7 pb-3">
+                    {(() => {
+                      const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
 
-      const renderTable = (title, competencies, textColor) => {
-        if (Object.keys(competencies).length === 0) return null;
-        return (
-          <div className="mb-6">
-            <h3 className={`text-sm font-semibold mb-2 px-2 py-1 rounded text-gray-700`}>
-              {title}
-            </h3>
-            <table className="table-auto w-full text-xs">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                    {isAttainedMax ? "PP ID" : "Row Counter"}
-                  </th>
-                  {isAttainedMax && (
-                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                      Row Count
-                    </th>
-                  )}
-                  {!isAttainedMax && (
-                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                      PP ID
-                    </th>
-                  )}
-                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                    {isAttainedMax ? "Competency" : selectedChart?.key?.toUpperCase()}
-                  </th>
-                  {/* <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                    Value
-                  </th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(competencies).flatMap(([comp, points]) =>
-                  points.map((row, idx) => (
-                    <tr key={`${comp}-${idx}`} className="hover:bg-blue-50">
-                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                        {row.x}
-                      </td>
-                      {isAttainedMax && (
-                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                          {row.rowCount}
-                        </td>
-                      )}
-                      {!isAttainedMax && (
-                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                          {row.ppId}
-                        </td>
-                      )}
-                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
-                          style={{ color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151", fontWeight: isAttainedMax ? "500" : "400" }}>
-                        {isAttainedMax ? comp : selectedChart?.key?.toUpperCase()}
-                      </td>
-                      {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                        {row.y.toFixed(2)}
-                      </td> */}
-                    </tr>
-                  ))
+                      const renderTable = (title, competencies, textColor) => {
+                        if (Object.keys(competencies).length === 0) return null;
+                        return (
+                          <div className="mb-6">
+                            <h3 className={`text-sm font-semibold mb-2 px-2 py-1 rounded text-gray-700`}>
+                              {title}
+                            </h3>
+                            <table className="table-auto w-full text-xs">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                    {isAttainedMax ? "PP ID" : "Row Counter"}
+                                  </th>
+                                  {isAttainedMax && (
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                      Row Count
+                                    </th>
+                                  )}
+                                  {!isAttainedMax && (
+                                    <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                      PP ID
+                                    </th>
+                                  )}
+                                  <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                    {isAttainedMax ? "Competency" : selectedChart?.key?.toUpperCase()}
+                                  </th>
+                                  {/* <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
+                                    Value
+                                  </th> */}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Object.entries(competencies).flatMap(([comp, points]) =>
+                                  points.map((row, idx) => (
+                                    <tr key={`${comp}-${idx}`} className="hover:bg-blue-50">
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                        {row.x}
+                                      </td>
+                                      {isAttainedMax && (
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                          {row.rowCount}
+                                        </td>
+                                      )}
+                                      {!isAttainedMax && (
+                                        <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                          {row.ppId}
+                                        </td>
+                                      )}
+                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
+                                          style={{ color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151", fontWeight: isAttainedMax ? "500" : "400" }}>
+                                        {isAttainedMax ? comp : selectedChart?.key?.toUpperCase()}
+                                      </td>
+                                      {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
+                                        {row.y.toFixed(2)}
+                                      </td> */}
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      };
+
+                      return (
+                        <>
+                          {renderTable("Positive PP IDs", positiveCompetencies)}
+                          {renderTable("Negative PP IDs", negativeCompetencies)}
+                          {Object.keys(positiveCompetencies).length === 0 && Object.keys(negativeCompetencies).length === 0 && (
+                            <div className="text-center text-gray-500 py-4">No data available</div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        );
-      };
-
-      return (
-        <>
-          {renderTable("Positive PP IDs", positiveCompetencies)}
-          {renderTable("Negative PP IDs", negativeCompetencies)}
-          {Object.keys(positiveCompetencies).length === 0 && Object.keys(negativeCompetencies).length === 0 && (
-            <div className="text-center text-gray-500 py-4">No data available</div>
-          )}
-        </>
-      );
-    })()}
-  </div>
-)}
               </div>
             </div>
           </div>
@@ -734,139 +773,160 @@ export default function PlotSelections({ filters, unitId, environment, candidate
 
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
-          <div className="h-full overflow-auto mx-5 mt-5 mb-2">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
+          <div ref={chartInnerRef} className="h-full overflow-auto mx-5 mt-5 mb-2">
+            <h2
+              style={{
+                textAlign: "center",
+                fontWeight: "600",
+                fontSize: "1.125rem",
+                color: "#374151",
+                marginBottom: "1rem",
+                width: "100%",
+                display: "block",
+              }}
+            >
+              {selectedChart.icon} {selectedChart.name}
+            </h2>
+            <div className="w-full aspect-square">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  key={
+                    chartProperties.positiveLineColor +
+                    chartProperties.negativeLineColor +
+                    chartProperties.positiveLineStyle +
+                    chartProperties.negativeLineStyle +
+                    chartProperties.symbolStyle +
+                    chartProperties.symbolScaleSize +
+                    chartProperties.shadeArea +
+                    selectedChart.key
+                  }
+                  margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
 
-            <ResponsiveContainer width="100%" height="95%">
-              <LineChart
-                key={
-                  chartProperties.positiveLineColor +
-                  chartProperties.negativeLineColor +
-                  chartProperties.positiveLineStyle +
-                  chartProperties.negativeLineStyle +
-                  chartProperties.symbolStyle +
-                  chartProperties.symbolScaleSize +
-                  chartProperties.shadeArea +
-                  selectedChart.key
-                }
-                margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="x"
+                    type="number"
+                    domain={["dataMin", "dataMax"]}
+                    allowDecimals={false}
+                    label={{
+                      value: ["attained", "max"].includes(selectedChart?.key)
+                        ? "PP ID"
+                        : "Row Counter",
+                      position: "insideBottom",
+                      offset: -10
+                    }}
+                  />
 
-                <XAxis
-                  dataKey="x"
-                  type="number"
-                  domain={["dataMin", "dataMax"]}
-                  allowDecimals={false}
-                  label={{
-                    value: ["attained", "max"].includes(selectedChart?.key)
-                      ? "PP ID (X)"
-                      : "Row Counter (X)",
-                    position: "insideBottom",
-                    offset: -10
-                  }}
-                />
+                  <YAxis
+                    type="number"
+                    dataKey="y"
+                    label={{
+                      value: `${selectedChart.key === "attained" ? "Attained Score" : 
+                              selectedChart.key === "max" ? "Max Score" : 
+                              selectedChart.key}`,
+                      angle: -90,
+                      position: "insideLeft",
+                      textAnchor: "middle",
+                    }}
+                  />
 
-                <YAxis
-                  type="number"
-                  dataKey="y"
-                  label={{
-                    value: `${selectedChart.key === "attained" ? "Attained Score" : 
-                            selectedChart.key === "max" ? "Max Score" : 
-                            selectedChart.key} (Y)`,
-                    angle: -90,
-                    position: "insideLeft",
-                    textAnchor: "middle",
-                  }}
-                />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                      return (
+                        <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
+                          <p style={{ fontWeight: 600, marginBottom: 4 }}>
+                            {isAttainedMax ? `PP ID: ${label}` : `Row: ${label}`}
+                          </p>
+                          {payload.map((entry, i) => {
+                            const point = entry.payload;
+                            return (
+                              <div key={i} style={{ color: entry.stroke, marginBottom: 2 }}>
+                                <span>{entry.name}: {Number(entry.value).toFixed(2)}</span>
+                                {point?.rowCount !== undefined && point.rowCount > 1 && (
+                                  <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                    ({point.rowCount} rows)
+                                  </span>
+                                )}
+                                {!isAttainedMax && point?.ppId !== undefined && (
+                                  <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                    PP ID: {point.ppId}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }}
+                  />
 
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) return null;
-                    const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    wrapperStyle={{ paddingTop: 30, paddingLeft: 50 }}
+                  />
+
+                  {/* Draw lines for each competency in positive PP IDs */}
+                  {Object.entries(positiveCompetencies).map(([comp, points]) => {
+                    const color = COMPETENCY_COLORS[comp] || getStableColor(`positive-${comp}`);
+                    const isSimple = comp === "Positive"; // MC/CC case
                     return (
-                      <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
-                        <p style={{ fontWeight: 600, marginBottom: 4 }}>
-                          {isAttainedMax ? `PP ID: ${label}` : `Row: ${label}`}
-                        </p>
-                        {payload.map((entry, i) => {
-                          const point = entry.payload;
-                          return (
-                            <div key={i} style={{ color: entry.stroke, marginBottom: 2 }}>
-                              <span>{entry.name}: {Number(entry.value).toFixed(2)}</span>
-                              {point?.rowCount !== undefined && point.rowCount > 1 && (
-                                <span style={{ color: "#6b7280", marginLeft: 6 }}>
-                                  ({point.rowCount} rows)
-                                </span>
-                              )}
-                              {!isAttainedMax && point?.ppId !== undefined && (
-                                <span style={{ color: "#6b7280", marginLeft: 6 }}>
-                                  PP ID: {point.ppId}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <Line
+                        key={`positive-${comp}`}
+                        type="linear"
+                        data={points}
+                        dataKey="y"
+                        name={isSimple ? "Positive" : `Positive: ${comp}`}
+                        stroke={color}
+                        strokeDasharray={chartProperties.positiveLineStyle === "dashed" ? "6 4"
+                          : chartProperties.positiveLineStyle === "dotted" ? "2 4"
+                          : chartProperties.positiveLineStyle === "dashdot" ? "8 4 2 4"
+                          : "0"}
+                        strokeWidth={chartProperties.positiveLineThickness || 2}
+                        isAnimationActive={false}
+                        hide={!chartProperties.positiveVisibility}
+                        dot={(props) => {
+                          const { index } = props;
+                          if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                          return renderCustomDot(props, color);
+                        }}
+                      />
                     );
-                  }}
-                />
+                  })}
 
-                <Legend
-                  verticalAlign="bottom"
-                  align="center"
-                  wrapperStyle={{ paddingTop: 30, paddingLeft: 50 }}
-                />
-
-                {/* Draw lines for each competency in positive PP IDs */}
-                {Object.entries(positiveCompetencies).map(([comp, points]) => (
-                  <Line
-                    key={`positive-${comp}`}
-                    type="linear"
-                    data={points}
-                    dataKey="y"
-                    name={`Positive: ${comp}`}
-                    stroke={COMPETENCY_COLORS[comp] || `#${Math.floor(Math.random()*16777215).toString(16)}`}
-                    strokeDasharray={chartProperties.positiveLineStyle === "dashed" ? "6 4"
-                      : chartProperties.positiveLineStyle === "dotted" ? "2 4"
-                      : chartProperties.positiveLineStyle === "dashdot" ? "8 4 2 4"
-                      : "0"}
-                    strokeWidth={chartProperties.positiveLineThickness || 2}
-                    isAnimationActive={false}
-                    hide={!chartProperties.positiveVisibility}
-                    dot={(props) => {
-                      const { index } = props;
-                      if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-                      return renderCustomDot(props, COMPETENCY_COLORS[comp] || "#6b7280");
-                    }}
-                  />
-                ))}
-
-                {/* Draw lines for each competency in negative PP IDs */}
-                {Object.entries(negativeCompetencies).map(([comp, points]) => (
-                  <Line
-                    key={`negative-${comp}`}
-                    type="linear"
-                    data={points}
-                    dataKey="y"
-                    name={`Negative: ${comp}`}
-                    stroke={COMPETENCY_COLORS[comp] || `#${Math.floor(Math.random()*16777215).toString(16)}`}
-                    strokeDasharray={chartProperties.negativeLineStyle === "dashed" ? "6 4"
-                      : chartProperties.negativeLineStyle === "dotted" ? "2 4"
-                      : chartProperties.negativeLineStyle === "dashdot" ? "8 4 2 4"
-                      : "0"}
-                    strokeWidth={chartProperties.negativeLineThickness || 2}
-                    isAnimationActive={false}
-                    hide={!chartProperties.negativeVisibility}
-                    dot={(props) => {
-                      const { index } = props;
-                      if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-                      return renderCustomDot(props, COMPETENCY_COLORS[comp] || "#6b7280");
-                    }}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+                  {/* Draw lines for each competency in negative PP IDs */}
+                  {Object.entries(negativeCompetencies).map(([comp, points]) => {
+                    const color = COMPETENCY_COLORS[comp] || getStableColor(`negative-${comp}`);
+                    const isSimple = comp === "Negative"; // MC/CC case
+                    return (
+                      <Line
+                        key={`negative-${comp}`}
+                        type="linear"
+                        data={points}
+                        dataKey="y"
+                        name={isSimple ? "Negative" : `Negative: ${comp}`}
+                        stroke={color}
+                        strokeDasharray={chartProperties.negativeLineStyle === "dashed" ? "6 4"
+                          : chartProperties.negativeLineStyle === "dotted" ? "2 4"
+                          : chartProperties.negativeLineStyle === "dashdot" ? "8 4 2 4"
+                          : "0"}
+                        strokeWidth={chartProperties.negativeLineThickness || 2}
+                        isAnimationActive={false}
+                        hide={!chartProperties.negativeVisibility}
+                        dot={(props) => {
+                          const { index } = props;
+                          if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                          return renderCustomDot(props, color);
+                        }}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>

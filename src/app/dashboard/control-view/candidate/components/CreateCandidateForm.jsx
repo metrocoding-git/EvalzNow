@@ -322,7 +322,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
                 className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               >
-                <option value="">Select {label}</option>
+                <option value="" disabled>Select {label}</option>
                 {options.map((opt, i) => (
                   <option key={i} value={opt}>{opt}</option>
                 ))}
@@ -337,7 +337,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Nationality", e.target.value)}
           >
-             <option value="">Select Nationality</option>
+             <option value="" disabled>Select Nationality</option>
               {nationalities.map((country, i) => (
                 <option key={i} value={country}>
                   {country}
@@ -351,7 +351,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Income", e.target.value)}
           >
-            <option value="">Select Income</option>
+            <option value="" disabled>Select Income</option>
             {localIncomes
             .filter((inc) => inc?.name && inc.name.trim() !== "").map((income, i) => (
               <option key={i} value={income.name}>
@@ -366,7 +366,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Ethnicity", e.target.value)}
           >
-            <option value="">Select Ethnicity</option>
+            <option value="" disabled>Select Ethnicity</option>
             {localEthnicities
             .filter((ethinicity) => ethinicity?.name && ethinicity.name.trim() !== "").map((eth, i) => (
               <option key={i} value={eth.name}>
@@ -411,7 +411,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
                         onChange={(e) => handleRowChange(index, "type", e.target.value)}
                         className="w-full px-2 py-1 border text-center"
                       >
-                        <option value="">Select</option>
+                        <option value="" disabled>Select</option>
                         {irregularityOptions.map((opt) => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}

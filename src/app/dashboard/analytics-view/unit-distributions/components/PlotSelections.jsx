@@ -63,6 +63,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     "RR", "PR", "AR", "XEQ", "XCP", "XBP", "deltaRR", "deltaPR", "deltaAR", "deltaGEQ"
   ];
 
+  const chartInnerRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   // console.log("selected candidates:->", onCandidatesSelected);
@@ -674,7 +675,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   
     const commonProps = {
       data: chartData,
-      margin: { top: 20, right: 30, left: 0, bottom: 20 }
+      margin: { top: 20, right: 30, left: 20, bottom: 20 }
     };
   
     switch (selectedChart.type) {
@@ -1227,7 +1228,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   <Label value={getXAxisLabel()} position="insideBottom" offset={-10} textAnchor="middle" />
                 </XAxis>
                 <YAxis domain={['dataMin', 'auto']} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(2)}>
-                  <Label value={getYAxisLabel()} angle={-90} position="insideLeft" offset={10} textAnchor="middle" />
+                  <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" dx={-15}   />
                 </YAxis>
                 <Tooltip />
                 <Legend
@@ -1345,126 +1346,90 @@ const getYAxisLabel = () => {
   
   console.log("candidatePpList:: ", candidatePpList);
 
+  const captureChart = async () => {
+    const inner = chartInnerRef.current;
+    const outer = chartContainerRef.current;
+    if (!inner || !outer) throw new Error("Chart not found");
+  
+    // Save original styles
+    const saved = {
+      innerHeight:   inner.style.height,
+      innerMaxH:     inner.style.maxHeight,
+      innerOverflow: inner.style.overflow,
+      innerWidth:    inner.style.width,
+      outerOverflow: outer.style.overflow,
+      outerHeight:   outer.style.height,
+    };
+  
+    const captureWidth = outer.getBoundingClientRect().width;
+  
+    // Measure actual content height (title + chart, no empty space)
+    const contentHeight = inner.scrollHeight;
+  
+    // Unclip everything so html2canvas sees the full content
+    inner.style.height    = `${contentHeight}px`;
+    inner.style.maxHeight = 'none';
+    inner.style.overflow  = 'visible';
+    inner.style.width     = `${captureWidth}px`;
+    outer.style.overflow  = 'visible';
+    outer.style.height    = `${contentHeight + 20}px`; // tight fit, no extra whitespace
+  
+    await new Promise((r) => setTimeout(r, 400));
+  
+    const canvas = await html2canvas(inner, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: chartProperties.shadeArea || '#ffffff',
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      width: captureWidth,
+      height: contentHeight,
+      windowWidth: captureWidth,
+      windowHeight: contentHeight,
+    });
+  
+    // Restore styles
+    inner.style.height    = saved.innerHeight;
+    inner.style.maxHeight = saved.innerMaxH;
+    inner.style.overflow  = saved.innerOverflow;
+    inner.style.width     = saved.innerWidth;
+    outer.style.overflow  = saved.outerOverflow;
+    outer.style.height    = saved.outerHeight;
+  
+    return canvas;
+  };
+  
   const exportAsJPG = async () => {
-    if (!chartContainerRef.current) {
-      alert("No chart available to export");
-      return;
-    }
-  
     try {
-      const container = chartContainerRef.current;
-      
-      // Store original parent styles
-      const parentContainer = container.closest('[class*="overflow"]');
-      const parentOriginalStyles = parentContainer ? {
-        overflow: parentContainer.style.overflow,
-        height: parentContainer.style.height,
-      } : null;
-  
-      // Expand parent if it exists
-      if (parentContainer) {
-        parentContainer.style.overflow = 'visible';
-        parentContainer.style.height = 'auto';
-      }
-      
-      // Wait for Recharts to fully render
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: chartProperties.shadeArea || '#ffffff',
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: container.scrollWidth,
-        height: container.scrollHeight,
-      });
-  
-      // Restore parent styles
-      if (parentContainer && parentOriginalStyles) {
-        parentContainer.style.overflow = parentOriginalStyles.overflow;
-        parentContainer.style.height = parentOriginalStyles.height;
-      }
-  
-      canvas.toBlob((blob) => {
-        saveAs(blob, `chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.jpg`);
-      }, 'image/jpeg', 0.95);
-  
-      console.log('✅ JPG Export successful');
-  
+      const canvas = await captureChart();
+      canvas.toBlob(
+        (blob) => saveAs(blob, `chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${Date.now()}.jpg`),
+        'image/jpeg',
+        0.95
+      );
     } catch (error) {
-      console.error('❌ JPG Export failed:', error);
+      console.error('JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
     }
   };
   
   const exportAsPDF = async () => {
-    if (!chartContainerRef.current) {
-      alert("No chart available to export");
-      return;
-    }
-  
     try {
-      const container = chartContainerRef.current;
-      
-      // Store original parent styles
-      const parentContainer = container.closest('[class*="overflow"]');
-      const parentOriginalStyles = parentContainer ? {
-        overflow: parentContainer.style.overflow,
-        height: parentContainer.style.height,
-      } : null;
-  
-      // Expand parent if it exists
-      if (parentContainer) {
-        parentContainer.style.overflow = 'visible';
-        parentContainer.style.height = 'auto';
-      }
-      
-      // Wait for Recharts to fully render
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: chartProperties.shadeArea || '#ffffff',
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: container.scrollWidth,
-        height: container.scrollHeight,
-      });
-  
-      // Restore parent styles
-      if (parentContainer && parentOriginalStyles) {
-        parentContainer.style.overflow = parentOriginalStyles.overflow;
-        parentContainer.style.height = parentOriginalStyles.height;
-      }
-  
+      const canvas = await captureChart();
       const imgData = canvas.toDataURL('image/png');
-      
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      const pdfWidth = imgWidth * 0.264583;
-      const pdfHeight = imgHeight * 0.264583;
-      
+      const w = canvas.width / 2;
+      const h = canvas.height / 2;
       const pdf = new jsPDF({
-        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: [pdfWidth, pdfHeight]
+        orientation: w > h ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [w, h],
       });
-  
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
-      pdf.save(`chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${new Date().getTime()}.pdf`);
-  
-      console.log('✅ PDF Export successful');
-  
+      pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+      pdf.save(`chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${Date.now()}.pdf`);
     } catch (error) {
-      console.error('❌ PDF Export failed:', error);
+      console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
     }
   };
@@ -1492,7 +1457,7 @@ const getYAxisLabel = () => {
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-red-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-blue-600 hover:text-red-800 cursor-pointer'>
                     <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
               <button
@@ -1510,7 +1475,7 @@ const getYAxisLabel = () => {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -1527,7 +1492,7 @@ const getYAxisLabel = () => {
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -1535,7 +1500,7 @@ const getYAxisLabel = () => {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
@@ -1543,7 +1508,7 @@ const getYAxisLabel = () => {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className=" h-1/2 flex flex-col border border-gray-200  ">
+            <div className=" h-[30%] flex flex-col border border-gray-200  ">
               <div className="flex-1 overflow-auto  ">
                 <div className="h-full overflow-hidden flex flex-col">
                     {/* Table Header - Fixed */}
@@ -1569,13 +1534,13 @@ const getYAxisLabel = () => {
                           }`}
                           onClick={() => handleChartSelect(item)}
                         >
-                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                          <div className="col-span-10 px-2 py-1 whitespace-nowrap text-xs">
                             <div className="flex items-center">
                               <span className="mr-2">{item.icon}</span>
                               <span className="truncate">{item.name}</span>
                             </div>
                           </div>
-                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                          <div className="col-span-2 px-3 py-1 whitespace-nowrap text-xs">
                             {index + 1}
                           </div>
                         </div>
@@ -1585,7 +1550,7 @@ const getYAxisLabel = () => {
               </div>
             </div>
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[70%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -1613,22 +1578,26 @@ const getYAxisLabel = () => {
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
                 {activeAdjustPropertieTab === "Property editor" && (
-                  <PropertyEditor
-                    properties={chartProperties}
-                    onChange={setChartProperties}
-                  />
+                  // <PropertyEditor
+                  //   properties={chartProperties}
+                  //   onChange={setChartProperties}
+                  // />
+                  <div className="text-sm text-center text-gray-600 mt-2">
+                    <p>NOT APPLICABLE </p>
+                  </div>
+
                 )}
 
                 {/* DYNAMIC TABLE SECTION */}
                 {activeAdjustPropertieTab === "Table" && chartData && chartData.length > 0 && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-10">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10">
+                    <table className="table-auto w-fit text-xs border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
                           {Object.keys(chartData[0]).map((col, i) => (
                             <th
                               key={i}
-                              className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center capitalize"
+                              className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center capitalize"
                             >
                             {getTableHeaderLabel(col)}
                             </th>
@@ -1658,9 +1627,11 @@ const getYAxisLabel = () => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 " style={{ backgroundColor: chartProperties.shadeArea }} >
-          <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 justify-center" style={{ backgroundColor: chartProperties.shadeArea }} >
+          <div ref={chartInnerRef} className="h-full overflow-auto m-5"> 
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+              {selectedChart.icon} {selectedChart.name}
+            </h2>
 
             <div className="h-[400px] flex items-center justify-center">
               {loading && (
