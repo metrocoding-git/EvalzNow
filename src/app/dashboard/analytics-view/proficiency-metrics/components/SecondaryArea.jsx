@@ -51,7 +51,7 @@ const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
+      <div className="flex-1 overflow-y-auto px-3 py-1 text-xs">
         {/* PP ID Range */}
         <div className="gap-1 text-xs p-2">
           <label className="block font-medium text-gray-700 mb-1">

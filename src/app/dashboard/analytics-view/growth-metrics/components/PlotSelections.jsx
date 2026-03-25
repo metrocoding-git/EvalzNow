@@ -472,8 +472,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           
           ΔGEQ: parseFloat(data?.ΔGEQ) ?? null,
           ΔRR: parseFloat(data?.ΔRRN) ?? null,
-          ΔPR: parseFloat(data?.ΔRRN) ?? null,
+          ΔPR: parseFloat(data?.ΔPRN) ?? null,
           ΔAR: parseFloat(data?.ΔARN) ?? null,
+          RR: parseFloat(0.7).toFixed(3) ?? null, // Assuming fixed threshold for RR
+          PR: parseFloat(0.7).toFixed(3) ?? null, // Assuming fixed threshold for RR
+          AR: parseFloat(0.7).toFixed(3) ?? null, // Assuming fixed threshold for RR
         };
   
         setThresholdValue(extractedThresholds);
@@ -800,15 +803,23 @@ const handleExportGraph = () => {
     if (active && payload && payload.length > 0) {
       const point = payload[0].payload;
   
-      // Y-axis label (example: XRR, XEP, XLR)
-      const yAxisCode = selectedChart?.name?.match(/\((.*?)\)/)?.[1] ?? "";
       const yAxisLabel = selectedChart?.name ?? "Value";
+  
+      // 🔥 Check if it's a Growth Target Trend
+      const isGrowthTarget = selectedChart?.key?.includes("GT");
   
       return (
         <div className="bg-white p-2 border rounded shadow text-sm">
-          <div><strong>Day Count (X):</strong> {point.dayCount}</div>
           <div>
-            <strong>{yAxisLabel} (Y):</strong> {point.value}
+            <strong>{isGrowthTarget ? "PP ID" : "Days"}:</strong>{" "}
+            {isGrowthTarget
+              ? parseInt(point.ppId || point.x || 0)   
+              : Number(point.dayCount).toFixed(2)}    
+          </div>
+  
+          <div>
+            <strong>{yAxisLabel}:</strong>{" "}
+            {Number(point.value).toFixed(3)}
           </div>
         </div>
       );
@@ -932,7 +943,7 @@ const handleExportGraph = () => {
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[40%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200"> 
@@ -1003,7 +1014,7 @@ const handleExportGraph = () => {
               </div>
             </div>
 
-            <div className="h-1/2 flex flex-col border border-gray-200 ">
+            <div className="h-[60%] flex flex-col border border-gray-200 ">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -1050,30 +1061,20 @@ const handleExportGraph = () => {
 
                 {activeAdjustPropertieTab === 'Table' && (
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-16">
-                    <table className="table-auto w-full text-sm border-collapse">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
-                          <th className="border border-gray-300 px-3 py-2 text-center">Y Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      {selectedChart && tableData.length > 0 ? (
+                  <>
+                    {
+                      selectedChart ? (
                         (() => {
-                          // Extract key name inside parentheses — e.g., "ΔRR (deltaRRN)" → "deltaRRN"
                           const keyName = selectedChart.key;
+
                           if (!keyName) {
                             return (
-                              <tr>
-                                <td colSpan="3" className="text-center text-gray-400 py-4 italic">
-                                  Invalid chart selection
-                                </td>
-                              </tr>
+                              <div className="text-center text-gray-400 py-4 italic">
+                                NO DATA AVAILABLE FOR THE GRAPH
+                              </div>
                             );
                           }
 
-                          // Create a dynamic list using the key name
                           const combinedData = tableData
                             .filter(row => row[keyName] !== undefined && !isNaN(row[keyName]) && row.ppId > 0)
                             .map(row => ({
@@ -1082,31 +1083,48 @@ const handleExportGraph = () => {
                               value: row[keyName],
                             }));
 
-                          return combinedData.length > 0 ? (
-                            combinedData.map((row, idx) => (
-                              <tr key={idx} className="hover:bg-blue-50">
-                                <td className="border border-gray-300 px-3 py-2 text-center">{row.ppId}</td>
-                                <td className="border border-gray-300 px-3 py-2 text-center">{row.value.toFixed(3)}</td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="3" className="text-center text-gray-400 py-4 italic">
-                                No data available for {selectedChart.name}
-                              </td>
-                            </tr>
+                          // ✅ If NO DATA → show message OUTSIDE table
+                          if (combinedData.length === 0) {
+                            return (
+                              <div className="text-center text-gray-400 py-4 italic">
+                                NO DATA AVAILABLE FOR THE GRAPH
+                              </div>
+                            );
+                          }
+
+                          // ✅ If DATA exists → show table
+                          return (
+                            <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16">
+                              <table className="table-auto text-xs border-collapse min-w-[220px]">
+                                <thead className="bg-gray-100">
+                                  <tr>
+                                    <th className="border border-gray-300 px-2 py-1 text-center">PP ID</th>
+                                    <th className="border border-gray-300 px-2 py-1 text-center">
+                                      {selectedChart.key}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {combinedData.map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-blue-50">
+                                      <td className="border border-gray-300 px-2 py-1 text-center">{row.ppId}</td>
+                                      <td className="border border-gray-300 px-2 py-1 text-center">
+                                        {row.value.toFixed(3)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           );
                         })()
                       ) : (
-                        <tr>
-                          <td colSpan="3" className="text-center text-gray-400 py-4 italic">
-                            {selectedChart ? "No data available" : "Select a chart to display data"}
-                          </td>
-                        </tr>
-                      )}
-                      </tbody>
-                    </table>
-                  </div>
+                        <div className="text-center text-gray-400 py-4 italic">
+                          SELECT A CHART TO DISPLAY DATA
+                        </div>
+                      )
+                    }
+                  </>
                 )}
   
               </div>
@@ -1209,7 +1227,7 @@ const handleExportGraph = () => {
                         : "0";
 
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white rounded-xl shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="p-4 bg-white " style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
@@ -1223,12 +1241,16 @@ const handleExportGraph = () => {
                             type="number"
                             dataKey={isGTchart ? "ppId" : "dayCount"}
                             domain={[0, "auto"]}
-                            tickFormatter={(value) => Number(value).toFixed(1)}
+                            tickFormatter={(value) =>
+                              isGTchart
+                                ? parseInt(value, 10) // ✅ whole number for ppId
+                                : Number(value).toFixed(2) // ✅ decimal for days
+                            }
                             allowDataOverflow={true}
                             >
                             {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                               <Label 
-                                value={isGTchart ? "PP ID" : "Day Count"} 
+                                value={isGTchart ? "PP ID" : "Days"} 
                                 offset={-10} 
                                 position="insideBottom" 
                                 textAnchor="middle"
@@ -1243,7 +1265,7 @@ const handleExportGraph = () => {
 
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
-                                  value={`${selectedChart.name} (Y)`}
+                                  value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
                                   offset={5}
@@ -1302,13 +1324,13 @@ const handleExportGraph = () => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
                               {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value={`Day Count`} offset={-10} position="insideBottom" />
+                                <Label value={`Days`} offset={-10} position="insideBottom" />
                               )}
                             </XAxis>
                             <YAxis type="number" dataKey="value" name={selectedChart.name}>
                               {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                 <Label
-                                  value={`${selectedChart.name} (Y)`}
+                                  value={`${selectedChart.name}`}
                                   angle={-90}
                                   position="insideLeft"
                                   offset={10}
@@ -1370,7 +1392,7 @@ const handleExportGraph = () => {
                 })()
               ) : (
                 <div className="flex justify-center items-center h-full text-gray-400 text-lg">
-                  Select a plot to visualize
+                  SELECT A PLOT
                 </div>
               )}
             </div>
