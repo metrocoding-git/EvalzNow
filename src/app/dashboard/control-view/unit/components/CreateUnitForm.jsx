@@ -424,7 +424,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                   onChange={(e) => handleChange("scoringSystem", e.target.value)}
                   className="col-span-2 border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 >
-                  <option value="">Select System</option>
+                  <option value="" disabled>Select System</option>
                   {SCORING_SYSTEMS.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
@@ -496,7 +496,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                         setForm((f) => ({ ...f, benchmarks: updated }));
                       }}
                     >
-                      <option value="">Select Type</option>
+                      <option value="" disabled>Select Type</option>
                       {BENCHMARK_TYPES.map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}

@@ -335,7 +335,7 @@ console.log("unit type check", tableData);
             const skipFormatting = [
               "PP ID",
               "Critical Reference Date",
-              "Day Count (Days)",
+             
               "unitType",
               "IC",
               "STA/P",
@@ -353,6 +353,7 @@ console.log("unit type check", tableData);
             if (!isNaN(num) && value?.toString().includes(".")) {
               return Number(num.toFixed(3));
             }
+            
   
             return value ?? "";
           })
@@ -762,7 +763,7 @@ console.log("unit type check", tableData);
                                   const skipFormatting = [
                                     "PP ID",
                                     "Critical Reference Date",
-                                    "Day Count (Days)",
+                                    
                                     "unitType",
                                     "IC",
                                     "STA/P",
@@ -771,6 +772,11 @@ console.log("unit type check", tableData);
 
                                   if (skipFormatting.includes(header)) {
                                     return value ?? '-';
+                                  }
+
+                                  if (header === "Day Count (Days)") {
+                                    const num = parseFloat(value);
+                                    return !isNaN(num) ? num.toFixed(2) : "-";
                                   }
 
                                   const num = parseFloat(value);

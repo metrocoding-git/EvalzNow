@@ -484,7 +484,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         <form onSubmit={handleSubmit} className="flex-1 overflow-x-hidden flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
-            <div className="grid grid-cols-5 gap-x-2 gap-y-3 text-sm items-center">
+            <div className="grid grid-cols-5 gap-x-2 gap-y-3 text-xs items-center">
               {[
                 { label: "Unit Name", key: "unitName" },
                 { label: "Unit ID", key: "unitId" },
@@ -492,7 +492,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 { label: "End Date", key: "endDate", type: "date" },
               ].map(({ label, key, type }) => (
                 <React.Fragment key={key}>
-                  <label className="col-span-2 text-gray-700 font-medium text-sm">{label}:</label>
+                  <label className="col-span-2 text-gray-700 font-medium text-xs">{label}:</label>
                   <input
                     name={key}
                     value={unit[key] || ""}
@@ -500,13 +500,13 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onBlur={() => setFormStatus("Ready...")}
                     onChange={(e) => handleChange(key, e.target.value)}
                     type={type || "text"}
-                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
                 </React.Fragment>
               ))}
 
               {/* Staff Assignment */}
-              <label className="col-span-2 flex items-center text-gray-700 text-sm">
+              <label className="col-span-2 flex items-center text-gray-700 text-xs">
                 Assigned Leaders:
               </label>
               <div className="col-span-3 flex items-center gap-2">
@@ -520,18 +520,18 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     const assignedLeaders = unit.assignedLeaders || [];
                     // setInitialSelectedIds(assignedLeaders);
                   }}
-                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs"
                 >
                   + Add Leader
                   </button>
 
-                  <div className="text-sm text-gray-700">
+                  <div className="text-xs text-gray-700">
                     {/* {form.assignedLeaders?.length || 0} selected */}
                     Max 3
                   </div>
               </div>
 
-              <label className="col-span-2 text-gray-700 text-sm font-medium whitespace-nowrap">
+              <label className="col-span-2 text-gray-700 text-xs font-medium whitespace-nowrap">
                 Assigned Assessors:
               </label>
 
@@ -547,7 +547,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   + Add Assessor
                 </button>
 
-                <span className="text-sm text-gray-700 ">
+                <span className="text-xs text-gray-700 ">
                   Max 3
                 </span>
               </div>
@@ -568,7 +568,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                 ))}
               </select>
 
-              <label className="col-span-2 text-gray-700 font-medium text-sm">Unit Type:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-xs">Unit Type:</label>
               <input
                     name="unitType"
                     disabled
@@ -576,11 +576,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
              
 
-              <label className="col-span-2 text-gray-700 font-medium text-sm">Signature Profile:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-xs">Signature Profile:</label>
               <input
                     name="signatureProfile"
                     disabled
@@ -588,11 +588,11 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
               
 
-              <label className="col-span-2 text-gray-700 font-medium text-sm">Environment:</label>
+              <label className="col-span-2 text-gray-700 font-medium text-xs">Environment:</label>
               <input
                     name="environment"
                     disabled
@@ -600,12 +600,12 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
             
               {unit.environment === "Workforce" && (
                 <>
-                  <label className="col-span-2 text-gray-700 font-medium text-sm">Scoring System:</label>
+                  <label className="col-span-2 text-gray-700 font-medium text-xs">Scoring System:</label>
                   <input
                     name="scoringSystem"
                     disabled
@@ -613,7 +613,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     onFocus={() => setFormStatus("Editing...")}
                     onBlur={() => setFormStatus("Ready...")}
                     type="text"
-                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
                  
                 </>
@@ -624,16 +624,16 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
              {/* Pass/Fail Thresholds Section */}
              {unit.unitType && unit.passThresholds && Object.keys(unit.passThresholds).length > 0 && (
               <div className="mt-6 pt-4 border-t border-gray-200">
-                <h3 className="pb-2 font-semibold text-gray-800 text-base">Pass/Fail Thresholds</h3>
+                <h3 className="pb-2 font-semibold text-gray-800 text-xs">Pass/Fail Thresholds</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(unit.passThresholds).map(([k, v]) => (
                     <div key={k} className="space-y-1 relative group">
                       {/* Tooltip */}
-                      <div className="absolute -top-8 left-0 bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
+                      <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 whitespace-nowrap">
                         {THRESHOLD_NAMES[k] || k}
                       </div>
 
-                      <label className="block text-gray-700 font-medium text-sm">
+                      <label className="block text-gray-700 font-medium text-xs">
                         {k}:
                       </label>
                       <input
@@ -644,7 +644,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                         onFocus={() => setFormStatus("Editing...")}
                         onBlur={() => setFormStatus("Ready...")}
                         onChange={(e) => handleThresholdChange(k, e.target.value)}
-                        className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${
+                        className={`w-full border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${
                           k === "IC" ? "bg-gray-100" : "bg-white"
                         }`}
                       />
@@ -656,16 +656,16 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 
             {/* Benchmarks Section - Now using table format like irregularities */}
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <h3 className="pb-2 font-semibold text-gray-800 text-base">Unit Benchmarks</h3>
+              <h3 className="pb-2 font-semibold text-gray-800 text-xs">Unit Benchmarks</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm border border-gray-300">
+                <table className="w-full text-xs border border-gray-300">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="whitespace-nowrap border border-gray-300 px-8 py-1 text-left">BID</th>
-                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Type</th>
-                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Benchmark Ref</th>
-                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Description</th>
-                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-left">Action</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">BID</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">Benchmark Type</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">Benchmark Ref</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">Description</th>
+                      <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -679,7 +679,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                             onFocus={() => setFormStatus("Editing...")}
                             onBlur={() => setFormStatus("Ready...")}
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkId", e.target.value)}
-                            className="w-full px-2 py-1 border text-center"
+                            className="w-full px-2 py-1 border text-center text-xs"
                           />
                         </td>
                         <td className="border border-gray-300 px-2 py-1">
@@ -690,7 +690,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                             onChange={(e) => handleBenchmarkChange(index, "benchmarkType", e.target.value)}
                             className="w-full px-2 py-1 border"
                           >
-                            <option value="">Select Type</option>
+                            <option value="" disabled>Select Type</option>
                             {BENCHMARK_TYPES.map((t) => (
                               <option key={t} value={t}>{t}</option>
                             ))}
@@ -734,7 +734,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
               <button
                 type="button"
                 onClick={addBenchmark}
-                className="flex items-center gap-2 mt-3 px-3 py-2 bg-gray-200 text-black hover:bg-gray-300 text-sm"
+                className="flex items-center gap-2 mt-3 px-3 py-2 bg-gray-200 text-black hover:bg-gray-300 text-xs"
               >
                 + Add Benchmark
               </button>
@@ -759,7 +759,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         <form onSubmit={handleSaveBlock} className="flex-1 overflow-auto flex flex-col">
           {/* Scrollable form area */}
           <div className="flex-1 p-4">
-            <div  className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-sm items-center">
+            <div  className="grid grid-cols-[140px_auto] gap-x-2 gap-y-3 text-xs items-center">
               {/* Period Type */}
 
               <label className="col-span-1 flex items-center text-gray-700">
@@ -792,7 +792,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   onFocus={() => setFormStatus("Editing...")}
                   onBlur={() => setFormStatus("Ready...")}
                   onChange={(e) => setBlockData(prev => ({ ...prev, shortDescription: e.target.value }))}
-                  className="col-span-1 border border-black px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 w-full"
+                  className="col-span-1 border border-black px-2 py-1 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-gray-400 w-full"
                 />
               </div>
 
@@ -869,8 +869,6 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
           lookupFor={lookupFor}
         />
       )}
-
-
     </div>
   );
 

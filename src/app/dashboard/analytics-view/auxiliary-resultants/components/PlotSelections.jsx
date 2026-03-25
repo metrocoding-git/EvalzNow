@@ -22,6 +22,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
+import { div } from 'three/src/nodes/math/OperatorNode';
 
 const ROSTER_SUM_KEYS = [
   "totalTally",
@@ -254,6 +255,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   ];
   
+  const isGraph = selectedChart && selectedChart.type !== "table";
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -1209,7 +1211,18 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       );
     }
 
-    const hasCandidateData = auxData.length > 0;
+    const hasCandidateData = auxData.length > 0 && candidateId && (!Array.isArray(candidateId) || candidateId.length > 0);
+
+    if (
+      selectedSort === "activateUnitLevel" &&
+      (!candidateId || (Array.isArray(candidateId) && candidateId.length === 0))
+    ) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500 uppercase">Select a candidate to view</p>
+        </div>
+      );
+    }
   
     // Check if there's no data for unit-level tables
     const hasTableData11 = selectedChart.id === 11 && sortedFinalTableData.length > 0;
@@ -1248,48 +1261,48 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           )}
 
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white mb-10">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="">
+              <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-center">PP ID</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">
+                  <th className="border border-gray-300 px-2 py-1  text-center">PP ID</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">
                     Critical Reference Date
                   </th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">RRN</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">PRN</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">RRN</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">PRN</th>
 
                   {unitType === "Third Parameter" && (
-                    <th className="border border-gray-300 px-3 py-2 text-center">ARN</th>
+                    <th className="border border-gray-300 px-2 py-1  text-center">ARN</th>
                   )}
-                  <th className="border border-gray-300 px-3 py-2 text-center">IC</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">BIDs</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">
+                  <th className="border border-gray-300 px-2 py-1  text-center">IC</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">
                     Observations & Goals
                   </th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Action Status</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Action Status</th>
                 </tr>
               </thead>
       
               <tbody>
                 {sortedFinalTableData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.ppId}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.ppId}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       {item.criticalRefDate ? item.criticalRefDate.split("T")[0] : "-"}
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.RRN}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.PRN}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.RRN}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.PRN}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="border border-gray-300 px-3 py-2 text-center">{item.ARN}</td>
+                      <td className="border border-gray-300 px-2 py-1  text-center">{item.ARN}</td>
                     )}
 
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.IC}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.IC}</td>
       
                     {/* ADD button */}
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       <button 
                         className={`px-3 py-1 rounded ${
                           item.bIds.length > 0
@@ -1306,12 +1319,12 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     </td>
 
                     {/* Linked BIDs */}
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
                     </td>
 
                     {/* Observations */}
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       <input
                         type="text"
                         value={editingObservations[item.ppId] || ""}
@@ -1357,7 +1370,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                       />
                     </td>
 
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                      {getActionStatus(item.bIds, editingObservations[item.ppId])}
                     </td>
 
@@ -1382,18 +1395,18 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
       return (
         <>
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="bg-gray-100">
+              <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Leader Last Name</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Leader First Name</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Impact Type</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Identified</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Identity Date</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Concern Resolved </th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Resolution Date </th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Entry</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Leader Last Name</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Leader First Name</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Impact Type</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Concern Identified</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Identity Date</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Concern Resolved </th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Resolution Date </th>
                   
                 </tr>
               </thead>
@@ -1401,14 +1414,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               <tbody>
                 {leaderMarks.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.entryNumber}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffFirstName}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.staffLastName}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.impactType}</td>         
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernIdentified}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.identityDate}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.concernResolved}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.resolutionDate}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.entryNumber}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.staffFirstName}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.staffLastName}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.impactType}</td>         
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.concernIdentified}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.identityDate}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.concernResolved}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.resolutionDate}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1440,25 +1453,25 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             />
           )}
 
-          <div className="text-sm text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="bg-gray-100">
+              <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Entry</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Lesson Learned & Improvements</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center">Linked BIDs</th>
-                  <th className="border border-gray-300 px-3 py-2 text-center"> BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Entry</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Lesson Learned & Improvements</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Linked BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center"> BIDs</th>
                 </tr>
               </thead>
       
               <tbody>
                 {unitImprovement.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-3 py-2 text-center">{index + 1}</td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">{item.lesson}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{index + 1}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{item.lesson}</td>
       
                     {/* ADD button */}
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       <button className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
                         onClick={() => {
                           setSelectedRow(item);
@@ -1468,7 +1481,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                         + ADD
                       </button>
                     </td>
-                    <td className="border border-gray-300 px-3 py-2 text-center">
+                    <td className="border border-gray-300 px-2 py-1  text-center">
                       {item.benchmarkIds.length > 0 ? item.benchmarkIds.join(", ") : "-"}
                     </td>
                   </tr>
@@ -1489,7 +1502,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-6">
+        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-6">
     
           {chainData.map((chain, chainIndex) => (
             <div
@@ -1515,25 +1528,25 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               <div className="space-y-4 p-4">
                 {chain.selections.map((sel, idx) => (
                   <div key={idx} className="w-full overflow-x-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                    <table className="table-auto w-full text-xs border border-gray-300">
                       <tbody>
     
                         {/* Row 1 — PP ID */}
                         <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2 w-1/2">
+                          <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1  w-1/2">
                             PP ID
                           </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
                             {sel.ppId}
                           </td>
                         </tr>
     
                         {/* Row 2 — RRN, PRN, ARN */}
                         <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
-                            RRN, PRN, ARN
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1  ">
+                            RRN, PRN{sel.ARN !== null && `, ARN`}
                           </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
                             {[
                               sel.RRN !== null && `RRN: ${sel.RRN}`,
                               sel.PRN !== null && `PRN: ${sel.PRN}`,
@@ -1546,10 +1559,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     
                         {/* Row 3 — Benchmark IDs */}
                         <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1 ">
                             Benchmark IDs
                           </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
                             {sel.benchmarkIds?.length
                               ? sel.benchmarkIds.join(", ")
                               : "—"}
@@ -1558,20 +1571,20 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     
                         {/* Row 4 — Action Status */}
                         <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
                             Action Status
                           </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2 font-semibold text-gray-800">
+                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1  font-semibold text-gray-800">
                             {sel.actionStatus}
                           </td>
                         </tr>
     
                         {/* Row 5 — Critical Ref Date */}
                         <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
                             Critical Ref Date
                           </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-3 py-2">
+                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
                             {sel.criticalRefDate
                               ? new Date(sel.criticalRefDate).toLocaleDateString()
                               : "—"}
@@ -1612,7 +1625,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
       
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full pr-2 space-y-8">
+        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-8">
     
           {sortedFinalTableData.map((sel, idx) => (
             <div
@@ -1623,17 +1636,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               {/* ===================== */}
               {/* TABLE 1 — PP SUMMARY */}
               {/* ===================== */}
-              <table className="table-auto w-full text-sm border border-gray-300">
+              <table className="table-auto w-full text-xs border border-gray-300">
                 <tbody>
     
                   <tr>
-                    <td className="font-medium border px-3 py-2 w-1/2">PP ID</td>
-                    <td className="border px-3 py-2">{sel.ppId}</td>
+                    <td className="font-medium border px-2 py-1  w-1/2">PP ID</td>
+                    <td className="border px-2 py-1 ">{sel.ppId}</td>
                   </tr>
     
                   <tr>
-                    <td className="font-medium border px-3 py-2">RRN, PRN, ARN</td>
-                    <td className="border px-3 py-2">
+                    <td className="font-medium border px-2 py-1 ">RRN, PRN, ARN</td>
+                    <td className="border px-2 py-1 ">
                       {[ 
                         sel.RRN != null && `RRN: ${sel.RRN}`,
                         sel.PRN != null && `PRN: ${sel.PRN}`,
@@ -1643,8 +1656,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   </tr>
     
                   <tr>
-                    <td className="font-medium border px-3 py-2">Benchmark IDs</td>
-                    <td className="border px-3 py-2">
+                    <td className="font-medium border px-2 py-1 ">Benchmark IDs</td>
+                    <td className="border px-2 py-1 ">
                       {sel.benchmarkIds?.length
                         ? sel.benchmarkIds.join(", ")
                         : "—"}
@@ -1652,15 +1665,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   </tr>
     
                   <tr>
-                    <td className="font-medium border px-3 py-2">Action Status</td>
-                    <td className="border px-3 py-2 font-semibold">
+                    <td className="font-medium border px-2 py-1 ">Action Status</td>
+                    <td className="border px-2 py-1  font-semibold">
                       {computeActionStatus(sel.benchmarkIds, sel.observation)}
                     </td>
                   </tr>
     
                   <tr>
-                    <td className="font-medium border px-3 py-2">Critical Ref Date</td>
-                    <td className="border px-3 py-2">
+                    <td className="font-medium border px-2 py-1 ">Critical Ref Date</td>
+                    <td className="border px-2 py-1 ">
                       {sel.criticalRefDate
                         ? new Date(sel.criticalRefDate).toLocaleDateString()
                         : "—"}
@@ -1674,16 +1687,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               {/* TABLE 2 — INSERT SCORE DETAIL */}
               {/* ============================= */}
               <div className="overflow-x-auto">
-                <table className="table-auto w-full text-sm border border-gray-300">
-                  <thead className="bg-gray-50">
+                <table className="table-auto w-full text-xs border border-gray-300">
+                  <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                     <tr>
-                      <th className="border px-3 py-2">Task Declaration</th>
-                      <th className="border px-3 py-2">Competency</th>
-                      <th className="border px-3 py-2">Attained Score</th>
-                      <th className="border px-3 py-2">Maximum Score</th>
-                      <th className="border px-3 py-2">Workflow Stage</th>
-                      <th className="border px-3 py-2">Assessment Type</th>
-                      <th className="border px-3 py-2">Schedule Impact</th>
+                      <th className="border px-2 py-1 text-center">Task Declaration</th>
+                      <th className="border px-2 py-1 text-center">Competency</th>
+                      <th className="border px-2 py-1 text-center">Attained Score</th>
+                      <th className="border px-2 py-1 text-center">Maximum Score</th>
+                      <th className="border px-2 py-1 text-center">Workflow Stage</th>
+                      <th className="border px-2 py-1 text-center">Assessment Type</th>
+                      <th className="border px-2 py-1 text-center">Schedule Impact</th>
                     </tr>
                   </thead>
     
@@ -1691,13 +1704,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     {sel.insertScores.length ? (
                       sel.insertScores.map((s, i) => (
                         <tr key={i} className="hover:bg-gray-50">
-                          <td className="border px-3 py-2">{s.taskDeclaration}</td>
-                          <td className="border px-3 py-2">{s.competency}</td>
-                          <td className="border px-3 py-2">{Number(s.attainedScore).toFixed(2)}</td>
-                          <td className="border px-3 py-2">{Number(s.maxScore).toFixed(2)}</td>
-                          <td className="border px-3 py-2">{s.workflowStage}</td>
-                          <td className="border px-3 py-2">{s.assessmentType}</td>
-                          <td className="border px-3 py-2">{s.scheduleImpact}</td>
+                          <td className="border px-2 py-1 text-center">{s.taskDeclaration}</td>
+                          <td className="border px-2 py-1 text-center">{s.competency}</td>
+                          <td className="border px-2 py-1 text-center">{Number(s.attainedScore).toFixed(2)}</td>
+                          <td className="border px-2 py-1 text-center">{Number(s.maxScore).toFixed(2)}</td>
+                          <td className="border px-2 py-1 text-center">{s.workflowStage}</td>
+                          <td className="border px-2 py-1 text-center">{s.assessmentType}</td>
+                          <td className="border px-2 py-1 text-center">{s.scheduleImpact}</td>
                         </tr>
                       ))
                     ) : (
@@ -1728,27 +1741,27 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
-          <table className="table-auto w-full text-sm border border-gray-300">
-            <thead className="">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
+          <table className="table-auto w-full text-xs border border-gray-300">
+            <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
               <tr>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Entry</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Impact Type</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Identified</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Identity Date</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Concern Resolved</th>
-                <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Resolution Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Entry</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Impact Type</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Concern Identified</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Identity Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Concern Resolved</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Resolution Date</th>
               </tr>
             </thead>
             <tbody>
               {candidateMarks.map((row, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.entryNumber}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.impactType}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernIdentified}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.identityDate}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.concernResolved}</td>
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.resolutionDate}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.entryNumber}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.impactType}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernIdentified}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.identityDate}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernResolved}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.resolutionDate}</td>
                 </tr>
               ))}
             </tbody>
@@ -2361,24 +2374,27 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 <button
                   onClick={handleLeaderMarksForm}
                   title="Add Unit Improvement"
-                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               )}
 
               <button onClick={() => setShowCreateMaterial(true)} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
+                <RefreshCw className="w-4 h-4 hover:text-blue-800" onClick={() => {
                     if (typeof onResetFilters === "function") {
                       onResetFilters(); // ✅ reset filters in parent
                     }
                   }}  />
               </button>
+              
+              {isGraph && (
+  
               <div className="relative">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -2395,7 +2411,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     >
                       Export as JPG
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         exportAsPDF();
                         setShowExportMenu(false);
@@ -2403,16 +2419,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                     >
                       Export as PDF
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </div>
+              )}
               
             </div>
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[40%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
@@ -2459,7 +2476,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </div>
          
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[60%] flex flex-col border border-gray-200">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -2485,7 +2502,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
-                {activeAdjustPropertieTab === 'Property editor' && (
+                {activeAdjustPropertieTab === 'Property editor' && isGraph && !(selectedChart.type === "pie") &&  (
+                  
                   <PropertyEditor
                     properties={chartProperties}
                     onChange={setChartProperties}
@@ -2496,15 +2514,23 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   const tableConfig = getTableConfig();
                   if (!tableConfig) return null;
 
+                  if (selectedSort === 'activateUnitLevel') return (
+                    <div className='text-center text-gray-700'>NOT AVAILABLE AT UNIT LEVEL</div>
+                  );
+
+                  if (selectedChart.type === "pie") return (
+                    <div className='text-center text-gray-700'>NOT APPLICABLE FOR PIE CHART </div>
+                  );
+
                   return (
-                    <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-15">
-                      <table className="table-auto w-full text-sm border border-gray-300">
-                        <thead className="bg-gray-100">
+                    <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-15 flex justify-center">
+                      <table className="table-auto w-fit text-xs border border-gray-300">
+                        <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                           <tr>
                             {tableConfig.columns.map(col => (
                               <th
                                 key={col}
-                                className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                                className="whitespace-nowrap text-center border border-gray-300 px-8 py-1 "
                               >
                                 {col}
                               </th>
@@ -2517,7 +2543,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                               {Object.values(row).map((cell, i) => (
                                 <td
                                   key={i}
-                                  className="whitespace-nowrap text-center border border-gray-300 px-3 py-2"
+                                  className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 "
                                 >
                                   {cell ?? "—"}
                                 </td>
@@ -2537,7 +2563,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
         <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
 
-          <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
+          <h2 className="text-lg text-center font-semibold text-gray-700 my-3">
             {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
           </h2>
 
