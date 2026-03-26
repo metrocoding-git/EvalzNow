@@ -394,13 +394,18 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   }, [unitId, candidatePpList, selectedChart, betaValue]);
 
   const getTableHeaderLabel = (key) => {
+
+    if ((selectedChart.distribution === "weibull-pdf" || selectedChart.distribution === "weibull-risk") && key === "name") {
+      return "Value (t)"; // or "Time (t)" if you prefer
+    }
+  
     if (key === "name") return getXAxisLabel();
   
     // Weibull specific
-    if (key === "pdf") return "Probability Density f(t)";
+    if (key === "pdf") return "Probability Density F(t)";
     if (key === "cdf") return "Cumulative Distribution F(t)";
     if (key === "reliability") return "Reliability R(t)";
-    if (key === "risk") return "Risk (1 - R)";
+    if (key === "risk") return "Risk Function (1 - R(t))";
   
     // Generic Y axis value
     if (key === "value") return getYAxisLabel();
@@ -440,21 +445,21 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         name: num(row.t),
         cdf: num(row.F),
         reliability: num(row.R),
-        pdf: null // We don't have PDF data here
+        
       }));
     } else if (selectedChart.distribution === "weibull-pdf") {
       // For PDF, use the 'f' value from the table
       return distribution.table.map((row) => ({
         name: num(row.t),
         pdf: num(row.f), // This is the PDF value
-        cumulative: num(row.F)  // Keep CDF if available for reference
+         // Keep CDF if available for reference
       }));
     } else if (selectedChart.distribution === "weibull-risk") {
       // For RISK, calculate risk = 1 - reliability
       return distribution.table.map((row) => ({
         name: num(row.t),
         risk: num(row.h), // Calculate risk from reliability
-        reliability: num(row.R) // Keep reliability for reference
+        
       }));
     }
     return [];
@@ -718,7 +723,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               </XAxis>
   
               <YAxis domain={[0, 1]} tickFormatter={(value) => Number(value).toFixed(2)} >
-                <Label value="Probability" angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
+                <Label value="Distribution" angle={-90} position="insideLeft" textAnchor="middle" dx={-15} />
               </YAxis>
               <Tooltip 
                 formatter={(value, name) => {
@@ -779,7 +784,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 fill={chartProperties.shadeArea}
                 fillOpacity={0.3}
                 hide={!chartProperties.visibility}
-                name="Cumulative Distribution (F)"
+                name="Cumulative Distribution F(t)"
               />
               
               <Area
@@ -789,7 +794,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 stroke="#10b981"
                 fill="#10b981"
                 fillOpacity={0}
-                name="Reliability (R)"
+                name="Reliability R(t))"
               />
             </AreaChart>
           );
@@ -809,7 +814,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               </XAxis>
   
               <YAxis>
-                <Label value={getYAxisLabel()} angle={-90} position="insideLeft"  textAnchor="middle" offset={10} />
+                <Label value={getYAxisLabel()} angle={-90} position="insideLeft" textAnchor="middle" dx={-15} />
               </YAxis>
               <Tooltip />
               <Legend
@@ -889,7 +894,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   // tickFormatter={(value) => value === 1 ? 'Stable' : 'Unstable'}
                 >
                   <Label 
-                    value="Pattern Status" 
+                    value="Stability" 
                     angle={-90} 
                     position="insideLeft" 
                     offset={10} 
@@ -969,13 +974,13 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   type="number"
                   domain={[minX, maxX]}
                   tickFormatter={(value) => Number(value).toFixed(2)}
-                  label={{ value: "Time / Value (t)", position: "insideBottom", offset: -15 }}
+                  label={{ value: "Value (T)", position: "insideBottom", offset: -15 }}
                 />
   
                 <YAxis
                   tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: "Probability Density f(t)",
+                    value: "Distribution",
                     angle: -90,
                     position: "insideLeft",
                     textAnchor: "middle",
@@ -1054,7 +1059,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                     fill: chartProperties.symbolColor
                   }}
                   hide={!chartProperties.visibility}
-                  name="Weibull PDF f(t)"
+                  name="Probability Density F(t)"
                 />
                 
                 {chartData[0]?.cumulative && (
@@ -1106,14 +1111,14 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   type="number"
                   domain={[minX, maxX]}
                   tickFormatter={(value) => Number(value).toFixed(2)}
-                  label={{ value: "Time / Value (t)", position: "insideBottom", offset: -14 }}
+                  label={{ value: "Value (T)", position: "insideBottom", offset: -14 }}
                 />
   
                 <YAxis
                   domain={[0, 1]}
                   tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: "Risk (1 - R(t))",
+                    value: "Distribution",
                     angle: -90,
                     position: "insideLeft",
                     textAnchor: "middle",
@@ -1286,7 +1291,7 @@ const getXAxisLabel = () => {
     return "Stable Status";
   }
   if (selectedChart.distribution.includes("weibull")) {
-    return "Time/Value (t)";
+    return "Value";
   }
   if (selectedChart.distribution === "chi-square") {
     return "Chi-Square Value";
@@ -1298,14 +1303,26 @@ const getYAxisLabel = () => {
   if (selectedChart.distribution === "uniform") {
     return "X Value";
   }
+  if (selectedChart.distribution === "exponential") {
+    return "Exponential Distribution";
+  }
+
+  if (selectedChart.distribution === "f") {
+    return "F Distribution";
+  }
+
+  if (selectedChart.distribution === "beta") {
+    return "Beta Distribution";
+  }
+
   if (selectedChart.distribution.includes("weibull-pdf")) {
-    return "Probability Density";
+    return "Distribution";
   }
   if (selectedChart.distribution.includes("weibull-cdf")) {
-    return "Probability";
+    return "Distribution";
   }
   if (selectedChart.distribution.includes("weibull-risk")) {
-    return "Risk (1 - R)";
+    return "Distribution";
   }
   if (selectedChart.distribution === "chi-square") {
     return "Probability";
@@ -1591,34 +1608,69 @@ const getYAxisLabel = () => {
                 {/* DYNAMIC TABLE SECTION */}
                 {activeAdjustPropertieTab === "Table" && chartData && chartData.length > 0 && (
                   <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10">
-                    <table className="table-auto w-fit text-xs border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          {Object.keys(chartData[0]).map((col, i) => (
-                            <th
-                              key={i}
-                              className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center capitalize"
-                            >
-                            {getTableHeaderLabel(col)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
+                    <table
+                      className="text-xs border border-gray-300"
+                      style={{ width: "max-content", minWidth: "100%" }}
+                    >
+                      {/* ✅ UNIFORM TABLE */}
+                      {selectedChart.distribution === "uniform" ? (
+                        <>
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="border border-gray-300 px-2 py-1 text-center">
+                                X Value
+                              </th>
+                              <th className="border border-gray-300 px-2 py-1 text-center">
+                                Stability
+                              </th>
+                            </tr>
+                          </thead>
 
-                      <tbody>
-                        {chartData.map((row, rowIndex) => (
-                          <tr key={rowIndex} className="hover:bg-blue-50">
-                            {Object.values(row).map((value, colIndex) => (
-                              <td
-                                key={colIndex}
-                                className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center"
-                              >
-                                {formatTableValue(value)}
-                              </td>
+                          <tbody>
+                            {chartData.map((row, index) => (
+                              <tr key={index} className="hover:bg-blue-50">
+                                <td className="border border-gray-300 px-3 py-2 text-center">
+                                  {Number(row.name).toFixed(3)}
+                                </td>
+                                <td className="border border-gray-300 px-3 py-2 text-center">
+                                  {row.value}
+                                </td>
+                              </tr>
                             ))}
-                          </tr>
-                        ))}
-                      </tbody>
+                          </tbody>
+                        </>
+                      ) : (
+                        /* ✅ DEFAULT TABLE (unchanged) */
+                        <>
+                          <thead className="bg-gray-100">
+                            <tr>
+                              {Object.keys(chartData[0]).map((col, i) => (
+                                <th
+                                  key={i}
+                                  className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center "
+                                >
+                                  {getTableHeaderLabel(col)}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {chartData.map((row, rowIndex) => (
+                              <tr key={rowIndex} className="hover:bg-blue-50">
+                                {Object.values(row).map((value, colIndex) => (
+                                  <td
+                                    key={colIndex}
+                                    className="whitespace-nowrap border border-gray-300 px-3 py-2 text-center"
+                                  >
+                                    {formatTableValue(value)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </>
+                      )}
                     </table>
                   </div>
                 )}
@@ -1628,12 +1680,12 @@ const getYAxisLabel = () => {
         </div>
 
         <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 justify-center" style={{ backgroundColor: chartProperties.shadeArea }} >
-          <div ref={chartInnerRef} className="h-full overflow-auto m-5"> 
+          <div ref={chartInnerRef} className="h-full overflow-auto m-5 flex flex-col"> 
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart.icon} {selectedChart.name}
             </h2>
 
-            <div className="h-[400px] flex items-center justify-center">
+            <div className=" flex-1 flex items-center justify-center">
               {loading && (
                 <p className="text-center text-gray-600">Loading...</p>
               )}
@@ -1643,13 +1695,13 @@ const getYAxisLabel = () => {
               )}
 
               {!loading && !error && (!chartData || chartData.length === 0) && (
-                <p className="text-center text-gray-500 whitespace-nowrap">
+                <p className="text-center text-gray-500 whitespace-nowrap uppercase">
                   No data available for the selected chart.
                 </p>
               )}
 
               {!loading && !error && chartData && chartData.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={400}>
                   {renderChart()}
                 </ResponsiveContainer>
               )}

@@ -203,7 +203,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         setChart((prev) => {
           const startId = 23;
           const mappedCharts = sorted.map((c, index) => ({
-            name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter (Workforce Only - Line Graph)`,
+            name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter`,
             key: `cc${index + 1}`,
             icon: "🔵",
             id: (startId + index).toString(),
@@ -357,6 +357,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     if (!positiveData && !negativeData)
       return { positiveCompetencies: {}, negativeCompetencies: {} };
   
+
     const buildMCCCPoints = (data) => {
       if (!data) return [];
       return data
@@ -521,6 +522,17 @@ const getStableColor = (key) => {
     return canvas;
   };
   
+  const formatYAxisLabel = () => {
+    if (selectedChart.key === "attained") return "Attained Score";
+    if (selectedChart.key === "max") return "Max Score";
+  
+    const item = chart.find(c => c.key === selectedChart?.key);
+    if (!item) return selectedChart.key;
+  
+    const match = item.name.match(/^(.*?)\s*\((MC\d+)\)/);
+    return match ? `${match[1]} (${match[2]})` : item.name;
+  };
+
   const exportAsJPG = async () => {
     try {
       const canvas = await captureFullChart();
@@ -738,9 +750,14 @@ const getStableColor = (key) => {
                                           {row.ppId}
                                         </td>
                                       )}
-                                      <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
-                                          style={{ color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151", fontWeight: isAttainedMax ? "500" : "400" }}>
-                                        {isAttainedMax ? comp : selectedChart?.key?.toUpperCase()}
+                                      <td
+                                        className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
+                                        style={{
+                                          color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151",
+                                          fontWeight: isAttainedMax ? "500" : "400"
+                                        }}
+                                      >
+                                        {isAttainedMax ? comp : Number(row.y).toFixed(2)}
                                       </td>
                                       {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {row.y.toFixed(2)}
@@ -773,22 +790,22 @@ const getStableColor = (key) => {
 
         <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
-          <div ref={chartInnerRef} className="h-full overflow-auto mx-5 mt-5 mb-2">
+          <div ref={chartInnerRef} className="h-full overflow-auto mx-5 mt-5 mb-2 flex flex-col">
             <h2
               style={{
                 textAlign: "center",
                 fontWeight: "600",
                 fontSize: "1.125rem",
                 color: "#374151",
-                marginBottom: "1rem",
+                marginBottom: "0.5rem",
                 width: "100%",
                 display: "block",
               }}
             >
               {selectedChart.icon} {selectedChart.name}
             </h2>
-            <div className="w-full aspect-square">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 flex items-center ">
+              <ResponsiveContainer width="100%" height={400}>
                 <LineChart
                   key={
                     chartProperties.positiveLineColor +
@@ -812,7 +829,7 @@ const getStableColor = (key) => {
                     label={{
                       value: ["attained", "max"].includes(selectedChart?.key)
                         ? "PP ID"
-                        : "Row Counter",
+                        : "Insert Score Row Counter",
                       position: "insideBottom",
                       offset: -10
                     }}
@@ -822,9 +839,7 @@ const getStableColor = (key) => {
                     type="number"
                     dataKey="y"
                     label={{
-                      value: `${selectedChart.key === "attained" ? "Attained Score" : 
-                              selectedChart.key === "max" ? "Max Score" : 
-                              selectedChart.key}`,
+                      value: formatYAxisLabel(),
                       angle: -90,
                       position: "insideLeft",
                       textAnchor: "middle",
