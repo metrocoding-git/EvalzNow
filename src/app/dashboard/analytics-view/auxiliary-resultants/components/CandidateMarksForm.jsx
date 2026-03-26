@@ -149,7 +149,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
             value={form.concernResolved}
             onChange={(e) => handleChange("concernResolved", e.target.value)}
           >
-            <option value="">Select Type</option>
+            <option value="" disabled>Select Type</option>
             {concernResolved.map((type, index) => (
               <option key={index} value={type}>
                 {type}

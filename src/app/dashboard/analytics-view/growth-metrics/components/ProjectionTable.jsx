@@ -305,14 +305,14 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
           return {
             ...row,
             PP_ID: 0,
-            RRN: 0,
-            PRN: 0,
-            ARN: 0,
+            RRN: 0.000,
+            PRN: 0.000,
+            ARN: 0.000,
             IC: 0,
-            ΔRRN: 0,
-            ΔPRN: 0,
-            ΔARN: 0,
-            DayCount: 0,
+            ΔRRN: 0.000,
+            ΔPRN: 0.000,
+            ΔARN: 0.000,
+            DayCount: 0.00,
           };
         }
         return row;
@@ -329,14 +329,14 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         updated[1] = {
           ...updated[1],
           PP_ID: 0,
-          RRN: 0,
-          PRN: 0,
-          ARN: 0,
+          RRN: 0.000,
+          PRN: 0.000,
+          ARN: 0.000,
           IC: 0,
-          ΔRRN: 0,
-          ΔPRN: 0,
-          ΔARN: 0,
-          DayCount: 0,
+          ΔRRN: 0.000,
+          ΔPRN: 0.000,
+          ΔARN: 0.000,
+          DayCount: 0.00,
         };
       }
       
@@ -345,14 +345,14 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         updated[2] = {
           ...updated[2],
           PP_ID: 0,
-          RRN: 0,
-          PRN: 0,
-          ARN: 0,
+          RRN: 0.000,
+          PRN: 0.000,
+          ARN: 0.000,
           IC: 0,
-          ΔRRN: 0,
-          ΔPRN: 0,
-          ΔARN: 0,
-          DayCount: 0,
+          ΔRRN: 0.000,
+          ΔPRN: 0.000,
+          ΔARN: 0.000,
+          DayCount: 0.00,
         };
       }
     }
@@ -367,14 +367,14 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         updated[2] = {
           ...updated[2],
           PP_ID: 0,
-          RRN: 0,
-          PRN: 0,
-          ARN: 0,
+          RRN: 0.000,
+          PRN: 0.000,
+          ARN: 0.000,
           IC: 0,
-          ΔRRN: 0,
-          ΔPRN: 0,
-          ΔARN: 0,
-          DayCount: 0,
+          ΔRRN: 0.000,
+          ΔPRN: 0.000,
+          ΔARN: 0.000,
+          DayCount: 0.00,
         };
       }
     }
@@ -389,10 +389,10 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
       PRN: "-",
       ARN: "-",
       IC: "-",
-      ΔRRN: 0,
-      ΔPRN: 0,
-      ΔARN: 0,
-      DayCount: (third.DayCount ?? 0) + 31,
+      ΔRRN: 0.000,
+      ΔPRN: 0.000,
+      ΔARN: 0.000,
+      DayCount: (third.DayCount ?? 0.00) + 31,
     };
 
       const first = updated[0];
@@ -677,9 +677,9 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
                     PRN: "-",
                     ARN: "-",
                     IC: "-",
-                    ΔRRN: 0,
-                    ΔPRN: 0,
-                    ΔARN: 0,
+                    ΔRRN: 0.000,
+                    ΔPRN: 0.000,
+                    ΔARN: 0.000,
                     DayCount: parseFloat(matched?.dayCount ?? r.DayCount),
                   };
                 }
@@ -835,19 +835,19 @@ const handleSubmit = async () => {
                       )}
                     </td>
 
-                    <td className="px-2 py-1 border border-black">{row.RRN}</td>
-                    <td className="px-2 py-1 border border-black">{row.PRN}</td>
+                    <td className="px-2 py-1 border border-black">{Number(row.RRN).toFixed(3)}</td>
+                    <td className="px-2 py-1 border border-black">{Number(row.PRN).toFixed(3)}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="px-2 py-1 border border-black">{row.ARN}</td>
+                      <td className="px-2 py-1 border border-black">{Number(row.ARN).toFixed(3)}</td>
                     )}
 
                     <td className="px-2 py-1 border border-black">{row.IC}</td>
-                    <td className="px-2 py-1 border border-black">{row.ΔRRN}</td>
-                    <td className="px-2 py-1 border border-black">{row.ΔPRN}</td>
+                    <td className="px-2 py-1 border border-black">{Number(row.ΔRRN).toFixed(3)}</td>
+                    <td className="px-2 py-1 border border-black">{Number(row.ΔPRN).toFixed(3)}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="px-2 py-1 border border-black">{row.ΔARN}</td>
+                      <td className="px-2 py-1 border border-black">{Number(row.ΔARN).toFixed(3)}</td>
                     )}
 
                     <td className="px-2 py-1 border border-black">{formatDayCount(row.DayCount)}</td>

@@ -46,12 +46,12 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     }
   
     return (
-      <div className="py-4 px-2 bg-white rounded-xl shadow-sm">
+      <div className="py-4 px-2 bg-white ">
         <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 5, bottom: 40 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -63,7 +63,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
             <YAxis 
               label={{ value: 'Growth Differential', angle: -90, position: "insideLeft",
                 textAnchor: "middle",
-                dy: 6, }}
+                offset: -5, }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 35 }} />

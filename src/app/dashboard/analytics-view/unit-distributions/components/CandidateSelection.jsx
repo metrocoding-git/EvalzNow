@@ -37,6 +37,12 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
           redirect("/dashboard/setup-view/unit");
           return;
         }
+
+        console.log("RAW PP DATA:", roster.map(r => ({
+          candidate: r.candidate.id,
+          ppId: r.ppId,
+          subPpId: r.subPpId
+        })));
   
         // --- 1. UNIQUE CANDIDATES ---
         const candidateMap = new Map();
@@ -56,7 +62,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
   
           if (!ppMap[cid]) ppMap[cid] = [];
   
-          const pp = Number(item.subPpId);
+          const pp = Number(item.ppId);
   
           // Only include POSITIVE PP IDs
           if (pp > 0 && !ppMap[cid].includes(pp)) {

@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
@@ -1201,13 +1202,21 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     return "Pending";
   };
   
+  const headers = {
+    RRN: "Receptive Ratio",
+    PRN: "Productive Ratio",
+    ARN: "Acuity Ratio",
+    IC: "Interaction Class",
+    "Linked BIDs": "Linked Benchmarks",
+    BIDs: "Benchmark IDs",
+  };
   const renderChartContent = () => {
     
     if (!selectedChart) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">Select a plot from the list</p>
-        </div>
+        <div className="flex justify-center items-center text-gray-400 text-lg my-3">
+              SELECT PLOT or TABLE
+            </div>
       );
     }
 
@@ -1243,137 +1252,143 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData11) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">NO DATA AVAILABLE</p>
           </div>
         );
       }
-
+    
+      // Tooltip component using fixed positioning — escapes ALL overflow clipping
+      const TooltipTh = ({ label, tooltipText }) => {
+        const [pos, setPos] = useState(null);
+    
+        return (
+          <th
+            className="border border-gray-300 px-2 py-1 text-center cursor-default select-none bg-gray-100"
+            onMouseEnter={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              setPos({ x: rect.left + rect.width / 2, y: rect.top });
+            }}
+            onMouseLeave={() => setPos(null)}
+          >
+            <span className="">{label}</span>
+            {pos && ReactDOM.createPortal(
+              <div
+                className="px-2 py-1 text-xs text-white bg-gray-900 rounded whitespace-nowrap shadow-md"
+                style={{
+                  position: 'fixed',
+                  top: pos.y - 36,
+                  left: pos.x,
+                  transform: 'translateX(-50%)',
+                  zIndex: 9999,
+                  pointerEvents: 'none',
+                }}
+              >
+                {tooltipText}
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  borderWidth: '4px',
+                  borderStyle: 'solid',
+                  borderColor: '#111827 transparent transparent transparent',
+                }} />
+              </div>,
+              document.body
+            )}
+          </th>
+        );
+      };
+    
       return (
         <>
           {showBenchmarkTable && (
             <BenchmarkTable
-            onClose={(selectedBenchmarks) => {
-              handleBenchmarkSelection(selectedBenchmarks);
-              setRefreshBenchmarks(prev => !prev);
-            }}
-            selectedBenchmarks={selectedRow?.bIds || []} // Pass already selected benchmarks
+              onClose={(selectedBenchmarks) => {
+                handleBenchmarkSelection(selectedBenchmarks);
+                setRefreshBenchmarks(prev => !prev);
+              }}
+              selectedBenchmarks={selectedRow?.bIds || []}
             />
           )}
-
-
-          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white mb-10">
+    
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-10">
             <table className="table-auto w-full border border-gray-300">
-              <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
+              <thead className="whitespace-nowrap bg-gray-50">
                 <tr>
-                  <th className="border border-gray-300 px-2 py-1  text-center">PP ID</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">
-                    Critical Reference Date
-                  </th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">RRN</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">PRN</th>
-
+                  <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">PP ID</th>
+                  <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">Critical Reference Date</th>
+                  <TooltipTh label="RRN"        tooltipText={headers["RRN"]} />
+                  <TooltipTh label="PRN"        tooltipText={headers["PRN"]} />
                   {unitType === "Third Parameter" && (
-                    <th className="border border-gray-300 px-2 py-1  text-center">ARN</th>
+                    <TooltipTh label="ARN"      tooltipText={headers["ARN"]} />
                   )}
-                  <th className="border border-gray-300 px-2 py-1  text-center">IC</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">Linked BIDs</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">BIDs</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">
-                    Observations & Goals
-                  </th>
-                  <th className="border border-gray-300 px-2 py-1  text-center">Action Status</th>
+                  <TooltipTh label="IC"         tooltipText={headers["IC"]} />
+                  <TooltipTh label="Linked BIDs" tooltipText={headers["Linked BIDs"]} />
+                  <TooltipTh label="BIDs"       tooltipText={headers["BIDs"]} />
+                  <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">Observations & Goals</th>
+                  <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">Action Status</th>
                 </tr>
               </thead>
-      
+    
               <tbody>
                 {sortedFinalTableData.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-2 py-1  text-center">{item.ppId}</td>
-                    <td className="border border-gray-300 px-2 py-1  text-center">
+                    <td className="border border-gray-300 px-2 py-1 text-center">{item.ppId}</td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
                       {item.criticalRefDate ? item.criticalRefDate.split("T")[0] : "-"}
                     </td>
-                    <td className="border border-gray-300 px-2 py-1  text-center">{item.RRN}</td>
-                    <td className="border border-gray-300 px-2 py-1  text-center">{item.PRN}</td>
-
+                    <td className="border border-gray-300 px-2 py-1 text-center">{Number(item.RRN).toFixed(3)}</td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">{Number(item.PRN).toFixed(3)}</td>
                     {unitType === "Third Parameter" && (
-                      <td className="border border-gray-300 px-2 py-1  text-center">{item.ARN}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">{Number(item.ARN).toFixed(3)}</td>
                     )}
-
-                    <td className="border border-gray-300 px-2 py-1  text-center">{item.IC}</td>
-      
-                    {/* ADD button */}
-                    <td className="border border-gray-300 px-2 py-1  text-center">
-                      <button 
-                        className={`px-3 py-1 rounded ${
-                          item.bIds.length > 0
-                            ? "bg-gray-200 hover:bg-gray-300"
-                            : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                        onClick={() => {
-                          setSelectedRow(item);
-                          setShowBenchmarkTable(true);
-                        }}
+                    <td className="border border-gray-300 px-2 py-1 text-center">{item.IC}</td>
+    
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <button
+                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => { setSelectedRow(item); setShowBenchmarkTable(true); }}
                       >
                         {item.bIds.length > 0 ? 'EDIT' : 'ADD'}
                       </button>
                     </td>
-
-                    {/* Linked BIDs */}
-                    <td className="border border-gray-300 px-2 py-1  text-center">
+    
+                    <td className="border border-gray-300 px-2 py-1 text-center">
                       {item.bIds.length > 0 ? item.bIds.join(", ") : "-"}
                     </td>
-
-                    {/* Observations */}
-                    <td className="border border-gray-300 px-2 py-1  text-center">
+    
+                    <td className="border border-gray-300 px-2 py-1 text-center">
                       <input
                         type="text"
                         value={editingObservations[item.ppId] || ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setEditingObservations(prev => ({
-                            ...prev,
-                            [item.ppId]: value
-                          }));
-                        }}
+                        onChange={(e) => setEditingObservations(prev => ({ ...prev, [item.ppId]: e.target.value }))}
                         onBlur={async (e) => {
                           const newObservation = e.target.value.trim();
                           try {
                             const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
-
-                            // Do nothing if empty AND no record exists
                             if (!existingNeed && newObservation === "") return;
-
                             const payload = {
-                              unitId,
-                              candidateId,
-                              ppId: item.ppId,
+                              unitId, candidateId, ppId: item.ppId,
                               bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
                               benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
                               observation: newObservation
                             };
-
-                            if (existingNeed) {
-                              await updateNeedAssessment(existingNeed.id, payload);
-                            } else {
-                              await createNeedAssessment(payload);
-                            }
-
-                            // Refresh backend state
+                            if (existingNeed) await updateNeedAssessment(existingNeed.id, payload);
+                            else await createNeedAssessment(payload);
                             setRefreshBenchmarks(prev => !prev);
-
                           } catch (error) {
                             console.error("Observation save failed:", error);
                             alert("Failed to save observation");
                           }
                         }}
-                        className="py-2 px-3 border border-gray-300 rounded w-full"
+                        className="py-1 px-2 border border-gray-300 rounded w-full"
                       />
                     </td>
-
-                    <td className="border border-gray-300 px-2 py-1  text-center">
-                     {getActionStatus(item.bIds, editingObservations[item.ppId])}
+    
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {getActionStatus(item.bIds, editingObservations[item.ppId])}
                     </td>
-
                   </tr>
                 ))}
               </tbody>
@@ -1388,7 +1403,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData8) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">No data available</p>
           </div>
         );
       }
@@ -1436,7 +1451,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData7) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">No data available</p>
           </div>
         );
       }
@@ -1497,7 +1512,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData12) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">No data available</p>
           </div>
         );
       }
@@ -1510,7 +1525,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               className="border border-gray-300 rounded-md bg-white shadow-sm"
               onClick={() => {
                 onChartSelect("nac"); // already exists
-                onAssessmentChainSelect(chain); // 👈 NEW
+                onAssessmentChainSelect(chain); // NEW
               }}
             >
     
@@ -1609,7 +1624,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData13) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">No data available</p>
           </div>
         );
       }
@@ -1736,7 +1751,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (!hasTableData14) {
         return (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No data available</p>
+            <p className="text-gray-500 uppercase">No data available</p>
           </div>
         );
       }
@@ -1773,7 +1788,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       
       return (
         <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">No data available for this table</p>
+          <p className="text-gray-500 uppercase">No data available for this table</p>
         </div>
     
       );
@@ -1785,7 +1800,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasCandidateData) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for CSD Tenure Days chart</p>
+              <p className="text-gray-500 uppercase">No data available for CSD Tenure Days chart</p>
             </div>
           );
         }
@@ -1810,7 +1825,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasCandidateData) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for USD Tenure Days chart</p>
+              <p className="text-gray-500 uppercase">No data available for USD Tenure Days chart</p>
             </div>
           );
         }
@@ -1834,7 +1849,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasCandidateData) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Productivity CSD chart</p>
+              <p className="text-gray-500 uppercase">No data available for Productivity CSD chart</p>
             </div>
           );
         }
@@ -1864,7 +1879,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasCandidateData) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Productivity USD chart</p>
+              <p className="text-gray-500 uppercase">No data available for Productivity USD chart</p>
             </div>
           );
         }
@@ -1894,7 +1909,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!attendanceBreakdown || attendanceBreakdown.length === 0) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Attendance Breakdown chart</p>
+              <p className="text-gray-500 uppercase">No data available for Attendance Breakdown chart</p>
             </div>
           );
         }
@@ -1902,7 +1917,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasPieDataAT) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Attendance Breakdown chart</p>
+              <p className="text-gray-500 uppercase">No data available for Attendance Breakdown chart</p>
             </div>
           );
         }
@@ -1934,7 +1949,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasPieDataET) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Engagement Breakdown chart</p>
+              <p className="text-gray-500 uppercase">No data available for Engagement Breakdown chart</p>
             </div>
           );
         }
@@ -1969,7 +1984,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasPieDataUO) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Unit Outcome chart</p>
+              <p className="text-gray-500 uppercase">No data available for Unit Outcome chart</p>
             </div>
           );
         }
@@ -2001,7 +2016,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasPieDataNAT) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for Need Assessment Summary chart</p>
+              <p className="text-gray-500 uppercase">No data available for Need Assessment Summary chart</p>
             </div>
           );
         }
@@ -2037,7 +2052,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         if (!hasCandidateData) {
           return (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No data available for scatter chart</p>
+              <p className="text-gray-500 uppercase">No data available for scatter chart</p>
             </div>
           );
         }
@@ -2467,7 +2482,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4 text-sm text-gray-500">
+                    <div className="text-center py-4 text-sm text-gray-500 uppercase">
                       No data available for this selection
                     </div>
                   )}
@@ -2563,9 +2578,15 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
         <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
 
-          <h2 className="text-lg text-center font-semibold text-gray-700 my-3">
-            {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'Select a plot'}
-          </h2>
+          {selectedChart ? (
+            <h2 className="text-lg text-center font-semibold text-gray-700 my-3">
+              {selectedChart.icon} {selectedChart.name}
+            </h2>
+          ) : (
+            <div className="flex justify-center items-center text-gray-400 text-lg">
+              
+            </div>
+          )}
 
           <div className="h-full overflow-y-auto overflow-x-auto mb-16 p-3">
             <div className="min-w-max">

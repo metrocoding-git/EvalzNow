@@ -539,9 +539,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const formattedData = results.map(row => ({
           ppId: row.ppId,
           IC: getICValue(unitType, unitSignature, row.IC),
-          RRN: row.RRN || 0,
-          PRN: row.PRN || 0,
-          ARN: row.ARN || 0,
+          RRN: Number(row.RRN).toFixed(3) || 0.000,
+          PRN: Number(row.PRN).toFixed(3) || 0.000,
+          ARN: Number(row.ARN).toFixed(3) || 0.000,
         }));
   
         console.log("🔵 Formatted Data:", formattedData);
@@ -556,9 +556,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         // Handle averages data
         const averageData = averages?.map(item => ({
           ppId: item.ppId,
-          RRN: item.RRN || 0,
-          PRN: item.PRN || 0,
-          ARN: item.ARN || 0,
+          RRN: Number(item.RRN).toFixed(3) || 0.000,
+          PRN: Number(item.PRN).toFixed(3) || 0.000,
+          ARN: Number(item.ARN).toFixed(3) || 0.000,
         })) || [];
   
         setAverageData(averageData);
@@ -975,8 +975,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   return (
-    <div style={containerStyle}>
-      <ResponsiveContainer width="100%" height="95%">
+    <div style={containerStyle} className='flex justify-center'>
+      <ResponsiveContainer width="70%" height="70%">
         <ScatterChart 
           data={tableData}
           margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
@@ -1342,6 +1342,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#ff8c1a" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: balancedData.Px2,
@@ -1353,6 +1354,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#ff8000" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: productiveData.Px3,
@@ -1364,6 +1366,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#e67300" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: interaction5.Px4,
@@ -1375,6 +1378,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#030066" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: interaction4.Px5,
@@ -1386,6 +1390,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#050099" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: interaction3.Px6,
@@ -1397,6 +1402,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#0800e6" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: interaction2.Px7,
@@ -1408,6 +1414,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#524dff" },
           opacity: 1,
+          showlegend: false
         },
         {
           x: interaction1.Px8,
@@ -1419,6 +1426,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           marker: { size: 1 },
           line: { color: "#b5b3ff" },
           opacity: 1,
+          showlegend: false
         }
       );
     }
@@ -1431,10 +1439,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           height: undefined,
           title: "Butler Hybrid Model",
   
-          // 🔥 All 3D properties must be inside scene
+          //  All 3D properties must be inside scene
           scene: {
+            domain: { x: [0, 0.95], y: [0.1, 1] }, 
+            
             camera: {
-              eye: { x: 1.5, y: 1.5, z: 1.5 }
+              eye: { x: 1.7, y: 1.7, z: 1.7 }
             },
   
             aspectratio: { x: 1, y: 1, z: 1 },
@@ -1459,13 +1469,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             },
           },
   
-          margin: { l: 0, r: 0, b: 0, t: 50 },
+          margin: { l: 0, r: 120, b: 60, t: 90 },
           showlegend: true,
           legend: {
-            x: 0,
-            y: 1,
-            bgcolor: "rgba(255,255,255,0.8)"
-          }
+          x: 1.02,
+          y: 1,
+          xanchor: "left",
+          yanchor: "top",
+          bgcolor: "rgba(255,255,255,0.9)",
+          bordercolor: "#e5e7eb",
+          borderwidth: 1,
+          font: { size: 10 }
+        }
         }}
         style={{ width: "100%", height: "100%" }}
         useResizeHandler={true}
@@ -1491,7 +1506,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
         return (
           <div style={{ width: '100%', aspectRatio: '1 / 1' }}>
-            <ResponsiveContainer width="100%" height="95%">
+            <ResponsiveContainer width="100%" height={400}>
               <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
@@ -1582,15 +1597,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
-          <div style={{ position: 'relative', width: '100%', height: '400px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '600px' }}>
             <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full max-w-[600px] h-full">
+              <div className="w-full max-w-[900px] h-full">
                 {render3DScatter(tableData, unitType)}
               </div>
             </div>
             <div style={{ 
               position: 'absolute', 
-              top: 10, 
+              top: 25, 
               right: 10, 
               background: 'rgba(255,255,255,0.8)', 
               padding: '10px', 
@@ -2134,6 +2149,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (() => {
+
+
                   const cols = getTableColumns();
                   if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;
                   
@@ -2144,32 +2161,69 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                           No Data Available
                         </div>
                       ) : (
-                        <table className="table-auto text-xs border-collapse w-auto">
-                          <thead className="bg-gray-100">
-                            <tr>
-                              {cols.columns.map(col => (
-                                <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
-                                  {col.label}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
+                        <>
+      {/* ✅ Positive PP IDs */}
+      <h3 className="text-gray-600 font-semibold mb-2 ml-2">
+        Positive PP IDs
+      </h3>
 
-                          <tbody>
-                            {sortedData.map((row, idx) => (
-                              <tr key={idx} className="hover:bg-blue-50">
-                                {cols.columns.map(col => (
-                                  <td
-                                    key={col.key}
-                                    className="border px-3 py-1 text-center whitespace-nowrap"
-                                  >
-                                    {row[col.key]}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+      <table className="text-xs border border-gray-300 mb-6" style={{ width: 'max-content', minWidth: '100%' }}>
+        <thead className="bg-gray-100">
+          <tr>
+            {cols.columns.map(col => (
+              <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {sortedData
+            .filter(row => row.ppId > 0)
+            .map((row, idx) => (
+              <tr key={idx} className="hover:bg-blue-50">
+                {cols.columns.map(col => (
+                  <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                    {row[col.key]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
+      {/* ✅ Negative PP IDs */}
+      <h3 className="text-gray-600 font-semibold mb-2 ml-2">
+        Negative PP IDs
+      </h3>
+
+      <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
+        <thead className="bg-gray-100">
+          <tr>
+            {cols.columns.map(col => (
+              <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {sortedData
+            .filter(row => row.ppId < 0)
+            .map((row, idx) => (
+              <tr key={idx} className="hover:bg-blue-50">
+                {cols.columns.map(col => (
+                  <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                    {row[col.key]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    </>
                       )}
                     </div>
                   );
@@ -2183,9 +2237,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white ml-1">
   
           <div ref={chartContainerRef} className="flex flex-col h-full">
-            <h2 className="text-lg text-center font-semibold text-gray-700 my-2">
-              {selectedChart ? `${selectedChart.icon} ${selectedChart.name}` : 'SELECT PLOT'}
-            </h2>
+            {selectedChart ? (
+              <h2 className="text-lg text-center font-semibold text-gray-700 ">
+                {selectedChart.icon} {selectedChart.name}
+              </h2>
+            ) : (
+              <div className="flex justify-center h-full text-gray-400 text-lg mt-2">
+                SELECT A PLOT
+              </div>
+            )}
 
             <div className="h-full overflow-auto mb-2 p-3">
               {renderSelectedChart()}
