@@ -780,7 +780,7 @@ const exportAsPDF = async () => {
         <span className="pl-2 text-md">Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
-      <div className="flex h-full w-full my-2 mx-1">
+      <div className="flex h-full w-full my-1 mx-1">
         <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1'>
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
@@ -1139,13 +1139,13 @@ const exportAsPDF = async () => {
                     
                   
                     return (
-                      <div ref={chartContainerRef} className="p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="w-full aspect-square">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 40 }}>
+                        <div className="flex-1 flex items-center">
+                          <ResponsiveContainer width="100%" height={600}>
+                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 75 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
                                 type="number"
@@ -1265,11 +1265,11 @@ const exportAsPDF = async () => {
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div ref={chartContainerRef} className="p-6 bg-white rounded-xl shadow-sm mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <div className="w-full aspect-square">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 20, right: 20, left:30, bottom: 40 }}>
+                        <div className="flex-1 flex items-center">
+                          <ResponsiveContainer width="100%" height={400}>
+                            <ScatterChart margin={{ top: 20, right: 30, left:30, bottom: 75 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="ppId" name="PP ID" >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1337,27 +1337,28 @@ const exportAsPDF = async () => {
                     ];
                   
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                      <div className="flex flex-col h-full p-4 bg-white ">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                  
-                        <ResponsiveContainer width="100%" height={400}>
-                          <PieChart>
-                            <Tooltip />
-                            <Legend verticalAlign="bottom" />
-                            <Pie
-                              data={pieData}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={120}
-                              label={({ name, value }) => `${name}: ${value}`}
-                            >
-                              <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
-                              <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
+                        <div className='flex-1 flex items-center'>
+                          <ResponsiveContainer width="100%" height={400}>
+                            <PieChart>
+                              <Tooltip />
+                              <Legend verticalAlign="bottom" />
+                              <Pie
+                                data={pieData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={160}
+                                label={({ name, value }) => `${name}: ${value}`}
+                              >
+                                <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
+                                <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }

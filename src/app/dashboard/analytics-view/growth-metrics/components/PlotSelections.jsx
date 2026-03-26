@@ -1067,10 +1067,18 @@ const handleExportGraph = () => {
                         (() => {
                           const keyName = selectedChart.key;
 
+                          if (selectedSort === 'activateUnitLevel') {
+                            return (
+                              <div className="text-center text-gray-400 py-4 italic">
+                                NOT AVAILABLE AT UNIT LEVEL
+                              </div>
+                            );
+                          }
+
                           if (!keyName) {
                             return (
                               <div className="text-center text-gray-400 py-4 italic">
-                                NO DATA AVAILABLE FOR THE GRAPH
+                                NOT AVAILABLE FOR SELECTED CHART
                               </div>
                             );
                           }
@@ -1095,7 +1103,8 @@ const handleExportGraph = () => {
                           // ✅ If DATA exists → show table
                           return (
                             <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16">
-                              <table className="table-auto text-xs border-collapse min-w-[220px]">
+                              <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                              <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
                                 <thead className="bg-gray-100">
                                   <tr>
                                     <th className="border border-gray-300 px-2 py-1 text-center">PP ID</th>
@@ -1134,8 +1143,8 @@ const handleExportGraph = () => {
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-white ml-1">
 
-          <div className="h-full overflow-auto m-4">
-            <div className="space-y-8">
+          <div className="h-full overflow-auto m-4 flex flex-col">
+            <div className="flex-1 flex flex-col ">
               {selectedChart ? (
                 (() => {
                   const projectionCharts = [
@@ -1227,15 +1236,15 @@ const handleExportGraph = () => {
                         : "0";
 
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white " style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white " style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="w-full aspect-square">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <div className="flex-1 flex items-center">
+                          <ResponsiveContainer width="100%" height={400}>
                             <LineChart 
                               data={positiveData}
-                              margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
+                              margin={{ top: 20, right: 20, left: 20, bottom: 75 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
@@ -1269,7 +1278,7 @@ const handleExportGraph = () => {
                                     value={`${selectedChart.name}`}
                                     angle={-90}
                                     position="insideLeft"
-                                    offset={5}
+                                    offset={-5}
                                     textAnchor="middle"
                                   />
                                 )}
@@ -1319,11 +1328,11 @@ const handleExportGraph = () => {
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div ref={chartContainerRef} className="p-4 bg-white  shadow-sm" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
-                        <div className="w-full aspect-square">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                        <div className="flex-1 flex items-center">
+                          <ResponsiveContainer width="100%" height={400}>
+                            <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 75 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1336,8 +1345,8 @@ const handleExportGraph = () => {
                                     value={`${selectedChart.name}`}
                                     angle={-90}
                                     position="insideLeft"
-                                    offset={10}
-                                    dy={90}
+                                    offset={-5}
+                                    textAnchor="middle"
                                   />
                                 )}
                               </YAxis>
@@ -1368,26 +1377,28 @@ const handleExportGraph = () => {
                     ];
 
                     return (
-                      <div className="p-4 bg-white rounded-xl shadow-sm">
+                      <div className="flex flex-col h-full p-2 bg-white">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <ResponsiveContainer width="100%" height={400}>
-                          <PieChart>
-                            <Tooltip />
-                            <Legend verticalAlign="bottom" />
-                            <Pie
-                              data={pieData}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={120}
-                              label={({ name, value }) => `${name}: ${value}`}
-                            >
-                              <Cell key="stable" fill="#10b981" />
-                              <Cell key="unstable" fill="#ef4444" />
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
+                        <div className="flex-1 flex items-center">
+                          <ResponsiveContainer width="100%" height={400}>
+                            <PieChart>
+                              <Tooltip />
+                              <Legend verticalAlign="bottom" />
+                              <Pie
+                                data={pieData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={160}
+                                label={({ name, value }) => `${name}: ${value}`}
+                              >
+                                <Cell key="stable" fill="#10b981" />
+                                <Cell key="unstable" fill="#ef4444" />
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   }
@@ -1395,7 +1406,7 @@ const handleExportGraph = () => {
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()
               ) : (
-                <div className="flex justify-center items-center h-full text-gray-400 text-lg">
+                <div className="flex justify-center  h-full text-gray-400 text-lg">
                   SELECT A PLOT
                 </div>
               )}
