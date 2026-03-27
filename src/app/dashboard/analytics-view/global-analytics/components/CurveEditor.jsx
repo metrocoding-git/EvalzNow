@@ -137,7 +137,7 @@ export default function CurveEditor() {
     { id: 21, name: "Global Percentages of Average Composite Proficiency - XCP", icon: "🔵", type: "pie" },
     { id: 22, name: "Global Percentages of Average Band Proficiency - XBP", icon: "🔵", type: "pie" },
     { id: 23, name: "Global Percentages of Stability in Proficiency - STA/P", icon: "🔵", type: "pie" },
-    { id: 24, name: "Global Percentages of Average Butler Interaction Proficiency - MSIP", icon: "🔵", type: "pie" },
+    { id: 24, name: "Global Percentages of Average Interaction Proficiency - MSIP", icon: "🔵", type: "pie" },
     { id: 25, name: "Global Percentages of Average Interaction Class - IC", icon: "🔵", type: "pie" },
     { id: 26, name: "Global Percentages of Equivalent Growth - GEQ", icon: "🔵", type: "pie" },
     { id: 27, name: "Global Percentages of Average Growth - ∆RR", icon: "🔵", type: "pie" },
@@ -186,6 +186,7 @@ export default function CurveEditor() {
   //   setTableData(prev => [...prev, ...icRows]);
   // }, [icDistributionData]);
 
+  
   const buildICPieData = () => {
     if (!icDistributionData) return [];
   
@@ -239,36 +240,48 @@ export default function CurveEditor() {
   const toPercentagePie = (rate, isProficiencyMetric = false) => {
     if (rate === null || rate === undefined) return [];
   
-    const value = Number((rate * 100).toFixed(2));
+    // Format to 2 decimal places
+    const value = Number(rate.toFixed(2));
+    const negativeValue = Number((1 - rate).toFixed(2));
   
     if (isProficiencyMetric) {
       return [
         { name: "Pass", value },
-        { name: "Fail", value: 100 - value }
+        { name: "Fail", value: negativeValue }
       ];
     }
   
     return [
       { name: "Positive", value },
-      { name: "Negative", value: 100 - value }
+      { name: "Negative", value: negativeValue }
     ];
   };
   
   const buildSTAPPieData = () => {
     if (!StableData?.STAP) return [];
+    const stable = Number(StableData.STAP.STABLE) || 0;
+    const unstable = Number(StableData.STAP.UNSTABLE) || 0;
+    const total = stable + unstable;
+    
+    if (total === 0) return [];
   
     return [
-      { name: "Stable", value: StableData.STAP.STABLE ?? 0 },
-      { name: "Unstable", value: StableData.STAP.UNSTABLE ?? 0 },
+      { name: "Stable", value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Unstable", value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
     ];
   };
   
   const buildSTAGPieData = () => {
     if (!StableData?.STAG) return [];
+    const stable = Number(StableData.STAG.STABLE) || 0;
+    const unstable = Number(StableData.STAG.UNSTABLE) || 0;
+    const total = stable + unstable;
+    
+    if (total === 0) return [];
   
     return [
-      { name: "Stable", value: StableData.STAG.STABLE ?? 0 },
-      { name: "Unstable", value: StableData.STAG.UNSTABLE ?? 0 },
+      { name: "Stable", value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Unstable", value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
     ];
   };
   
@@ -278,15 +291,15 @@ export default function CurveEditor() {
     return [
       {
         name: "UR < 0.300",
-        value: Number((ProductivityData.distribution.low * 100).toFixed(2)),
+        value: Number((ProductivityData.distribution.low).toFixed(2)),
       },
       {
         name: "0.300 ≤ UR ≤ 0.600",
-        value: Number((ProductivityData.distribution.mid * 100).toFixed(2)),
+        value: Number((ProductivityData.distribution.mid).toFixed(2)),
       },
       {
         name: "UR > 0.600",
-        value: Number((ProductivityData.distribution.high * 100).toFixed(2)),
+        value: Number((ProductivityData.distribution.high).toFixed(2)),
       },
     ];
   };
@@ -301,12 +314,28 @@ export default function CurveEditor() {
     switch (selectedChart.id) {
       // ================= GLOBAL ANALYTICS =================
       case 1:
-        return Object.entries(globalAnalytics.signatureProfiles || {})
-          .map(([name, value]) => ({ name, value }));
+        const signatureProfiles = globalAnalytics.signatureProfiles || {};
+
+        // Calculate total
+        const total = Object.values(signatureProfiles).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+        return Object.entries(signatureProfiles)
+          .map(([name, value]) => ({ 
+            name, 
+            value: total > 0 ? Number((Number(value) / total).toFixed(2)) : 0 
+  }));
   
       case 2:
-        return Object.entries(globalAnalytics.unitTypes || {})
-          .map(([name, value]) => ({ name, value }));
+        const unitTypes = globalAnalytics.unitTypes || {};
+
+      // Calculate total
+      const totalUnit = Object.values(unitTypes).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+      return Object.entries(unitTypes)
+        .map(([name, value]) => ({ 
+          name, 
+          value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(2)) : 0 
+        }));
   
       case 3:
         return buildCandidateStaffRatioPie();
@@ -320,33 +349,52 @@ export default function CurveEditor() {
             "10 < BC ≤ 25",
           ];
         
+          const total = Object.values(bc).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+          // Return percentages (as decimals 0-1)
           return ORDER
             .filter(key => bc[key] !== undefined)
             .map(key => ({
               name: key,
-              value: bc[key],
+              value: total > 0 ? Number((Number(bc[key]) / total).toFixed(2)) : 0.00,
             }));
         }
   
       case 5:
-        return Object.entries(globalAnalytics.assessmentBlocks || {})
-          .map(([name, value]) => ({ name, value }));
+        const assessmentBlocks = globalAnalytics.assessmentBlocks || {};
+
+        // Calculate total
+        const totalAssessmentBlocks = Object.values(assessmentBlocks).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+        return Object.entries(assessmentBlocks)
+          .map(([name, value]) => ({ 
+            name, 
+            value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(2)) : 0.00 
+          }));
   
       case 6:
-        return Object.entries(globalAnalytics.attendance || {}).map(([key, value]) => ({
-            name: humanizeKey(key),
-            value,
+        const attendance = globalAnalytics.attendance || {};
+
+        // Calculate total
+        const totalAttendance = Object.values(attendance).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+        return Object.entries(attendance).map(([key, value]) => ({
+          name: humanizeKey(key),
+          value: totalAttendance > 0 ? Number((Number(value) / totalAttendance).toFixed(2)) : 0.00,
         }));
       
       case 7: {
-        const open = globalAnalytics.needAssessments?.Open ?? 0;
-        const pending = globalAnalytics.needAssessments?.Pending ?? 0;
-        const closed = globalAnalytics.needAssessments?.Closed ?? 0;
+        const open = globalAnalytics.needAssessments?.Open ?? 0.00;
+        const pending = globalAnalytics.needAssessments?.Pending ?? 0.00;
+        const closed = globalAnalytics.needAssessments?.Closed ?? 0.00;
     
+        const total = open + pending + closed;
+
+        // Return percentages as decimals (0-1)
         return [
-          { name: "Open", value: open },
-          { name: "Pending", value: pending },
-          { name: "Closed", value: closed },
+          { name: "Open", value: total > 0 ? Number((open / total).toFixed(2)) : 0.00 },
+          { name: "Pending", value: total > 0 ? Number((pending / total).toFixed(2)) : 0.00 },
+          { name: "Closed", value: total > 0 ? Number((closed / total).toFixed(2)) : 0.00 },
         ];
       }    
       
@@ -361,8 +409,16 @@ export default function CurveEditor() {
       }
           
       case 10:
-        return Object.entries(globalAnalytics.unitOutcomes || {})
-          .map(([name, value]) => ({ name, value }));
+        const unitOutcomes = globalAnalytics.unitOutcomes || {};
+
+        // Calculate total
+        const totalUnitOutcomes = Object.values(unitOutcomes).reduce((sum, val) => sum + (Number(val) || 0), 0);
+
+        return Object.entries(unitOutcomes)
+          .map(([name, value]) => ({ 
+            name, 
+            value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(2)) : 0.00 
+          }));
   
       // ================= REGULAR METRICS - PROFICIENCY (Pass/Fail) =================
       case 11: return toPercentagePie(regular?.XEP?.successRate, true);
@@ -403,6 +459,8 @@ export default function CurveEditor() {
         return [];
     }
   };
+  
+
   
   
   const totalStabilityOpportunities = () => {
@@ -511,7 +569,7 @@ export default function CurveEditor() {
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
       ([key, count]) => ({
         name: labelMap[key] ?? key,
-        value: Number(((count / total) * 100).toFixed(2)), // Pie expects %
+        value: Number(((count / total)).toFixed(2)), // Pie expects %
       })
     );
   };
@@ -784,62 +842,62 @@ export default function CurveEditor() {
 
     if (selectedChart.type === "table") {
       return (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto mb-5">
-          <table className="table-auto w-full text-sm ">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10 mt-5">
+          <table className="table-auto w-full text-xs ">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-300 px-3 py-2 text-left">Metric Descriptions</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Metric Values</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Assigned Weights</th>
-                <th className="border border-gray-300 px-3 py-2 text-left">Metric Weights</th>
+                <th className="border border-gray-300 px-2 py-1 text-center">Metric Descriptions</th>
+                <th className="border border-gray-300 px-2 py-1 text-center">Metric Values</th>
+                <th className="border border-gray-300 px-2 py-1 text-center">Assigned Weights</th>
+                <th className="border border-gray-300 px-2 py-1 text-center">Metric Weights</th>
               </tr>
             </thead>
             <tbody>
               {tableData.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-3 py-2">
+                  <td className="border border-gray-300 px-2 py-1">
                     {row.metricDescription}
                   </td>
 
-                  <td className="border border-gray-300 px-3 py-2">
+                  <td className="border border-gray-300 px-2 py-1 text-center">
                     {row.metricValue}
                   </td>
 
                   {/*  3rd Column: Assigned Weights */}
-                  <td className="border border-gray-300 px-3 py-2 text-center font-medium">
+                  <td className="border border-gray-300 px-2 py-1 text-center font-medium">
                     {row.assignedWeight.toFixed(3)}
                   </td>
 
-                  <td className="border border-gray-300 px-3 py-2">
+                  <td className="border border-gray-300 px-2 py-1 text-center">
                     {row.metricWeight}
                   </td>
                 </tr>
               ))}
 
               <tr  className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-3 py-2 text-right">
+                <td className="border border-gray-300 px-2 py-1 text-right">
                   <strong>Index Rating</strong>
                 </td> 
-                <td className="border border-gray-300 px-3 py-2">
+                <td className="border border-gray-300 px-2 py-1 text-center">
                  {indexRating}
                 </td> 
-                <td className="border border-gray-300 px-3 py-2 text-center">
+                <td className="border border-gray-300 px-2 py-1 text-center">
                  {totalAssignedWeight?.toFixed(3)}
                 </td>
-                <td className="border border-gray-300 px-3 py-2">
+                <td className="border border-gray-300 px-2 py-1 text-center">
                   {totalMetricWeight?.toFixed?.(3)}
                 </td> 
              </tr>
 
              <tr className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-3 py-2 text-right">
+                <td className="border border-gray-300 px-2 py-1 text-right">
                   <strong>Weight Index (WI)</strong>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 font-mono">
+                <td className="border border-gray-300 px-2 py-1 font-mono text-center">
                   {weightIndex !== null ? weightIndex.toFixed(4) : ""}
                 </td>
-                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
-                {/* <td className="border border-gray-300 px-3 py-2"></td> */}
+                {/* <td className="border border-gray-300 px-2 py-1"></td> */}
+                {/* <td className="border border-gray-300 px-2 py-1"></td> */}
               </tr>
             </tbody>
 
@@ -898,7 +956,7 @@ export default function CurveEditor() {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200  p-1'>
+        <div className='w-6/12 lg:w-5/12 flex flex-col border-2 h-full border-gray-200  p-1'>
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
 
@@ -938,11 +996,11 @@ export default function CurveEditor() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200   ml-1">
           <div className="h-full overflow-auto m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.name}</h2>
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
             
-            <div className="h-full overflow-auto m-5 mb-7 mt-5">
+            <div className="h-full overflow-auto p-2">
               {renderChartContent()}
             </div>
           </div>

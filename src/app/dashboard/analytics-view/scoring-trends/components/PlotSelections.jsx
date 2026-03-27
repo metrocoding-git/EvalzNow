@@ -329,7 +329,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         target[comp][ppId].rowCount += 1;
       });
   
-      const toPoints = (groups) => {
+      const toPoints = (groups, isNegative = false) => {
         const result = {};
         Object.entries(groups).forEach(([comp, ppIdMap]) => {
           result[comp] = Object.entries(ppIdMap)
@@ -341,14 +341,16 @@ export default function PlotSelections({ filters, unitId, environment, candidate
               label: `${ppId}`,
               competency: comp,
             }))
-            .sort((a, b) => a.x - b.x);
+            .sort((a, b) =>  isNegative 
+            ? b.x - a.x   // 🔥 descending for negatives (-1, -2, -3)
+            : a.x - b.x );
         });
         return result;
       };
   
       return {
-        positiveCompetencies: toPoints(positiveGroups),
-        negativeCompetencies: toPoints(negativeGroups),
+        positiveCompetencies: toPoints(positiveGroups, false),
+        negativeCompetencies: toPoints(negativeGroups, true),
       };
     }
   

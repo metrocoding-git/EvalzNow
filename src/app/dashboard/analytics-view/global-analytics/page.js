@@ -73,7 +73,7 @@ export default function GlobalAnalytics() {
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1 ">
         {/* Tabs */}
-        <div className="flex space-x-0 px-0   bg-gray-50">
+        <div className="flex space-x-0 px-0   ">
           {/* <div className="w-6/12 lg:w-3/12 flex flex-col border-r-2 h-full border-gray-200 p-1">
             {tabs.map((tab, index) => (
               <Link href={tab.path} key={index}>

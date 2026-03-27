@@ -539,7 +539,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     }
   
     if (!chartData || chartData.length === 0) {
-      return <p className="text-center">No data available for the selected chart.</p>;
+      return <p className="text-center uppercase">No data available for the selected chart.</p>;
     }
   
     const distributionParams = distributions[selectedKey]?.params;
@@ -966,8 +966,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           );
   
           return (
-            <ResponsiveContainer width="100%" height={460}>
-              <LineChart data={chartData} margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+            <ResponsiveContainer width={600} height={400}>
+              <LineChart data={chartData} margin={{ top: 40, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name"
@@ -984,7 +984,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                     angle: -90,
                     position: "insideLeft",
                     textAnchor: "middle",
-                    dy: 0
+                    offset: -5,
+                    
                   }}
                 />
   
@@ -1104,7 +1105,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           return (
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={chartData} 
-                margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+                margin={{ top: 40, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
@@ -1696,7 +1697,7 @@ const getYAxisLabel = () => {
 
               {!loading && !error && (!chartData || chartData.length === 0) && (
                 <p className="text-center text-gray-500 whitespace-nowrap uppercase">
-                  No data available for the selected chart.
+                  Build a Distrbution to display data.
                 </p>
               )}
 

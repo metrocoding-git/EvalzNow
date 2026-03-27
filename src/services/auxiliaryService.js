@@ -188,7 +188,26 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
   };
 
 
-  
+  export const getAssessmentChainById = async (id) => {
+    try {
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/chain/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
+  export const updateAssessmentChain = async (id, payload) => {
+    try {
+      const response = await api.put(`${API_ROUTES.AUXILIARY}/chain/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
   export const getNeedAssessmentSummary = async (unitId, candidateId) => {
     try {
       const response = await api.get(`${API_ROUTES.AUXILIARY}/assessment/summary/${unitId}/${candidateId}`);

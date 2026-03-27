@@ -43,7 +43,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [activeChainId, setActiveChainId] = useState(null);
   const [showBenchmarkTable, setShowBenchmarkTable] = useState(false);
   const [showChainForm, setShowChainForm] = useState(false);
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
@@ -300,7 +300,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }, {});
   };
 
-  
+  const isChart = selectedChart?.type !== "table";
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -1214,9 +1215,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     
     if (!selectedChart) {
       return (
-        <div className="flex justify-center items-center text-gray-400 text-lg my-3">
-              SELECT PLOT or TABLE
-            </div>
+        <div className="flex justify-center text-gray-400 text-lg my-3">
+              {/* SELECT PLOT or TABLE */}
+        </div>
       );
     }
 
@@ -1508,7 +1509,6 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       );
     }
     else if (selectedChart.type === "table" && selectedChart.id === 12) {
-
       if (!hasTableData12) {
         return (
           <div className="flex items-center justify-center h-full">
@@ -1519,101 +1519,107 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       return (
         <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-6">
     
-          {chainData.map((chain, chainIndex) => (
-            <div
-              key={chain.chainId}
-              className="border border-gray-300 rounded-md bg-white shadow-sm"
-              onClick={() => {
-                onChartSelect("nac"); // already exists
-                onAssessmentChainSelect(chain); // NEW
-              }}
-            >
-    
-              {/* 🔹 Chain Header */}
-              <div className="bg-gray-100 border-b border-gray-300 px-4 py-2">
-                <div className="font-semibold text-gray-800">
-                  Assessment Chain {chainIndex + 1}
-                </div>
-                {/* <div className="text-xs text-gray-600">
-                  Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
-                </div> */}
-              </div>
-    
-              {/* 🔹 Chain Tables */}
-              <div className="space-y-4 p-4">
-                {chain.selections.map((sel, idx) => (
-                  <div key={idx} className="w-full overflow-x-auto">
-                    <table className="table-auto w-full text-xs border border-gray-300">
-                      <tbody>
-    
-                        {/* Row 1 — PP ID */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1  w-1/2">
-                            PP ID
-                          </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
-                            {sel.ppId}
-                          </td>
-                        </tr>
-    
-                        {/* Row 2 — RRN, PRN, ARN */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1  ">
-                            RRN, PRN{sel.ARN !== null && `, ARN`}
-                          </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
-                            {[
-                              sel.RRN !== null && `RRN: ${sel.RRN}`,
-                              sel.PRN !== null && `PRN: ${sel.PRN}`,
-                              sel.ARN !== null && `ARN: ${sel.ARN}`,
-                            ]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </td>
-                        </tr>
-    
-                        {/* Row 3 — Benchmark IDs */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1 ">
-                            Benchmark IDs
-                          </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
-                            {sel.benchmarkIds?.length
-                              ? sel.benchmarkIds.join(", ")
-                              : "—"}
-                          </td>
-                        </tr>
-    
-                        {/* Row 4 — Action Status */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
-                            Action Status
-                          </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1  font-semibold text-gray-800">
-                            {sel.actionStatus}
-                          </td>
-                        </tr>
-    
-                        {/* Row 5 — Critical Ref Date */}
-                        <tr className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
-                            Critical Ref Date
-                          </td>
-                          <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
-                            {sel.criticalRefDate
-                              ? new Date(sel.criticalRefDate).toLocaleDateString()
-                              : "—"}
-                          </td>
-                        </tr>
-    
-                      </tbody>
-                    </table>
+          {chainData.map((chain, chainIndex) => {
+            const isActive = activeChainId === chain.chainId;
+            return (
+              <div
+                key={chain.chainId}
+                className={`border border-gray-300 rounded-md shadow-sm ${
+                  isActive ? "bg-gray-100" : "bg-white"
+                }`}
+                onClick={() => {
+                  onChartSelect("nac"); // already exists
+                  onAssessmentChainSelect(chain.chainId); // 
+                  setActiveChainId(chain.chainId);
+                }}
+              >
+      
+                {/* 🔹 Chain Header */}
+                <div className="bg-gray-100 border-b border-gray-300 px-4 py-2">
+                  <div className="font-semibold text-gray-800">
+                    Assessment Chain {chainIndex + 1}
                   </div>
-                ))}
+                  {/* <div className="text-xs text-gray-600">
+                    Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
+                  </div> */}
+                </div>
+      
+                {/* 🔹 Chain Tables */}
+                <div className="space-y-4 p-4">
+                  {chain.selections.map((sel, idx) => (
+                    <div key={idx} className="w-full overflow-x-auto">
+                      <table className="table-auto w-full text-xs border border-gray-300">
+                        <tbody>
+      
+                          {/* Row 1 — PP ID */}
+                          <tr className="hover:bg-gray-50">
+                            <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1  w-1/2">
+                              PP ID
+                            </td>
+                            <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
+                              {sel.ppId}
+                            </td>
+                          </tr>
+      
+                          {/* Row 2 — RRN, PRN, ARN */}
+                          <tr className="hover:bg-gray-50">
+                            <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1  ">
+                              RRN, PRN{sel.ARN !== null && `, ARN`}
+                            </td>
+                            <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
+                              {[
+                                sel.RRN !== null && `RRN: ${sel.RRN}`,
+                                sel.PRN !== null && `PRN: ${sel.PRN}`,
+                                sel.ARN !== null && `ARN: ${sel.ARN}`,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </td>
+                          </tr>
+      
+                          {/* Row 3 — Benchmark IDs */}
+                          <tr className="hover:bg-gray-50">
+                            <td className="whitespace-nowrap font-medium border  border-gray-300 px-2 py-1 ">
+                              Benchmark IDs
+                            </td>
+                            <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
+                              {sel.benchmarkIds?.length
+                                ? sel.benchmarkIds.join(", ")
+                                : "—"}
+                            </td>
+                          </tr>
+      
+                          {/* Row 4 — Action Status */}
+                          <tr className="hover:bg-gray-50">
+                            <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
+                              Action Status
+                            </td>
+                            <td className="whitespace-nowrap border border-gray-300 px-2 py-1  font-semibold text-gray-800">
+                              {sel.actionStatus}
+                            </td>
+                          </tr>
+      
+                          {/* Row 5 — Critical Ref Date */}
+                          <tr className="hover:bg-gray-50">
+                            <td className="whitespace-nowrap font-medium border border-gray-300 px-2 py-1 ">
+                              Critical Ref Date
+                            </td>
+                            <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
+                              {sel.criticalRefDate
+                                ? new Date(sel.criticalRefDate).toLocaleDateString()
+                                : "—"}
+                            </td>
+                          </tr>
+      
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+      
               </div>
-    
-            </div>
-          ))}
+            )}
+          )}
     
         </div>
       );
@@ -1660,12 +1666,12 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   </tr>
     
                   <tr>
-                    <td className="font-medium border px-2 py-1 ">RRN, PRN, ARN</td>
+                    <td className="font-medium border px-2 py-1 ">RRN, PRN{unitType === 'Third Parameter' && `, ARN`}</td>
                     <td className="border px-2 py-1 ">
                       {[ 
                         sel.RRN != null && `RRN: ${sel.RRN}`,
                         sel.PRN != null && `PRN: ${sel.PRN}`,
-                        sel.ARN != null && `ARN: ${sel.ARN}`
+                        unitType === 'Third Parameter' && sel.ARN != null && `ARN: ${sel.ARN}`
                       ].filter(Boolean).join(", ")}
                     </td>
                   </tr>
@@ -1756,7 +1762,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full overflow-x-auto pr-2 bg-white shadow-sm">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-x-auto  bg-white shadow-sm">
           <table className="table-auto w-full text-xs border border-gray-300">
             <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
               <tr>
@@ -1809,7 +1815,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <LineChart data={csdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} dx={-15} textAnchor='middle' />
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
@@ -1834,7 +1840,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <LineChart data={usdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
+              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} dy={0} dx={-15} textAnchor='middle' />
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
@@ -1858,7 +1864,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <LineChart data={BpCsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "insideLeft" }} dy={0} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity CSD", angle: -90, position: "center", dx: -30 }} dy={0} dx={-13} textAnchor='middle' />
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
@@ -1888,8 +1894,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             <LineChart data={BpUsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Productivity USD", angle: -90, position: "insideLeft" }}
-               dy={0} textAnchor='middle' />
+              <YAxis label={{ value: "Productivity USD", angle: -90, position: "center", dx: -30  }}
+               dy={0} dx={-19} textAnchor='middle' />
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
@@ -2357,7 +2363,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 <button 
                   onClick={handleCandidateMarkForm}
                   title="Add Chain"
-                  className="text-red-600 hover:text-red-800 cursor-pointer"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -2367,7 +2373,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 <button 
                   onClick={handleCreateChainForm}
                   title="Add Chain"
-                  className="text-red-600 hover:text-red-800 cursor-pointer"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -2378,7 +2384,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 <button
                   onClick={handleUnitImprovementsForm}
                   title="Add Unit Improvement"
-                  className="text-green-600 hover:text-green-800 cursor-pointer"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -2530,22 +2536,23 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   if (!tableConfig) return null;
 
                   if (selectedSort === 'activateUnitLevel') return (
-                    <div className='text-center text-gray-700'>NOT AVAILABLE AT UNIT LEVEL</div>
+                    <div className='text-center text-sm text-gray-400 py-4 italic'>NOT AVAILABLE AT UNIT LEVEL</div>
                   );
 
                   if (selectedChart.type === "pie") return (
-                    <div className='text-center text-gray-700'>NOT APPLICABLE FOR PIE CHART </div>
+                    <div className='text-center text-sm text-gray-400 py-4 italic'>NOT AVAILABLE FOR SELECTED CHART </div>
                   );
 
                   return (
-                    <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-15 flex justify-center">
-                      <table className="table-auto w-fit text-xs border border-gray-300">
+                    <div className="text-xs text-gray-600 w-full overflow-x-auto mb-15">
+                      <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                      <table className="table-auto w-full text-xs border border-gray-300">
                         <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                           <tr>
                             {tableConfig.columns.map(col => (
                               <th
                                 key={col}
-                                className="whitespace-nowrap text-center border border-gray-300 px-8 py-1 "
+                                className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 "
                               >
                                 {col}
                               </th>
@@ -2583,13 +2590,17 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               {selectedChart.icon} {selectedChart.name}
             </h2>
           ) : (
-            <div className="flex justify-center items-center text-gray-400 text-lg">
-              
+            <div className="flex justify-center text-gray-400 text-lg mt-2">
+              SELECT PLOT or TABLE 
             </div>
           )}
 
-          <div className="h-full overflow-y-auto overflow-x-auto mb-16 p-3">
-            <div className="min-w-max">
+          <div
+            className={`h-full overflow-y-auto overflow-x-auto mb-16 p-3 ${
+              isChart ? "flex items-center justify-center" : ""
+            }`}
+          >
+            <div className={`${isChart ? "w-full max-w-5xl" : "min-w-max"}`}>
               {renderChartContent()}
             </div>
           </div>

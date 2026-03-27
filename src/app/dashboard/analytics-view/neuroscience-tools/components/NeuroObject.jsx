@@ -313,7 +313,7 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
         </button>
       </div>
 
-      <div className="text-sm text-gray-600 mt-2 w-full flex gap-2 pl-3 pr-4 items-center">
+      <div className="text-xs text-gray-600 mt-2 w-full flex gap-2 pl-3 pr-4 items-center">
         <label className="pr-2 text-left text-gray-700 whitespace-nowrap">
           PP ID Callout:
         </label>
@@ -327,7 +327,7 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
             setSelectedPP(pp || null);
           }}
         >
-          <option value="">Select PP ID</option>
+          <option value="" disabled>Select PP ID</option>
           {filteredAssessmentData.length === 0 ? (
             <option value="" disabled>
               No available PP IDs
@@ -346,7 +346,7 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
 
           
 
-      <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+      <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
         {Object.keys(grouped).map((lobe) => (
           <div key={lobe} className="border border-gray-300 mb-2 rounded">
             {/* Lobe Header */}
@@ -366,13 +366,13 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
 
             {/* Lobe Rows */}
             {expanded[lobe] && (
-              <table className="table-auto w-full text-sm border-t border-gray-300">
+              <table className="table-auto w-full text-xs border-t border-gray-300">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="border border-gray-300 px-3 py-2 text-left">
+                    <th className="border border-gray-300 text-xs px-2 py-1 text-left">
                       Cognitive Function
                     </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">
+                    <th className="border border-gray-300 text-xs px-2 py-1 text-center">
                       Value
                     </th>
                   </tr>
@@ -380,10 +380,10 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
                 <tbody>
                   {grouped[lobe].map((row) => (
                     <tr key={row.idx} className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-3 py-2">
+                      <td className="border border-gray-300 px-2 py-1">
                         {row.func}
                       </td>
-                      <td className="border border-gray-300 px-3 py-2">
+                      <td className="border border-gray-300 px-2 py-1 text-center">
                         <select
                           value={answers[row.idx] ?? row.value ?? ""}
                           onChange={(e) => handleChange(row.idx, e.target.value)}
@@ -401,16 +401,9 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
                 </tbody>
               </table>
             )}
-
-            
           </div>
-
-          
         ))}
-
-
       </div>
-
 
       {/* Fixed footer */}
       <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">
@@ -419,7 +412,7 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors disabled:opacity-50
+            className={`px-4 py-1 bg-gray-200 hover:bg-gray-300 text-xs transition-colors disabled:opacity-50
             }`}
           >
             Close

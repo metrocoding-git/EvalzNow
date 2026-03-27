@@ -1,11 +1,13 @@
 "use client";
-import { getEffortBu } from "@/services/auxiliaryService";
+import { getAssessmentChainById, getEffortBu, updateAssessmentChain } from "@/services/auxiliaryService";
+import { getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
+import { getUnitAndMultipleCandidateSummary } from "@/services/tabulationTableService";
 import { Edit, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain, onSuccess  }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
@@ -13,7 +15,10 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
   const [csdEffort, setCsdEffort] = useState("");
   const [usdEffort, setUsdEffort] = useState("");
-
+  const [tableData, setTableData] = useState([]);
+  const [fetchedChain, setFetchedChain] = useState([]);
+  const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
   useEffect(() => {
     setPpIdFrom(-3);
@@ -23,35 +28,140 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
     setThresholdEnabled(false);
   }, [resetSignal]);
 
-  // Sample effort values
-  // const csdEffort = "1.234";
-  // const usdEffort = "5.678";
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]);
+        return;
+      }
+  
+      setLoading(true);
+      setError(null);
+  
+      try {
+        // 1️⃣ Fetch tabulation data
+        const tabulationRes = await getUnitAndMultipleCandidateSummary({
+          unitId,
+          candidate_id: candidateId,
+        });
+  
+        const tabResults = tabulationRes.results || [];
+        console.log("Tabulation Results:", tabResults);
+  
+        // 2️⃣ Fetch insert score data
+        const insertScoreRes = await getInsertScoreByUnitAndCandidate(unitId, candidateId);
+  
+        const insertResults = insertScoreRes || [];
+        console.log("Insert Score Results:", insertResults);
+        // 3️⃣ Build lookup map: ppId → assessmentBlockId
+        const ppToBlockMap = {};
+        insertResults.forEach(row => {
+          if (row.ppId !== 0 && row.assessmentBlockId) {
+            ppToBlockMap[row.ppId] = row.assessmentBlockId;
+          }
+        });
+  
+        // 4️⃣ Merge datasets by ppId
+        const mergedData = tabResults
+          .filter(row => row.ppId !== 0 && ppToBlockMap[row.ppId])
+          .map(row => ({
+            ppId: row.ppId,
+            assessmentBlockId: ppToBlockMap[row.ppId],
+            RRN: row.RRN ?? 0,
+            PRN: row.PRN ?? 0,
+            ARN: row.ARN ?? 0,
+            IC: row.IC ?? null,
+          }));
+  
+        setTableData(mergedData);
+  
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("Failed to load data");
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [unitId, candidateId]);
+  
+  const [chainForm, setChainForm] = useState({
+    selection1: null,
+    selection2: null,
+    selection3: null,
+    selection4: null,
+    selection5: null,
+  });
 
-  // useEffect(() => {
-  //   const fetchEffortData = async () => {
-  //     try {
-  //       if (!selectedChartKey) return;
+  useEffect(() => {
+    const fetchChain = async () => {
+      try {
+        if (!selectedAssessmentChain) return;
   
-  //       // Only fetch for Butler-related charts
-  //       if (selectedChartKey === "bp-csd" || selectedChartKey === "bp-usd") {
-  //         const response = await getEffortBu(unitId, candidateId);
+        const res = await getAssessmentChainById(selectedAssessmentChain);
   
-  //         // based on your API response shape
-  //         const { data } = response;
+        console.log("CHAIN BY ID:", res.data);
   
-  //         setCsdEffort(data?.CSD ?? "");
-  //         setUsdEffort(data?.USD ?? "");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching effort data:", error);
-  //       setCsdEffort("");
-  //       setUsdEffort("");
-  //     }
-  //   };
+        setFetchedChain(res.data);
   
-  //   fetchEffortData();
-  // }, [selectedChartKey, unitId, candidateId]);
+      } catch (err) {
+        console.error("Failed to fetch chain by id", err);
+      }
+    };
   
+    fetchChain();
+  }, [selectedAssessmentChain]);
+
+  useEffect(() => {
+    if (fetchedChain?.selections) {
+  
+      const mapped = {
+        selection1: null,
+        selection2: null,
+        selection3: null,
+        selection4: null,
+        selection5: null,
+      };
+  
+      fetchedChain.selections.forEach((sel) => {
+        mapped[`selection${sel.selectionNumber}`] = {
+          blockId: sel.blockId,
+          ppId: sel.ppId,
+        };
+      });
+  
+      setChainForm(mapped);
+    }
+  }, [fetchedChain]);
+  
+
+  const ppIdList = tableData.map(item => ({
+    blockId: item.assessmentBlockId,
+    ppId: item.ppId
+  }));
+
+  const handleChainChange = (label, value) => {
+    const selectedItem = ppIdList.find(
+      (item) => item.blockId === Number(value)
+    );
+  
+    setChainForm((prev) => ({
+      ...prev,
+      [label]: selectedItem || null,
+    }));
+  };
+
+  const getAvailablePpIds = (currentKey) => {
+    const selectedBlockIds = Object.entries(chainForm)
+      .filter(([key, val]) => key !== currentKey && val)
+      .map(([_, val]) => val.blockId);
+  
+    return ppIdList.filter(
+      item => !selectedBlockIds.includes(item.blockId)
+    );
+  };
 
   const fetchEffort = async (filters) => {
     try {
@@ -118,40 +228,94 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
   };
   
   
+  const handleChainSubmit = async () => {
+    try {
+      const payload = {
+        selection1: chainForm.selection1?.blockId || null,
+        selection2: chainForm.selection2?.blockId || null,
+        selection3: chainForm.selection3?.blockId || null,
+        selection4: chainForm.selection4?.blockId || null,
+        selection5: chainForm.selection5?.blockId || null,
+      };
   
+      console.log("UPDATE PAYLOAD:", payload);
+  
+      await updateAssessmentChain(
+        selectedAssessmentChain,
+        payload
+      );
+  
+      // refresh UI
+      onSubmit(payload);
+      onSuccess && onSuccess();
+  
+      alert("Chain updated successfully");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update chain");
+    }
+  };
+  
+  const isDisabled = (key) => {
+    const order = ["selection1","selection2","selection3","selection4","selection5"];
+    const index = order.indexOf(key);
+  
+    return order.slice(0, index).some(k => !chainForm[k]);
+  };
   return (
 
     <>
       {/* 🔹 Assessment Chain Mode */}
       {selectedChartKey === "nac" && selectedAssessmentChain ? (
-        <div className="space-y-3 text-sm mx-1">
-          {/* Section Header */}
-          <div className="flex justify-between items-center bg-gray-100 px-4 py-1 border-b border-gray-300">
+        <div className="flex flex-col h-full bg-white">
+
+          {/* Header */}
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
             <div className="flex items-center text-sm gap-2 text-gray-800 font-semibold">
               <Edit className="w-5 h-5" />
               Secondary Input Area
             </div>
           </div>
 
-          <div className="border rounded p-2 bg-gray-50">
-            <div><b>Chain ID:</b> {selectedAssessmentChain.chainId}</div>
-            <div><b>Unit ID:</b> {selectedAssessmentChain.unitId}</div>
-            <div><b>Candidate ID:</b> {selectedAssessmentChain.candidateId}</div>
+          {/* Form */}
+          <div className="flex-1 overflow-y-auto px-4 py-3">
+            <div className="grid grid-cols-2 gap-2 text-sm max-w-xl">
+
+              {["selection1","selection2","selection3","selection4","selection5"].map((key, idx) => (
+                <React.Fragment key={key}>
+                  <label className="text-gray-700">
+                    Selection {idx + 1}
+                  </label>
+
+                  <select
+                    value={chainForm[key]?.blockId || ""}
+                    onChange={(e) => handleChainChange(key, e.target.value)}
+                    className="border px-2 py-1"
+                  >
+                    <option value="" disabled>Select PP ID</option>
+                    {getAvailablePpIds(key).map(item => (
+                      <option key={item.blockId} value={item.blockId}>
+                        {item.ppId}
+                      </option>
+                    ))}
+                  </select>
+                </React.Fragment>
+              ))}
+
+            </div>
           </div>
 
-          {selectedAssessmentChain.selections.map((sel, idx) => (
-            <div key={idx} className="border p-2 rounded bg-white">
-              <div><b>PP ID:</b> {sel.ppId}</div>
-              <div><b>RRN:</b> {sel.RRN ?? "—"}</div>
-              <div><b>PRN:</b> {sel.PRN ?? "—"}</div>
-              <div><b>ARN:</b> {sel.ARN ?? "—"}</div>
-              <div><b>Status:</b> {sel.actionStatus}</div>
-              <div><b>Critical Date:</b> {sel.criticalRefDate
-                ? new Date(sel.criticalRefDate).toLocaleDateString()
-                : "—"}
-              </div>
-            </div>
-          ))}
+          {/* Footer */}
+          <div className=" p-2 bg-gray-50 flex justify-end">
+            <button
+              onClick={handleChainSubmit}
+              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-sm"
+            >
+              Edit
+            </button>
+          </div>
+
         </div>
       ) : (
         <div className="flex flex-col h-full bg-white">

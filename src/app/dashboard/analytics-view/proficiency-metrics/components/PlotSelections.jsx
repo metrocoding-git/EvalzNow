@@ -1144,7 +1144,7 @@ const exportAsPDF = async () => {
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
                         <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={600}>
+                          <ResponsiveContainer width="100%" height={400}>
                             <LineChart margin={{ top: 20, right: 30, left:30, bottom: 75 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
