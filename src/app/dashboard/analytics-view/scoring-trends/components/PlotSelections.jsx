@@ -754,12 +754,9 @@ const getStableColor = (key) => {
                                       )}
                                       <td
                                         className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
-                                        style={{
-                                          color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151",
-                                          fontWeight: isAttainedMax ? "500" : "400"
-                                        }}
+                                        
                                       >
-                                        {isAttainedMax ? comp : Number(row.y).toFixed(2)}
+                                        {Number(row.y).toFixed(2)}
                                       </td>
                                       {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {row.y.toFixed(2)}

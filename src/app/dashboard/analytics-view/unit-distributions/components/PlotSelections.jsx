@@ -974,7 +974,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   type="number"
                   domain={[minX, maxX]}
                   tickFormatter={(value) => Number(value).toFixed(2)}
-                  label={{ value: "Value (T)", position: "insideBottom", offset: -15 }}
+                  label={{ value: "Value (t)", position: "insideBottom", offset: -15 }}
                 />
   
                 <YAxis
@@ -1112,7 +1112,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   type="number"
                   domain={[minX, maxX]}
                   tickFormatter={(value) => Number(value).toFixed(2)}
-                  label={{ value: "Value (T)", position: "insideBottom", offset: -14 }}
+                  label={{ value: "Value (t)", position: "insideBottom", offset: -14 }}
                 />
   
                 <YAxis
