@@ -322,7 +322,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
           No client selected
         </div>
       ) : (
-        <div className="flex-1 text-sm text-gray-600 mt-2 w-full overflow-y-auto overflow-x-auto">
+        <div className="flex-1 text-xs text-gray-600 mt-2 w-full overflow-y-auto overflow-x-auto">
           {/* PP ID Dropdown */}
           <div className="flex gap-2 items-center mb-3 px-2">
             <label className="text-gray-700 whitespace-nowrap">

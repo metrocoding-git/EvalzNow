@@ -842,7 +842,7 @@ export default function CurveEditor() {
 
     if (selectedChart.type === "table") {
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10 mt-5">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-17 mt-5">
           <table className="table-auto w-full text-xs ">
             <thead className="bg-gray-100">
               <tr>
@@ -918,7 +918,7 @@ export default function CurveEditor() {
     }
 
     return (
-      <ResponsiveContainer width="100%" height={450}>
+      <ResponsiveContainer width="100%" height={430}>
         <PieChart>
           <Pie
             data={pieData}
@@ -926,7 +926,7 @@ export default function CurveEditor() {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={150}
+            outerRadius={140}
             label={({ name, value }) =>
               shouldFormatTwoDecimals(selectedChart.id)
                 ? `${Number(value).toFixed(2)}`
@@ -996,11 +996,10 @@ export default function CurveEditor() {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200   ml-1">
-          <div className="h-full overflow-auto m-5">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
+          <div className="m-5 flex flex-col h-full">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
-            
-            <div className="h-full overflow-auto p-2">
+            <div className="flex-1 overflow-auto p-2">
               {renderChartContent()}
             </div>
           </div>
