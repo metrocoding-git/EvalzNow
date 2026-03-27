@@ -318,11 +318,11 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
       </div>
 
       {!client ? (
-        <div className="flex-1 p-4 text-gray-500 text-sm flex items-center justify-center">
+        <div className="flex-1 p-4 text-gray-500 text-sm flex items-center justify-center uppercase">
           No client selected
         </div>
       ) : (
-        <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+        <div className="flex-1 text-xs text-gray-600 mt-2 w-full overflow-y-auto overflow-x-auto">
           {/* PP ID Dropdown */}
           <div className="flex gap-2 items-center mb-3 px-2">
             <label className="text-gray-700 whitespace-nowrap">
@@ -333,7 +333,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
               onChange={handlePpIdChange}
               className="flex-1 border px-2 py-1 w-full"
             >
-              <option value="">Select PP ID</option>
+              <option value="" disabled>Select PP ID</option>
               {neuroSessions.map((session, i) => (
                 <option key={i} value={session.ppId}>
                   {session.ppId} 
@@ -401,7 +401,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
               </div>
             ))
           ) : (
-            <div className="px-2 py-4 text-gray-500 text-center">
+            <div className="px-2 py-4 text-gray-500 text-center uppercase">
               Select a PP ID to view and edit data
             </div>
           )}
@@ -409,7 +409,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
       )}
 
       {/* Footer with buttons */}
-      <div className="border-t border-gray-300 p-1 pr-2 bg-gray-50 flex-shrink-0">
+      {/* <div className="border-t border-gray-300 p-1 pr-2 bg-gray-50 flex-shrink-0">
         <div className="flex justify-end gap-2">
           
           <button
@@ -420,7 +420,20 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
             Close
           </button>
         </div>
+      </div> */}
+
+      <div className="border-t border-gray-200 p-1.5 bg-gray-50">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleSave} disabled={saving}
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
+          >
+            Close
+          </button>
+        </div>
       </div>
+      
     </div>
   );
 }

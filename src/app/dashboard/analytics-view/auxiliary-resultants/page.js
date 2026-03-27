@@ -343,7 +343,7 @@ export default function AuxiliaryResultants() {
                     <SecondaryInputForm selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId}
                       onClose={() => setShowSecondary(false)} selectedChartKey={selectedChartKey}
                       onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} 
-                      selectedAssessmentChain={selectedAssessmentChain}
+                      selectedAssessmentChain={selectedAssessmentChain} onSuccess={() => setRefreshChainData(prev => prev + 1)}
                     />
 
                   </div>

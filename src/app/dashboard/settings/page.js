@@ -40,7 +40,7 @@ export default function SettingsPage() {
     <div className="flex h-screen w-full overflow-hidden bg-gray-50">
       {/* Left Menu */}
       <div className="w-96 bg-white p-6 overflow-y-auto border-r border-gray-200 mb-35">
-        <h3 className="text-lg text-center font-semibold mb-2">Help Documentation</h3>
+        <h3 className="text-lg text-left font-semibold mb-5">Help Documentation</h3>
         <ul className="space-y-1">
           {helpDocs.map((doc) => (
             <li
@@ -65,8 +65,8 @@ export default function SettingsPage() {
         {selectedDoc ? (
           <SecurePdfViewer file={selectedDoc} />
         ) : (
-          <div className="text-gray-400 text-center mt-20">
-            Select a Help Documentation file to view it here.
+          <div className="text-gray-400 text-center mt-20 uppercase">
+            Select a file to view.
           </div>
         )}
       </div>

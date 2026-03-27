@@ -329,7 +329,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         target[comp][ppId].rowCount += 1;
       });
   
-      const toPoints = (groups) => {
+      const toPoints = (groups, isNegative = false) => {
         const result = {};
         Object.entries(groups).forEach(([comp, ppIdMap]) => {
           result[comp] = Object.entries(ppIdMap)
@@ -341,14 +341,16 @@ export default function PlotSelections({ filters, unitId, environment, candidate
               label: `${ppId}`,
               competency: comp,
             }))
-            .sort((a, b) => a.x - b.x);
+            .sort((a, b) =>  isNegative 
+            ? b.x - a.x   // 🔥 descending for negatives (-1, -2, -3)
+            : a.x - b.x );
         });
         return result;
       };
   
       return {
-        positiveCompetencies: toPoints(positiveGroups),
-        negativeCompetencies: toPoints(negativeGroups),
+        positiveCompetencies: toPoints(positiveGroups, false),
+        negativeCompetencies: toPoints(negativeGroups, true),
       };
     }
   
@@ -752,12 +754,9 @@ const getStableColor = (key) => {
                                       )}
                                       <td
                                         className="whitespace-nowrap text-center border border-gray-300 px-2 py-1"
-                                        style={{
-                                          color: isAttainedMax ? (COMPETENCY_COLORS[comp] || "#6b7280") : "#374151",
-                                          fontWeight: isAttainedMax ? "500" : "400"
-                                        }}
+                                        
                                       >
-                                        {isAttainedMax ? comp : Number(row.y).toFixed(2)}
+                                        {Number(row.y).toFixed(2)}
                                       </td>
                                       {/* <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
                                         {row.y.toFixed(2)}

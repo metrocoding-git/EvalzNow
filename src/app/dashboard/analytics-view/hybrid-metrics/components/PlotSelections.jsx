@@ -918,8 +918,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     backgroundColor: chartProperties.shadeArea,
     width: '100%',
     aspectRatio: '1 / 1',
-    padding: '10px',
-    borderRadius: '8px'
+    
   };
 
   const isTargetMode = filters?.unitMode === "target";
@@ -975,11 +974,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   return (
-    <div style={containerStyle} className='flex justify-center'>
-      <ResponsiveContainer width="70%" height="70%">
+    <div style={containerStyle} className='flex justify-center items-center'>
+      <ResponsiveContainer width="65%" height="65%">
         <ScatterChart 
           data={tableData}
-          margin={{ top: 10, right: 20, left: 0, bottom: 30 }}
+          margin={{ top: 55, right: 20, left: 0, bottom: 0 }}
         >
           <CartesianGrid />
           <XAxis 
@@ -1494,7 +1493,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const containerStyle = {
       backgroundColor: chartProperties.shadeArea,
       width: '100%',
-      height: '600px',
+      height: '400px',
       padding: '10px',
       borderRadius: '8px'
     };
@@ -1505,9 +1504,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const negatives = tableData.filter(r => r.ppId < 0);
   
         return (
-          <div style={{ width: '100%', aspectRatio: '1 / 1' }}>
+          <div style={{ width: '100%'}}>
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart margin={{ top: 10, right: 20, left: 0, bottom: 30 }}>
+              <LineChart margin={{ top: 60, right: 20, left: 0, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
                   <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
@@ -2238,7 +2237,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
           <div ref={chartContainerRef} className="flex flex-col h-full">
             {selectedChart ? (
-              <h2 className="text-lg text-center font-semibold text-gray-700 ">
+              <h2 className="text-lg text-center font-semibold text-gray-700 mt-2">
                 {selectedChart.icon} {selectedChart.name}
               </h2>
             ) : (
@@ -2247,7 +2246,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </div>
             )}
 
-            <div className="h-full overflow-auto mb-2 p-3">
+            <div className="h-full flex-1 flex items-center overflow-auto  p-2">
               {renderSelectedChart()}
             </div>
           </div>

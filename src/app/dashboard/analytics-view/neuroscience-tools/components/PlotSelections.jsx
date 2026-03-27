@@ -213,71 +213,71 @@ const lobeData = [
       id: "1"
     },
     {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Frontal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Frontal Lobe vs. PP ID ",
       type: "chart",
       id: "2"
     },
     {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Occipital Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Occipital Lobe vs. PP ID ",
       type: "chart",
       id: "3"
     },
     {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Parietal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Parietal Lobe vs. PP ID ",
       type: "chart",
       id: "4"
     },
     {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Temporal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Temporal Lobe vs. PP ID ",
       type: "chart",
       id: "5"
     },
     {
-      name: " Neuro-Indicator Trends for Proficiency - RMS (R) - Frontal Lobe vs. PP ID (Line Graphs below)",
+      name: " Neuro-Indicator Trends for Proficiency - RMS (R) - Frontal Lobe vs. PP ID ",
       type: "chart",
       id: "6"
     }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Occipital Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Occipital Lobe vs. PP ID ",
       type: "chart",
       id: "7"
     }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Parietal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Parietal Lobe vs. PP ID ",
       type: "chart",
       id: "8"
     }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Temporal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Temporal Lobe vs. PP ID ",
       type: "chart",
       id: "9"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Frontal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (L) - Frontal Lobe vs. PP ID ",
       type: "chart",
       id: "10"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Occipital Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (L) - Occipital Lobe vs. PP ID ",
       type: "chart",
       id: "11"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Parietal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (L) - Parietal Lobe vs. PP ID ",
       type: "chart",
       id: "12"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Temporal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (L) - Temporal Lobe vs. PP ID ",
       type: "chart",
       id: "13"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Frontal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (R) - Frontal Lobe vs. PP ID ",
       type: "chart",
       id: "14"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Occipital Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (R) - Occipital Lobe vs. PP ID ",
       type: "chart",
       id: "15"
     }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Parietal Lobe vs. PP ID (Line Graphs below)",
+      name: "Neuro-Indicator Trends for Growth - RMS (R) - Parietal Lobe vs. PP ID ",
       type: "chart",
       id: "16"
     }, {
-      name: " Neuro-Indicator Trends for Growth - RMS (R) - Temporal Lobe vs. PP ID (Line Graphs below)",
+      name: " Neuro-Indicator Trends for Growth - RMS (R) - Temporal Lobe vs. PP ID ",
       type: "chart",
       id: "17"
     },
@@ -746,7 +746,7 @@ const handleExportGraph = () => {
         <span className='pl-2 text-md'>Entity Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
         {showNeuroObject && (
-          <div className="absolute top-0 left-0 z-50 w-[500px] h-[400px] bg-white shadow-2xl border border-gray-200 rounded-md">
+          <div className="absolute top-0 left-0 z-50 w-[700px] h-[450px] bg-white shadow-2xl border border-gray-200 rounded-md">
             <NeuroObject onClose={handleCloseNeuroObject} unitId={unitId} candidateId={candidateId} onSaved={refetchNeuroData} />
           </div>
         )}
@@ -757,7 +757,7 @@ const handleExportGraph = () => {
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Tables & Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={handlePlusClick} title="Add Neuro Object" className="text-red-600 hover:text-red-800 cursor-pointer">
+              <button onClick={handlePlusClick} title="Add Neuro Object" className="text-blue-600 hover:text-red-800 cursor-pointer">
                 <Plus className="w-4 h-4 hover:text-blue-600" />
               </button>
               <button onClick={() => {
@@ -773,7 +773,7 @@ const handleExportGraph = () => {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
-                  className="text-red-600 hover:text-red-800 cursor-pointer pt-2"
+                  className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >
                   <FolderOutput className="w-4 h-4 hover:text-blue-600" />
                 </button>
@@ -805,11 +805,11 @@ const handleExportGraph = () => {
             </div>
           </div>
 
-          <div className=" h-full overflow-hidden w-full my-2">
-            <div className="h-1/2 flex flex-col border border-gray-200">
+          <div className=" h-full overflow-hidden w-full my-1">
+            <div className="h-[35%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
-                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-xs border-b border-gray-200">
                   <div className="col-span-10 px-1 py-1 text-left">Entities</div>
                   <div className="col-span-2  py-1 text-left">ID</div>
                 </div>
@@ -844,13 +844,13 @@ const handleExportGraph = () => {
 
                       }}
                     >
-                      <div className="col-span-10 px-2 py-1 whitespace-nowrap text-sm">
+                      <div className="col-span-10 px-2 py-1 whitespace-nowrap text-xs">
                         <div className="flex items-center">
                           {item.type === "table" && <div className="col-span-9 text-xs text-gray-700 truncate">🟦 {item.name}</div>}
                           {item.type === "chart" && <div className="col-span-9 text-xs text-gray-700 truncate">🔵 {item.name}</div>}
                         </div>
                       </div>
-                      <div className="col-span-2 px-3 py-1 whitespace-nowrap text-sm">
+                      <div className="col-span-2 px-3 py-1 whitespace-nowrap text-xs">
                         {item.id}
                       </div>
                     </div>
@@ -862,7 +862,7 @@ const handleExportGraph = () => {
             </div>
 
 
-            <div className="h-1/2 flex flex-col border border-gray-200">
+            <div className="h-[65%] flex flex-col border border-gray-200">
 
 
               {/* Tab Buttons */}
@@ -876,7 +876,7 @@ const handleExportGraph = () => {
                         }`}
                       onClick={() => setActiveAdjustPropertieTab('Property editor')}
                     >
-                      Property editor
+                      Property Editor
                     </button>
                     <button
                       className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Table'
@@ -934,15 +934,16 @@ const handleExportGraph = () => {
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && selectedChart?.type === "chart" && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto pb-10">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto pb-10">
+                    <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
+                    <table className="table-auto w-full text-xs border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="border px-3 py-2 text-center">PP ID</th>
-                          <th className="border px-3 py-2 text-center">
+                          <th className="border px-2 py-1 text-center">PP ID</th>
+                          <th className="border px-2 py-1 text-center">
                             {chartConfig[selectedChart.id]?.lobe}
                           </th>
-                          <th className="border px-3 py-2 text-center">Target</th>
+                          <th className="border px-2 py-1 text-center">Target</th>
                         </tr>
                       </thead>
 
@@ -956,9 +957,9 @@ const handleExportGraph = () => {
                         ) : (
                           chartData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-gray-50">
-                              <td className="border px-3 py-2 text-center">{row.ppId}</td>
-                              <td className="border px-3 py-2 text-center">{row.rmsValue}</td>
-                              <td className="border px-3 py-2 text-center">
+                              <td className="border px-2 py-1 text-center">{row.ppId}</td>
+                              <td className="border px-2 py-1 text-center">{row.rmsValue}</td>
+                              <td className="border px-2 py-1 text-center">
                                 {chartConfig[selectedChart.id]?.target}
                               </td>
                             </tr>
@@ -970,16 +971,16 @@ const handleExportGraph = () => {
                 )}
 
                 {activeAdjustPropertieTab === 'Neuro Tools Table' && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
                     
                     {/* Lobe selector + Show Image button */}
                     <div className="mb-4 flex items-center gap-4">
                       <select
                         value={selectedLobe}
                         onChange={(e) => setSelectedLobe(e.target.value)}
-                        className="w-full max-w-xs border border-gray-300 rounded px-3 py-2"
+                        className="w-full max-w-xs border border-gray-300 rounded px-2 py-1 uppercase"
                       >
-                        <option value="">Select a lobe</option>
+                        <option value="" disabled>Select a lobe</option>
                         {lobeData.map((lobe) => (
                           <option key={lobe.id} value={lobe.id}>
                             {lobe.name}
@@ -996,7 +997,7 @@ const handleExportGraph = () => {
                             alert("Please select a lobe first");
                           }
                         }}
-                        className="px-4 py-2 text-sm bg-gray-200 text-black  hover:bg-gray-300 transition-colors whitespace-nowrap"
+                        className="px-3 py-2 text-xs bg-gray-200 text-black  hover:bg-gray-300 transition-colors whitespace-nowrap"
                       >
                         Show Image
                       </button>
@@ -1008,35 +1009,35 @@ const handleExportGraph = () => {
 
                 {activeAdjustPropertieTab === 'Indicators' && (
 
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto pb-5">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto pb-5">
+                    <table className="table-auto w-full text-xs border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">PP ID Callout</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Target</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Frontal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Occipital Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Parietal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">RMS - Temporal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Frontal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Occipital Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Parietal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Temporal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Frontal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Occipital Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Parietal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Temporal Lobe (R)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {indicatorsData.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS1}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS2}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS3}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS4}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS5}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS6}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS7}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.RMS8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS1}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS2}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS3}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS4}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS5}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS6}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS7}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS8}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1046,35 +1047,35 @@ const handleExportGraph = () => {
 
 
                 {activeAdjustPropertieTab === 'Loads' && (
-                  <div className="text-sm text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-sm border border-gray-300">
+                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
+                    <table className="table-auto w-full text-xs border border-gray-300">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">PP ID Callout</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Target</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Frontal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Occipital Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Parietal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">Cognitive Load - Temporal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (L)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (R)</th>
+                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (R)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {indicatorsWithLoads.map((row, idx) => (
                           <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.ppId}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive1}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive2}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive3}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive4}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive5}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive6}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive7}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-3 py-2">{row.Cognitive8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive1}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive2}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive3}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive4}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive5}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive6}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive7}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive8}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1168,7 +1169,7 @@ const handleExportGraph = () => {
           </div>
 
           {/* Label */}
-          <p className="text-center mt-3 text-lg font-semibold text-gray-700">
+          <p className="text-center mt-3 text-lg font-semibold text-gray-700 uppercase">
             {selectedLobeData.name}
           </p>
         </div>

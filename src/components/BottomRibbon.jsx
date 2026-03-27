@@ -8,9 +8,9 @@ export default function BottomRibbon({  activeButton, formStatus }) {
   
   // Simple function to determine active tab from URL
   const getActiveTabFromPath = () => {
-    if (pathname.includes('/analytics-view/data-reports')) return 'Data Reports';
-    if (pathname.includes('/analytics-view/data-extractions')) return 'Data Extractions';
-    if (pathname.includes('/analytics-view/global-analytics')) return 'Global Analytics';
+    if (pathname.includes('/analytics-view/data-reports')) return 'Analytics View';
+    if (pathname.includes('/analytics-view/data-extractions')) return 'Analytics View';
+    if (pathname.includes('/analytics-view/global-analytics')) return 'Analytics View';
     if (pathname.includes('/analytics-view')) return 'Analytics View';
     if (pathname.includes('/setup-view')) return 'Setup View';
     return 'Control View'; // default

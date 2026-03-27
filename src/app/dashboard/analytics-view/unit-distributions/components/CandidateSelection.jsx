@@ -149,7 +149,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50 border shadow-2xl border-gray-200">
       <div className="bg-white w-[900px] border shadow-2xl border-gray-200">
-        <div className="flex justify-between items-center  bg-gray-100 px-4 py-2 border-b border-gray-200">
+        <div className="flex justify-between items-center  bg-gray-100 px-2 py-1 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Distribution Form</h2>
           <button onClick={onClose} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
             <X className="w-5 h-5 text-gray-700" />
@@ -161,11 +161,11 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
           <table className="min-w-full border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-2 border">Last Name</th>
-                <th className="px-4 py-2 border">First Name</th>
-                <th className="px-4 py-2 border">Candidate ID</th>
-                <th className="px-4 py-2 border">Selection</th>
-                <th className="px-4 py-2 border">Value</th>
+                <th className="px-2 py-1 border">Last Name</th>
+                <th className="px-2 py-1 border">First Name</th>
+                <th className="px-2 py-1 border">Candidate ID</th>
+                <th className="px-2 py-1 border">Selection</th>
+                <th className="px-2 py-1 border">Value</th>
               </tr>
             </thead>
             <tbody>
@@ -175,10 +175,10 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
                   onClick={() => handleRowClick(row.id)}
                   className={`cursor-pointer ${row.isSelected ? "bg-gray-100 " : ""} ${row.value === "Omit" ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <td className="px-4 py-2 border text-center">{row.lastName}</td>
-                  <td className="px-4 py-2 border text-center">{row.firstName}</td>
-                  <td className="px-4 py-2 border text-center">{row.candidateId}</td>
-                  <td className="px-4 py-2 border text-center">
+                  <td className="px-2 py-1 border text-center">{row.lastName}</td>
+                  <td className="px-2 py-1 border text-center">{row.firstName}</td>
+                  <td className="px-2 py-1 border text-center">{row.candidateId}</td>
+                  <td className="px-2 py-1 border text-center">
                     <select
                       className="border rounded p-1"
                       value={row.value}
@@ -189,7 +189,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
                       <option value="Available + PP ID Listings">Available by PP ID</option>
                     </select>
                   </td>
-                  <td className="px-4 py-2 border text-center">
+                  <td className="px-2 py-1 border text-center">
                     {row.value === "Available + PP ID Listings" && (
                       <select
                         className="border rounded p-1 w-full"

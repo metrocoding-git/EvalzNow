@@ -262,7 +262,7 @@ export default function DataExtractions() {
             {/* Main Content */}
             <div className="flex h-full overflow-hidden w-full">
               {/* Sidebar */}
-              <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
+              <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200">
                 <div className="flex-grow  flex flex-col h-2/4">
                   {/* Header */}
                   <div className="flex flex-col bg-gray-100 px-4 py-1.5 gap-2 border-b border-gray-300">
@@ -381,7 +381,7 @@ export default function DataExtractions() {
               {/* Right Panel */}
               {RightPanelOpen && (
                 <div className="w-6/12 lg:w-9/12 bg-white flex flex-col border-2 h-full border-gray-200 p-1 ml-1">
-                  <div className="flex-1 flex flex-col items-center  h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
+                  <div className="flex-1 flex flex-col items-center justify-center h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
                     
 
                       <div className="flex flex-col justify-center items-center text-base font-semibold text-gray-800 my-8 leading-relaxed">
