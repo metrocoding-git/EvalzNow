@@ -974,11 +974,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   return (
-    <div style={containerStyle} className='flex justify-center items-center'>
-      <ResponsiveContainer width="65%" height="65%">
+    <div style={containerStyle} className='flex justify-center '>
+      <ResponsiveContainer width="65%" height="68%">
         <ScatterChart 
           data={tableData}
-          margin={{ top: 55, right: 20, left: 0, bottom: 0 }}
+          margin={{ top: 130, right: 20, left: 0, bottom: 0 }}
         >
           <CartesianGrid />
           <XAxis 
@@ -1139,6 +1139,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               )}
             />
           )}
+
+          {/* Growth Target data points */}
+          {showGrowthTarget && growthTargetPoints.length > 0 && (
+            <Scatter 
+              data={growthTargetPoints.map(d => ({
+                ...d,
+                seriesType: "growthTarget"
+              }))} 
+              dataKey={yKey}
+              fill="#2563eb"
+              name="Growth Targets"
+              isAnimationActive={false}
+              // legendType="none"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx}
+                  cy={props.cy}
+                  r={3}
+                  fill="#2563eb"
+                />
+              )}
+            />
+          )}
           
           {/* Projection data points (Performance Points G) */}
           {showProjection && (
@@ -1149,9 +1172,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               }))} 
               dataKey={yKey} 
               fill="#7c3aed" 
-              name="Performance Points (G)"
+              name="Projection PP ID"
               isAnimationActive={false}
-              legendType="none"
+              // legendType="none"
               shape={(props) => (
                 <circle 
                   cx={props.cx} 
@@ -1165,28 +1188,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             />
           )}
           
-          {/* Growth Target data points */}
-          {showGrowthTarget && growthTargetPoints.length > 0 && (
-            <Scatter 
-              data={growthTargetPoints.map(d => ({
-                ...d,
-                seriesType: "growthTarget"
-              }))} 
-              dataKey={yKey}
-              fill="#2563eb"
-              name="Growth Targets"
-              isAnimationActive={false}
-              legendType="none"
-              shape={(props) => (
-                <circle 
-                  cx={props.cx}
-                  cy={props.cy}
-                  r={3}
-                  fill="#2563eb"
-                />
-              )}
-            />
-          )}
+          
         </ScatterChart>
       </ResponsiveContainer>
     </div>
@@ -1218,7 +1220,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           size: 4,
           color: "#22c55e" // green
         },
-        name: "Positive PP IDs"
+        name: "Positive PP IDs",
+        showlegend: true,
+        legendrank: 1
       });
     }
 
@@ -1234,7 +1238,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           size: 4,
           color: "#ef4444" // red
         },
-        name: "Negative PP IDs"
+        name: "Negative PP IDs",
+        showlegend: true,
+        legendrank: 2
       });
     }
 
@@ -1307,7 +1313,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           color: '#ff6b6b',
           symbol: 'diamond'
         },
-        name: "Average Points"
+        name: "Average Points",
+        showlegend: true,
+        legendrank: 3
       });
     }
   
@@ -1324,7 +1332,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           color: '#8b5cf6',
           symbol: 'star'
         },
-        name: "Performance Points (G)"
+        name: "Performance PP ID",
+        showlegend: true,
+        legendrank: 4
       });
     }
   
@@ -1468,7 +1478,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             },
           },
   
-          margin: { l: 0, r: 120, b: 60, t: 90 },
+          margin: { l: 0, r: 200, b: 60, t: 140 },
           showlegend: true,
           legend: {
           x: 1.02,
@@ -1478,7 +1488,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           bgcolor: "rgba(255,255,255,0.9)",
           bordercolor: "#e5e7eb",
           borderwidth: 1,
-          font: { size: 10 }
+          font: { size: 10 },
+          traceorder: "normal"
         }
         }}
         style={{ width: "100%", height: "100%" }}
@@ -1596,7 +1607,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
-          <div style={{ position: 'relative', width: '100%', height: '600px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '700px' }}>
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full max-w-[900px] h-full">
                 {render3DScatter(tableData, unitType)}
@@ -1604,7 +1615,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             </div>
             <div style={{ 
               position: 'absolute', 
-              top: 25, 
+              top: 65, 
               right: 10, 
               background: 'rgba(255,255,255,0.8)', 
               padding: '10px', 
@@ -1612,16 +1623,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               fontSize: '12px'
             }}>
               <div>3D Surface Plot</div>
-              <div>Unit Type: {unitType}</div>
+              {/* <div>Unit Type: {unitType}</div>
               {unitType === "Third Parameter" && (
                 <div>Showing Bias Planes</div>
-              )}
-              {filters?.showProjectionPoints === true && projectionData.length > 0 && (
+              )} */}
+              {/* {filters?.showProjectionPoints === true && projectionData.length > 0 && (
                 <div>Showing Performance Points (Green)</div>
               )}
               {filters?.showGrowthTarget === true && growthTargetData.length > 0 && (
                 <div>Showing Growth Targets (Purple)</div>
-              )}
+              )} */}
             </div>
           </div>
         );
@@ -2161,68 +2172,68 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                         </div>
                       ) : (
                         <>
-      {/* ✅ Positive PP IDs */}
-      <h3 className="text-gray-600 font-semibold mb-2 ml-2">
-        Positive PP IDs
-      </h3>
+                          {/*  Positive PP IDs */}
+                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">
+                            Positive PP IDs
+                          </h3>
 
-      <table className="text-xs border border-gray-300 mb-6" style={{ width: 'max-content', minWidth: '100%' }}>
-        <thead className="bg-gray-100">
-          <tr>
-            {cols.columns.map(col => (
-              <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
+                          <table className="text-xs border border-gray-300 mb-6" style={{ width: 'max-content', minWidth: '100%' }}>
+                            <thead className="bg-gray-100">
+                              <tr>
+                                {cols.columns.map(col => (
+                                  <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                                    {col.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
 
-        <tbody>
-          {sortedData
-            .filter(row => row.ppId > 0)
-            .map((row, idx) => (
-              <tr key={idx} className="hover:bg-blue-50">
-                {cols.columns.map(col => (
-                  <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
-                    {row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </table>
+                            <tbody>
+                              {sortedData
+                                .filter(row => row.ppId > 0)
+                                .map((row, idx) => (
+                                  <tr key={idx} className="hover:bg-blue-50">
+                                    {cols.columns.map(col => (
+                                      <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                                        {row[col.key]}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
 
-      {/* ✅ Negative PP IDs */}
-      <h3 className="text-gray-600 font-semibold mb-2 ml-2">
-        Negative PP IDs
-      </h3>
+                          {/*  Negative PP IDs */}
+                          <h3 className="text-gray-600 font-semibold mb-2 ml-2">
+                            Negative PP IDs
+                          </h3>
 
-      <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
-        <thead className="bg-gray-100">
-          <tr>
-            {cols.columns.map(col => (
-              <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
+                          <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
+                            <thead className="bg-gray-100">
+                              <tr>
+                                {cols.columns.map(col => (
+                                  <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                                    {col.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
 
-        <tbody>
-          {sortedData
-            .filter(row => row.ppId < 0)
-            .map((row, idx) => (
-              <tr key={idx} className="hover:bg-blue-50">
-                {cols.columns.map(col => (
-                  <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
-                    {row[col.key]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    </>
+                            <tbody>
+                              {sortedData
+                                .filter(row => row.ppId < 0)
+                                .map((row, idx) => (
+                                  <tr key={idx} className="hover:bg-blue-50">
+                                    {cols.columns.map(col => (
+                                      <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                                        {row[col.key]}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </>
                       )}
                     </div>
                   );
@@ -2246,7 +2257,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </div>
             )}
 
-            <div className="h-full flex-1 flex items-center overflow-auto  p-2">
+            <div className="h-full flex-1 flex items-center overflow-auto p-2">
               {renderSelectedChart()}
             </div>
           </div>

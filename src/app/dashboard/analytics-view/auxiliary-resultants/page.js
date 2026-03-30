@@ -61,7 +61,7 @@ export default function AuxiliaryResultants() {
   const [data, setData] = useState([]);
   const [secondaryValues, setSecondaryValues] = useState(null);
   const [resetSignal, setResetSignal] = useState(0);  
-
+  const [activeChainId, setActiveChainId] = useState(null);
   const [selectedChartKey, setSelectedChartKey] = useState(null);  
 
   const [activeCandidateId, setActiveCandidateId] = useState(
@@ -342,7 +342,7 @@ export default function AuxiliaryResultants() {
                   <div className="h-1/2 overflow-auto ">
                     <SecondaryInputForm selectedSort={selectedSort} unitId={selectedUnitId} candidateId={activeCandidateId}
                       onClose={() => setShowSecondary(false)} selectedChartKey={selectedChartKey}
-                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} 
+                      onSubmit={(values) => { setSecondaryValues(values); }} resetSignal={resetSignal} activeChainId={activeChainId} 
                       selectedAssessmentChain={selectedAssessmentChain} onSuccess={() => setRefreshChainData(prev => prev + 1)}
                     />
 
@@ -392,6 +392,7 @@ export default function AuxiliaryResultants() {
                   setSelectedAssessmentChain(chain);
                   setShowSecondary(true); // auto-open secondary
                 }}
+                onActiveChainIdChange={(chainId) => setActiveChainId(chainId)} 
               />}
 
                 

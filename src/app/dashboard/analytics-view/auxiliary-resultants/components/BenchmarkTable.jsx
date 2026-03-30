@@ -118,11 +118,11 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
           <table className="min-w-max border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-2 border">Link</th>
-                <th className="px-4 py-2 border">Benchmark ID</th>
-                <th className="px-4 py-2 border">Benchmark Type</th>
-                <th className="px-4 py-2 border">Benchmark Ref</th>
-                <th className="px-4 py-2 border">Benchmark Description</th>
+                <th className="px-2 py-1 border">Link</th>
+                <th className="px-2 py-1 border">Benchmark ID</th>
+                <th className="px-2 py-1 border">Benchmark Type</th>
+                <th className="px-2 py-1 border">Benchmark Ref</th>
+                <th className="px-2 py-1 border">Benchmark Description</th>
               </tr>
             </thead>
 
@@ -131,13 +131,13 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
                 <tr
                   key={row.benchmarkId || index}
                   onClick={() => handleRowClick(row.rowId)}
-                  className={`cursor-pointer transition-colors ${
+                  className={`cursor-pointer transition-colors text-center ${
                     row.isSelected 
                       ? "bg-blue-50 hover:bg-blue-100" 
                       : "hover:bg-gray-50"
                   } ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
                 >
-                  <td className="px-4 py-3 border text-center">
+                  <td className="px-2 py-1 border text-center">
                     <input
                       type="checkbox"
                       checked={row.isSelected}
@@ -146,14 +146,14 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
                     />
                   </td>
 
-                  <td className="px-4 py-3 border">
+                  <td className="px-2 py-1 border">
                     <span className="font-medium text-gray-900">{row.benchmarkId}</span>
                   </td>
-                  <td className="px-4 py-3 border">
+                  <td className="px-2 py-1 border">
                       {row.benchmarkType}
                   </td>
-                  <td className="px-4 py-3 border text-gray-700">{row.benchmarkRef}</td>
-                  <td className="px-4 py-3 border text-gray-600">{row.benchmarkDescription}</td>
+                  <td className="px-2 py-1 border text-gray-700">{row.benchmarkRef}</td>
+                  <td className="px-2 py-1 border text-gray-600">{row.benchmarkDescription}</td>
                 </tr>
               ))}
             </tbody>

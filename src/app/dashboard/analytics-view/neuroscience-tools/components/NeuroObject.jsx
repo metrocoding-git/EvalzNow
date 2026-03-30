@@ -267,7 +267,11 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
       setIsSubmitting(true);
       await createNeuroObject(payload);
 
-      if (onSaved) onSaved();
+      if (onSaved) { 
+        onSaved();
+        onClose()
+      }
+      
       // Refresh the list after creating a new neuro object
       const neuroObjectData = await getNeuroObjectbyUnitAndCandidate(unitId, candidateId);
       if (Array.isArray(neuroObjectData)) {
@@ -333,22 +337,18 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
               No available PP IDs
             </option>
           ) : (
-            filteredAssessmentData.map((item, i) => (
+            filteredAssessmentData.sort((a, b) => a.ppId - b.ppId).map((item, i) => (
               <option key={i} value={item.ppId}>
                 {item.ppId}
               </option>
             ))
           )}
         </select>
-
-
-      </div>
-
-          
+      </div> 
 
       <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
         {Object.keys(grouped).map((lobe) => (
-          <div key={lobe} className="border border-gray-300 mb-2 rounded">
+          <div key={lobe} className="border border-gray-300 mb-2 mx-2">
             {/* Lobe Header */}
             <button
               onClick={() =>
@@ -366,28 +366,28 @@ export default function NeuroObject({ onClose, unitId, candidateId, onSaved }) {
 
             {/* Lobe Rows */}
             {expanded[lobe] && (
-              <table className="table-auto w-full text-xs border-t border-gray-300">
+              <table className="table-fixed w-full text-xs border-t border-gray-300">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="border border-gray-300 text-xs px-2 py-1 text-left">
+                    <th className="border border-gray-300 text-xs px-2 py-1 text-left w-3/4">
                       Cognitive Function
                     </th>
-                    <th className="border border-gray-300 text-xs px-2 py-1 text-center">
+                    <th className="border border-gray-300 text-xs px-2 py-1 text-center w-1/4">
                       Value
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {grouped[lobe].map((row) => (
-                    <tr key={row.idx} className="hover:bg-blue-50">
-                      <td className="border border-gray-300 px-2 py-1">
+                    <tr key={row.idx} className="hover:bg-blue-50 p">
+                      <td className="border border-gray-300 px-2 py-1 break-words">
                         {row.func}
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         <select
                           value={answers[row.idx] ?? row.value ?? ""}
                           onChange={(e) => handleChange(row.idx, e.target.value)}
-                          className="border border-gray-300 px-2 py-1"
+                          className="border border-gray-300 px-2 py-1  text-center"
                         >
                           <option value="" disabled>
                             Select

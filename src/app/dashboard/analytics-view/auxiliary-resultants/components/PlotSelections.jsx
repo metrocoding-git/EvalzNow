@@ -34,7 +34,8 @@ const ROSTER_SUM_KEYS = [
   "unexcusedTardies",
 ];
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, filters, onResetFilters, onAssessmentChainSelect }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, 
+  filters, onResetFilters, onAssessmentChainSelect, onActiveChainIdChange  }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -1111,7 +1112,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       case "be-csd":
         return {
           columns: ["PP ID", "CSD Tenure Days", "Cumulative Duration"],
-          rows: csdChartData.map(r => ({
+          rows: csdChartData.slice() // avoid mutating original array
+          .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
             a: Number(r.csdTenureDays).toFixed(2),	
             b: r.duration
@@ -1121,7 +1123,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       case "be-usd":
         return {
           columns: ["PP ID", "USD Tenure Days", "Cumulative Duration"],
-          rows: usdChartData.map(r => ({
+          rows: usdChartData.slice() // avoid mutating original array
+          .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
             a: Number(r.usdTenureDays).toFixed(2),
             b: r.duration
@@ -1131,18 +1134,20 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       case "bp-csd":
         return {
           columns: ["PP ID", "Productivity CSD"],
-          rows: BpCsdChartData.map(r => ({
+          rows: BpCsdChartData.slice() // avoid mutating original array
+          .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
-            a: r.productivityCsd
+            a: Number(r.productivityCsd).toFixed(3),
           }))
         };
 
       case "bp-usd":
         return {
           columns: ["PP ID", "Productivity USD"],
-          rows: BpUsdChartData.map(r => ({
+          rows: BpUsdChartData.slice() // avoid mutating original array
+          .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
-            a: r.productivityUsd
+            a: Number(r.productivityUsd).toFixed(3),
           }))
         };
 
@@ -1531,6 +1536,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   onChartSelect("nac"); // already exists
                   onAssessmentChainSelect(chain.chainId); // 
                   setActiveChainId(chain.chainId);
+                  onActiveChainIdChange(chainIndex + 1);
                 }}
               >
       
@@ -1927,23 +1933,46 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </div>
           );
         }
+
+        const total = attendanceBreakdown.reduce((sum, item) => sum + item.value, 0);
+  
+        // Create data with both count and percentage
+        const attendanceDataWithPercentage = attendanceBreakdown.map(item => ({
+          ...item,
+          percentage: total > 0 ? Number((item.value / total).toFixed(3)) : 0,
+          percentageValue: total > 0 ? (item.value / total) : 0
+        }));
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={attendanceBreakdown}
+                data={attendanceDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label
+                label={({ name, value, percentage }) => {
+                  const percentDisplay = (percentage).toFixed(3);
+                  return `${name}: ${percentDisplay} Count: ${value}`;
+                }}
+                labelLine={true}
               >
-                {attendanceBreakdown.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                {attendanceDataWithPercentage.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} 
+                  />
                 ))}
+
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const percentage = props?.payload?.percentage;
+                  const percentDisplay = percentage ? (percentage).toFixed(3) : "0.000";
+                  return [`${percentDisplay} Count: ${value}`, name];
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -1959,26 +1988,46 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </div>
           );
         }
+
+        const total = engagementBreakdown.reduce((sum, item) => sum + item.value, 0);
+  
+        // Create data with both count and percentage
+        const engageDataWithPercentage = engagementBreakdown.map(item => ({
+          ...item,
+          percentage: total > 0 ? Number((item.value / total).toFixed(3)) : 0,
+          percentageValue: total > 0 ? (item.value / total) : 0
+        }));
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
-              <Pie
-                data={engagementBreakdown}
+            <Pie
+                data={engageDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label
+                label={({ name, value, percentage }) => {
+                  const percentDisplay = (percentage).toFixed(3);
+                  return `${name}: ${percentDisplay} Count: ${value}`;
+                }}
+                labelLine={true}
               >
-                {engagementBreakdown.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={["#10b981", "#3b82f6", "#f59e0b", "#6b7280"][index]}
+                {engageDataWithPercentage.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} 
                   />
                 ))}
+
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const percentage = props?.payload?.percentage;
+                  const percentDisplay = percentage ? (percentage).toFixed(3) : "0.000";
+                  return [`${percentDisplay} Count: ${value}`, name];
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -1994,23 +2043,46 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </div>
           );
         }
+
+        const total = unitOutcomeData.reduce((sum, item) => sum + item.value, 0);
+  
+        // Create data with both count and percentage
+        const unitOutcomeDataWithPercentage = unitOutcomeData.map(item => ({
+          ...item,
+          percentage: total > 0 ? Number((item.value / total).toFixed(3)) : 0,
+          percentageValue: total > 0 ? (item.value / total) : 0
+        }));
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={unitOutcomeData}
+                data={unitOutcomeDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label
+                label={({ name, value, percentage }) => {
+                  const percentDisplay = (percentage).toFixed(3);
+                  return `${name}: ${percentDisplay} Count: ${value}`;
+                }}
+                labelLine={true}
               >
-                {unitOutcomeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} />
+                {unitOutcomeDataWithPercentage.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} 
+                  />
                 ))}
+
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const percentage = props?.payload?.percentage;
+                  const percentDisplay = percentage ? (percentage).toFixed(3) : "0.000";
+                  return [`${percentDisplay} Count: ${value}`, name];
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -2026,26 +2098,46 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </div>
           );
         }
+
+        const total = needAssessmentSummary.reduce((sum, item) => sum + item.value, 0);
+  
+        // Create data with both count and percentage
+        const needAssessmentDataWithPercentage = needAssessmentSummary.map(item => ({
+          ...item,
+          percentage: total > 0 ? Number((item.value / total).toFixed(3)) : 0,
+          percentageValue: total > 0 ? (item.value / total) : 0
+        }));
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
-              <Pie
-                data={needAssessmentSummary}
+            <Pie
+                data={needAssessmentDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
                 cy="50%"
                 outerRadius={120}
-                label
+                label={({ name, value, percentage }) => {
+                  const percentDisplay = (percentage).toFixed(3);
+                  return `${name}: ${percentDisplay} Count: ${value}`;
+                }}
+                labelLine={true}
               >
-                {needAssessmentSummary.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={["#3b82f6", "#f59e0b", "#10b981"][index % 3]}
+                {needAssessmentDataWithPercentage.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={["#3b82f6","#f59e0b","#10b981","#f43f5e","#8b5cf6"][index % 5]} 
                   />
                 ))}
+
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                formatter={(value, name, props) => {
+                  const percentage = props?.payload?.percentage;
+                  const percentDisplay = percentage ? (percentage).toFixed(3) : "0.000";
+                  return [`${percentDisplay} Count: ${value}`, name];
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -2591,7 +2683,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </h2>
           ) : (
             <div className="flex justify-center text-gray-400 text-lg mt-2">
-              SELECT PLOT or TABLE 
+              SELECT PLOT OR TABLE 
             </div>
           )}
 

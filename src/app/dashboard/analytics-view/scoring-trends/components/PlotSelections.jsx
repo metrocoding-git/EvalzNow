@@ -291,6 +291,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     fetchMaxScoreData();
   }, [unitId, filters, candidateId]);
 
+  
   const buildXYChartData = (
     positiveData,
     negativeData,
@@ -719,7 +720,7 @@ const getStableColor = (key) => {
                                   </th>
                                   {isAttainedMax && (
                                     <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                      Row Count
+                                      {isAttainedMax ? "Competency" : "Row Count"}
                                     </th>
                                   )}
                                   {!isAttainedMax && (
@@ -728,7 +729,7 @@ const getStableColor = (key) => {
                                     </th>
                                   )}
                                   <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
-                                    {isAttainedMax ? "Competency" : selectedChart?.key?.toUpperCase()}
+                                    {isAttainedMax ? "Scores" : selectedChart?.key?.toUpperCase()}
                                   </th>
                                   {/* <th className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">
                                     Value
@@ -744,7 +745,7 @@ const getStableColor = (key) => {
                                       </td>
                                       {isAttainedMax && (
                                         <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">
-                                          {row.rowCount}
+                                          {comp} 
                                         </td>
                                       )}
                                       {!isAttainedMax && (
@@ -893,7 +894,7 @@ const getStableColor = (key) => {
                         type="linear"
                         data={points}
                         dataKey="y"
-                        name={isSimple ? "Positive" : `Positive: ${comp}`}
+                        name={isSimple ? "Positive" : `Positive: PP ID`}
                         stroke={color}
                         strokeDasharray={chartProperties.positiveLineStyle === "dashed" ? "6 4"
                           : chartProperties.positiveLineStyle === "dotted" ? "2 4"
@@ -921,7 +922,7 @@ const getStableColor = (key) => {
                         type="linear"
                         data={points}
                         dataKey="y"
-                        name={isSimple ? "Negative" : `Negative: ${comp}`}
+                        name={isSimple ? "Negative" : `Negative: PP ID`}
                         stroke={color}
                         strokeDasharray={chartProperties.negativeLineStyle === "dashed" ? "6 4"
                           : chartProperties.negativeLineStyle === "dotted" ? "2 4"

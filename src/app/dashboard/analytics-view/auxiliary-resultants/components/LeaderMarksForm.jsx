@@ -125,7 +125,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
             onChange={(e) => handleChange("staffLookupId", e.target.value)}
             required
             >
-            <option value="">Select Leader</option>
+            <option value="" disabled>Select Leader</option>
             {leaderData
                 ?.filter((leader) => leader.roleType === "Leader") // optional: show only leaders
                 .map((leader) => (
@@ -145,7 +145,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
             onChange={(e) => handleChange("impactType", e.target.value)}
             required
           >
-            <option value="">Select Type</option>
+            <option value="" disabled>Select Type</option>
             {impactTypes.map((type, index) => (
               <option key={index} value={type}>
                 {type}
@@ -189,7 +189,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
             onChange={(e) => handleChange("concernResolved", e.target.value)}
             
           >
-            <option value="">Select Type</option>
+            <option value="" disabled>Select Type</option>
             {concernResolved.map((type, index) => (
               <option key={index} value={type}>
                 {type}

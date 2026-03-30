@@ -237,23 +237,47 @@ export default function CurveEditor() {
   const shouldFormatTwoDecimals = (chartId) =>
     TWO_DECIMAL_CHART_IDS.has(chartId);
 
-  const toPercentagePie = (rate, isProficiencyMetric = false) => {
-    if (rate === null || rate === undefined) return [];
+  const toPercentagePie = (metricData, isProficiencyMetric = false) => {
+    // Check if metricData exists and has the required properties
+    if (!metricData || metricData.successRate === undefined || metricData.totalInstances === undefined) {
+      return [];
+    }
   
-    // Format to 2 decimal places
-    const value = Number(rate.toFixed(2));
-    const negativeValue = Number((1 - rate).toFixed(2));
+    const rate = metricData.successRate;
+    const totalInstances = metricData.totalInstances;
+    const successCount = metricData.successCount;
+    const failCount = totalInstances - successCount;
+  
+    // Format to 3 decimal places
+    const successRateValue = Number(rate.toFixed(3));
+    const failRateValue = Number((1 - rate).toFixed(3));
   
     if (isProficiencyMetric) {
       return [
-        { name: "Pass", value },
-        { name: "Fail", value: negativeValue }
+        { 
+          name: "Pass", 
+          count: successCount,
+          value: successRateValue 
+        },
+        { 
+          name: "Fail", 
+          count: failCount,
+          value: failRateValue 
+        }
       ];
     }
   
     return [
-      { name: "Positive", value },
-      { name: "Negative", value: negativeValue }
+      { 
+        name: "Positive", 
+        count: successCount,
+        value: successRateValue 
+      },
+      { 
+        name: "Negative", 
+        count: failCount,
+        value: failRateValue 
+      }
     ];
   };
   
@@ -266,8 +290,8 @@ export default function CurveEditor() {
     if (total === 0) return [];
   
     return [
-      { name: "Stable", value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
-      { name: "Unstable", value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
     ];
   };
   
@@ -280,8 +304,8 @@ export default function CurveEditor() {
     if (total === 0) return [];
   
     return [
-      { name: "Stable", value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
-      { name: "Unstable", value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
     ];
   };
   
@@ -291,14 +315,17 @@ export default function CurveEditor() {
     return [
       {
         name: "UR < 0.300",
+        count: Number((ProductivityData.counts.low).toFixed(2)),
         value: Number((ProductivityData.distribution.low).toFixed(2)),
       },
       {
         name: "0.300 ≤ UR ≤ 0.600",
+        count: Number((ProductivityData.counts.mid).toFixed(2)),
         value: Number((ProductivityData.distribution.mid).toFixed(2)),
       },
       {
         name: "UR > 0.600",
+        count: Number((ProductivityData.counts.high).toFixed(2)),
         value: Number((ProductivityData.distribution.high).toFixed(2)),
       },
     ];
@@ -322,6 +349,7 @@ export default function CurveEditor() {
         return Object.entries(signatureProfiles)
           .map(([name, value]) => ({ 
             name, 
+            count: Number(value),
             value: total > 0 ? Number((Number(value) / total).toFixed(2)) : 0 
   }));
   
@@ -334,6 +362,7 @@ export default function CurveEditor() {
       return Object.entries(unitTypes)
         .map(([name, value]) => ({ 
           name, 
+          count: Number(value),
           value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(2)) : 0 
         }));
   
@@ -344,9 +373,9 @@ export default function CurveEditor() {
           const bc = globalAnalytics.benchmarkCounts || {};
         
           const ORDER = [
-            "BC > 25",
             "BC ≤ 10",
             "10 < BC ≤ 25",
+            "BC > 25",
           ];
         
           const total = Object.values(bc).reduce((sum, val) => sum + (Number(val) || 0), 0);
@@ -356,6 +385,7 @@ export default function CurveEditor() {
             .filter(key => bc[key] !== undefined)
             .map(key => ({
               name: key,
+              count: Number(bc[key]),
               value: total > 0 ? Number((Number(bc[key]) / total).toFixed(2)) : 0.00,
             }));
         }
@@ -369,6 +399,7 @@ export default function CurveEditor() {
         return Object.entries(assessmentBlocks)
           .map(([name, value]) => ({ 
             name, 
+            count: Number(value),
             value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(2)) : 0.00 
           }));
   
@@ -380,6 +411,7 @@ export default function CurveEditor() {
 
         return Object.entries(attendance).map(([key, value]) => ({
           name: humanizeKey(key),
+          count: Number(value),
           value: totalAttendance > 0 ? Number((Number(value) / totalAttendance).toFixed(2)) : 0.00,
         }));
       
@@ -392,9 +424,9 @@ export default function CurveEditor() {
 
         // Return percentages as decimals (0-1)
         return [
-          { name: "Open", value: total > 0 ? Number((open / total).toFixed(2)) : 0.00 },
-          { name: "Pending", value: total > 0 ? Number((pending / total).toFixed(2)) : 0.00 },
-          { name: "Closed", value: total > 0 ? Number((closed / total).toFixed(2)) : 0.00 },
+          { name: "Open", count: open, value: total > 0 ? Number((open / total).toFixed(2)) : 0.00 },
+          { name: "Pending", count: pending, value: total > 0 ? Number((pending / total).toFixed(2)) : 0.00 },
+          { name: "Closed", count: closed, value: total > 0 ? Number((closed / total).toFixed(2)) : 0.00 },
         ];
       }    
       
@@ -417,35 +449,36 @@ export default function CurveEditor() {
         return Object.entries(unitOutcomes)
           .map(([name, value]) => ({ 
             name, 
+            count: Number(value),
             value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(2)) : 0.00 
           }));
   
       // ================= REGULAR METRICS - PROFICIENCY (Pass/Fail) =================
-      case 11: return toPercentagePie(regular?.XEP?.successRate, true);
-      case 12: return toPercentagePie(regular?.XRR?.successRate, true);
-      case 13: return toPercentagePie(regular?.XLR?.successRate, true);
-      case 14: return toPercentagePie(regular?.XWR?.successRate, true);
-      case 15: return toPercentagePie(regular?.XSR?.successRate, true);
-      case 16: return toPercentagePie(regular?.XTR?.successRate, true);
-      case 17: return toPercentagePie(regular?.XPR?.successRate, true);
-      case 18: return toPercentagePie(regular?.XRVSR?.successRate, true);
-      case 19: return toPercentagePie(regular?.XPVSR?.successRate, true);
-      case 20: return toPercentagePie(regular?.XAVSR?.successRate, true);
-      case 21: return toPercentagePie(regular?.XCP?.successRate, true);
-      case 22: return toPercentagePie(regular?.XBP?.successRate, true);
-      case 24: return toPercentagePie(regular?.MSIP?.successRate, true);
+      case 11: return toPercentagePie(regular?.XEP, true);
+      case 12: return toPercentagePie(regular?.XRR, true);
+      case 13: return toPercentagePie(regular?.XLR, true);
+      case 14: return toPercentagePie(regular?.XWR, true);
+      case 15: return toPercentagePie(regular?.XSR, true);
+      case 16: return toPercentagePie(regular?.XTR, true);
+      case 17: return toPercentagePie(regular?.XPR, true);
+      case 18: return toPercentagePie(regular?.XRVSR, true);
+      case 19: return toPercentagePie(regular?.XPVSR, true);
+      case 20: return toPercentagePie(regular?.XAVSR, true);
+      case 21: return toPercentagePie(regular?.XCP, true);
+      case 22: return toPercentagePie(regular?.XBP, true);
+      case 24: return toPercentagePie(regular?.MSIP, true);
       case 25: return buildICPieData();
-      case 26: return toPercentagePie(regular?.GEQ?.successRate, true);
+      case 26: return toPercentagePie(regular?.GEQ, true);
   
       // ================= AVERAGE DELTA (Growth - Positive/Negative) =================
-      case 27: return toPercentagePie(avgDelta?.avgDeltaRRN?.successRate, true);
-      case 28: return toPercentagePie(avgDelta?.avgDeltaPRN?.successRate, true);
-      case 29: return toPercentagePie(avgDelta?.avgDeltaARN?.successRate, true);
+      case 27: return toPercentagePie(avgDelta?.avgDeltaRRN, true);
+      case 28: return toPercentagePie(avgDelta?.avgDeltaPRN, true);
+      case 29: return toPercentagePie(avgDelta?.avgDeltaARN, true);
   
       // ================= CUMULATIVE DELTA (Growth - Positive/Negative) =================
-      case 30: return toPercentagePie(sumDelta?.sumDeltaRRN?.successRate, true);
-      case 31: return toPercentagePie(sumDelta?.sumDeltaPRN?.successRate, true);
-      case 32: return toPercentagePie(sumDelta?.sumDeltaARN?.successRate, true);
+      case 30: return toPercentagePie(sumDelta?.sumDeltaRRN, true);
+      case 31: return toPercentagePie(sumDelta?.sumDeltaPRN, true);
+      case 32: return toPercentagePie(sumDelta?.sumDeltaARN, true);
   
       // ================= STABILITY =================
       case 23: // STA/P
@@ -569,7 +602,8 @@ export default function CurveEditor() {
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
       ([key, count]) => ({
         name: labelMap[key] ?? key,
-        value: Number(((count / total)).toFixed(2)), // Pie expects %
+        count: Number(count), 
+        value: total > 0 ? Number((count / total).toFixed(3)) : 0, // 
       })
     );
   };
@@ -927,21 +961,29 @@ export default function CurveEditor() {
             cx="50%"
             cy="50%"
             outerRadius={140}
+            
             label={({ name, value }) =>
               shouldFormatTwoDecimals(selectedChart.id)
-                ? `${Number(value).toFixed(2)}`
-                : `${value}`
+                ? `${Number(value).toFixed(3)}`
+                : `${Number(value).toFixed(3)}`
             }
           >
             {pieData.map((_, index) => (
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) =>
-            shouldFormatTwoDecimals(selectedChart.id)
-              ? `${Number(value).toFixed(2)}%`
-              : value
-            } 
+          <Tooltip 
+            formatter={(value, name, props) => {
+              const percentage = `${(value).toFixed(3)}`;
+              const count = props?.payload?.count;
+              
+              if (count !== undefined && count !== null) {
+                // Format count as integer without decimals
+                const formattedCount = Math.round(count);
+                return [`${percentage} Count: ${formattedCount}`, name];
+              }
+              return [percentage, name];
+            }} 
           />
           <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20 }} itemSorter={() => 0} />
         </PieChart>
