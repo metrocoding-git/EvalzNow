@@ -24,6 +24,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     return null;
   };
   
+  const metricSuffix = title?.split(" - ")[1] || "";
   const ppPlus15 =
     typeof thirdPPDayCount === "number"
       ? thirdPPDayCount + 15
@@ -37,7 +38,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     if (!data || data.length === 0) {
       return (
         <div className="p-4 bg-white rounded-xl shadow-sm">
-          <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2>
+          {/* <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2> */}
           <div className="flex justify-center items-center h-64 text-gray-400">
             No projection data available
           </div>
@@ -46,8 +47,8 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     }
   
     return (
-      <div className="py-4 px-2 bg-white ">
-        <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2>
+      <div className="w-full ">
+        {/* <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2> */}
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={data}
@@ -61,9 +62,10 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
               domain={['dataMin', 'dataMax']}
             />
             <YAxis 
-              label={{ value: 'Growth Differential', angle: -90, position: "insideLeft",
+              label={{ value: `Growth Differential ${metricSuffix}`, angle: -90, position: "insideLeft",
                 textAnchor: "middle",
                 offset: -5, }}
+                tickFormatter={(value) => Number(value).toFixed(3)}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 35 }} />

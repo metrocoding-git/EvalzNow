@@ -1159,7 +1159,19 @@ const exportAsPDF = async () => {
                                 />
                               )}
                               </XAxis>
-                              <YAxis
+                              <YAxis domain={[
+                                  (dataMin) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMin;
+                                    return Math.min(dataMin, threshold);
+                                  },
+                                  (dataMax) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMax;
+                                    return Math.max(dataMax, threshold);
+                                  }
+                                ]}
+                                tickFormatter={(value) => Number(value).toFixed(3)}
                                 // label={{
                                 //   value: selectedChart.name,
                                 //   angle: -90,
@@ -1276,14 +1288,29 @@ const exportAsPDF = async () => {
                                   <Label value={`PP ID`} offset={-10} position="insideBottom" />
                                 )}
                               </XAxis>
-                              <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                              <YAxis type="number" dataKey="value" name={selectedChart.name} 
+                                domain={[
+                                  (dataMin) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMin;
+                                    return Math.min(dataMin, threshold);
+                                  },
+                                  (dataMax) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMax;
+                                    return Math.max(dataMax, threshold);
+                                  }
+                                ]}
+                                tickFormatter={(value) => Number(value).toFixed(3)}
+                              >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                   <Label
                                     value={`${selectedChart.name}`}
                                     angle={-90}
                                     position="insideLeft"
+                                    textAnchor="middle"
                                     offset={-3}
-                                    dy={90}
+                                    dy={0}
                                   />
                                 )}
                               </YAxis>
@@ -1330,19 +1357,44 @@ const exportAsPDF = async () => {
                   }
 
                   if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
+                    
+                    const stable = stabilitySummary.stable || 0;
+                    const unstable = stabilitySummary.unstable || 0;
+                    const total = stable + unstable;
+  
+                    // Calculate percentages with 3 decimal places
+                    const stablePercentage = total > 0 ? Number((stable / total).toFixed(3)) : 0;
+                    const unstablePercentage = total > 0 ? Number((unstable / total).toFixed(3)) : 0;
+
                     // Create data from stabilitySummary state
                     const pieData = [
-                      { name: "STABLE", value: stabilitySummary.stable },
-                      { name: "UNSTABLE", value: stabilitySummary.unstable },
+                      { 
+                        name: "STABLE", 
+                        count: stable,
+                        value: stablePercentage,
+                      },
+                      { 
+                        name: "UNSTABLE", 
+                        count: unstable,
+                        value: unstablePercentage,
+                        
+                      },
                     ];
                   
+                    
                     return (
                       <div className="flex flex-col h-full p-4 bg-white ">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <div className='flex-1 flex items-center'>
                           <ResponsiveContainer width="100%" height={400}>
                             <PieChart>
-                              <Tooltip />
+                              <Tooltip 
+                                formatter={(value, name, props) => {
+                                  const percentage = `${(value).toFixed(3)}`;
+                                  const count = props?.payload?.count;
+                                  return [`${percentage} Count: ${count} `, name];
+                                }}
+                              />
                               <Legend verticalAlign="bottom" />
                               <Pie
                                 data={pieData}
@@ -1351,7 +1403,11 @@ const exportAsPDF = async () => {
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={160}
-                                label={({ name, value }) => `${name}: ${value}`}
+                                label={({ name, value, count }) => {
+                                  const percentage = (value).toFixed(3);
+                                  return `${name}: ${percentage} Count: ${count}`;
+                                }}
+                                labelLine={true}
                               >
                                 <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
                                 <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}

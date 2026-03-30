@@ -1177,12 +1177,18 @@ const handleExportGraph = () => {
                     }
 
                     return (
-                      <div ref={chartContainerRef}>
-                        <GrowthProjectionChart
-                          data={curveData}
-                          title={chartTitle}
-                          thirdPPDayCount={thirdPPDayCount}
-                        />
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white">
+                        <h2 className="text-lg font-semibold mb-2 text-center">
+                          {selectedChart.icon} {selectedChart.name}
+                        </h2>
+
+                        <div className="flex-1 flex items-center justify-center">
+                          <GrowthProjectionChart
+                            data={curveData}
+                            thirdPPDayCount={thirdPPDayCount}
+                            title={selectedChart.name}
+                          />
+                        </div>
                       </div>
 
                     );
@@ -1241,7 +1247,7 @@ const handleExportGraph = () => {
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
                         <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={400}>
+                          <ResponsiveContainer width="100%" height={450}>
                             <LineChart 
                               data={positiveData}
                               margin={{ top: 20, right: 20, left: 20, bottom: 75 }}
@@ -1269,8 +1275,21 @@ const handleExportGraph = () => {
                               </XAxis>
 
                               <YAxis
-                                domain={[yDomainStart, "auto"]}
+                                // domain={[yDomainStart, "auto"]}
                                 allowDataOverflow={true}
+                                domain={[
+                                  (dataMin) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMin;
+                                    return Math.min(dataMin, threshold);
+                                  },
+                                  (dataMax) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMax;
+                                    return Math.max(dataMax, threshold);
+                                  }
+                                ]}
+                                tickFormatter={(value) => Number(value).toFixed(3)}
                               >
 
                                 {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
@@ -1331,7 +1350,7 @@ const handleExportGraph = () => {
                       <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
                         <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={400}>
+                          <ResponsiveContainer width="100%" height={450}>
                             <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 75 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
@@ -1339,7 +1358,20 @@ const handleExportGraph = () => {
                                   <Label value={`Days`} offset={-10} position="insideBottom" />
                                 )}
                               </XAxis>
-                              <YAxis type="number" dataKey="value" name={selectedChart.name}>
+                              <YAxis type="number" dataKey="value" name={selectedChart.name} 
+                                domain={[
+                                  (dataMin) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMin;
+                                    return Math.min(dataMin, threshold);
+                                  },
+                                  (dataMax) => {
+                                    const threshold = thresholdValue?.[keyName];
+                                    if (threshold == null) return dataMax;
+                                    return Math.max(dataMax, threshold);
+                                  }
+                                ]}
+                                tickFormatter={(value) => Number(value).toFixed(3)}>
                                 {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
                                   <Label
                                     value={`${selectedChart.name}`}
@@ -1355,6 +1387,20 @@ const handleExportGraph = () => {
                                 align="center"
                                 wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
                                 />
+
+                              {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                                <ReferenceLine
+                                  y={thresholdValue[keyName]}
+                                  stroke="#000000"
+                                  strokeWidth={2}
+                                  strokeDasharray="7 4 1 4"
+                                  label={{
+                                    position: "right",
+                                    fill: "#f59e0b",
+                                    fontSize: 12,
+                                  }}
+                                />
+                              )}
                               {chartProperties.visibility && (
                                 <Scatter
                                   name="Positive PP IDs"
@@ -1371,18 +1417,43 @@ const handleExportGraph = () => {
                   }
 
                   if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
-                    const pieData = [
-                      { name: "STABLE", value: stabilitySummary.stable },
-                      { name: "UNSTABLE", value: stabilitySummary.unstable },
-                    ];
 
+                    const stable = stabilitySummary.stable || 0;
+                    const unstable = stabilitySummary.unstable || 0;
+                    const total = stable + unstable;
+  
+                    // Calculate percentages with 3 decimal places
+                    const stablePercentage = total > 0 ? Number((stable / total).toFixed(3)) : 0;
+                    const unstablePercentage = total > 0 ? Number((unstable / total).toFixed(3)) : 0;
+
+                    // Create data from stabilitySummary state
+                    const pieData = [
+                      { 
+                        name: "STABLE", 
+                        count: stable,
+                        value: stablePercentage,
+                      },
+                      { 
+                        name: "UNSTABLE", 
+                        count: unstable,
+                        value: unstablePercentage,
+                        
+                      },
+                    ];
+                    // const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
                     return (
                       <div className="flex flex-col h-full p-2 bg-white">
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <div className="flex-1 flex items-center">
                           <ResponsiveContainer width="100%" height={400}>
                             <PieChart>
-                              <Tooltip />
+                              <Tooltip 
+                                formatter={(value, name, props) => {
+                                  const percentage = `${(value).toFixed(3)}`;
+                                  const count = props?.payload?.count;
+                                  return [`${percentage} Count: ${count} `, name];
+                                }}
+                              />
                               <Legend verticalAlign="bottom" />
                               <Pie
                                 data={pieData}
@@ -1391,7 +1462,11 @@ const handleExportGraph = () => {
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={160}
-                                label={({ name, value }) => `${name}: ${value}`}
+                                label={({ name, value, count }) => {
+                                  const percentage = (value).toFixed(3);
+                                  return `${name}: ${percentage} Count: ${count}`;
+                                }}
+                                labelLine={true}
                               >
                                 <Cell key="stable" fill="#10b981" />
                                 <Cell key="unstable" fill="#ef4444" />
