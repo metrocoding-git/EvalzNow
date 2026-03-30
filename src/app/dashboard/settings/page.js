@@ -45,7 +45,11 @@ export default function SettingsPage() {
           {helpDocs.map((doc) => (
             <li
               key={doc}
-              className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+              className={`cursor-pointer px-2 py-1 rounded ${
+                selectedDoc === doc
+                  ? "bg-gray-300"
+                  : "hover:bg-gray-100"
+              }`}
               onClick={() => openDoc(doc)}
             >
               {removePdfExtension(doc)}

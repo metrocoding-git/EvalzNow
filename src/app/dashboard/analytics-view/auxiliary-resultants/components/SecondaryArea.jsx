@@ -7,7 +7,8 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain, onSuccess  }) => {
+const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain, 
+  activeChainId, onSuccess  }) => {
   const [ppIdFrom, setPpIdFrom] = useState(-3);
   const [ppIdTo, setPpIdTo] = useState(3);
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
@@ -280,8 +281,13 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
 
           {/* Form */}
           <div className="flex-1 overflow-y-auto px-4 py-3">
+
+              <p className="text-xs font-semibold text-gray-800 pb-3">
+                 Assessment Chain {activeChainId}
+              </p>
             <div className="grid grid-cols-2 gap-2 text-sm max-w-xl">
 
+              
               {["selection1","selection2","selection3","selection4","selection5"].map((key, idx) => (
                 <React.Fragment key={key}>
                   <label className="text-gray-700">
@@ -328,6 +334,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-1 text-sm">
+
+
             {/* PP ID Range */}
             <div className="gap-1 text-xs p-2">
               <label className="block font-medium text-gray-700 mb-1">

@@ -355,27 +355,27 @@ const lobeData = [
           rows.push({
             ppId: pp.ppId,
             target: "Proficiency",
-            RMS1: lobes["Frontal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
-            RMS2: lobes["Occipital Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
-            RMS3: lobes["Parietal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
-            RMS4: lobes["Temporal Lobe - Left"]?.RMS?.toFixed(3) ?? "0",
-            RMS5: lobes["Frontal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
-            RMS6: lobes["Occipital Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
-            RMS7: lobes["Parietal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
-            RMS8: lobes["Temporal Lobe - Right"]?.RMS?.toFixed(3) ?? "0",
+            RMS1: lobes["Frontal Lobe - Left"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS2: lobes["Occipital Lobe - Left"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS3: lobes["Parietal Lobe - Left"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS4: lobes["Temporal Lobe - Left"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS5: lobes["Frontal Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS6: lobes["Occipital Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS7: lobes["Parietal Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
+            RMS8: lobes["Temporal Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
           });
   
           rows.push({
             ppId: pp.ppId,
             target: "Growth",
-            RMS1: lobes["Frontal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS2: lobes["Occipital Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS3: lobes["Parietal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS4: lobes["Temporal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS5: lobes["Frontal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS6: lobes["Occipital Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS7: lobes["Parietal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
-            RMS8: lobes["Temporal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0",
+            RMS1: lobes["Frontal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0.000.",
+            RMS2: lobes["Occipital Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS3: lobes["Parietal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS4: lobes["Temporal Lobe - Left"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS5: lobes["Frontal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS6: lobes["Occipital Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS7: lobes["Parietal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0.000",
+            RMS8: lobes["Temporal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0.000",
           });
         });
   
@@ -746,7 +746,7 @@ const handleExportGraph = () => {
         <span className='pl-2 text-md'>Entity Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
         {showNeuroObject && (
-          <div className="absolute top-0 left-0 z-50 w-[700px] h-[450px] bg-white shadow-2xl border border-gray-200 rounded-md">
+          <div className="absolute top-0 left-0 z-50 w-[650px] h-[450px] bg-white shadow-2xl border border-gray-200 rounded-md">
             <NeuroObject onClose={handleCloseNeuroObject} unitId={unitId} candidateId={candidateId} onSaved={refetchNeuroData} />
           </div>
         )}
@@ -790,15 +790,7 @@ const handleExportGraph = () => {
                     >
                       Export as JPG
                     </button>
-                    <button
-                      onClick={() => {
-                        exportAsPDF();
-                        setShowExportMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                    >
-                      Export as PDF
-                    </button>
+                    
                   </div>
                 )}
               </div>
@@ -839,7 +831,7 @@ const handleExportGraph = () => {
                           setActiveAdjustPropertieTab("Table");
                         } else {
                           setActiveChart(false);
-                          setActiveAdjustPropertieTab("Neuro Tools Table");
+                          setActiveAdjustPropertieTab("Indicators");
                         }
 
                       }}
@@ -958,7 +950,7 @@ const handleExportGraph = () => {
                           chartData.map((row, idx) => (
                             <tr key={idx} className="hover:bg-gray-50">
                               <td className="border px-2 py-1 text-center">{row.ppId}</td>
-                              <td className="border px-2 py-1 text-center">{row.rmsValue}</td>
+                              <td className="border px-2 py-1 text-center">{Number(row.rmsValue).toFixed(3)}</td>
                               <td className="border px-2 py-1 text-center">
                                 {chartConfig[selectedChart.id]?.target}
                               </td>
@@ -1030,14 +1022,14 @@ const handleExportGraph = () => {
                           <tr key={idx} className="hover:bg-blue-50">
                             <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
                             <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS1}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS2}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS3}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS4}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS5}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS6}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS7}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.RMS8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS1).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS2).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS3).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS4).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS5).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS6).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS7).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS8).toFixed(3)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1068,14 +1060,14 @@ const handleExportGraph = () => {
                           <tr key={idx} className="hover:bg-blue-50">
                             <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
                             <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive1}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive2}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive3}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive4}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive5}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive6}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive7}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.Cognitive8}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive1).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive2).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive3).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive4).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive5).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive6).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive7).toFixed(3)}</td>
+                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive8).toFixed(3)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1090,8 +1082,8 @@ const handleExportGraph = () => {
         {activeChart && (
           <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart ? `🔵 ${selectedChart.name}` : 'Select a plot'}
+            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4 mt-3">
+              {selectedChart ? `🔵 ${selectedChart.name}` : 'SELECT PLOT'}
             </h2>
 
             <div className="h-full overflow-auto m-5">
@@ -1175,9 +1167,6 @@ const handleExportGraph = () => {
         </div>
       </div>
     )}
-
-
-
 
     </>
   );
