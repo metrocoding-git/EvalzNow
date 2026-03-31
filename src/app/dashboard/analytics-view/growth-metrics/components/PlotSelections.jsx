@@ -892,7 +892,7 @@ const handleExportGraph = () => {
         <span className='pl-2 text-md'>Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
-      <div className="flex h-full w-full my-2">
+      <div className="flex h-full w-full">
         <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1'>
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
@@ -1141,10 +1141,10 @@ const handleExportGraph = () => {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200  bg-white ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col h-full bg-white">
 
-          <div className="h-full overflow-auto m-4 flex flex-col">
-            <div className="flex-1 flex flex-col ">
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
               {selectedChart ? (
                 (() => {
                   const projectionCharts = [
@@ -1246,11 +1246,11 @@ const handleExportGraph = () => {
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={450}>
+                        <div className="flex-1 min-h-0">
+                          <ResponsiveContainer width="100%" height="100%">
                             <LineChart 
                               data={positiveData}
-                              margin={{ top: 20, right: 20, left: 20, bottom: 75 }}
+                              margin={{ top: 30, right: 20, left: 20, bottom: 70 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
@@ -1348,10 +1348,10 @@ const handleExportGraph = () => {
                   if (selectedChart.type === "scatter") {
                     return (
                       <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.name}</h2>
-                        <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={450}>
-                            <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 75 }}>
+                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
+                        <div className="flex-1 min-h-0">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="dayCount" name="PP ID" tickFormatter={(value) => Number(value).toFixed(1)} >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1442,11 +1442,13 @@ const handleExportGraph = () => {
                     ];
                     // const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
                     return (
-                      <div className="flex flex-col h-full p-2 bg-white">
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={400}>
-                            <PieChart>
+                      <div className="flex flex-col h-full p-2 bg-white overflow-hidden">
+                        <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
+                          {selectedChart.icon} {selectedChart.name}
+                        </h2>
+                        <div className="flex-1 min-h-0">  
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart margin={{ }}>
                               <Tooltip 
                                 formatter={(value, name, props) => {
                                   const percentage = `${(value).toFixed(3)}`;
@@ -1454,14 +1456,21 @@ const handleExportGraph = () => {
                                   return [`${percentage} Count: ${count} `, name];
                                 }}
                               />
-                              <Legend verticalAlign="bottom" />
+                              <Legend
+                                verticalAlign="bottom"
+                                wrapperStyle={{
+                                  fontSize: "12px",
+                                  paddingTop: "4px",
+                                  marginBottom: "-6px",
+                                }}
+                              />
                               <Pie
                                 data={pieData}
                                 dataKey="value"
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={160}
+                                outerRadius="75%"
                                 label={({ name, value, count }) => {
                                   const percentage = (value).toFixed(3);
                                   return `${name}: ${percentage} Count: ${count}`;

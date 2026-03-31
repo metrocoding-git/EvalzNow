@@ -706,7 +706,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   
           console.log("eta value:: ", eta);
           return (
-            <AreaChart {...commonProps} width={600} height={400}>
+            <AreaChart {...commonProps} width="100%" height="100%">
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
@@ -800,7 +800,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           );
         }
         return (
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart {...commonProps}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
@@ -869,10 +869,10 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           const stepData = transformUniformData(chartData);
       
           return (
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart 
                 data={stepData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                margin={{ top: 10, right: 30, left: 20, bottom: 30 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
@@ -924,7 +924,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           );
         } else {
           return (
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart {...commonProps}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name">
@@ -966,8 +966,8 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           );
   
           return (
-            <ResponsiveContainer width={600} height={400}>
-              <LineChart data={chartData} margin={{ top: 40, right: 30, left: 20, bottom: 20 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name"
@@ -1004,7 +1004,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   align="center"
                   height={60}
                   wrapperStyle={{
-                    bottom: -25,
+                    bottom: -5,
                     paddingLeft: 10
                   }}
                 />
@@ -1103,9 +1103,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           
   
           return (
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} 
-                margin={{ top: 40, right: 30, left: 20, bottom: 20 }}>
+                margin={{ top: 20, right: 30, left: 20, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="name"
@@ -1142,7 +1142,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   align="center"
                   height={50}
                   wrapperStyle={{
-                    bottom: -20,
+                    bottom: 0,
                     paddingLeft: 60
                   }}
                 />
@@ -1221,7 +1221,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         
         default:
           return (
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart {...commonProps}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
@@ -1287,49 +1287,49 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     };
 
   // Helper functions for axis labels
-const getXAxisLabel = () => {
-  if (selectedChart.distribution === "uniform") {
-    return "Stable Status";
-  }
-  if (selectedChart.distribution.includes("weibull")) {
-    return "Value";
-  }
-  if (selectedChart.distribution === "chi-square") {
-    return "Chi-Square Value";
-  }
-  return "Z-Score";
-};
+  const getXAxisLabel = () => {
+    if (selectedChart.distribution === "uniform") {
+      return "Stable Status";
+    }
+    if (selectedChart.distribution.includes("weibull")) {
+      return "Value";
+    }
+    if (selectedChart.distribution === "chi-square") {
+      return "Chi-Square Value";
+    }
+    return "Z-Score";
+  };
 
-const getYAxisLabel = () => {
-  if (selectedChart.distribution === "uniform") {
-    return "X Value";
-  }
-  if (selectedChart.distribution === "exponential") {
-    return "Exponential Distribution";
-  }
+  const getYAxisLabel = () => {
+    if (selectedChart.distribution === "uniform") {
+      return "X Value";
+    }
+    if (selectedChart.distribution === "exponential") {
+      return "Exponential Distribution";
+    }
 
-  if (selectedChart.distribution === "f") {
-    return "F Distribution";
-  }
+    if (selectedChart.distribution === "f") {
+      return "F Distribution";
+    }
 
-  if (selectedChart.distribution === "beta") {
-    return "Beta Distribution";
-  }
+    if (selectedChart.distribution === "beta") {
+      return "Beta Distribution";
+    }
 
-  if (selectedChart.distribution.includes("weibull-pdf")) {
-    return "Distribution";
-  }
-  if (selectedChart.distribution.includes("weibull-cdf")) {
-    return "Distribution";
-  }
-  if (selectedChart.distribution.includes("weibull-risk")) {
-    return "Distribution";
-  }
-  if (selectedChart.distribution === "chi-square") {
-    return "Probability";
-  }
-  return "Standard Distribution";
-};
+    if (selectedChart.distribution.includes("weibull-pdf")) {
+      return "Distribution";
+    }
+    if (selectedChart.distribution.includes("weibull-cdf")) {
+      return "Distribution";
+    }
+    if (selectedChart.distribution.includes("weibull-risk")) {
+      return "Distribution";
+    }
+    if (selectedChart.distribution === "chi-square") {
+      return "Probability";
+    }
+    return "Standard Distribution";
+  };
   
 
   console.log("table data::->", tableData);
@@ -1680,13 +1680,13 @@ const getYAxisLabel = () => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1 justify-center" style={{ backgroundColor: chartProperties.shadeArea }} >
-          <div ref={chartInnerRef} className="h-full overflow-auto m-5 flex flex-col"> 
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 border-gray-200 ml-1 h-full" style={{ backgroundColor: chartProperties.shadeArea }} >
+          <div ref={chartInnerRef} className="h-full flex flex-col m-5">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
               {selectedChart.icon} {selectedChart.name}
             </h2>
 
-            <div className=" flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center min-h-0">
               {loading && (
                 <p className="text-center text-gray-600">Loading...</p>
               )}
@@ -1702,9 +1702,9 @@ const getYAxisLabel = () => {
               )}
 
               {!loading && !error && chartData && chartData.length > 0 && (
-                <ResponsiveContainer width="100%" height={400}>
-                  {renderChart()}
-                </ResponsiveContainer>
+                <div className="w-full h-full max-h-[600px]">
+                {renderChart()}
+              </div>
               )}
             </div>
 

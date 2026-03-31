@@ -47,12 +47,12 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     }
   
     return (
-      <div className="w-full ">
+      <div className="w-full h-full">
         {/* <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2> */}
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            margin={{ top: 20, right: 30, left: 20, bottom: 75 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

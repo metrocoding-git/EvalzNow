@@ -913,12 +913,56 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
   
 
+  // 
+  const ScatterSquare = ({ children, backgroundColor }) => {
+    const wrapperRef = useRef(null);
+    const [size, setSize] = useState(400);
+  
+    useEffect(() => {
+      // ✅ Observe the PARENT, not self — so the container doesn't influence its own measurement
+      const el = wrapperRef.current?.parentElement;
+      if (!el) return;
+  
+      const observer = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+        const square = Math.floor(Math.min(width, height)) - 16;
+        setSize(Math.max(square, 100)); // minimum 100px
+      });
+  
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
+  
+    return (
+      <div
+        ref={wrapperRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',   // ✅ prevent the square from pushing parent bigger
+        }}
+      >
+        <div style={{
+          width: size,
+          height: size,
+          flexShrink: 0,
+          overflow: 'hidden',
+        }}>
+          {children(size)}
+        </div>
+      </div>
+    );
+  };
+
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
   const containerStyle = {
     backgroundColor: chartProperties.shadeArea,
     width: '100%',
     aspectRatio: '1 / 1',
-    
   };
 
   const isTargetMode = filters?.unitMode === "target";
@@ -974,11 +1018,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   return (
-    <div style={containerStyle} className='flex justify-center '>
-      <ResponsiveContainer width="65%" height="68%">
-        <ScatterChart 
-          data={tableData}
-          margin={{ top: 130, right: 20, left: 0, bottom: 0 }}
+    <ScatterSquare backgroundColor={chartProperties.shadeArea}>
+      {(size) => (
+      <ResponsiveContainer width={size} height={size}>
+        <ScatterChart
+          margin={{ top: 10, right: 20, left: 0, bottom: 70 }}
         >
           <CartesianGrid />
           <XAxis 
@@ -1186,12 +1230,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                 />
               )}
             />
-          )}
-          
-          
-        </ScatterChart>
-      </ResponsiveContainer>
-    </div>
+          )}  
+          </ScatterChart>
+        </ResponsiveContainer>
+      )}
+    </ScatterSquare>
   );
 };
   
@@ -1515,9 +1558,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const negatives = tableData.filter(r => r.ppId < 0);
   
         return (
-          <div style={{ width: '100%'}}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart margin={{ top: 60, right: 20, left: 0, bottom: 70 }}>
+          <div style={{ width: '100%', height: '100%' }}>  
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart margin={{ top: 20, right: 20, left: 0, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
                   <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
@@ -1591,23 +1634,28 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         );
   
       case "2": // PR vs RR
-        return renderScatter(tableData, "RRN", "PRN", 
-          "Receptive Ratio (RR)",  
-          "Productive Ratio (PR)", unitSignature, unitType);
-  
+        return (
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "RRN", "PRN",  "Receptive Ratio (RR)",   "Productive Ratio (PR)", unitSignature, unitType) }
+          </div>
+        );
+        
       case "3": // AR vs RR
-        return renderScatter(tableData, "RRN", "ARN", 
-          "Receptive Ratio (RR)",
-          "Acuity Ratio (AR)", unitSignature, unitType);
+        return (
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "RRN", "ARN", "Receptive Ratio (RR)",  "Acuity Ratio (AR)", unitSignature, unitType)}
+          </div>
+        );
   
       case "4": // PR vs AR
-        return renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)",
-          "Acuity Ratio (AR)",
-          unitSignature, unitType);
-  
+        return  (
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)",  "Acuity Ratio (AR)",  unitSignature, unitType)}
+          </div>
+        );
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
-          <div style={{ position: 'relative', width: '100%', height: '700px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '650px' }}>
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full max-w-[900px] h-full">
                 {render3DScatter(tableData, unitType)}
@@ -2257,8 +2305,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </div>
             )}
 
-            <div className="h-full flex-1 flex items-center overflow-auto p-2">
-              {renderSelectedChart()}
+            <div className="h-full flex-1 flex items-center overflow-hidden p-2 min-h-0">  
+              <div className="w-full max-w-[900px] h-full">
+                {renderSelectedChart()}
+              </div>
             </div>
           </div>
         </div>
