@@ -952,7 +952,7 @@ export default function CurveEditor() {
     }
 
     return (
-      <ResponsiveContainer width="100%" height={430}>
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={pieData}
@@ -960,7 +960,7 @@ export default function CurveEditor() {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={140}
+            outerRadius="80%"
             
             label={({ name, value }) =>
               shouldFormatTwoDecimals(selectedChart.id)
@@ -985,7 +985,7 @@ export default function CurveEditor() {
               return [percentage, name];
             }} 
           />
-          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20 }} itemSorter={() => 0} />
+          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 20 }} itemSorter={() => 0} />
         </PieChart>
       </ResponsiveContainer>
     );
@@ -1041,7 +1041,7 @@ export default function CurveEditor() {
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
           <div className="m-5 flex flex-col h-full">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
-            <div className="flex-1 overflow-auto p-2">
+            <div className="flex-1 flex overflow-auto p-2">
               {renderChartContent()}
             </div>
           </div>
