@@ -1144,8 +1144,8 @@ const exportAsPDF = async () => {
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
                         <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={400}>
-                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 75 }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 50 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
                                 type="number"
@@ -1280,8 +1280,8 @@ const exportAsPDF = async () => {
                       <div ref={chartContainerRef} className="flex flex-col h-full p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                         <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height={400}>
-                            <ScatterChart margin={{ top: 20, right: 30, left:30, bottom: 75 }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ScatterChart margin={{ top: 20, right: 30, left:30, bottom: 50 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="ppId" name="PP ID" >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
@@ -1383,26 +1383,34 @@ const exportAsPDF = async () => {
                   
                     
                     return (
-                      <div className="flex flex-col h-full p-4 bg-white ">
-                        <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <div className='flex-1 flex items-center'>
-                          <ResponsiveContainer width="100%" height={400}>
-                            <PieChart>
-                              <Tooltip 
+                      <div className="flex flex-col h-full p-4 bg-white overflow-hidden">
+                        <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
+                          {selectedChart.icon} {selectedChart.name}
+                        </h2>
+                        <div className="flex-1 min-h-0">  
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart margin={{ top: 0, right: 30, left:30, bottom: 70 }}>
+                              <Tooltip
                                 formatter={(value, name, props) => {
                                   const percentage = `${(value).toFixed(3)}`;
                                   const count = props?.payload?.count;
                                   return [`${percentage} Count: ${count} `, name];
                                 }}
                               />
-                              <Legend verticalAlign="bottom" />
+                              <Legend
+                                verticalAlign="bottom"
+                                wrapperStyle={{
+                                  fontSize: "12px",
+                                  paddingTop: "4px",
+                                }}
+                              />
                               <Pie
                                 data={pieData}
                                 dataKey="value"
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={160}
+                                outerRadius="80%" 
                                 label={({ name, value, count }) => {
                                   const percentage = (value).toFixed(3);
                                   return `${name}: ${percentage} Count: ${count}`;

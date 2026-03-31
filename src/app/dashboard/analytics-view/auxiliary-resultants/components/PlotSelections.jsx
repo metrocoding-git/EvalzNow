@@ -1817,8 +1817,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           );
         }
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={csdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={csdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
               <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} dx={-15} textAnchor='middle' />
@@ -1842,8 +1842,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           );
         }
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={usdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={usdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
               <YAxis label={{ value: "Days", angle: -90, position: "insideLeft" }} dy={0} dx={-15} textAnchor='middle' />
@@ -1866,8 +1866,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           );
         }
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpCsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={BpCsdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
               <YAxis label={{ value: "Productivity CSD", angle: -90, position: "center", dx: -30 }} dy={0} dx={-13} textAnchor='middle' />
@@ -1896,8 +1896,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           );
         }
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={BpUsdChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={BpUsdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
               <YAxis label={{ value: "Productivity USD", angle: -90, position: "center", dx: -30  }}
@@ -1943,15 +1943,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           percentageValue: total > 0 ? (item.value / total) : 0
         }));
         return (
-          <ResponsiveContainer width="100%" height={400}>
+          <div className="w-full h-full">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={attendanceDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="50%"
-                outerRadius={120}
+                cy="42%"
+                outerRadius="80%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
                   return `${name}: ${percentDisplay} Count: ${value}`;
@@ -1973,9 +1974,12 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   return [`${percentDisplay} Count: ${value}`, name];
                 }}
               />
-              <Legend />
+              <Legend verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingBottom: 55 }} />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         );
       }
       
@@ -1998,15 +2002,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           percentageValue: total > 0 ? (item.value / total) : 0
         }));
         return (
-          <ResponsiveContainer width="100%" height={400}>
+          <div className="w-full h-full">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
             <Pie
                 data={engageDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="50%"
-                outerRadius={120}
+                cy="42%"
+                outerRadius="80%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
                   return `${name}: ${percentDisplay} Count: ${value}`;
@@ -2028,9 +2033,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   return [`${percentDisplay} Count: ${value}`, name];
                 }}
               />
-              <Legend />
+              <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 55 }} />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         );
       }
 
@@ -2053,15 +2059,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           percentageValue: total > 0 ? (item.value / total) : 0
         }));
         return (
-          <ResponsiveContainer width="100%" height={400}>
+          <div className="w-full h-full">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={unitOutcomeDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="50%"
-                outerRadius={120}
+                cy="42%"
+                outerRadius="80%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
                   return `${name}: ${percentDisplay} Count: ${value}`;
@@ -2083,9 +2090,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   return [`${percentDisplay} Count: ${value}`, name];
                 }}
               />
-              <Legend />
+              <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 55 }} />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         );
       }
 
@@ -2108,15 +2116,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           percentageValue: total > 0 ? (item.value / total) : 0
         }));
         return (
-          <ResponsiveContainer width="100%" height={400}>
+          <div className="w-full h-full">
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
             <Pie
                 data={needAssessmentDataWithPercentage}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="50%"
-                outerRadius={120}
+                cy="42%"
+                outerRadius="80%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
                   return `${name}: ${percentDisplay} Count: ${value}`;
@@ -2138,9 +2147,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                   return [`${percentDisplay} Count: ${value}`, name];
                 }}
               />
-              <Legend />
+              <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 55 }} />
             </PieChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> 
+          </div>
         );
       }
       
@@ -2167,8 +2177,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         const uniquePpIds = [...new Set(sortedData.map(item => item.ppId))];
         
         return (
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 20, left: 30, bottom: 20 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 20, left: 30, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="ppId" 
@@ -2201,7 +2211,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 ]}
               />
               <Legend verticalAlign="bottom"  align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+                              wrapperStyle={{ paddingTop: 10, paddingLeft: 50 }} />
               <Scatter 
                 name={yLabel} 
                 data={sortedData} 
@@ -2217,8 +2227,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     
       // Default fallback chart
       return (
-        <ResponsiveContainer width="100%" height="95%">
-          <LineChart data={floatChartData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={floatChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name">
               <Label value="Time Period (X)" offset={-10} position="insideBottom" />
@@ -2228,7 +2238,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             </YAxis>
             <Tooltip />
             <Legend verticalAlign="bottom"  align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+                              wrapperStyle={{ paddingTop: 10, paddingLeft: 50 }} />
             <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
             <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
             <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
@@ -2675,31 +2685,27 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className={`w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200  bg-gray-100 ml-1`} style={{ backgroundColor: chartProperties.shadeArea }}>
+        <div ref={chartContainerRef} className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
           {selectedChart ? (
-            <h2 className="text-lg text-center font-semibold text-gray-700 my-3">
+            <h2 className="text-lg text-center font-semibold text-gray-700 my-3 flex-shrink-0">
               {selectedChart.icon} {selectedChart.name}
             </h2>
           ) : (
             <div className="flex justify-center text-gray-400 text-lg mt-2">
-              SELECT PLOT OR TABLE 
+              SELECT PLOT OR TABLE
             </div>
           )}
 
-          <div
-            className={`h-full overflow-y-auto overflow-x-auto mb-16 p-3 ${
-              isChart ? "flex items-center justify-center" : ""
-            }`}
-          >
-            <div className={`${isChart ? "w-full max-w-5xl" : "min-w-max"}`}>
+          {/* ✅ flex-1 min-h-0 so it fills remaining height without overflow */}
+          <div className={`flex-1 min-h-0 p-3 ${isChart ? "flex items-center justify-center" : "overflow-y-auto overflow-x-auto"}`}>
+            <div className={`${isChart ? "w-full h-full" : "min-w-max"}`}>
               {renderChartContent()}
             </div>
           </div>
 
         </div>
       </div>
-
     </>
   );
 }
