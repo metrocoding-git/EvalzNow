@@ -273,6 +273,13 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     return isNaN(num) ? "-" : num.toFixed(2);
   };
   
+  const isSubmitDisabled = useMemo(() => {
+    const first = Number(rows[0]?.PP_ID);
+    const second = Number(rows[1]?.PP_ID);
+    const third = Number(rows[2]?.PP_ID);
+  
+    return !(first > 0 && second > 0 && third > 0);
+  }, [rows]);
 
   const allPpIds = useMemo(
     () =>
@@ -861,8 +868,12 @@ const handleSubmit = async () => {
 
         <div className="flex justify-end items-center border-t border-gray-300 py-2 px-6 bg-gray-50 ">
         
-          <button onClick={handleSubmit} 
-            className="px-4 py-1 bg-gray-200 hover:bg-gray-300 text-sm transition-colors">
+          <button onClick={handleSubmit}  disabled={isSubmitDisabled}
+            className={`px-4 py-1 text-sm transition-colors
+              ${isSubmitDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
+          >
             Submit 
           </button>
         </div>

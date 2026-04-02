@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createAssessmentChain, createCandidateMarks } from "@/services/auxiliaryService";
 import { getInsertScoreByUnitAndCandidate } from "@/services/insertScoreService";
 import { getUnitAndMultipleCandidateSummary } from "@/services/tabulationTableService";
@@ -23,6 +24,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
     
   const [tableData, setTableData] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setFormStatus } = useFormStatus();
 
   const handleChange = (label, value) => {
     const selectedItem = ppIdList.find(
@@ -139,7 +141,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
   }, [unitId, candidateId]);
   
 
-console.log("table data check proper:", tableData)
+  console.log("table data check proper:", tableData)
   const selectedValues = Object.values(form).filter(Boolean);
 
 
@@ -198,6 +200,7 @@ console.log("table data check proper:", tableData)
       return;
     }
   
+    setFormStatus("Processing");
     setIsSubmitting(true);
   
     try {
@@ -215,14 +218,18 @@ console.log("table data check proper:", tableData)
   
       if (response) {
         onSuccess();
+        
         onClose();
+        setFormStatus("Assessment Chain Created");
       }
   
     } catch (error) {
       console.error("API Error:", error);
       toast.error("Failed to save entry.");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
+      
     }
   };
   

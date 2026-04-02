@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createCandidateMarks, createUnitImprovement } from "@/services/auxiliaryService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState } from "react";
@@ -7,7 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId}) {
   const [form, setForm] = useState({
     lesson: ""});
-
+  const { setFormStatus } = useFormStatus();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (label, value) => {
@@ -33,7 +34,7 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
       toast.error("Concern Identified cannot exceed 80 characters.");
       return;
     }
-  
+    setFormStatus("Processing...");
     setIsSubmitting(true);
   
     try {
@@ -51,11 +52,15 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
       if (response) {
         onSuccess();
         onClose();
+        setFormStatus("Assessment Chain Created");
+        
       }
     } catch (error) {
       toast.error("Failed to save entry.");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
+      
     }
   };
   

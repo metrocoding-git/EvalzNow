@@ -860,15 +860,15 @@ export default function CurveEditor() {
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">Select a plot from the list</p>
+        <div className="flex justify-center items-start w-full h-full ">
+          <p className="text-gray-500 uppercase">Select a plot from the list</p>
         </div>
       );
     }
 
     if (loading) {
       return (
-        <div className="flex justify-center items-center h-full text-gray-500">
+        <div className="flex justify-center items-start w-full h-full  text-gray-500 uppercase">
           Loading...
         </div>
       );
@@ -876,7 +876,7 @@ export default function CurveEditor() {
 
     if (selectedChart.type === "table") {
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-17 mt-5">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-17 ">
           <table className="table-auto w-full text-xs ">
             <thead className="bg-gray-100">
               <tr>
@@ -945,7 +945,7 @@ export default function CurveEditor() {
     if ( !pieData.length || pieData.reduce((sum, d) => sum + d.value, 0) === 0) {
     
       return (
-        <div className="flex justify-center items-center h-full text-gray-400">
+        <div className="flex justify-center items-start w-full h-full  text-gray-400 uppercase">
           No data available
         </div>
       );

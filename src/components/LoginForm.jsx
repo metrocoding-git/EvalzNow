@@ -82,7 +82,7 @@ export default function LoginForm() {
   
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
   
-        <div className="text-center text-xs cursor-pointer">
+        <div className="text-center text-xs cursor-pointer" onClick={() => router.push("/accountRecovery")}>
           RECOVER PASSWORD
         </div>
   

@@ -723,7 +723,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               </XAxis>
   
               <YAxis domain={[0, 1]} tickFormatter={(value) => Number(value).toFixed(2)} >
-                <Label value="Distribution" angle={-90} position="insideLeft" textAnchor="middle" dx={-15} />
+                <Label value="Weibull Distribution" angle={-90} position="insideLeft" textAnchor="middle" dx={-15} />
               </YAxis>
               <Tooltip 
                 formatter={(value, name) => {
@@ -731,7 +731,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                     cdf: 'Cumulative Distribution (F)',
                     reliability: 'Reliability (R)'
                   };
-                  return [`${value.toFixed(4)}`, labels[name] || name];
+                  return [`${value.toFixed(3)}`, labels[name] || name];
                 }}
                 labelFormatter={(label) => `t = ${label}`}
               />
@@ -794,7 +794,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 stroke="#10b981"
                 fill="#10b981"
                 fillOpacity={0}
-                name="Reliability R(t))"
+                name="Reliability R(t)"
               />
             </AreaChart>
           );
@@ -980,7 +980,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                 <YAxis
                   tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: "Distribution",
+                    value: "Weibull Distribution",
                     angle: -90,
                     position: "insideLeft",
                     textAnchor: "middle",
@@ -995,7 +995,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                       pdf: 'Probability Density f(t)',
                       cumulative: 'Cumulative F(t)'
                     };
-                    return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                    return [`${parseFloat(value).toFixed(3)}`, labels[name] || name];
                   }}
                   labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
                 />
@@ -1119,7 +1119,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   domain={[0, 1]}
                   tickFormatter={(value) => Number(value).toFixed(2)} 
                   label={{
-                    value: "Distribution",
+                    value: "Weibull Distribution",
                     angle: -90,
                     position: "insideLeft",
                     textAnchor: "middle",
@@ -1133,7 +1133,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                       risk: 'Risk (1 - R)',
                       reliability: 'Reliability R(t)'
                     };
-                    return [`${parseFloat(value).toFixed(4)}`, labels[name] || name];
+                    return [`${parseFloat(value).toFixed(3)}`, labels[name] || name];
                   }}
                   labelFormatter={(label) => `t = ${parseFloat(label).toFixed(3)}`}
                 />

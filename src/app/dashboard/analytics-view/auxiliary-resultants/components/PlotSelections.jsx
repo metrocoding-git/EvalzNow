@@ -24,6 +24,7 @@ import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import { div } from 'three/src/nodes/math/OperatorNode';
+import { useFormStatus } from '@/context/FormStatusContext';
 
 const ROSTER_SUM_KEYS = [
   "totalTally",
@@ -39,7 +40,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
-
+  const { setFormStatus } = useFormStatus();
   const [ScoreAdd, setScoreAdd] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -276,18 +277,22 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   // };
 
   const handleCandidateMarkForm = () => {
+    setFormStatus("Creating...");
     oncandidateFormOpen(true);  
   };
 
   const handleCreateChainForm = () => {
+    setFormStatus("Creating...");
     onCreateChainFormOpen(true);  
   };
 
   const handleUnitImprovementsForm = () => {
+    setFormStatus("Creating...");
     onUnitImprovementFormOpen(true);  // or whatever state your parent expects
   };
 
   const handleLeaderMarksForm = () => {
+    setFormStatus("Creating");
     onLeaderMarkFormOpen(true);  // or whatever state your parent expects
   };
   
@@ -1229,11 +1234,22 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     const hasCandidateData = auxData.length > 0 && candidateId && (!Array.isArray(candidateId) || candidateId.length > 0);
 
     if (
+      selectedSort === "activateUnitLevel" && selectedChart.type === "table" &&
+      (!candidateId || (Array.isArray(candidateId) && candidateId.length === 0))
+    ) {
+      return (
+        <div className="flex justify-center h-full">
+          <p className="text-gray-500 uppercase">add {selectedChart.name}</p>
+        </div>
+      );
+    }
+
+    if (
       selectedSort === "activateUnitLevel" &&
       (!candidateId || (Array.isArray(candidateId) && candidateId.length === 0))
     ) {
       return (
-        <div className="flex items-center justify-center h-full">
+        <div className="flex justify-center h-full">
           <p className="text-gray-500 uppercase">Select a candidate to view</p>
         </div>
       );
@@ -1318,7 +1334,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             />
           )}
     
-          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-10">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-16">
             <table className="table-auto w-full border border-gray-300">
               <thead className="whitespace-nowrap bg-gray-50">
                 <tr>
@@ -1474,7 +1490,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
             />
           )}
 
-          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm pb-20">
             <table className="table-auto w-full border border-gray-300">
               <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
@@ -1522,7 +1538,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-6">
+        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-6 pb-20">
     
           {chainData.map((chain, chainIndex) => {
             const isActive = activeChainId === chain.chainId;
@@ -1574,9 +1590,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                             </td>
                             <td className="whitespace-nowrap border border-gray-300 px-2 py-1 ">
                               {[
-                                sel.RRN !== null && `RRN: ${sel.RRN}`,
-                                sel.PRN !== null && `PRN: ${sel.PRN}`,
-                                sel.ARN !== null && `ARN: ${sel.ARN}`,
+                                sel.RRN !== null && `RRN: ${Number(sel.RRN).toFixed(3)}`,
+                                sel.PRN !== null && `PRN: ${Number(sel.PRN).toFixed(3)}`,
+                                sel.ARN !== null && `ARN: ${Number(sel.ARN).toFixed(3)}`,
                               ]
                                 .filter(Boolean)
                                 .join(", ")}
@@ -1652,7 +1668,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
       
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-8">
+        <div className="text-xs text-gray-600 mt-2 w-full pr-2 space-y-8 pb-15">
     
           {sortedFinalTableData.map((sel, idx) => (
             <div
@@ -1768,7 +1784,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
         );
       }
       return (
-        <div className="text-xs text-gray-600 mt-2 w-full overflow-x-auto  bg-white shadow-sm">
+        <div className="text-xs text-gray-600 mt-2 w-full overflow-x-auto  bg-white pb-15">
           <table className="table-auto w-full text-xs border border-gray-300">
             <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
               <tr>
@@ -1951,11 +1967,11 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="42%"
-                outerRadius="80%"
+                cy="50%"
+                outerRadius="75%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} Count: ${value}`;
+                  return `${name}: ${percentDisplay} `;
                 }}
                 labelLine={true}
               >
@@ -1976,7 +1992,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               />
               <Legend verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingBottom: 55 }} />
+                wrapperStyle={{ paddingBottom: 40 }} />
             </PieChart>
           </ResponsiveContainer>
           </div>
@@ -2010,11 +2026,11 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="42%"
-                outerRadius="80%"
+                cy="50%"
+                outerRadius="75%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} Count: ${value}`;
+                  return `${name}: ${percentDisplay}`;
                 }}
                 labelLine={true}
               >
@@ -2067,11 +2083,11 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="42%"
-                outerRadius="80%"
+                cy="50%"
+                outerRadius="70%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} Count: ${value}`;
+                  return `${name}: ${percentDisplay} `;
                 }}
                 labelLine={true}
               >
@@ -2124,11 +2140,11 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="42%"
-                outerRadius="80%"
+                cy="50%"
+                outerRadius="70%"
                 label={({ name, value, percentage }) => {
                   const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} Count: ${value}`;
+                  return `${name}: ${percentDisplay} `;
                 }}
                 labelLine={true}
               >
@@ -2482,7 +2498,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              {( selectedSort === 'activateUnitLevel' && selectedChart?.id === 7) && (
+              {( selectedSort === 'activateUnitLevel' && selectedChart?.id === 7 && Array.isArray(candidateId) &&
+  candidateId.length > 0) && (
                 <button
                   onClick={handleUnitImprovementsForm}
                   title="Add Unit Improvement"
@@ -2493,7 +2510,8 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              { (selectedSort === 'activateUnitLevel' && selectedChart?.id) === 8 && (
+              { (selectedSort === 'activateUnitLevel' && selectedChart?.id === 8 && Array.isArray(candidateId) &&
+  candidateId.length > 0)  && (
                 <button
                   onClick={handleLeaderMarksForm}
                   title="Add Unit Improvement"

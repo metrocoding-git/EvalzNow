@@ -509,6 +509,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   };
 
 
+  useEffect(() => {
+    setCurves({ rr: [], pr: [], ar: [] });
+    setGrowthMetric([]);
+  }, [candidateId, unitId]);
+  
   // Function to render dot based on symbol style
   const renderCustomDot = (props, color) => {
     const { cx, cy } = props;

@@ -9,8 +9,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unitId, candidateId, selectedChartKey, selectedAssessmentChain, 
   activeChainId, onSuccess  }) => {
-  const [ppIdFrom, setPpIdFrom] = useState(-3);
-  const [ppIdTo, setPpIdTo] = useState(3);
+  const [ppIdFrom, setPpIdFrom] = useState("");
+  const [ppIdTo, setPpIdTo] = useState("");
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
@@ -22,8 +22,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
     const [error, setError] = useState(null);
 
   useEffect(() => {
-    setPpIdFrom(-3);
-    setPpIdTo(3);
+    setPpIdFrom("");
+    setPpIdTo("");
     setCriticalDateFrom("");
     setCriticalDateTo("");
     setThresholdEnabled(false);

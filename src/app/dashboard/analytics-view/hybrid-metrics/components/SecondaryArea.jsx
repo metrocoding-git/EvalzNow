@@ -3,8 +3,8 @@ import { Edit } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass, onSubmit, resetSignal }) => {
-  const [ppIdFrom, setPpIdFrom] = useState(-3);
-  const [ppIdTo, setPpIdTo] = useState(3);
+  const [ppIdFrom, setPpIdFrom] = useState("");
+  const [ppIdTo, setPpIdTo] = useState("");
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
@@ -18,8 +18,8 @@ const SecondaryInputForm = ({ onClose, selectedSort, isSelectedInteractionClass,
   const ppIds = [-3, -2, -1, 1, 2, 3];
 
   useEffect(() => {
-    setPpIdFrom(-3);
-    setPpIdTo(3);
+    setPpIdFrom("");
+    setPpIdTo("");
     setCriticalDateFrom("");
     setCriticalDateTo("");
     setThresholdEnabled(false);

@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createCandidateMarks, createLeaderMarks } from "@/services/auxiliaryService";
 import { getUnitById } from "@/services/unitService";
 import { ListFilterPlus, X } from "lucide-react";
@@ -20,6 +21,8 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaderData, setleaderData] = useState();
+  const { setFormStatus } = useFormStatus();
+
   const todayStr = new Date().toISOString().split("T")[0];
 
   const handleChange = (label, value) => {
@@ -64,7 +67,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
       toast.error("Concern Identified cannot exceed 80 characters.");
       return;
     }
-
+    setFormStatus("Processing...");
     setIsSubmitting(true);
 
     try {
@@ -84,12 +87,15 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
       if (response) {
         onSuccess();
         onClose();
+        setFormStatus("Leader Mark Created");
       }
 
     } catch (error) {
       toast.error("Failed to save entry.");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
+
     }
   };
 
