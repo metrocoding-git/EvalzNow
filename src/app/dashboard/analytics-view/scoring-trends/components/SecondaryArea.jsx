@@ -5,8 +5,8 @@ import { Edit, X } from "lucide-react";
 import { useState } from "react";
 
 const SecondaryInputForm = ({ onClose }) => {
-  const [ppIdFrom, setPpIdFrom] = useState(-3);
-  const [ppIdTo, setPpIdTo] = useState(3);
+  const [ppIdFrom, setPpIdFrom] = useState();
+  const [ppIdTo, setPpIdTo] = useState();
   const [criticalDate, setCriticalDate] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
 

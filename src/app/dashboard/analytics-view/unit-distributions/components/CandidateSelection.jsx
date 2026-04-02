@@ -157,7 +157,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
         </div>
 
         {/* Table */}
-        <div className="p-6 text-sm">
+        <div className="p-6 text-xs">
           <table className="min-w-full border border-gray-300">
             <thead className="bg-gray-100">
               <tr>

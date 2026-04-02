@@ -557,7 +557,7 @@ export default function DataReports() {
               {/* Right Panel */}
               {RightPanelOpen && (
                 <div className="w-6/12 lg:w-8/12 bg-white flex flex-col  border-2 ml-1 h-full border-gray-200 ">
-                  <div className="flex-1 flex flex-col items-center justify-center h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
+                  <div className="flex-1 flex flex-col items-center justify-center pb-15 h-full bg-white shadow-md p-6 overflow-y-auto space-y-4">
                     {/* Report Extraction Options */}
 
                     <div className="flex flex-col justify-center items-center text-base font-semibold text-gray-800 my-8 leading-relaxed">

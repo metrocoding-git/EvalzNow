@@ -362,7 +362,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
       speaking: "Speaking",
       writing: "Writing",
       theory: "Theory",
-      practical: "Practical",
+      practical: "Practice",
       receptive: "Receptive",
       productive: "Productive",
       acuity: "Acuity",
@@ -937,7 +937,7 @@ const getStableColor = (key) => {
                           {renderTable("Positive PP IDs", positiveCompetencies)}
                           {renderTable("Negative PP IDs", negativeCompetencies)}
                           {Object.keys(positiveCompetencies).length === 0 && Object.keys(negativeCompetencies).length === 0 && (
-                            <div className="text-center text-gray-500 py-4">No data available</div>
+                            <div className="text-center text-gray-500 py-4 uppercase">No data available</div>
                           )}
                         </>
                       );
@@ -949,7 +949,7 @@ const getStableColor = (key) => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1`} 
+        <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col p-5 border-2 h-full border-gray-200 ml-1`} 
           style={{ backgroundColor: chartProperties.shadeArea }}>
           <div ref={chartInnerRef} className="h-full overflow-auto mx-5 mt-5 mb-2 flex flex-col">
             <h2
@@ -978,7 +978,7 @@ const getStableColor = (key) => {
                     chartProperties.shadeArea +
                     selectedChart.key
                   }
-                  margin={{ top: 10, right: 30, left: 20, bottom: 50 }}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
 
@@ -988,7 +988,8 @@ const getStableColor = (key) => {
                     domain={["dataMin", "dataMax"]}
                     allowDecimals={false}
                     label={{
-                      value: ["attained", "max"].includes(selectedChart?.key)
+                      value: ["attained", "max", "listening", "reading", "speaking", "writing", "theory",
+                          "practical", "receptive", "productive", "acuity"].includes(selectedChart?.key)
                         ? "PP ID"
                         : "Insert Score Row Counter",
                       position: "insideBottom",

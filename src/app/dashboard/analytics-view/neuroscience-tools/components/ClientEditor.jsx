@@ -363,24 +363,24 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
 
                 {/* Lobe Rows */}
                 {expanded[lobe] && (
-                  <table className="table-auto w-full text-sm border-t border-gray-300">
+                  <table className="table-auto w-full text-xs border-t border-gray-300">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-left">
+                        <th className="border border-gray-300 px-2 py-1 text-left">
                           Cognitive Function
                         </th>
-                        <th className="border border-gray-300 px-3 py-2 text-left">
+                        <th className="border border-gray-300 px-2 py-1 text-left">
                           Value
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {grouped[lobe].map((row) => (
-                        <tr key={row.idx} className="hover:bg-gray-50">
-                          <td className="border border-gray-300 px-3 py-2">
+                        <tr key={row.idx} className="hover:bg-gray-50 text-xs">
+                          <td className="border border-gray-300 px-2 py-1">
                             {row.func}
                           </td>
-                          <td className="border border-gray-300 px-3 py-2">
+                          <td className="border border-gray-300 px-2 py-1">
                             <select
                               value={answers[row.idx] || ""}
                               onChange={(e) => handleChange(row.idx, e.target.value)}

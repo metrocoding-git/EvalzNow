@@ -19,6 +19,7 @@ import UnitImprovementForm from "./components/UnitImprovementForm";
 import LeaderMarksForm from "./components/LeaderMarksForm";
 import SecondaryInputForm from "./components/SecondaryArea";
 import CreateChainForm from "./components/CreateChainForm";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 export default function AuxiliaryResultants() {
   const tabs = [
@@ -31,7 +32,7 @@ export default function AuxiliaryResultants() {
 
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
   const [selectedAssessmentChain, setSelectedAssessmentChain] = useState(null);
-
+  const { setFormStatus } = useFormStatus();
   const [showCandidateMarksForm, setShowCandidateMarksForm] = useState(false);
   const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
   const [showLeaderMarkForm, setShowLeaderMarkForm] = useState(false);
@@ -404,8 +405,14 @@ export default function AuxiliaryResultants() {
                     <div className="relative bg-white w-1/2 h-90 rounded-lg shadow-2xl border border-gray-300 z-50">
                       <CandidateMarksForm unitId={selectedUnitId} candidateId={activeCandidateId}
                         entryNumber={1} 
-                        onClose={() => setShowCandidateMarksForm(false)}
-                        onSuccess={() => setRefreshMarks(prev => prev + 1)}
+                        onClose={() => {
+                          setFormStatus("Ready..");
+                          setShowCandidateMarksForm(false)}
+                        }
+                        onSuccess={() => {
+                          setRefreshMarks(prev => prev + 1)
+                          setFormStatus("Candidate Mark Created");
+                        }}
                       />
                     </div>
                   </div>
@@ -417,8 +424,14 @@ export default function AuxiliaryResultants() {
                     {/* Form container */}
                     <div className="relative bg-white w-1/2 h-90 rounded-lg shadow-2xl border border-gray-300 z-50">
                       <CreateChainForm unitId={selectedUnitId} candidateId={activeCandidateId}
-                        onClose={() => setShowCreateForm(false)}
-                        onSuccess={() => setRefreshChainData(prev => prev + 1)}
+                        onClose={() => {
+                          setFormStatus("Ready..");
+                          setShowCreateForm(false);}
+                        }
+                        onSuccess={() => {
+                          setRefreshChainData(prev => prev + 1)
+                          setFormStatus("Assessment Chain Created");
+                        }}
                       />
                     </div>
                   </div>
@@ -436,8 +449,14 @@ export default function AuxiliaryResultants() {
                             ? selectedCandidateIds          // <-- multiple selected
                             : activeCandidateId             // <-- single candidate
                         }
-                        onClose={() => setShowUnitImprovementForm(false)}
-                        onSuccess={() => setRefreshUnitImprovement(prev => prev + 1)}
+                        onClose={() => {
+                          setFormStatus("Ready..");
+                          setShowUnitImprovementForm(false)}
+                        }  
+                        onSuccess={() => {
+                          setRefreshUnitImprovement(prev => prev + 1)
+                          setFormStatus("Unit Improvement Created");
+                        }}
                       />
                     </div>
                   </div>
@@ -456,8 +475,14 @@ export default function AuxiliaryResultants() {
                             ? selectedCandidateIds          // <-- multiple selected
                             : activeCandidateId             // <-- single candidate
                         }
-                        onClose={() => setShowLeaderMarkForm(false)}
-                        onSuccess={() => setRefreshLeaderMarks(prev => prev + 1)}
+                        onClose={() => {
+                          setFormStatus("Ready..");
+                          setShowLeaderMarkForm(false)}
+                        }  
+                        onSuccess={() => {
+                          setRefreshLeaderMarks(prev => prev + 1)
+                          setFormStatus("Leader Mark Created");
+                        }}
                       />
                     </div>
                   </div>

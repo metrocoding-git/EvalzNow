@@ -389,27 +389,25 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
 
   const renderReferenceLinesForLineChart = () => {
-    if (!thresholdValue || !filters?.thresholdEnabled) return null;
-
-    return Object.entries(thresholdValue).map(([key, value]) => {
-      if (value === null || value === undefined) return null;
-      
-      return (
-        <ReferenceLine
-          key={key}
-          y={value}
-          stroke="#000000" //
-          strokeWidth={2}
-          strokeDasharray="7 4 1 4"
-          label={{
-            value: `Threshold (${key}: ${value})`,
-            position: "right",
-            fill: "#000000",
-            fontSize: 12,
-          }}
-        />
-      );
-    });
+    if (!filters?.thresholdEnabled) return null;
+  
+    // Use default value 2.0 if threshold is missing
+    const yValue = thresholdValue?.IC ?? 2.0;
+  
+    return (
+      <ReferenceLine
+        y={yValue}
+        stroke="#000000"
+        strokeWidth={2}
+        strokeDasharray="7 4 1 4"
+        label={{
+          value: `Threshold (IC: ${yValue})`,
+          position: "right",
+          fill: "#000000",
+          fontSize: 12,
+        }}
+      />
+    );
   };
 
   // Function to render reference lines for Scatter charts
@@ -600,7 +598,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
-  console.log("average datas: ", averageData);
+  console.log("growth target data: ", growthTargetData);
 
   
 
@@ -756,70 +754,108 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     });
   };
 
+  // const getGrowthTargetPoints = (chartId, growthTargetData) => {
+  //   if (!growthTargetData || growthTargetData.length === 0) return [];
+  
+  //   const points = [];
+  
+  //   growthTargetData.forEach(item => {
+  //     switch (chartId) {
+  //       case "2": // RR vs PR (X: RRN, Y: PRN)
+  //         // Only add points where both values are non-zero
+  //         if (item.RRGT1 > 0 || item.PRGT1 > 0) {
+  //           points.push({ RRN: item.RRGT1, PRN: item.PRGT1, ppId: item.ppId, gt: "GT1" });
+  //         }
+  //         if (item.RRGT2 > 0 || item.PRGT2 > 0) {
+  //           points.push({ RRN: item.RRGT2, PRN: item.PRGT2, ppId: item.ppId, gt: "GT2" });
+  //         }
+  //         if (item.RRGT3 > 0 || item.PRGT3 > 0) {
+  //           points.push({ RRN: item.RRGT3, PRN: item.PRGT3, ppId: item.ppId, gt: "GT3" });
+  //         }
+  //         if (item.RRGT4 > 0 || item.PRGT4 > 0) {
+  //           points.push({ RRN: item.RRGT4, PRN: item.PRGT4, ppId: item.ppId, gt: "GT4" });
+  //         }
+  //         if (item.RRGT5 > 0 || item.PRGT5 > 0) {
+  //           points.push({ RRN: item.RRGT5, PRN: item.PRGT5, ppId: item.ppId, gt: "GT5" });
+  //         }
+  //         break;
+  
+  //       case "3": // AR vs RR (X: RRN, Y: ARN)
+  //         if (item.RRGT1 > 0 || item.ARGT1 > 0) {
+  //           points.push({ RRN: item.RRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
+  //         }
+  //         if (item.RRGT2 > 0 && item.ARGT2 > 0) {
+  //           points.push({ RRN: item.RRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
+  //         }
+  //         if (item.RRGT3 > 0 || item.ARGT3 > 0) {
+  //           points.push({ RRN: item.RRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
+  //         }
+  //         if (item.RRGT4 > 0 || item.ARGT4 > 0) {
+  //           points.push({ RRN: item.RRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
+  //         }
+  //         if (item.RRGT5 > 0 || item.ARGT5 > 0) {
+  //           points.push({ RRN: item.RRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
+  //         }
+  //         break;
+  
+  //       case "4": // PR vs AR (X: PRN, Y: ARN)
+  //         if (item.PRGT1 > 0 || item.ARGT1 > 0) {
+  //           points.push({ PRN: item.PRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
+  //         }
+  //         if (item.PRGT2 > 0 || item.ARGT2 > 0) {
+  //           points.push({ PRN: item.PRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
+  //         }
+  //         if (item.PRGT3 > 0 || item.ARGT3 > 0) {
+  //           points.push({ PRN: item.PRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
+  //         }
+  //         if (item.PRGT4 > 0 || item.ARGT4 > 0) {
+  //           points.push({ PRN: item.PRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
+  //         }
+  //         if (item.PRGT5 > 0 || item.ARGT5 > 0) {
+  //           points.push({ PRN: item.PRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
+  //         }
+  //         break;
+  
+  //       default:
+  //         break;
+  //     }
+  //   });
+  
+  //   console.log("✅ Filtered Growth Target Points:", points);
+  //   return points;
+  // };
+
   const getGrowthTargetPoints = (chartId, growthTargetData) => {
     if (!growthTargetData || growthTargetData.length === 0) return [];
   
     const points = [];
   
+    // Define dynamic mapping for each chart
+    const mapping = {
+      "2": { xPrefix: "RRGT", yPrefix: "PRGT", xKey: "RRN", yKey: "PRN" }, // RR vs PR
+      "3": { xPrefix: "RRGT", yPrefix: "ARGT", xKey: "RRN", yKey: "ARN" }, // AR vs RR
+      "4": { xPrefix: "PRGT", yPrefix: "ARGT", xKey: "PRN", yKey: "ARN" }, // PR vs AR
+    };
+  
+    const map = mapping[chartId];
+    if (!map) return [];
+  
+    const { xPrefix, yPrefix, xKey, yKey } = map;
+  
     growthTargetData.forEach(item => {
-      switch (chartId) {
-        case "2": // RR vs PR (X: RRN, Y: PRN)
-          // Only add points where both values are non-zero
-          if (item.RRGT1 > 0 || item.PRGT1 > 0) {
-            points.push({ RRN: item.RRGT1, PRN: item.PRGT1, ppId: item.ppId, gt: "GT1" });
-          }
-          if (item.RRGT2 > 0 || item.PRGT2 > 0) {
-            points.push({ RRN: item.RRGT2, PRN: item.PRGT2, ppId: item.ppId, gt: "GT2" });
-          }
-          if (item.RRGT3 > 0 || item.PRGT3 > 0) {
-            points.push({ RRN: item.RRGT3, PRN: item.PRGT3, ppId: item.ppId, gt: "GT3" });
-          }
-          if (item.RRGT4 > 0 || item.PRGT4 > 0) {
-            points.push({ RRN: item.RRGT4, PRN: item.PRGT4, ppId: item.ppId, gt: "GT4" });
-          }
-          if (item.RRGT5 > 0 || item.PRGT5 > 0) {
-            points.push({ RRN: item.RRGT5, PRN: item.PRGT5, ppId: item.ppId, gt: "GT5" });
-          }
-          break;
+      for (let i = 1; i <= 5; i++) {
+        const xVal = item[`${xPrefix}${i}`];
+        const yVal = item[`${yPrefix}${i}`];
   
-        case "3": // AR vs RR (X: RRN, Y: ARN)
-          if (item.RRGT1 > 0 || item.ARGT1 > 0) {
-            points.push({ RRN: item.RRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
-          }
-          if (item.RRGT2 > 0 && item.ARGT2 > 0) {
-            points.push({ RRN: item.RRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
-          }
-          if (item.RRGT3 > 0 || item.ARGT3 > 0) {
-            points.push({ RRN: item.RRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
-          }
-          if (item.RRGT4 > 0 || item.ARGT4 > 0) {
-            points.push({ RRN: item.RRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
-          }
-          if (item.RRGT5 > 0 || item.ARGT5 > 0) {
-            points.push({ RRN: item.RRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
-          }
-          break;
-  
-        case "4": // PR vs AR (X: PRN, Y: ARN)
-          if (item.PRGT1 > 0 || item.ARGT1 > 0) {
-            points.push({ PRN: item.PRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
-          }
-          if (item.PRGT2 > 0 || item.ARGT2 > 0) {
-            points.push({ PRN: item.PRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
-          }
-          if (item.PRGT3 > 0 || item.ARGT3 > 0) {
-            points.push({ PRN: item.PRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
-          }
-          if (item.PRGT4 > 0 || item.ARGT4 > 0) {
-            points.push({ PRN: item.PRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
-          }
-          if (item.PRGT5 > 0 || item.ARGT5 > 0) {
-            points.push({ PRN: item.PRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
-          }
-          break;
-  
-        default:
-          break;
+        // Only include points where both X and Y are > 0
+        if (xVal > 0 && yVal > 0) {
+          points.push({
+            [xKey]: xVal,
+            [yKey]: yVal,
+            ppId: item.ppId,
+            gt: `GT${i}`
+          });
+        }
       }
     });
   
@@ -958,6 +994,74 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     );
   };
 
+  const renderICScatter = (data) => {
+    const positiveData = data.filter(d => d.ppId > 0);
+    const negativeData = data.filter(d => d.ppId < 0);
+  
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 30 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+  
+          <XAxis dataKey="ppId" type="number">
+            <Label value="PP ID" position="bottom" offset={2} textAnchor="middle" />
+          </XAxis>
+  
+          <YAxis dataKey="IC">
+            <Label
+              value="Interaction Class (IC)"
+              angle={-90}
+              position="insideLeft"
+              offset={10}
+              textAnchor="middle"
+            />
+          </YAxis>
+  
+          <Tooltip />
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+          />
+  
+          {/* Positive */}
+          <Scatter
+            data={positiveData}
+            name="Positive PP IDs"
+            fill={chartProperties.positiveLineColor}
+            shape={(props) =>
+              applyChartStyling.symbolShape(
+                chartProperties.symbolStyle,
+                props,
+                chartProperties.positiveSymbolColor,
+                chartProperties.symbolScaleSize
+              )
+            }
+            isAnimationActive={false}
+          />
+  
+          {/* Negative */}
+          <Scatter
+            data={negativeData}
+            name="Negative PP IDs"
+            fill={chartProperties.negativeLineColor}
+            shape={(props) =>
+              applyChartStyling.symbolShape(
+                chartProperties.symbolStyle,
+                props,
+                chartProperties.negativeSymbolColor,
+                chartProperties.symbolScaleSize
+              )
+            }
+            isAnimationActive={false}
+          />
+
+          {renderReferenceLinesForLineChart()}
+        </ScatterChart>
+      </ResponsiveContainer>
+    );
+  };
+
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
   const containerStyle = {
     backgroundColor: chartProperties.shadeArea,
@@ -977,8 +1081,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
   
   // Get growth target points for the current chart
-  const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
+  // const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
   
+  const growthTargetPoints = filters?.showGrowthTarget && growthTargetData.length > 0
+  ? getGrowthTargetPoints(selectedChart?.id, growthTargetData)
+  : [];
+
+  // Determine the axis keys dynamically for growth target points
+  const growthXKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).find(k => k !== "ppId" && k !== "gt") : xKey;
+  const growthYKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).filter(k => k !== "ppId" && k !== growthXKey)[0] : yKey;
+
   console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
   
   // Separate positive and negative PP IDs for scatter plots
@@ -1106,10 +1218,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   )}
 
                   <p style={{ margin: '4px 0' }}>
-                    {xLabel}: <strong>{Number(data[xKey]).toFixed(2)}</strong>
+                    {xLabel}: <strong>{Number(data[xKey]).toFixed(3)}</strong>
                   </p>
                   <p style={{ margin: '4px 0' }}>
-                    {yLabel}: <strong>{Number(data[yKey]).toFixed(2)}</strong>
+                    {yLabel}: <strong>{Number(data[yKey]).toFixed(3)}</strong>
                   </p>
                 </div>
               );
@@ -1185,17 +1297,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           )}
 
           {/* Growth Target data points */}
-          {showGrowthTarget && growthTargetPoints.length > 0 && (
+          {growthTargetPoints.length > 0 && (
             <Scatter 
-              data={growthTargetPoints.map(d => ({
-                ...d,
-                seriesType: "growthTarget"
-              }))} 
-              dataKey={yKey}
+              data={growthTargetPoints.map(d => ({ ...d, seriesType: "growthTarget" }))}
+              dataKey={growthYKey} // use dynamic Y key
               fill="#2563eb"
               name="Growth Targets"
               isAnimationActive={false}
-              // legendType="none"
               shape={(props) => (
                 <circle 
                   cx={props.cx}
@@ -1385,9 +1493,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (unitType === "Third Parameter") {
       plotData.push(
         {
-          x: receptiveData.Px1,
-          y: receptiveData.Py1,
-          z: receptiveData.Pz1,
+          x: Number(receptiveData.Px1).toFixed(3),
+          y: Number(receptiveData.Py1).toFixed(3),
+          z: Number(receptiveData.Pz1).toFixed(3),
           name: "Receptive Bias Plane",
           type: "scatter3d",
           mode: "markers",
@@ -1409,9 +1517,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           showlegend: false
         },
         {
-          x: productiveData.Px3,
-          y: productiveData.Py3,
-          z: productiveData.Pz3,
+          x: Number(productiveData.Px3).toFixed(3),
+          y: Number(productiveData.Py3).toFixed(3),
+          z: Number(productiveData.Pz3).toFixed(3),
           type: "scatter3d",
           name: "Productive Bias Plane",
           mode: "markers",
@@ -1556,6 +1664,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       case "1":  // Interaction Class vs PP ID (Line) - No averages or projections for this chart
         const positives = tableData.filter(r => r.ppId > 0);
         const negatives = tableData.filter(r => r.ppId < 0);
+
+        if (selectedSort === "activateUnitLevel") {
+          return (
+            <div style={{ width: '100%', height: '100%' }}>
+              {renderICScatter(tableData)}
+            </div>
+          );
+        }
   
         return (
           <div style={{ width: '100%', height: '100%' }}>  
@@ -1655,7 +1771,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         );
       case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
         return (
-          <div style={{ position: 'relative', width: '100%', height: '650px' }}>
+          <div style={{ position: 'relative', width: '100%', height: '900px' }} className='pb-60'>
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full max-w-[900px] h-full">
                 {render3DScatter(tableData, unitType)}
@@ -1663,7 +1779,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             </div>
             <div style={{ 
               position: 'absolute', 
-              top: 65, 
+              top: 25, 
               right: 10, 
               background: 'rgba(255,255,255,0.8)', 
               padding: '10px', 
@@ -2208,6 +2324,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
                 {activeAdjustPropertieTab === "Table" && (() => {
 
+                  if (selectedSort === "activateUnitLevel") {
+                    return (
+                      <div className="text-center text-gray-400 py-4 italic">
+                        NOT AVAILABLE AT UNIT LEVEL
+                      </div>
+                    );
+                  }
 
                   const cols = getTableColumns();
                   if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;

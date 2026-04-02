@@ -1,4 +1,5 @@
 "use client";
+import { useFormStatus } from "@/context/FormStatusContext";
 import { createCandidateMarks } from "@/services/auxiliaryService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useState } from "react";
@@ -18,6 +19,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setFormStatus } = useFormStatus();
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -65,12 +67,15 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
       if (response) {
         onSuccess();
         onClose();
+        setFormStatus("Candidate Mark Created");
       }
 
     } catch (error) {
       toast.error("Failed to save entry.");
+      setFormStatus("Creating...");
     } finally {
       setIsSubmitting(false);
+      
     }
   };
 

@@ -5,15 +5,15 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
-  const [ppIdFrom, setPpIdFrom] = useState(-3);
-  const [ppIdTo, setPpIdTo] = useState(3);
+  const [ppIdFrom, setPpIdFrom] = useState("");
+  const [ppIdTo, setPpIdTo] = useState("");
   const [criticalDateFrom, setCriticalDateFrom] = useState("");
   const [criticalDateTo, setCriticalDateTo] = useState("");
   const [thresholdEnabled, setThresholdEnabled] = useState(false);
 
   useEffect(() => {
-    setPpIdFrom(-3);
-    setPpIdTo(3);
+    setPpIdFrom("");
+    setPpIdTo("");
     setCriticalDateFrom("");
     setCriticalDateTo("");
     setThresholdEnabled(false);
@@ -34,6 +34,7 @@ const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
 // optional: close after submit
   };
 
+  const isDisabled = ppIdFrom === "" && ppIdTo === "" && criticalDateFrom === "" && criticalDateTo === "";
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Section Header */}
@@ -144,7 +145,12 @@ const SecondaryInputForm = ({ onClose, onSubmit, resetSignal }) => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
+            disabled={isDisabled}
+            className={`px-3 py-1 text-sm transition-colors
+              ${isDisabled 
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+              }`}
           >
             Submit
           </button>

@@ -37,9 +37,9 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
       
     if (!data || data.length === 0) {
       return (
-        <div className="p-4 bg-white rounded-xl shadow-sm">
+        <div className=" bg-white rounded-xl">
           {/* <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2> */}
-          <div className="flex justify-center items-center h-64 text-gray-400">
+          <div className="flex justify-center items-start h-100 pt-1 text-gray-400 uppercase">
             No projection data available
           </div>
         </div>
