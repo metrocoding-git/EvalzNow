@@ -1100,7 +1100,7 @@ const handleExportGraph = () => {
                       value="RMS Value"
                       angle={-90}
                       position="insideLeft"
-                      offset={10}
+                      offset={0}
                       textAnchor='middle'
                     />
                   </YAxis>

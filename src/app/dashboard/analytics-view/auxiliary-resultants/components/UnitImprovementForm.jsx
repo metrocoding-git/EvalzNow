@@ -5,7 +5,7 @@ import { ListFilterPlus, X } from "lucide-react";
 import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId}) {
+export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 1 , unitId}) {
   const [form, setForm] = useState({
     lesson: ""});
   const { setFormStatus } = useFormStatus();
@@ -38,12 +38,10 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
     setIsSubmitting(true);
   
     try {
-      // Ensure candidateId is always an array
-      const candidateIdsArray = Array.isArray(candidateId) ? candidateId : [candidateId];
+      
   
       const data = {
         unitId: unitId,
-        candidateIds: candidateIdsArray, // <-- send array
         lesson: form.lesson,
       };
   

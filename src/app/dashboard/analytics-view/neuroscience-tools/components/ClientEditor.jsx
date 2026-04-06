@@ -366,10 +366,10 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
                   <table className="table-auto w-full text-xs border-t border-gray-300">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="border border-gray-300 px-2 py-1 text-left">
+                        <th className="border border-gray-300 px-2 py-1 text-left w-3/4">
                           Cognitive Function
                         </th>
-                        <th className="border border-gray-300 px-2 py-1 text-left">
+                        <th className="border border-gray-300 px-2 py-1 text-left w-1/4">
                           Value
                         </th>
                       </tr>

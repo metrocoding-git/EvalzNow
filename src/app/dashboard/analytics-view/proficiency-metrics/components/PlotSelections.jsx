@@ -677,7 +677,7 @@ const CustomTooltip = ({ active, payload }) => {
       <div className="bg-white p-2 border rounded shadow text-xs">
         <div><strong>PP ID (X):</strong> {point.ppId}</div>
         <div>
-          <strong>{yAxisLabel} (Y):</strong> {point.value}
+          <strong>{yAxisLabel} (Y):</strong> {Number(point.value).toFixed(3)}
         </div>
       </div>
     );
@@ -937,10 +937,18 @@ const exportAsPDF = async () => {
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full mb-8">
                 {activeAdjustPropertieTab === "Property editor" && (
-                  <PropertyEditor
-                    properties={chartProperties}
-                    onChange={setChartProperties}
-                  />
+                  <>
+                    {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter") ? (
+                      <PropertyEditor
+                        properties={chartProperties}
+                        onChange={setChartProperties}
+                      />
+                    ) : (
+                      <div className="text-sm text-center text-gray-400 py-4 italic">
+                        NOT AVAILABLE FOR SELECTED CHART
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (
@@ -1184,7 +1192,7 @@ const exportAsPDF = async () => {
                                     angle={-90}
                                     position="insideLeft"
                                     textAnchor="middle"
-                                    offset={-2}
+                                    offset={-10}
                                     // dy={80}
                                   />
                                 )}
@@ -1309,7 +1317,7 @@ const exportAsPDF = async () => {
                                     angle={-90}
                                     position="insideLeft"
                                     textAnchor="middle"
-                                    offset={-3}
+                                    offset={-10}
                                     dy={0}
                                   />
                                 )}
@@ -1413,7 +1421,7 @@ const exportAsPDF = async () => {
                                 outerRadius="80%" 
                                 label={({ name, value, count }) => {
                                   const percentage = (value).toFixed(3);
-                                  return `${name}: ${percentage} Count: ${count}`;
+                                  return `${percentage}`;
                                 }}
                                 labelLine={true}
                               >

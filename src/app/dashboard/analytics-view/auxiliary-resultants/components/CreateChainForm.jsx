@@ -266,7 +266,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
             focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
             required
             >
-            <option value="">Select PP ID</option>
+            <option value="" disabled>Select PP ID</option>
             {getAvailablePpIds("selection1").map(item => (
                   <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -286,7 +286,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
            onChange={(e) => handleChange("selection2", e.target.value)}
            
             >
-            <option value="">Select PP ID</option>
+            <option value="" disabled>Select PP ID</option>
             {getAvailablePpIds("selection2").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -305,7 +305,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
             onChange={(e) => handleChange("selection3", e.target.value)}
            
             >
-            <option value="">Select PP ID</option>
+            <option value="" disabled>Select PP ID</option>
             {getAvailablePpIds("selection3").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -324,7 +324,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
             onChange={(e) => handleChange("selection4", e.target.value)}
            
             >
-            <option value="">Select PP ID</option>
+            <option value="" disabled>Select PP ID</option>
             {getAvailablePpIds("selection4").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}
@@ -343,7 +343,7 @@ export default function CreateChainForm({ onClose, onSuccess , unitId, candidate
             onChange={(e) => handleChange("selection5", e.target.value)}
            
             >
-            <option value="">Select PP ID</option>
+            <option value="" disabled>Select PP ID</option>
             {getAvailablePpIds("selection5").map(item => (
                 <option key={item.blockId} value={item.blockId}>
                   {item.ppId}

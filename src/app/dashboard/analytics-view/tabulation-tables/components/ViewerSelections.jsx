@@ -167,7 +167,7 @@ useEffect(() => {
         "XEP": item.XEP,
         "XCP": item.XCP,
         "XBP": item.XBP,
-        "MSIP": item.MSIP,
+        "MSIP": Number(item.MSIP). toFixed(3),
         "STA/P": item.STAP,
         "IC": item.IC,
         "ΔRRN": item.deltaRRN,
@@ -770,6 +770,11 @@ console.log("unit type check", tableData);
                                     "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
                                   ];
 
+                                  if (header === "ΔRRN" || header === "ΔPRN" || header === "ΔARN" || header === "ΔGEQ") {
+                                    const num = parseFloat(value);
+                                    return !isNaN(num) ? num.toFixed(3) : "-";
+                                  }
+
                                   if (skipFormatting.includes(header)) {
                                     return value ?? '-';
                                   }
@@ -826,6 +831,11 @@ console.log("unit type check", tableData);
                                   "STA/P",
                                   "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
                                 ];
+
+                                if (header === "ΔRRN" || header === "ΔPRN" || header === "ΔARN" || header === "ΔGEQ") {
+                                  const num = parseFloat(value);
+                                  return !isNaN(num) ? num.toFixed(3) : "-";
+                                }
 
                                 if (skipFormatting.includes(header)) {
                                   return value ?? '-';

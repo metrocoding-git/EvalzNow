@@ -11,6 +11,7 @@ import {
   ArrowUp,
   ArrowDown,
   Trash,
+  FolderOutput,
 } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
@@ -543,6 +544,69 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   };
 
 
+  const exportAsCSV = () => {
+    const tableData = workforceData; // Only export Workforce data
+    if (!tableData || tableData.length === 0) {
+      alert("No table data available to export");
+      return;
+    }
+  
+    try {
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+        const str = value.toString();
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+  
+      const headers = [
+        "First Name", "Last Name", "CID", "PP ID", "Duration",
+        "Critical Reference Date", "Task Declaration", "Workflow Stage",
+        "Assessment Type", "Schedule Impact", "Engage Level", "Competency",
+        ...Array.from({ length: 20 }, (_, i) => `MC${i + 1}`),
+        ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
+      ];
+  
+      const rows = [headers.map(escapeCSV).join(",")];
+  
+      tableData.forEach(row => {
+        const rowData = [
+          row.candidate?.firstName ?? "",
+          row.candidate?.lastName ?? "",
+          row.candidate?.candidateId ?? "",
+          row.ppId ?? "",
+          row.durationHrs !== null && row.durationHrs !== undefined
+            ? Number(row.durationHrs).toFixed(2)
+            : "-",
+          row.criticalRefDate?.slice(0, 10) ?? "",
+          row.remarks ?? "",
+          row.workflowStage ?? "",
+          row.assessmentType ?? "",
+          row.scheduleImpact ?? "",
+          row.engageLevel ?? "",
+          row.competency ?? "",
+          ...(row.mc ?? Array(20).fill("-")).map(val =>
+            val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
+          ),
+          ...(row.cc ?? Array(20).fill("-")).map(val =>
+            val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
+          )
+        ];
+        rows.push(rowData.map(escapeCSV).join(","));
+      });
+  
+      const csvContent = "\uFEFF" + rows.join("\n"); // BOM for UTF-8
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  
+      saveAs(blob, `Workforce_Data_${activeTab}.csv`);
+    } catch (err) {
+      console.error("CSV export failed:", err);
+      alert("Failed to export CSV");
+    }
+  };
+
   const handleSubmit = async () => {
     if (!formData.assessmentBlockId || !formData.unitId) {
       setError("Missing unitId or assessmentBlockId.");
@@ -717,6 +781,18 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
               {/* Right side: Plus button */}
               <div className="mr-1">
+
+                {/* Export dropdown menu */}
+                {environment === "Workforce" && (
+                  <button
+                    onClick={exportAsCSV}
+                    title="Export As CSV"
+                    className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer"
+                  >
+                    <FolderOutput className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     setScoreAdd(true) 

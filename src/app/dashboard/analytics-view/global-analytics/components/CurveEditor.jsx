@@ -189,10 +189,13 @@ export default function CurveEditor() {
   
   const buildICPieData = () => {
     if (!icDistributionData) return [];
+
+    const { icDistribution, icCounts } = icDistributionData;
   
     return Object.entries(icDistributionData.icDistribution).map(([icClass, value]) => ({
       name: `IC ${icClass}`,
-      value: Number((value * 100).toFixed(2)) // Pie expects 0-100%
+      value: Number((value ).toFixed(2)), // Pie expects 0-100%
+      count: icCounts?.[icClass] || 0,
     }));
   };
 

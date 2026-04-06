@@ -1057,11 +1057,19 @@ const handleExportGraph = () => {
 
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
-                {activeAdjustPropertieTab === 'Property editor' && (
-                  <PropertyEditor
-                    properties={chartProperties}
-                    onChange={setChartProperties}
-                  />
+                {activeAdjustPropertieTab === "Property editor" && (
+                  <>
+                    {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter") ? (
+                      <PropertyEditor
+                        properties={chartProperties}
+                        onChange={setChartProperties}
+                      />
+                    ) : (
+                      <div className="text-sm text-center text-gray-400 py-4 italic">
+                        NOT AVAILABLE FOR SELECTED CHART
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {activeAdjustPropertieTab === 'Table' && (
@@ -1074,7 +1082,7 @@ const handleExportGraph = () => {
 
                           if (selectedSort === 'activateUnitLevel') {
                             return (
-                              <div className="text-center text-gray-400 py-4 italic">
+                              <div className="text-center text-sm text-gray-400 py-4 italic">
                                 NOT AVAILABLE AT UNIT LEVEL
                               </div>
                             );
@@ -1082,7 +1090,7 @@ const handleExportGraph = () => {
 
                           if (!keyName) {
                             return (
-                              <div className="text-center text-gray-400 py-4 italic">
+                              <div className="text-center text-sm text-gray-400 py-4 italic">
                                 NOT AVAILABLE FOR SELECTED CHART
                               </div>
                             );
@@ -1100,12 +1108,15 @@ const handleExportGraph = () => {
                           if (combinedData.length === 0) {
                             return (
                               <div className="text-center text-gray-400 py-4 italic">
-                                NO DATA AVAILABLE FOR THE GRAPH
+                                NOT AVAILABLE FOR SELECTED CHART
                               </div>
                             );
                           }
 
-                          // ✅ If DATA exists → show table
+                          const extraColumn = ["AR", "PR", "RR", "ΔAR", "ΔPR", "ΔRR", "ΔGEQ"];
+                          const showDayCount = extraColumn.includes(selectedChart?.key);
+
+                          //  If DATA exists → show table
                           return (
                             <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16">
                               <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
@@ -1113,6 +1124,11 @@ const handleExportGraph = () => {
                                 <thead className="bg-gray-100">
                                   <tr>
                                     <th className="border border-gray-300 px-2 py-1 text-center">PP ID</th>
+                                    {showDayCount && (
+                                      <th className="border border-gray-300 px-2 py-1 text-center">
+                                        Day Count
+                                      </th>
+                                    )}
                                     <th className="border border-gray-300 px-2 py-1 text-center">
                                       {selectedChart.key}
                                     </th>
@@ -1122,9 +1138,16 @@ const handleExportGraph = () => {
                                   {combinedData.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-blue-50">
                                       <td className="border border-gray-300 px-2 py-1 text-center">{row.ppId}</td>
+                                      {showDayCount && (
+                                        <td className="border border-gray-300 px-2 py-1 text-center">
+                                          {row.dayCount.toFixed(2)}
+                                        </td>
+                                      )}
                                       <td className="border border-gray-300 px-2 py-1 text-center">
                                         {row.value.toFixed(3)}
                                       </td>
+                                      
+                                      
                                     </tr>
                                   ))}
                                 </tbody>
@@ -1478,7 +1501,7 @@ const handleExportGraph = () => {
                                 outerRadius="75%"
                                 label={({ name, value, count }) => {
                                   const percentage = (value).toFixed(3);
-                                  return `${name}: ${percentage} Count: ${count}`;
+                                  return `${percentage}`;
                                 }}
                                 labelLine={true}
                               >
@@ -1495,8 +1518,8 @@ const handleExportGraph = () => {
                   return <div className="text-gray-500">Unsupported chart type</div>;
                 })()
               ) : (
-                <div className="flex justify-center  h-full text-gray-400 text-lg">
-                  SELECT A PLOT
+                <div className="flex justify-center  h-full text-gray-400 text-lg py-4">
+                  SELECT PLOT
                 </div>
               )}
             </div>
