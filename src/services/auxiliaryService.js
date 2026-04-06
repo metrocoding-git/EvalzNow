@@ -88,9 +88,9 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
   };
 
 
-  export const getUnitImprovement = async (unitId, candidateId) => {
+  export const getUnitImprovement = async (unitId) => {
     try {
-      const response = await api.get(`${API_ROUTES.AUXILIARY}/lesson/${unitId}/${candidateId}`);
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/lesson/${unitId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching unit improvment:", error);
@@ -128,9 +128,9 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
-  export const getLeaderMarks = async (unitId, candidateId) => {
+  export const getLeaderMarks = async (unitId) => {
     try {
-      const response = await api.get(`${API_ROUTES.AUXILIARY}/leader/${unitId}/${candidateId}`);
+      const response = await api.get(`${API_ROUTES.AUXILIARY}/leader/${unitId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching unit improvment:", error);

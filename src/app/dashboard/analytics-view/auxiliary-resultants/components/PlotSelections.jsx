@@ -478,7 +478,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   useEffect(() => {
     const fetchUnitImprovement = async () => {
-      if (!unitId || !candidateId) {
+      if (!unitId) {
         setUnitImprovement([]); // clear previous table data
         return;
       }
@@ -486,7 +486,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       setLoading(true);
       setError(null);
       try {
-        const result = await getUnitImprovement(unitId, candidateId);  
+        const result = await getUnitImprovement(unitId);  
         setUnitImprovement(
           result.data.map((row) => ({
             ...row,
@@ -511,7 +511,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     };
   
     fetchUnitImprovement();
-  }, [unitId, candidateId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
+  }, [unitId, refreshUnitImprovement, refreshBenchmarksUnitLevel]);
 
   // console.log("unit improvement: ", unitImprovement);
 
@@ -631,7 +631,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   useEffect(() => {
     const fetchLeaderMarks = async () => {
-      if (!unitId || !candidateId) {
+      if (!unitId) {
         setleaderMarks([]); // clear previous table data
         return;
       }
@@ -639,9 +639,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       setLoading(true);
       setError(null);
       try {
-        const result = await getLeaderMarks(unitId, candidateId);  
+        const result = await getLeaderMarks(unitId);  
         
         setleaderMarks(result.data);
+        console.log("leader marks data: ", result.data);
         
       } catch (err) {
         console.error("Failed to  candidate marks data:", err);
@@ -654,8 +655,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     };
   
     fetchLeaderMarks();
-  }, [unitId, candidateId, refreshLeaderMarks]);
+  }, [unitId, refreshLeaderMarks]);
 
+  console.log("leader marks: ", leaderMarks);
 
   useEffect(() => {
     const fetchNeedAssessmentSummary = async () => {
@@ -1067,13 +1069,13 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     const existingBenchmarkIds = selectedRow.benchmarkIds || [];
     const existingBIds = selectedRow.bIds || [];
 
-    // 🚫 No selection + no existing record → do nothing
+    //  No selection + no existing record → do nothing
     if (selectedBIds.length === 0 && !selectedRow.id) {
       setRefreshBenchmarksUnitLevel(prev => !prev);
       return;
     }
 
-    // 🗑 No selection + existing record → DELETE
+    //  No selection + existing record → DELETE
     if (selectedBIds.length === 0 && selectedRow.id) {
       await deleteUnitImprovement(selectedRow.id);
       setRefreshBenchmarksUnitLevel(prev => !prev);
@@ -1121,7 +1123,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
             a: Number(r.csdTenureDays).toFixed(2),	
-            b: r.duration
+            b: Number(r.duration).toFixed(2),
           }))
         };
 
@@ -1132,7 +1134,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
           .sort((a, b) => Number(a.ppId) - Number(b.ppId)).map(r => ({
             ppId: r.ppId,
             a: Number(r.usdTenureDays).toFixed(2),
-            b: r.duration
+            b: Number(r.duration).toFixed(2),
           }))
         };
 
@@ -1222,6 +1224,12 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     BIDs: "Benchmark IDs",
   };
   const renderChartContent = () => {
+
+    if(loading) {
+      <div className="flex justify-center text-gray-400 text-lg my-1">
+        Loading
+      </div>
+    }
     
     if (!selectedChart) {
       return (
@@ -1233,19 +1241,21 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
     const hasCandidateData = auxData.length > 0 && candidateId && (!Array.isArray(candidateId) || candidateId.length > 0);
 
-    if (
-      selectedSort === "activateUnitLevel" && selectedChart.type === "table" &&
-      (!candidateId || (Array.isArray(candidateId) && candidateId.length === 0))
-    ) {
-      return (
-        <div className="flex justify-center h-full">
-          <p className="text-gray-500 uppercase">add {selectedChart.name}</p>
-        </div>
-      );
-    }
+    // if (
+    //   selectedSort === "activateUnitLevel" && selectedChart.type === "table"
+    // ) {
+    //   return (
+    //     <div className="flex justify-center h-full">
+    //       <p className="text-gray-500 uppercase">add {selectedChart.name}</p>
+    //     </div>
+    //   );
+    // }
+
+    const isTable = selectedChart?.id === 8 || selectedChart?.id === 7;
 
     if (
       selectedSort === "activateUnitLevel" &&
+      !isTable && 
       (!candidateId || (Array.isArray(candidateId) && candidateId.length === 0))
     ) {
       return (
@@ -1270,6 +1280,14 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
     const hasPieDataNAT = needAssessmentSummary.length > 0 && needAssessmentSummary.some(item => item.value > 0);
 
     if (selectedChart.type === "table" && selectedChart.id === 11) {
+
+      if (loading) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500 uppercase">Loading</p>
+          </div>
+        );
+      }
 
       if (!hasTableData11) {
         return (
@@ -1691,9 +1709,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                     <td className="font-medium border px-2 py-1 ">RRN, PRN{unitType === 'Third Parameter' && `, ARN`}</td>
                     <td className="border px-2 py-1 ">
                       {[ 
-                        sel.RRN != null && `RRN: ${sel.RRN}`,
-                        sel.PRN != null && `PRN: ${sel.PRN}`,
-                        unitType === 'Third Parameter' && sel.ARN != null && `ARN: ${sel.ARN}`
+                        sel.RRN != null && `RRN: ${Number(sel.RRN).toFixed(3)}`,
+                        sel.PRN != null && `PRN: ${Number(sel.PRN).toFixed(3)}`,
+                        unitType === 'Third Parameter' && sel.ARN != null && `ARN: ${Number(sel.ARN).toFixed(3)}`
                       ].filter(Boolean).join(", ")}
                     </td>
                   </tr>
@@ -1936,7 +1954,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       if (selectedChart.key === 'at' ) {
         if (!attendanceBreakdown || attendanceBreakdown.length === 0) {
           return (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-start justify-center h-full">
               <p className="text-gray-500 uppercase">No data available for Attendance Breakdown chart</p>
             </div>
           );
@@ -2498,8 +2516,7 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              {( selectedSort === 'activateUnitLevel' && selectedChart?.id === 7 && Array.isArray(candidateId) &&
-  candidateId.length > 0) && (
+              {( selectedSort === 'activateUnitLevel' && selectedChart?.id === 7) && (
                 <button
                   onClick={handleUnitImprovementsForm}
                   title="Add Unit Improvement"
@@ -2510,11 +2527,10 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               )}
 
               {/* ADD THIS NEW BUTTON */}
-              { (selectedSort === 'activateUnitLevel' && selectedChart?.id === 8 && Array.isArray(candidateId) &&
-  candidateId.length > 0)  && (
+              { (selectedSort === 'activateUnitLevel' && selectedChart?.id === 8)  && (
                 <button
                   onClick={handleLeaderMarksForm}
-                  title="Add Unit Improvement"
+                  title="Add Leader Marks"
                   className="text-blue-600 hover:text-blue-800 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -2643,12 +2659,19 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
-                {activeAdjustPropertieTab === 'Property editor' && isGraph && !(selectedChart.type === "pie") &&  (
-                  
-                  <PropertyEditor
-                    properties={chartProperties}
-                    onChange={setChartProperties}
-                  />
+                {activeAdjustPropertieTab === "Property editor" && (
+                  <>
+                    {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter-2d") ? (
+                      <PropertyEditor
+                        properties={chartProperties}
+                        onChange={setChartProperties}
+                      />
+                    ) : (
+                      <div className="text-sm text-center text-gray-400 py-4 italic">
+                        NOT AVAILABLE FOR SELECTED CHART OR TABLE
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (() => {

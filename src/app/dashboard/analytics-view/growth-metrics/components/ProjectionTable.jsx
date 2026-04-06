@@ -461,7 +461,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         IC: "-", 
       };
 
-      // ------------- FIXED: 15-day Average (use mean of undershoot & overshoot) -------------
+      // ------------- 15-day Average (use mean of undershoot & overshoot) -------------
       // Δ averages
       const avgDeltaRRN_15 = ((parseFloat(overRRN) + parseFloat(underRRN)) / 2);
       const avgDeltaPRN_15 = ((parseFloat(overPRN) + parseFloat(underPRN)) / 2);
@@ -550,7 +550,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
         IC: "-", 
       };
 
-      // ---------------- FIXED: 30-day Average (mean of undershoot & overshoot) ----------------
+      // ---------------- 30-day Average (mean of undershoot & overshoot) ----------------
       const avgDeltaRRN_30 = ((parseFloat(overRRN30) + parseFloat(underRRN30)) / 2);
       const avgDeltaPRN_30 = ((parseFloat(overPRN30) + parseFloat(underPRN30)) / 2);
       const avgDeltaARN_30 = ((parseFloat(overARN30) + parseFloat(underARN30)) / 2);
@@ -712,10 +712,10 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
           }
         } else {
           setExistingSessionId(null);
-          console.log("ℹ️ No previous projection found — starting new.");
+          console.log(" No previous projection found — starting new.");
         }
       } catch (error) {
-        console.error("❌ Failed to fetch projection:", error);
+        console.error(" Failed to fetch projection:", error);
       } finally {
         setLoading(false);
       }
@@ -726,12 +726,7 @@ export default function ProjectionTable({ visible, onClose, unitId, candidateId,
     }
   }, [unitId, candidateId]);
 
-
-
-  
-
-
-  // ✅ Create or Update Projection API call
+  // Create or Update Projection API call
 const handleSubmit = async () => {
   try {
     setLoading(true);
@@ -842,11 +837,11 @@ const handleSubmit = async () => {
                       )}
                     </td>
 
-                    <td className="px-2 py-1 border border-black">{Number(row.RRN).toFixed(3)}</td>
-                    <td className="px-2 py-1 border border-black">{Number(row.PRN).toFixed(3)}</td>
+                    <td className="px-2 py-1 border border-black">{row.RRN === "-" ? "-" : Number(row.RRN).toFixed(3)}</td>
+                    <td className="px-2 py-1 border border-black">{row.RRN === "-" ? "-" : Number(row.RRN).toFixed(3)}</td>
 
                     {unitType === "Third Parameter" && (
-                      <td className="px-2 py-1 border border-black">{Number(row.ARN).toFixed(3)}</td>
+                      <td className="px-2 py-1 border border-black">{row.ARN === "-" ? "-" : Number(row.ARN).toFixed(3)}</td>
                     )}
 
                     <td className="px-2 py-1 border border-black">{row.IC}</td>

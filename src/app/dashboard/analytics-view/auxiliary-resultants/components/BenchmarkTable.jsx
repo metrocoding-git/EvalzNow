@@ -114,7 +114,7 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
         </div>
 
         {/* Table */}
-        <div className="p-4 overflow-x-auto text-xs flex justify-center">
+        <div className="p-4 overflow-x-auto text-xs flex flex-col items-center">
           <table className="min-w-max border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
@@ -126,36 +126,42 @@ export default function BenchmarkTable({ onClose, selectedBenchmarks }) {
               </tr>
             </thead>
 
-            <tbody>
-              {rows.map((row, index) => (
-                <tr
-                  key={row.benchmarkId || index}
-                  onClick={() => handleRowClick(row.rowId)}
-                  className={`cursor-pointer transition-colors text-center ${
-                    row.isSelected 
-                      ? "bg-blue-50 hover:bg-blue-100" 
-                      : "hover:bg-gray-50"
-                  } ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
-                >
-                  <td className="px-2 py-1 border text-center">
-                    <input
-                      type="checkbox"
-                      checked={row.isSelected}
-                      readOnly
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                    />
+            {/* Loading indicator */}
+            {loading && (
+              <tbody>
+                <tr>
+                  <td colSpan={5} className="text-center py-2 text-gray-500">
+                    Loading...
                   </td>
-
-                  <td className="px-2 py-1 border">
-                    <span className="font-medium text-gray-900">{row.benchmarkId}</span>
-                  </td>
-                  <td className="px-2 py-1 border">
-                      {row.benchmarkType}
-                  </td>
-                  <td className="px-2 py-1 border text-gray-700">{row.benchmarkRef}</td>
-                  <td className="px-2 py-1 border text-gray-600">{row.benchmarkDescription}</td>
                 </tr>
-              ))}
+              </tbody>
+            )}
+
+            <tbody>
+              {!loading &&
+                rows.map((row, index) => (
+                  <tr
+                    key={row.benchmarkId || index}
+                    onClick={() => handleRowClick(row.rowId)}
+                    className={`cursor-pointer transition-colors text-center ${
+                      row.isSelected ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-gray-50"
+                    } ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+                  >
+                    <td className="px-2 py-1 border text-center">
+                      <input
+                        type="checkbox"
+                        checked={row.isSelected}
+                        readOnly
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </td>
+
+                    <td className="px-2 py-1 border">{row.benchmarkId}</td>
+                    <td className="px-2 py-1 border">{row.benchmarkType}</td>
+                    <td className="px-2 py-1 border text-gray-700">{row.benchmarkRef}</td>
+                    <td className="px-2 py-1 border text-gray-600">{row.benchmarkDescription}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

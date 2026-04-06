@@ -10,7 +10,7 @@ const impactTypes = ["Negative", "Positive"];
 
 const concernResolved = ["Yes", "No"];
 
-export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId}) {
+export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId}) {
   const [form, setForm] = useState({
     impactType: "",
     concernIdentified: "",
@@ -73,7 +73,6 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
     try {
       const data = {
         unitId: unitId,
-        candidateId,
         staffLookupId: form.staffLookupId,
         impactType: form.impactType,
         concernIdentified: form.concernIdentified,

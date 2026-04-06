@@ -1601,7 +1601,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   //   onChange={setChartProperties}
                   // />
                   <div className="text-sm text-center text-gray-600 mt-2">
-                    <p>NOT APPLICABLE </p>
+                    <p>NOT AVAILABLE FOR THE SELECTED CHART </p>
                   </div>
 
                 )}
@@ -1634,7 +1634,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                                   {Number(row.name).toFixed(3)}
                                 </td>
                                 <td className="border border-gray-300 px-3 py-2 text-center">
-                                  {row.value}
+                                  {Number(row.value).toFixed(3)}
                                 </td>
                               </tr>
                             ))}
@@ -1686,7 +1686,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               {selectedChart.icon} {selectedChart.name}
             </h2>
 
-            <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="flex-1 flex items-center justify-center min-h-0 relative">
               {loading && (
                 <p className="text-center text-gray-600">Loading...</p>
               )}
@@ -1696,9 +1696,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
               )}
 
               {!loading && !error && (!chartData || chartData.length === 0) && (
-                <p className="text-center text-gray-500 whitespace-nowrap uppercase">
-                  Build a Distrbution to display data.
-                </p>
+                <p className="absolute top-0 left-0 w-full text-center text-gray-500 whitespace-nowrap uppercase mt-2">
+                Build a Distribution to display data.
+              </p>
               )}
 
               {!loading && !error && chartData && chartData.length > 0 && (
