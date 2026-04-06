@@ -414,7 +414,7 @@ export default function DataReports() {
     
         downloadEZFile(
           ezText,
-          `Global_Analytics_Report_${response.client.companyName}.ez`
+          `Global_Analytics_Report.ez`
         );
       } catch (err) {
         console.error("Failed to generate global report:", err);

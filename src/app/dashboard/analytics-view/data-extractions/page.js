@@ -64,6 +64,7 @@ export default function DataExtractions() {
   const [openMenu, setopenMenu] = useState(true);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [extractLoading, setExtractLoading] = useState(false);
 
   const sortedData = [...data].sort((a, b) => {
     const valA = a[sortKey];
@@ -206,31 +207,39 @@ export default function DataExtractions() {
     ? unitExtractionData
     : selectedExtractOption === "all-candidates-database" ? clientExtractionData : candidateExtractionData;
 
-  const handleExtract = () => {
-    if (!selectedExtractOption || !extractionData) return;
-  
-    if (selectedExtractOption === "active-unit-candidates") {
-      extractActiveUnitCandidatesCSV({
-        extractionData,
-        unitData,
-      });
-    }
-  
-    if (selectedExtractOption === "all-candidates-database") {
-      extractClientCandidatesCSV({
-        extractionData,
-        clientId: activeClientId,
-      });
-    }
-
-    if (selectedExtractOption === "all-units-candidates") {
-      extractCandidateUnitsCSV({
-        extractionData,
-        clientId: activeClientId,
-        candidateId: activeCandidateId,
-      });
-    }
-  };
+    const handleExtract = async () => {
+      if (!selectedExtractOption || !extractionData) return;
+    
+      try {
+        setExtractLoading(true);
+    
+        if (selectedExtractOption === "active-unit-candidates") {
+          await extractActiveUnitCandidatesCSV({
+            extractionData,
+            unitData,
+          });
+        }
+    
+        if (selectedExtractOption === "all-candidates-database") {
+          await extractClientCandidatesCSV({
+            extractionData,
+            clientId: activeClientId,
+          });
+        }
+    
+        if (selectedExtractOption === "all-units-candidates") {
+          await extractCandidateUnitsCSV({
+            extractionData,
+            clientId: activeClientId,
+            candidateId: activeCandidateId,
+          });
+        }
+      } catch (err) {
+        console.error("Extraction failed:", err);
+      } finally {
+        setExtractLoading(false);
+      }
+    };
   
   
   return (
@@ -435,15 +444,21 @@ export default function DataExtractions() {
                         ))}
                       </div>
 
+                      {extractLoading && (
+                        <p className="text-sm text-gray-500 mt-2 text-center">
+                          Extracting data...
+                        </p>
+                      )}
+
                       <div className="">
-                        <button
-                          onClick={handleExtract}
-                          disabled={!selectedExtractOption}
-                          type="submit"
-                          className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition"
-                        >
-                          Extract
-                        </button>
+                      <button
+                        onClick={handleExtract}
+                        disabled={!selectedExtractOption || extractLoading}
+                        type="submit"
+                        className="w-32 mt-4 bg-gray-200 hover:bg-gray-300 font-medium px-5 py-2 transition disabled:opacity-50"
+                      >
+                        {extractLoading ? "Processing..." : "Extract"}
+                      </button>
                     </div>
                   </div>
                 </div>

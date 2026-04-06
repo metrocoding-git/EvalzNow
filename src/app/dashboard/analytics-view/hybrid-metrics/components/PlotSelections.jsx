@@ -1346,6 +1346,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   );
 };
   
+  const toFixed3 = (val) => {
+    const num = Number(val);
+    return isNaN(num) ? null : Number(num.toFixed(3));
+  };
+
   const render3DScatter = (tableData, unitType) => {
     // Check if we should show averages
     const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
@@ -1362,9 +1367,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // 🟢 Positive PP IDs
     if (positiveData.length > 0) {
       plotData.push({
-        x: positiveData.map(r => r.RRN),
-        y: positiveData.map(r => r.PRN),
-        z: positiveData.map(r => r.ARN),
+        x: positiveData.map(r => toFixed3(r.RRN)),
+        y: positiveData.map(r => toFixed3(r.PRN)),
+        z: positiveData.map(r => toFixed3(r.ARN)),
         type: "scatter3d",
         mode: "markers",
         marker: {
@@ -1380,9 +1385,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // 🔴 Negative PP IDs
     if (negativeData.length > 0) {
       plotData.push({
-        x: negativeData.map(r => r.RRN),
-        y: negativeData.map(r => r.PRN),
-        z: negativeData.map(r => r.ARN),
+        x: negativeData.map(r => toFixed3(r.RRN)),
+        y: negativeData.map(r => toFixed3(r.PRN)),
+        z: negativeData.map(r => toFixed3(r.ARN)),
         type: "scatter3d",
         mode: "markers",
         marker: {
@@ -1424,9 +1429,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       if (gtPoints3D.length > 0) {
         plotData.push({
-          x: gtPoints3D.map(gt => gt.x),
-          y: gtPoints3D.map(gt => gt.y),
-          z: gtPoints3D.map(gt => gt.z),
+          x: gtPoints3D.map(gt => toFixed3(gt.x)),
+          y: gtPoints3D.map(gt => toFixed3(gt.y)),
+          z: gtPoints3D.map(gt => toFixed3(gt.z)),
           type: "scatter3d",
           mode: "markers",
           marker: { 
@@ -1454,9 +1459,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // Add average points if enabled
     if (showAverages) {
       plotData.push({
-        x: averageData.map(avg => avg.RRN),
-        y: averageData.map(avg => avg.PRN),
-        z: averageData.map(avg => avg.ARN),
+        x: averageData.map(avg => toFixed3(avg.RRN)),
+        y: averageData.map(avg => toFixed3(avg.PRN)),
+        z: averageData.map(avg => toFixed3(avg.ARN)),
         type: "scatter3d",
         mode: "markers",
         marker: { 
@@ -1473,9 +1478,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // Add projection points if enabled
     if (showProjection) {
       plotData.push({
-        x: projectionData.map(proj => proj.RRN),
-        y: projectionData.map(proj => proj.PRN),
-        z: projectionData.map(proj => proj.ARN),
+        x: projectionData.map(proj => toFixed3(proj.RRN)),
+        y: projectionData.map(proj => toFixed3(proj.PRN)),
+        z: projectionData.map(proj => toFixed3(proj.ARN)),
         type: "scatter3d",
         mode: "markers",
         marker: { 
@@ -1493,9 +1498,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (unitType === "Third Parameter") {
       plotData.push(
         {
-          x: Number(receptiveData.Px1).toFixed(3),
-          y: Number(receptiveData.Py1).toFixed(3),
-          z: Number(receptiveData.Pz1).toFixed(3),
+          x: receptiveData.Px1,
+          y: receptiveData.Py1,
+          z: receptiveData.Pz1,
           name: "Receptive Bias Plane",
           type: "scatter3d",
           mode: "markers",
@@ -1517,9 +1522,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           showlegend: false
         },
         {
-          x: Number(productiveData.Px3).toFixed(3),
-          y: Number(productiveData.Py3).toFixed(3),
-          z: Number(productiveData.Pz3).toFixed(3),
+          x: productiveData.Px3,
+          y: productiveData.Py3,
+          z: productiveData.Pz3,
           type: "scatter3d",
           name: "Productive Bias Plane",
           mode: "markers",
