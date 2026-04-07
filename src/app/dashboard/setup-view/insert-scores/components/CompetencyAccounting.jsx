@@ -495,12 +495,6 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
       console.error("Failed to update row after moving down:", err);
     }
   };
-  
-  
-  
-  
-
-
 
   const handleDeleteSelectedScore = async () => {
     if (deleteSelectedRow === null) {
@@ -545,8 +539,38 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
 
   const exportAsCSV = () => {
-    const tableData = workforceData; // Only export Workforce data
-    if (!tableData || tableData.length === 0) {
+    // ✅ Use raw insertScores (unfiltered by tab) for export
+    const allWorkforceScores = insertScores.filter(
+      (row) => (row.unit?.environment || "Workforce") !== "Classroom"
+    );
+  
+    const indirectData = allWorkforceScores
+      .filter((row) => parseInt(row.ppId, 10) < 0)
+      .map((row) => ({
+        ...row,
+        mc: Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? ""),
+        cc: Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? ""),
+      }))
+      .sort((a, b) => {
+        const pa = parseInt(a.ppId, 10), pb = parseInt(b.ppId, 10);
+        if (pa !== pb) return pb - pa;
+        return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+      });
+  
+    const directData = allWorkforceScores
+      .filter((row) => parseInt(row.ppId, 10) > 0)
+      .map((row) => ({
+        ...row,
+        mc: Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? ""),
+        cc: Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? ""),
+      }))
+      .sort((a, b) => {
+        const pa = parseInt(a.ppId, 10), pb = parseInt(b.ppId, 10);
+        if (pa !== pb) return pa - pb;
+        return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
+      });
+  
+    if (indirectData.length === 0 && directData.length === 0) {
       alert("No table data available to export");
       return;
     }
@@ -569,9 +593,19 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
       ];
   
-      const rows = [headers.map(escapeCSV).join(",")];
+      // Build CSV content with header text
+      const rows = [];
+      
+      // Add header information
+      rows.push("EvalzNow – A Novel Human Capital Assessment Method");
+      rows.push("Competency Accounting for Education and Industry");
+      rows.push("Hybrid Proficiency & Growth Monitoring");
+      rows.push(`Data Extraction Date: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ')}`);
+      rows.push(""); // Empty line for spacing
+      rows.push(headers.map(escapeCSV).join(","));
   
-      tableData.forEach(row => {
+      // Add Indirect data (negative ppId)
+      indirectData.forEach(row => {
         const rowData = [
           row.candidate?.firstName ?? "",
           row.candidate?.lastName ?? "",
@@ -597,10 +631,53 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         rows.push(rowData.map(escapeCSV).join(","));
       });
   
+      // Add spacing between sections if there is Direct data
+      if (directData.length > 0) {
+        // Add Direct data (positive ppId)
+        directData.forEach(row => {
+          const rowData = [
+            row.candidate?.firstName ?? "",
+            row.candidate?.lastName ?? "",
+            row.candidate?.candidateId ?? "",
+            row.ppId ?? "",
+            row.durationHrs !== null && row.durationHrs !== undefined
+              ? Number(row.durationHrs).toFixed(2)
+              : "-",
+            row.criticalRefDate?.slice(0, 10) ?? "",
+            row.remarks ?? "",
+            row.workflowStage ?? "",
+            row.assessmentType ?? "",
+            row.scheduleImpact ?? "",
+            row.engageLevel ?? "",
+            row.competency ?? "",
+            ...(row.mc ?? Array(20).fill("-")).map(val =>
+              val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
+            ),
+            ...(row.cc ?? Array(20).fill("-")).map(val =>
+              val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
+            )
+          ];
+          rows.push(rowData.map(escapeCSV).join(","));
+        });
+      }
+  
       const csvContent = "\uFEFF" + rows.join("\n"); // BOM for UTF-8
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   
-      saveAs(blob, `Workforce_Data_${activeTab}.csv`);
+      // Use file-saver if available, otherwise fallback
+      if (typeof saveAs !== 'undefined') {
+        saveAs(blob, `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
+      } else {
+        // Fallback download
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error("CSV export failed:", err);
       alert("Failed to export CSV");
