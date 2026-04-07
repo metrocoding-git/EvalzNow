@@ -88,7 +88,7 @@ export default function PasswordForm() {
           type="submit"
           className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium"
         >
-          CONFIRM PASSWORD
+          SUBMIT
         </button>
       </form>
   
