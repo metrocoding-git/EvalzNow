@@ -1364,7 +1364,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     const plotData = [];
 
-    // 🟢 Positive PP IDs
+    //  Positive PP IDs
     if (positiveData.length > 0) {
       plotData.push({
         x: positiveData.map(r => toFixed3(r.RRN)),
@@ -1378,11 +1378,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         },
         name: "Positive PP IDs",
         showlegend: true,
-        legendrank: 1
+        legendrank: 1,
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
 
-    // 🔴 Negative PP IDs
+    //  Negative PP IDs
     if (negativeData.length > 0) {
       plotData.push({
         x: negativeData.map(r => toFixed3(r.RRN)),
@@ -1396,7 +1397,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         },
         name: "Negative PP IDs",
         showlegend: true,
-        legendrank: 2
+        legendrank: 2,
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
 
@@ -1439,7 +1441,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             color: '#2563eb',
             symbol: 'circle'
           },
-          name: "Growth Targets"
+          name: "Growth Targets",
+          hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
         });
       }
     }
@@ -1471,7 +1474,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         },
         name: "Average Points",
         showlegend: true,
-        legendrank: 3
+        legendrank: 3,
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
   
@@ -1490,7 +1494,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         },
         name: "Performance PP ID",
         showlegend: true,
-        legendrank: 4
+        legendrank: 4,
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
   
@@ -1606,7 +1611,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
           //  All 3D properties must be inside scene
           scene: {
-            domain: { x: [0, 0.95], y: [0.1, 1] }, 
+            domain: { x: [0.05, 1], y: [0.1, 1] }, 
             
             camera: {
               eye: { x: 1.7, y: 1.7, z: 1.7 }
@@ -1619,28 +1624,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               nticks: 10,
               range: [0, 1],
               dtick: 0.1,
+              tickformat: ".3f",
             },
             yaxis: {
               title: { text: "PRODUCTIVE RATIO (PR)" },
               nticks: 10,
               range: [0, 1],
               dtick: 0.1,
+              tickformat: ".3f",
             },
             zaxis: {
               title: { text: "ACUITY RATIO (AR)" },
               nticks: 10,
               range: [0, 1],
               dtick: 0.1,
+              tickformat: ".3f",
             },
           },
   
-          margin: { l: 0, r: 200, b: 60, t: 140 },
+          margin: { l: 0, r: 160, b: 0, t: 20 },
           showlegend: true,
           legend: {
-          x: 1.02,
-          y: 1,
+          x: 1.00,
+          y: 0.8,        // ← was 1, lower this value to move legends down
           xanchor: "left",
-          yanchor: "top",
+          yanchor: "top", 
           bgcolor: "rgba(255,255,255,0.9)",
           bordercolor: "#e5e7eb",
           borderwidth: 1,
@@ -1774,37 +1782,27 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             {renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)",  "Acuity Ratio (AR)",  unitSignature, unitType)}
           </div>
         );
-      case "5": // AR vs PR vs RR — 3D (Only for Third Parameter)
-        return (
-          <div style={{ position: 'relative', width: '100%', height: '900px' }} className='pb-60'>
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full max-w-[900px] h-full">
-                {render3DScatter(tableData, unitType)}
+        case "5":
+          return (
+            <div style={{ position: 'relative', width: '100%', height: '100%' }} className=''>
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="w-full max-w-[900px] h-full">
+                  {render3DScatter(tableData, unitType)}
+                </div>
               </div>
+              {/* <div style={{ 
+                position: 'absolute', 
+                top: 25, 
+                right: 10, 
+                background: 'rgba(255,255,255,0.8)', 
+                padding: '10px', 
+                borderRadius: '5px',
+                fontSize: '12px'
+              }}>
+                <div>3D Surface Plot</div>
+              </div> */}
             </div>
-            <div style={{ 
-              position: 'absolute', 
-              top: 25, 
-              right: 10, 
-              background: 'rgba(255,255,255,0.8)', 
-              padding: '10px', 
-              borderRadius: '5px',
-              fontSize: '12px'
-            }}>
-              <div>3D Surface Plot</div>
-              {/* <div>Unit Type: {unitType}</div>
-              {unitType === "Third Parameter" && (
-                <div>Showing Bias Planes</div>
-              )} */}
-              {/* {filters?.showProjectionPoints === true && projectionData.length > 0 && (
-                <div>Showing Performance Points (Green)</div>
-              )}
-              {filters?.showGrowthTarget === true && growthTargetData.length > 0 && (
-                <div>Showing Growth Targets (Purple)</div>
-              )} */}
-            </div>
-          </div>
-        );
+          );
   
       default:
         return null;
@@ -2031,26 +2029,138 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   
     try {
+      // Special handling for 3D chart
+      if (selectedChart?.id === "5") {
+        const plotDiv = chartContainerRef.current.querySelector('.js-plotly-plot');
+        
+        if (!plotDiv || !plotDiv._fullLayout) {
+          alert("3D plot not ready for export");
+          return;
+        }
+  
+        // Get the title element (external h2)
+        const titleElement = chartContainerRef.current.querySelector('h2');
+        
+        // Get Plotly instance
+        const Plotly = window.Plotly;
+        
+        if (Plotly && Plotly.toImage) {
+          // Capture just the Plotly chart as image data URL
+          const chartDataURL = await Plotly.toImage(plotDiv, {
+            format: 'jpeg',
+            width: 1200,
+            height: 800
+          });
+          
+          // Create a composite image with title
+          const compositeCanvas = document.createElement('canvas');
+          const ctx = compositeCanvas.getContext('2d');
+          
+          // Load the chart image
+          const chartImg = new Image();
+          await new Promise((resolve) => {
+            chartImg.onload = resolve;
+            chartImg.src = chartDataURL;
+          });
+          
+          // If there's a title, capture it with html2canvas
+          if (titleElement) {
+            // Set composite canvas size (chart width, chart height + title height)
+            const titleCanvas = await html2canvas(titleElement, {
+              scale: 2,
+              backgroundColor: '#ffffff',
+              logging: false
+            });
+            
+            const titleHeight = titleCanvas.height;
+            const chartWidth = chartImg.width;
+            const chartHeight = chartImg.height;
+            
+            compositeCanvas.width = chartWidth;
+            compositeCanvas.height = chartHeight + titleHeight;
+            
+            // Fill white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+            
+            // Draw title at the top
+            ctx.drawImage(titleCanvas, 0, 0, chartWidth, titleHeight);
+            
+            // Draw chart below title
+            ctx.drawImage(chartImg, 0, titleHeight, chartWidth, chartHeight);
+            
+          } else {
+            // Just use the chart image
+            compositeCanvas.width = chartImg.width;
+            compositeCanvas.height = chartImg.height;
+            ctx.drawImage(chartImg, 0, 0);
+          }
+          
+          // Save the composite image
+          compositeCanvas.toBlob((blob) => {
+            saveAs(blob, `Analytical-Chart.jpg`);
+          }, 'image/jpeg', 0.95);
+          
+        } else {
+          // Fallback: manual capture with html2canvas for everything
+          const container = chartContainerRef.current;
+          
+          // Temporarily modify styles to ensure full capture
+          const originalOverflow = container.style.overflow;
+          const originalHeight = container.style.height;
+          
+          container.style.overflow = 'visible';
+          container.style.height = 'auto';
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          const canvas = await html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: (clonedDoc, element) => {
+              // Ensure WebGL canvas is captured in the clone
+              const clonedCanvas = clonedDoc.querySelector('canvas');
+              if (clonedCanvas && plotDiv.querySelector('canvas')) {
+                const originalCanvas = plotDiv.querySelector('canvas');
+                const ctx = clonedCanvas.getContext('2d');
+                if (ctx && originalCanvas) {
+                  ctx.drawImage(originalCanvas, 0, 0);
+                }
+              }
+            }
+          });
+          
+          // Restore styles
+          container.style.overflow = originalOverflow;
+          container.style.height = originalHeight;
+          
+          canvas.toBlob((blob) => {
+            saveAs(blob, `Analytical-Chart.jpg`);
+          }, 'image/jpeg', 0.95);
+        }
+        return;
+      }
+  
+      // For all other (non-3D) charts, use existing html2canvas logic
       const container = chartContainerRef.current;
-      
-      // Find all scrollable children
       const scrollableElements = container.querySelectorAll('[class*="overflow"]');
       const originalStyles = [];
-      
-      // Store and modify styles for container
+  
       const containerOriginalStyles = {
         overflow: container.style.overflow,
         maxHeight: container.style.maxHeight,
         height: container.style.height,
         width: container.style.width,
       };
-      
+  
       container.style.overflow = 'visible';
       container.style.maxHeight = 'none';
       container.style.height = 'auto';
       container.style.width = 'auto';
-      
-      // Store and modify styles for all scrollable children
+  
       scrollableElements.forEach((el) => {
         originalStyles.push({
           element: el,
@@ -2058,15 +2168,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           maxHeight: el.style.maxHeight,
           height: el.style.height,
         });
-        
         el.style.overflow = 'visible';
         el.style.maxHeight = 'none';
         el.style.height = 'auto';
       });
-      
-      // Wait for layout to settle
+  
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+  
       const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
@@ -2077,13 +2185,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         scrollY: 0,
       });
   
-      // Restore container styles
       container.style.overflow = containerOriginalStyles.overflow;
       container.style.maxHeight = containerOriginalStyles.maxHeight;
       container.style.height = containerOriginalStyles.height;
       container.style.width = containerOriginalStyles.width;
-      
-      // Restore all scrollable children styles
+  
       originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
         element.style.overflow = overflow;
         element.style.maxHeight = maxHeight;
@@ -2091,7 +2197,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       });
   
       canvas.toBlob((blob) => {
-        saveAs(blob, `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.jpg`);
+        saveAs(blob, `Analytical-Chart.jpg`);
       }, 'image/jpeg', 0.95);
   
     } catch (error) {
@@ -2212,7 +2318,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </button>
               <div className="relative">
                 <button
-                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  onClick={() => {
+                    exportAsJPG();
+                  }}
                   title="Export Graph"
                   className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
                 >

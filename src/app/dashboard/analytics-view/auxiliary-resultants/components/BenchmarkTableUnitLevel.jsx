@@ -89,14 +89,16 @@ export default function BenchmarkTableUnitLevel({ onClose, selectedBenchmarks })
 
  
   // In BenchmarkTable component
-  const handleCloseClick = () => {
+  const handleCancel = () => {
+    onClose(null); // 
+  };
+  
+  //  Save + close modal
+  const handleSaveAndClose = () => {
     const selectedRows = rows.filter(row => row.isSelected);
-    
-    // Return only the benchmarkIds
     const selectedBenchmarkIds = selectedRows.map(r => Number(r.benchmarkId));
-    
-    // Pass the array of benchmark IDs
-    onClose(selectedBenchmarkIds);
+  
+    onClose(selectedBenchmarkIds); // 
   };
   
 
@@ -110,7 +112,7 @@ export default function BenchmarkTableUnitLevel({ onClose, selectedBenchmarks })
         {/* Header */}
         <div className="flex justify-between items-center  bg-gray-100 px-4 py-2 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Create Benchmark Links</h2>
-          <button onClick={handleCloseClick} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+          <button onClick={handleCancel} className="cursor-pointer p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
             <X className="w-5 h-5 text-gray-700" />
           </button>
         </div>
@@ -166,7 +168,7 @@ export default function BenchmarkTableUnitLevel({ onClose, selectedBenchmarks })
         <div className="border-t border-gray-300 py-2 px-6 bg-gray-50 flex-shrink-0">
           <div className="flex justify-end items-center ">
             <button
-              onClick={handleCloseClick}
+              onClick={handleSaveAndClose}
               disabled={selectedCount < 1}
               className={`px-4 py-1 text-sm transition-colors bg-gray-200 hover:bg-gray-300 `}
             >

@@ -1060,22 +1060,22 @@ const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
 const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   setShowBenchmarkTable(false);
 
+  // ❌ If cancelled → do NOTHING
+  if (selectedBenchmarkIds === null) return;
+
   if (!selectedRow) return;
 
   try {
-    // selectedBenchmarkIds = [1,2,3]
-    const selectedBIds = selectedBenchmarkIds; // ✅ same thing at unit level
+    const selectedBIds = selectedBenchmarkIds;
 
     const existingBenchmarkIds = selectedRow.benchmarkIds || [];
     const existingBIds = selectedRow.bIds || [];
 
-    //  No selection + no existing record → do nothing
     if (selectedBIds.length === 0 && !selectedRow.id) {
       setRefreshBenchmarksUnitLevel(prev => !prev);
       return;
     }
 
-    //  No selection + existing record → DELETE
     if (selectedBIds.length === 0 && selectedRow.id) {
       await deleteUnitImprovement(selectedRow.id);
       setRefreshBenchmarksUnitLevel(prev => !prev);
@@ -1084,20 +1084,16 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
 
     const payload = {
       unitId,
-      candidateId,
       benchmarkIds: selectedBenchmarkIds,
       bIds: selectedBIds
     };
 
     if (selectedRow.id) {
-      // ✅ UPDATE
       await updateUnitImprovement(selectedRow.id, payload);
     } else {
-      // ✅ CREATE
       await createUnitImprovement(payload);
     }
 
-    // ✅ refresh list
     setRefreshBenchmarksUnitLevel(prev => !prev);
 
   } catch (error) {
