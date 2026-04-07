@@ -269,7 +269,7 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
         safe(getLoadG(neuro, pp.ppId, "Temporal Lobe - Right")),
 
         safe(need.observation),
-        safe(need.actionStatus)
+        safe(need.status)
       ]);
     });
   });

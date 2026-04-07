@@ -105,6 +105,7 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
         <div className="flex justify-end gap-2">
           <button
             type="submit"
+            onClick={handleSubmit}
             disabled={!isFormValid() || isSubmitting}
             className={`px-4 py-1 bg-gray-200 text-sm ${
               !isFormValid() || isSubmitting

@@ -556,7 +556,32 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     }
   };
 
+  useEffect(() => {
+    if (selectedSort === 'activateCandidateLevel') {
+      const firstVisible = activateCandidateLevel.find(chart => {
+        if (chart.isProjection) {
+          if (chart.name === "Growth Projections - ∆RR") return hasRRProjection;
+          if (chart.name === "Growth Projections - ∆PR") return hasPRProjection;
+          if (chart.name === "Growth Projections - ∆AR") return unitType === "Third Parameter" && hasARProjection;
+          return false;
+        }
+        if (chart.name.includes("(ΔAR)") || chart.name.includes("AR") || chart.name.includes("(AR)") || chart.name.includes("ARGT")) {
+          return unitType === "Third Parameter";
+        }
+        return true;
+      });
+      setSelectedChart(firstVisible ?? null);
   
+    } else if (selectedSort === 'activateUnitLevel') {
+      const firstVisible = activateUnitLevel.find(chart => {
+        if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
+          return unitType === "Third Parameter";
+        }
+        return true;
+      });
+      setSelectedChart(firstVisible ?? null);
+    }
+  }, [selectedSort]);
 const exportToExcelWithImage = async () => {
   if (!selectedChart) {
     alert("Please select a chart first.");
@@ -1374,6 +1399,17 @@ const handleExportGraph = () => {
                   }
 
                   if (selectedChart.type === "scatter") {
+
+                    if (!candidateId) {
+                      return (
+                        <div className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
+                          <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
+                          <div className="flex-1 flex  justify-center text-gray-400 uppercase">
+                            Select a candidate to view 
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
                       <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
