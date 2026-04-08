@@ -261,7 +261,7 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
             getLoadG(neuro, pp.ppId, "Temporal Lobe - Right"),
 
             need.observation,
-            need.actionStatus
+            need.status
           ]));
         });
       });

@@ -2301,82 +2301,35 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   
     try {
       const container = chartContainerRef.current;
-      
-      // Find all scrollable children
-      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
-      const originalStyles = [];
-      
-      // Store and modify styles for container
-      const containerOriginalStyles = {
-        overflow: container.style.overflow,
-        maxHeight: container.style.maxHeight,
-        height: container.style.height,
-        width: container.style.width,
-      };
-      
-      container.style.overflow = 'visible';
-      container.style.maxHeight = 'none';
-      container.style.height = 'auto';
-      container.style.width = 'auto';
-      
-      // Store and modify styles for all scrollable children
-      scrollableElements.forEach((el) => {
-        originalStyles.push({
-          element: el,
-          overflow: el.style.overflow,
-          maxHeight: el.style.maxHeight,
-          height: el.style.height,
-        });
-        
-        el.style.overflow = 'visible';
-        el.style.maxHeight = 'none';
-        el.style.height = 'auto';
-      });
-      
-      const fullWidth = container.scrollWidth;
-      const fullHeight = container.scrollHeight;
-
-      container.style.height = container.scrollHeight + 'px';
-      container.style.overflow = 'visible';
-
-
-      // Wait for layout to settle
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+  
+      // Get actual visible size (NOT scroll size)
+      const rect = container.getBoundingClientRect();
+  
+      // Wait a bit to ensure charts fully render
+      await new Promise((resolve) => setTimeout(resolve, 300));
+  
       const canvas = await html2canvas(container, {
         scale: 2,
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
+        width: rect.width,
+        height: rect.height,
+        windowWidth: document.documentElement.clientWidth,
+        windowHeight: document.documentElement.clientHeight,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-      });
-
-  
-      // Restore container styles
-      container.style.overflow = containerOriginalStyles.overflow;
-      container.style.maxHeight = containerOriginalStyles.maxHeight;
-      container.style.height = containerOriginalStyles.height;
-      container.style.width = containerOriginalStyles.width;
-      
-      // Restore all scrollable children styles
-      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
-        element.style.overflow = overflow;
-        element.style.maxHeight = maxHeight;
-        element.style.height = height;
+        backgroundColor: "#ffffff",
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
       });
   
       canvas.toBlob((blob) => {
-        saveAs(blob, `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.jpg`);
-      }, 'image/jpeg', 0.95);
+        saveAs(
+          blob,
+          `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, "_")}-${Date.now()}.jpg`
+        );
+      }, "image/jpeg", 0.95);
   
     } catch (error) {
-      console.error('JPG Export failed:', error);
-      alert('Failed to export as JPG: ' + error.message);
+      console.error("JPG Export failed:", error);
+      alert("Failed to export as JPG: " + error.message);
     }
   };
   
