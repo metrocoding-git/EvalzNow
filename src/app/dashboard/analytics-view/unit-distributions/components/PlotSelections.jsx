@@ -1420,16 +1420,42 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   };
   
   const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
+  
     try {
-      const canvas = await captureChart();
-      canvas.toBlob(
-        (blob) => saveAs(blob, `chart-${selectedChart?.name?.replace(/[^a-z0-9]/gi, '_') || 'export'}-${Date.now()}.jpg`),
-        'image/jpeg',
-        0.95
-      );
+      const container = chartContainerRef.current;
+  
+      // Get actual visible size (NOT scroll size)
+      const rect = container.getBoundingClientRect();
+  
+      // Wait a bit to ensure charts fully render
+      await new Promise((resolve) => setTimeout(resolve, 300));
+  
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        width: rect.width,
+        height: rect.height,
+        windowWidth: document.documentElement.clientWidth,
+        windowHeight: document.documentElement.clientHeight,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(
+          blob,
+          `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, "_")}-${Date.now()}.jpg`
+        );
+      }, "image/jpeg", 0.95);
+  
     } catch (error) {
-      console.error('JPG Export failed:', error);
-      alert('Failed to export as JPG: ' + error.message);
+      console.error("JPG Export failed:", error);
+      alert("Failed to export as JPG: " + error.message);
     }
   };
   
