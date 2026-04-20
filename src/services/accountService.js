@@ -68,4 +68,21 @@ export const createAccount = async (accData) => {
   }
 };
 
+export const recoverAccount = async (data) => {
+  try {
+    const response = await api.post(`${API_ROUTES.ACCOUNT}/recover`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const response = await api.post(`${API_ROUTES.ACCOUNT}/reset-password`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
