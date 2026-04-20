@@ -1,19 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserRoleRedirect } from '@/utils/authHelpers';
-import { login } from "@/services/accountService";
+import { login, resetPassword } from "@/services/accountService";
 import toast, { Toaster } from "react-hot-toast";
+import { useFormStatus } from "@/context/FormStatusContext";
 
 
 export default function PasswordForm() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ password: "", confirmPassword: "" });
   const [error, setError] = useState('');
+  const { setFormStatus } = useFormStatus();
   const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  const token = searchParams.get("token");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormStatus("Creating");
   };
 
   useEffect(() => {
@@ -24,29 +31,37 @@ export default function PasswordForm() {
     }
   }, [router]);
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const res = await login(formData);
+      setFormStatus("processing");
+      if (!token) {
+        setError("Invalid or missing token");
+        return;
+      }
 
-    // ✅ Show success toast
-    toast.success("Login successful!");
+      const res = await resetPassword({
+        token,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
 
-    // Save JWT in localStorage
-    localStorage.setItem("token", res.token);
-    sessionStorage.setItem('activeClientId', res.user.clientId);
+      setFormStatus("Password Reset Successful");
+      // toast.success(res.message || "Password reset successful");
 
-      // Save logged-in user data in localStorage
-    localStorage.setItem("user", JSON.stringify(res.user));
-
-    router.push("/welcome");
+      router.push("/login");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Login failed");
-      setError(err.response?.data?.message || err.message || "Login failed");
+      const msg =
+        err.response?.data?.message || err.message || "Reset failed";
+
+      toast.error(msg);
+      setError(msg);
+      setFormStatus("Ready...");
     }
   };
+
 
   return (
     <div className="flex-1 relative flex items-center justify-center p-12 bg-white">
@@ -58,7 +73,7 @@ export default function PasswordForm() {
       </div>
   
       {/* Login Form */}
-      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
         <h2 className="text-2xl text-black font-bold text-center">EVALZNOW</h2>
         <p className="text-center text-xs">
           PLEASE ENTER YOUR PASSWORD AND CONFIRM PASSWORD
@@ -66,20 +81,20 @@ export default function PasswordForm() {
   
         <input
           type="text"
-          name="username"
+          name="password"
           placeholder="PASSWORD"
           className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors placeholder-black"
           onChange={handleChange}
-          value={formData.username}
+          value={formData.password}
         />
 
         <input
           type="text"
-          name="username"
+          name="confirmPassword"
           placeholder="CONFIRM PASSWORD"
           className="w-full p-3 border border-gray-400 focus:outline-none text-black focus:border-blue-500 transition-colors placeholder-black"
           onChange={handleChange}
-          value={formData.username}
+          value={formData.confirmPassword}
         />
   
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}

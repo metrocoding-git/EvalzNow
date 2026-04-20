@@ -685,6 +685,22 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
+useEffect(() => {
+  if (!selectedSort) return;
+
+  const source =
+    selectedSort === "activateCandidateLevel"
+      ? activateCandidateLevel
+      : activateUnitLevel;
+
+  // Try to keep same metric (by id), but update type
+  if (selectedChart) {
+    const match = source.find(item => item.id === selectedChart.id);
+    setSelectedChart(match || source[0]);
+  } else {
+    setSelectedChart(source[0]);
+  }
+}, [selectedSort]);
 
 const exportAsJPG = async () => {
   if (!chartContainerRef.current) {

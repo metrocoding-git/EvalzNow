@@ -540,11 +540,19 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
 
   const exportAsCSV = () => {
     // ✅ Use raw insertScores (unfiltered by tab) for export
-    const allWorkforceScores = insertScores.filter(
-      (row) => (row.unit?.environment || "Workforce") !== "Classroom"
-    );
+    const allScores = insertScores || [];
   
-    const indirectData = allWorkforceScores
+    const classroomData = allScores.filter(
+      (row) => (row.unit?.environment === "Classroom")
+    );
+    
+    const workforceData = allScores.filter(
+      (row) => (row.unit?.environment !== "Classroom")
+    );
+
+    const sourceData = environment === "Classroom" ? classroomData : workforceData;
+
+    const indirectData = sourceData
       .filter((row) => parseInt(row.ppId, 10) < 0)
       .map((row) => ({
         ...row,
@@ -557,7 +565,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
       });
   
-    const directData = allWorkforceScores
+    const directData = sourceData
       .filter((row) => parseInt(row.ppId, 10) > 0)
       .map((row) => ({
         ...row,
@@ -569,6 +577,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
         if (pa !== pb) return pa - pb;
         return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
       });
+
   
     if (indirectData.length === 0 && directData.length === 0) {
       alert("No table data available to export");
@@ -586,15 +595,68 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
       };
   
       const headers = [
-        "First Name", "Last Name", "CID", "PP ID", "Duration",
-        "Critical Reference Date", "Task Declaration", "Workflow Stage",
-        "Assessment Type", "Schedule Impact", "Engage Level", "Competency",
-        ...Array.from({ length: 20 }, (_, i) => `MC${i + 1}`),
-        ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
+        "First Name",
+        "Last Name",
+        "CID",
+        "PP ID",
+        "Duration",
+        "Critical Reference Date",
+        "Task Declaration",
+        "Workflow Stage",
+        "Assessment Type",
+        "Schedule Impact",
+        "Engage Level",
+        "Competency",
       ];
+
+      if (environment === "Classroom") {
+        headers.push("Attained Score", "Max Score");
+      } else {
+        headers.push(
+          ...Array.from({ length: 20 }, (_, i) => `MC${i + 1}`),
+          ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
+        );
+      }
   
       // Build CSV content with header text
       const rows = [];
+
+      const buildRow = (row) => {
+        const base = [
+          row.candidate?.firstName ?? "",
+          row.candidate?.lastName ?? "",
+          row.candidate?.candidateId ?? "",
+          row.ppId ?? "",
+          row.durationHrs !== null && row.durationHrs !== undefined
+            ? Number(row.durationHrs).toFixed(2)
+            : "-",
+          row.criticalRefDate?.slice(0, 10) ?? "",
+          row.remarks ?? "",
+          row.workflowStage ?? "",
+          row.assessmentType ?? "",
+          row.scheduleImpact ?? "",
+          row.engageLevel ?? "",
+          row.competency ?? "",
+        ];
+      
+        if (environment === "Classroom") {
+          base.push(
+            row.attainedScore ?? 0,
+            row.maxScore ?? 0
+          );
+        } else {
+          base.push(
+            ...(row.mc ?? Array(20).fill("-")).map(v =>
+              v !== null && v !== undefined && v !== "" ? Number(v).toFixed(2) : "-"
+            ),
+            ...(row.cc ?? Array(20).fill("-")).map(v =>
+              v !== null && v !== undefined && v !== "" ? Number(v).toFixed(2) : "-"
+            )
+          );
+        }
+      
+        return base;
+      };
       
       // Add header information
       rows.push("EvalzNow – A Novel Human Capital Assessment Method");
@@ -628,7 +690,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
             val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
           )
         ];
-        rows.push(rowData.map(escapeCSV).join(","));
+        rows.push(buildRow(row).map(escapeCSV).join(","));
       });
   
       // Add spacing between sections if there is Direct data
@@ -657,7 +719,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
               val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
             )
           ];
-          rows.push(rowData.map(escapeCSV).join(","));
+          rows.push(buildRow(row).map(escapeCSV).join(","));
         });
       }
   
@@ -860,7 +922,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
               <div className="mr-1">
 
                 {/* Export dropdown menu */}
-                {environment === "Workforce" && (
+                {/* {environment === "Workforce" && ( */}
                   <button
                     onClick={exportAsCSV}
                     title="Export As CSV"
@@ -868,7 +930,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                   >
                     <FolderOutput className="w-3.5 h-3.5" />
                   </button>
-                )}
+                {/* )} */}
 
                 <button
                   onClick={() => {
@@ -1001,8 +1063,6 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
               </table>
             </div>
           </div>
-
-
 
         </div>
         

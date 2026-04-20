@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { getUserRoleRedirect } from '@/utils/authHelpers';
-import { login } from "@/services/accountService";
+import { login, recoverAccount } from "@/services/accountService";
 import toast, { Toaster } from "react-hot-toast";
 
 
@@ -19,12 +19,16 @@ export default function RecoverForm() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     try {
-    router.push("/newPassword");
+      const res = await recoverAccount({
+        username: formData.username,
+      });
+  
+      toast.success(res.message);
+  
     } catch (err) {
-    //   toast.error(err.response?.data?.message || err.message || "Login failed");
-      setError(err.response?.data?.message || err.message || "Login failed");
+      setError(err.response?.data?.message || "Recovery failed");
     }
   };
 
@@ -58,7 +62,7 @@ export default function RecoverForm() {
         <button
           type="submit"
           className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium"
-          onClick={() => router.push("/newPassword")}
+          onClick={handleLogin}
         >
           RECOVER
         </button>
