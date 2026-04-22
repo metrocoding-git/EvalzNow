@@ -77,7 +77,7 @@ export default function EntitiesManager() {
   
   useEffect(() => {
     if (!unitQuery) {
-      toast.error("No Unit Selected")
+      // toast.error("No Unit Selected")
     }
   }, [unitQuery, router]);
 
@@ -85,7 +85,7 @@ export default function EntitiesManager() {
     const fetchCandidateByUnitId = async () => {
       if (!unitQuery) {
         setLoading(false);
-        toast.error("No Candidate Selected");
+        // toast.error("No Candidate Selected");
         return;
       }
 
@@ -96,7 +96,7 @@ export default function EntitiesManager() {
         if (!Array.isArray(data) || data.length === 0) {
           setUnitData(null);
           setCandidateList([]);
-          toast.error("Please choose the candidate on unit roster.");
+          // toast.error("Please choose the candidate on unit roster.");
           return;
         }
 
@@ -386,7 +386,7 @@ export default function EntitiesManager() {
 
         </>
       {/* )} */}
-      <Toaster position="top-right" reverseOrder={false} />
+      {/* <Toaster position="top-right" reverseOrder={false} /> */}
     </div>
   );
 }
