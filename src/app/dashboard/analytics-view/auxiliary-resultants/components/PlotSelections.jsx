@@ -696,15 +696,22 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   
   useEffect(() => {
-    if (Object.keys(editingObservations).length === 0 && needAssessment.length > 0) {
+    setEditingObservations({});
+  }, [candidateId]);
+  
+  // Initialize observations from fetched needAssessment data
+  useEffect(() => {
+    if (needAssessment.length > 0) {
       const initialObservations = {};
       sortedFinalTableData.forEach(row => {
         const existing = needAssessment.find(n => n.ppId === row.ppId);
         initialObservations[row.ppId] = existing ? existing.observation : "";
       });
       setEditingObservations(initialObservations);
+    } else {
+      setEditingObservations({});
     }
-  }, [needAssessment, sortedFinalTableData, editingObservations]);
+  }, [needAssessment]);
   
 
   // console.log("need assesssment summary: ", needAssessmentSummary);
