@@ -14,7 +14,7 @@ const IDLE_TIMEOUT = 30 * 60 * 1000;
 export default function DashboardLayout({ children }) {
   const [activeTab, setActiveTab] = useState('');
   const [activeButton, setActiveButton] = useState('');
-  const [formStatus, setFormStatus] = useState("Ready...");
+  const [formStatus, setFormStatus] = useState("");
   // const [loading, setLoading] = useState(true); 
 
   const router = useRouter();

@@ -29,7 +29,8 @@ export default function BottomRibbon({  activeButton, formStatus }) {
     <div className="w-full bg-gray-200 shadow-sm text-sm font-medium border border-black mt-1 p-2 grid grid-cols-12 items-center">
       {/* Left side: formStatus + activeTab (9/12) */}
       <div className="col-span-9 flex space-x-4 justify-between">
-        <p className="text-sm text-gray-700">{formStatus || "Ready..."}</p>
+        {/* <p className="text-sm text-gray-700">{formStatus || ""}</p> */}
+        <p className="text-sm text-gray-700"></p>
         <p className="text-sm text-gray-700">{activeTab}</p>
       </div>
 
