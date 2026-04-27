@@ -13,7 +13,10 @@ const accessLevels = [
 const accountStatuses = ["Enabled", "Disabled"];
 
 export default function CreateStaffForm({ onClose, onCreate }) {
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    "Access Level": "",
+    "Account Status": "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -164,11 +167,14 @@ export default function CreateStaffForm({ onClose, onCreate }) {
           {/* Access Level Dropdown */}
           <label className="col-span-1 flex items-center text-gray-700">Access Level:</label>
           <select
+            value={form["Access Level"] || ""}
             className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
-            onChange={(e) => handleChange("Access Level", e.target.value)} 
+            onChange={(e) => handleChange("Access Level", e.target.value)}
             required
           >
-            <option value="" disabled>Select Access Level</option>
+            <option value="" disabled>
+              Select Access Level
+            </option>
             {accessLevels.map((level, i) => (
               <option key={i} value={level}>
                 {level}
@@ -181,11 +187,15 @@ export default function CreateStaffForm({ onClose, onCreate }) {
 
           <label className="col-span-1 flex items-center text-gray-700">Account Status:</label>
           <select
+            value={form["Account Status"] || ""}
+            disabled={!form["Access Level"]} 
             className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             onChange={(e) => handleChange("Account Status", e.target.value)}
             required
           >
-            <option value="" disabled>Select Status</option>
+            <option value="" disabled>
+              Select Status
+            </option>
             {accountStatuses.map((status, i) => (
               <option key={i} value={status}>
                 {status}

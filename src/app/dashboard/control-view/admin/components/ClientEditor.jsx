@@ -283,7 +283,7 @@ export default function ClientEditor({ client, onClose, onSave, showForm }) {
           </div>
         </div>
       </div> ) : (
-        <div className="p-4 text-gray-500 text-sm">No form to display.</div>
+        <div className="p-4 text-gray-500 text-sm"></div>
       )}
     </div>
   );

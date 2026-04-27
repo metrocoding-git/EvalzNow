@@ -250,6 +250,13 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const [visible, setVisible] = useState(true);
 
 
+  const activeCCIndices = new Set(
+    customCriteria
+      .map((item, index) => (item.name?.trim() ? index : -1))
+      .filter((i) => i !== -1)
+  );
+
+  
   const handlePointChange = (index, field, value) => {
     const updated = [...points];
     updated[index][field] = value;
@@ -1009,10 +1016,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                         {Array.from({ length: 20 }, (_, i) => (
                           <th key={`mc-${i}`} className="border-1 border-gray-400 px-2 py-1">{`MC${i + 1}`}</th>
                         ))}
-                        {/* CC21 - CC40 */}
-                        {Array.from({ length: 20 }, (_, i) => (
-                          <th key={`cc-${i + 21}`} className="border-1 border-gray-400 px-2 py-1">{`CC${i + 21}`}</th>
-                        ))}
+                        {Array.from({ length: 20 }, (_, i) =>
+                          activeCCIndices.has(i) ? (
+                            <th key={`cc-${i + 21}`} className="border-1 border-gray-400 px-2 py-1">{`CC${i + 21}`}</th>
+                          ) : null
+                        )}
                       </>
                     )}
                   </tr> 
@@ -1050,9 +1058,11 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                             {row.mc?.map((val, i) => (
                               <td className="whitespace-nowrap border p-1 text-center" key={`mc-${i}`}>{val ? val : "-"}</td>
                             ))}
-                            {row.cc?.map((val, i) => (
-                              <td className="whitespace-nowrap border p-1 text-center" key={`cc-${i}`}>{val ? val : "-"}</td>
-                            ))}
+                            {row.cc?.map((val, i) =>
+                              activeCCIndices.has(i) ? (
+                                <td className="whitespace-nowrap border p-1 text-center" key={`cc-${i}`}>{val ? val : "-"}</td>
+                              ) : null
+                            )}
 
                           </>
                         )}
