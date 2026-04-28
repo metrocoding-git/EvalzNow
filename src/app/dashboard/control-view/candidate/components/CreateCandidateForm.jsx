@@ -114,8 +114,6 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
       "Start Date",
       "Nationality",
       "Gender",
-      "Ethnicity",
-      "Income",
       "Religion",
       "Marital Status",
       "Job Type",
@@ -126,33 +124,14 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
     );
   };
 
+  //  Sync when parent updates
+  useEffect(() => {
+    setLocalEthnicities(ethnicities);
+  }, [ethnicities]);
 
-  // Fetch all candidates on mount
-  // useEffect(() => {
-  //   const fetchEthnicity = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const data = await getAllEthinicities();
-  //       // keep objects instead of just names
-  //       setEthnicities(Array.isArray(data) ? data : []);
-  //     } catch (err) {
-  //       console.error("Failed to fetch ethnicities:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchEthnicity();
-  // }, []);
-
-    // ✅ Sync when parent updates
-    useEffect(() => {
-      setLocalEthnicities(ethnicities);
-    }, [ethnicities]);
-  
-    useEffect(() => {
-      setLocalIncomes(incomes);
-    }, [incomes]);
-  
+  useEffect(() => {
+    setLocalIncomes(incomes);
+  }, [incomes]);
 
   // Fetch all candidates on mount
   useEffect(() => {
@@ -175,24 +154,6 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
 
     fetchCandidates();
   }, [activeClientId]);
-
-
-  // Fetch all candidates on mount
-  // useEffect(() => {
-  //   const fetchIncome = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const data = await getAllIncomes();
-  //       // keep objects instead of just names
-  //       setIncomes(Array.isArray(data) ? data : []);
-  //     } catch (err) {
-  //       console.error("Failed to fetch incomes:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchIncome();
-  // }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -319,6 +280,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
             <React.Fragment key={idx}>
               <label className="col-span-1 flex items-center text-gray-700">{label}:</label>
               <select
+                value={form[label] || ""}
                 className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
                 onChange={(e) => handleChange(label, e.target.value)}
               >
@@ -334,6 +296,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Income handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Nationality:</label>
           <select
+            value={form["Nationality"] || ""} 
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Nationality", e.target.value)}
           >
@@ -348,6 +311,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Income handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Income:</label>
           <select
+            value={form["Income"] || ""}
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Income", e.target.value)}
           >
@@ -363,6 +327,7 @@ export default function CreateCandidateForm({ onClose, onCreate, ethnicities = [
           {/* Ethnicity handled separately */}
           <label className="col-span-1 flex items-center text-gray-700">Ethnicity:</label>
           <select
+            value={form["Ethnicity"] || ""} 
             className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
             onChange={(e) => handleChange("Ethnicity", e.target.value)}
           >

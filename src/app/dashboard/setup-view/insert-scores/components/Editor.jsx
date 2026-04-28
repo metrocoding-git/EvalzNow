@@ -840,7 +840,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                       return (
                         <React.Fragment key={fieldKey}>
                           <label className="text-left text-gray-700 whitespace-nowrap pr-2">
-                            CC{index + 1} ({criteria.criteria}):
+                            CC{index + 21} ({criteria.criteria}):
                           </label>
                           <input
                             type="number"

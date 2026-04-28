@@ -624,7 +624,7 @@ const isDuplicateIncomeName = (value, idx) => {
                   type="text"
                   className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
-                  value={searchTerm}                 // ✅ Controlled input
+                  value={searchTerm}                 // 
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
@@ -754,7 +754,7 @@ const isDuplicateIncomeName = (value, idx) => {
                             type="text"
                             maxLength={25}
                             value={eth.name || ""}
-                            disabled={isEthnicityUsed(eth)} 
+                            // disabled={isEthnicityUsed(eth)} 
                             onChange={(e) => handleEthnicityChange(idx, e.target.value)}
                             onBlur={() => handleEthnicityBlur(idx)}
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -763,10 +763,10 @@ const isDuplicateIncomeName = (value, idx) => {
                           <button
                             type="button"
                             onClick={() => handleEthnicityDelete(idx)}
-                            disabled={isEthnicityUsed(eth)}  // ✅ disable if used
+                            // disabled={isEthnicityUsed(eth)}  
                             className={`px-2 py-1 text-xs rounded ${
                               isEthnicityUsed(eth)
-                                ? "text-gray-400 cursor-not-allowed"
+                                ? "text-gray-800 hover:text-gray-900"
                                 : "text-gray-800 hover:text-gray-900"
                             }`}
                           >
@@ -798,29 +798,26 @@ const isDuplicateIncomeName = (value, idx) => {
                             type="text"
                             maxLength={25}
                             value={income.name || ""}
-                            disabled={isIncomeUsed(income)} 
                             onChange={(e) => handleIncomeChange(idx, e.target.value)}
                             onBlur={() => {
                               const value = income.name?.trim() || "";
-                            
+
                               if (isDuplicateIncomeName(value, idx)) {
                                 toast.error("Income range already exists");
                                 return;
                               }
-                            
+
                               handleIncomeBlur(idx);
                             }}
-                            
                             className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                             placeholder={`Income Ranges ${idx + 1}`}
                           />
                           <button
                             type="button"
                             onClick={() => handleIncomeDelete(idx)}
-                            disabled={isIncomeUsed(income)} // ✅ disable if in use
                             className={`px-2 py-1 text-xs rounded ${
                               isIncomeUsed(income)
-                                ? "text-gray-400 cursor-not-allowed"
+                                ? "text-gray-800 hover:text-gray-900"
                                 : "text-gray-800 hover:text-gray-900"
                             }`} 
                           >

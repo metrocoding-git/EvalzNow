@@ -161,7 +161,7 @@ export default function UnitControl() {
         // Sort by criteriaId to keep correct order
         const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
   
-        setCustomCriteria(data);
+        setCustomCriteria(sorted);
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
       }
@@ -242,18 +242,31 @@ export default function UnitControl() {
 
 
   // Filtered candidate list based on searchTerm
-const filteredCandidates = unitRosterData
-.filter(roster => roster.unitId === selectedUnit?.id) // only current unit
-.filter(roster => {
-  const candidate = roster.candidate;
-  if (!candidate) return false;
-  const term = searchTerm.toLowerCase();
-  return (
-    (candidate.lastName || "").toLowerCase().includes(term) ||
-    (candidate.firstName || "").toLowerCase().includes(term) ||
-    (candidate.candidateId || "").toLowerCase().includes(term)
-  );
-});
+  const filteredCandidates = unitRosterData
+  .filter(roster => roster.unitId === selectedUnit?.id) // only current unit
+  .filter(roster => {
+    const candidate = roster.candidate;
+    if (!candidate) return false;
+    const term = searchTerm.toLowerCase();
+    return (
+      (candidate.lastName || "").toLowerCase().includes(term) ||
+      (candidate.firstName || "").toLowerCase().includes(term) ||
+      (candidate.candidateId || "").toLowerCase().includes(term)
+    );
+  }).sort((a, b) => {
+    const valA = (a.candidate?.[sortBy] || "").toString().toLowerCase();
+    const valB = (b.candidate?.[sortBy] || "").toString().toLowerCase();
+
+    if (sortBy === "candidateId") {
+      return candidateSortOrder === "asc"
+        ? valA.localeCompare(valB, undefined, { numeric: true })
+        : valB.localeCompare(valA, undefined, { numeric: true });
+    }
+
+    return candidateSortOrder === "asc"
+      ? valA.localeCompare(valB)
+      : valB.localeCompare(valA);
+  });
 
 
   // Add this function to refresh candidate data
@@ -630,7 +643,7 @@ const filteredCandidates = unitRosterData
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!selectedUnit) return; // ✅ require a selected unit
+      if (!selectedUnit) return; // require a selected unit
   
       // Ctrl + E → Duplicate
       if (e.ctrlKey && e.key.toLowerCase() === "e") {
@@ -782,7 +795,7 @@ const filteredCandidates = unitRosterData
                   type="text"
                   className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
-                  value={searchTerm}                 // ✅ Controlled input
+                  value={searchTerm}                 //  Controlled input
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
@@ -792,9 +805,36 @@ const filteredCandidates = unitRosterData
             {/* Conditional Column Headers */}
             {showUnitRoster ? (
               <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
-                <div className="cursor-pointer select-none">Last Name</div>
-                <div className="cursor-pointer select-none">First Name</div>
-                <div className="cursor-pointer select-none">Candidate ID</div>
+                <div className="cursor-pointer select-none" 
+                  onClick={() => {
+                    if (sortBy === "lastName") {
+                      setCandidateSortOrder(candidateSortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortBy("lastName");
+                      setCandidateSortOrder("asc");
+                    }
+                  }}
+                >Last Name</div>
+                <div className="cursor-pointer select-none" 
+                  onClick={() => {
+                    if (sortBy === "firstName") {
+                      setCandidateSortOrder(candidateSortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortBy("firstName");
+                      setCandidateSortOrder("asc");
+                    }
+                  }}
+                >First Name</div>
+                <div className="cursor-pointer select-none"
+                  onClick={() => {
+                    if (sortBy === "candidateId") {
+                      setCandidateSortOrder(candidateSortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortBy("candidateId");
+                      setCandidateSortOrder("asc");
+                    }
+                  }}              
+                >Candidate ID</div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-1 text-xs font-semibold text-black">
@@ -856,7 +896,7 @@ const filteredCandidates = unitRosterData
               </div>
 
               {/* Candidate List */}
-              <div className="max-h-40 overflow-y-auto">
+              <div>
                 {filteredCandidates.map((rosterItem, index) => (
                     <div 
                     key={index}
@@ -892,25 +932,6 @@ const filteredCandidates = unitRosterData
                   Units ({dataList.length})
                 </p>
               </div>
-              {/* <div className="items-center justify-center px-4">
-                <div className="border border-gray-200 p-1">
-                  <span className="text-sm text-gray-600">
-                    Unit Name: {selectedUnit?.unitName || "N/A"}
-                  </span>
-                  <br />
-                  <span className="text-sm text-gray-600">
-                    Unit ID: {selectedUnit?.unitId || "N/A"}
-                  </span>
-                  <br />
-                  <span className="text-sm text-gray-600">
-                    Unit Type: {selectedUnit?.unitType || "N/A"}
-                  </span>
-                  <br />
-                  <span className="text-sm text-gray-600">
-                    Signature Profile: {selectedUnit?.signatureProfile || "N/A"}
-                  </span>
-                </div>
-              </div> */}
 
               {showList &&
                 filteredUnits.map((item, index) => {
@@ -959,75 +980,14 @@ const filteredCandidates = unitRosterData
 
                 {/* Header */}
           
-
             {/* List Toggle */}
             <div className="flex-[1.1] min-h-0 overflow-auto">
-            
-
-            {/* {showList &&
-              getSortedData().map((item, index) => {
-                const isSelected = selectedCandidate?.id === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    className={`candidate-item grid grid-cols-3 gap-4 items-center cursor-pointer px-4 py-2 border-b border-gray-50 transition-all ${
-                      isSelected
-                        ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => {
-                      
-                      setShowEdit(true);
-                      setShowAdd(false);
-                      setShowReview(false);
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      setContextMenu({
-                        visible: true,
-                        x: e.pageX,
-                        y: e.pageY,
-                        selectedCandidate: item,
-                      });
-                    }}
-                  >
-                    <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
-                    >
-                      {item.lastName}
-                    </p>
-                    <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
-                    >
-                      {item.firstName}
-                    </p>
-                    <p
-                      className={`text-sm font-medium truncate ${
-                        isSelected ? "text-black" : "text-gray-800"
-                      }`}
-                    >
-                      {item.id}
-                    </p>
-                  </div>
-                );
-              })} */}
 
             </div>
                 
           </div>
           )}
         </div>
-
-
-        {/* <div className="flex flex-col border-1 border-gray-200  overflow-hidden h-1/3">
-          
-        </div>  */}
 
         {/* Context Menu */}
         {contextMenu.visible && (
@@ -1042,7 +1002,7 @@ const filteredCandidates = unitRosterData
                 
                 e.stopPropagation();
                 if (contextMenu.selectedUnit) {
-                  handleDuplicate(contextMenu.selectedUnit);// ✅ pass selected unit
+                  handleDuplicate(contextMenu.selectedUnit);//  pass selected unit
                 }
                 setShowAdd(true);
               }}

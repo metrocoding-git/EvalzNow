@@ -579,7 +579,14 @@ const moveRowDown = () => {
                 </tr>
               </thead>
               <tbody>
-                {displayRosterData.map((rosterItem, index) => {
+                {[...displayRosterData]
+                  .sort((a, b) => {
+                    const lastA = (a.candidate?.lastName || "").toLowerCase();
+                    const lastB = (b.candidate?.lastName || "").toLowerCase();
+
+                    return lastA.localeCompare(lastB);
+                  })
+                .map((rosterItem, index) => {
                   const candidate = rosterItem.candidate || {};
                   const total = (rosterItem.presentCount || 0) +
                     (rosterItem.excusedAbsences || 0) +
