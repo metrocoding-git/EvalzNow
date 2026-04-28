@@ -22,7 +22,7 @@ import {
   Label,
   Area,
 } from "recharts";
-import PropertyEditor from "../../components/PropertyEditor";
+// import PropertyEditor from "../../components/PropertyEditor";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { getAttainedScoreSummary, getMaxScoresSummary, getScoringTrendsSummary } from "@/services/scoringTrendsService";
 import html2canvas from "html2canvas-pro";
@@ -30,6 +30,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
+import PropertyEditor from "./PropertyEditor";
 
 const COMPETENCY_COLORS = {
   Listening:  "#3b82f6",
@@ -78,6 +79,10 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     // Standard
     positiveVisibility: true,
     negativeVisibility: true,
+    positiveAttainedVisibility: true,
+    positiveMaxVisibility: true,
+    negativeAttainedVisibility: true,
+    negativeMaxVisibility: true,
     layer: 1,
     reference: false,
 
@@ -106,6 +111,24 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     shadeArea: "#ffffff",
     positiveLineColor: "#10b981",
     negativeLineColor: "#ef4444",
+
+
+    positiveAttainedLineColor: "#10b981",
+  positiveMaxLineColor: "#3b82f6",
+  negativeAttainedLineColor: "#ef4444",
+  negativeMaxLineColor: "#f59e0b",
+  positiveAttainedLineStyle: "solid",
+  positiveMaxLineStyle: "solid",
+  negativeAttainedLineStyle: "solid",
+  negativeMaxLineStyle: "solid",
+  positiveAttainedLineThickness: 2,
+  positiveMaxLineThickness: 2,
+  negativeAttainedLineThickness: 2,
+  negativeMaxLineThickness: 2,
+  positiveAttainedVisibility: true,
+  positiveMaxVisibility: true,
+  negativeAttainedVisibility: true,
+  negativeMaxVisibility: true,
   });
 
   const SCORE_SHORTCUTS = {
@@ -179,6 +202,12 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   ]);
 
   const [selectedChart, setSelectedChart] = useState(null);
+  const COMPETENCY_KEYS = [
+    "listening", "reading", "speaking", "writing",
+    "theory", "practical", "receptive", "productive", "acuity",
+  ];
+  
+  const isCompetencyChart = COMPETENCY_KEYS.includes(selectedChart?.key);
   const [customCriteria, setCustomCriteria] = useState([]);
 
   const [scoringData, setScoringData] = useState(null);
@@ -389,7 +418,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     
         if (!target) return;
     
-        // 👉 Create 2 lines per side
+        //  Create 2 lines per side
         if (!target["attained"]) target["attained"] = [];
         if (!target["max"]) target["max"] = [];
     
@@ -508,10 +537,15 @@ const getStableColor = (key) => {
     .filter((value, index, self) => self.indexOf(value) === index);
 
   // Function to render dot based on symbol style
-  const renderCustomDot = (props, color) => {
+  const renderCustomDot = (props, lineColor, isNegative = false) => {
     const { cx, cy } = props;
     const r = chartProperties.symbolScaleSize;
+    const finalColor = chartProperties.symbolColor ||
+  lineColor; // fallback
 
+    // optional advanced (if you later add separate colors)
+    const symbolColor = isNegative ? chartProperties.negativeSymbolColor || finalColor
+    : chartProperties.positiveSymbolColor || finalColor;
     switch (chartProperties.symbolStyle) {
       case "square":
         return (
@@ -520,21 +554,21 @@ const getStableColor = (key) => {
             y={cy - r}
             width={2 * r}
             height={2 * r}
-            fill={color}
+            fill={symbolColor}
           />
         );
       case "triangle":
         return (
           <polygon
             points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
-            fill={color}
+            fill={symbolColor}
           />
         );
       case "diamond":
         return (
           <polygon
             points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
-            fill={color}
+            fill={symbolColor}
           />
         );
       default:
@@ -543,7 +577,7 @@ const getStableColor = (key) => {
             cx={cx}
             cy={cy}
             r={r}
-            fill={color}
+            fill={symbolColor}
           />
         );
     }
@@ -819,6 +853,7 @@ const getStableColor = (key) => {
                   <PropertyEditor
                     properties={chartProperties}
                     onChange={setChartProperties}
+                    selectedChart={selectedChart}
                   />
                 )}
 
@@ -1064,59 +1099,77 @@ const getStableColor = (key) => {
 
                     {/* Draw lines for each competency in positive PP IDs */}
                     {Object.entries(positiveCompetencies).map(([comp, points]) => {
-                      const color = COMPETENCY_COLORS[comp] || getStableColor(`positive-${comp}`);
-                      const isSimple = comp === "Positive"; // MC/CC case
-                      return (
-                        <Line
-                          key={`positive-${comp}`}
-                          type="linear"
-                          data={points}
-                          dataKey="y"
-                          name={getLegendName(comp, false)}
-                          stroke={color}
-                          strokeDasharray={chartProperties.positiveLineStyle === "dashed" ? "6 4"
-                            : chartProperties.positiveLineStyle === "dotted" ? "2 4"
-                            : chartProperties.positiveLineStyle === "dashdot" ? "8 4 2 4"
-                            : "0"}
-                          strokeWidth={chartProperties.positiveLineThickness || 2}
-                          isAnimationActive={false}
-                          hide={!chartProperties.positiveVisibility}
-                          dot={(props) => {
-                            const { index } = props;
-                            if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-                            return renderCustomDot(props, color);
-                          }}
-                        />
-                      );
-                    })}
+  const color = COMPETENCY_COLORS[comp] || getStableColor(`positive-${comp}`);
+  const isAttained = comp === "attained";
+  const lineColor = isCompetencyChart
+    ? (isAttained ? chartProperties.positiveAttainedLineColor : chartProperties.positiveMaxLineColor)
+    : chartProperties.positiveLineColor;
+  const lineStyle = isCompetencyChart
+    ? (isAttained ? chartProperties.positiveAttainedLineStyle : chartProperties.positiveMaxLineStyle)
+    : chartProperties.positiveLineStyle;
+  const lineThickness = isCompetencyChart
+    ? (isAttained ? chartProperties.positiveAttainedLineThickness : chartProperties.positiveMaxLineThickness)
+    : chartProperties.positiveLineThickness;
+  const isHidden = isCompetencyChart
+    ? (isAttained ? !chartProperties.positiveAttainedVisibility : !chartProperties.positiveMaxVisibility)
+    : !chartProperties.positiveVisibility;
+
+  return (
+    <Line
+      key={`positive-${comp}`}
+      type="linear"
+      data={points}
+      dataKey="y"
+      name={getLegendName(comp, false)}
+      stroke={lineColor}
+      strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
+      strokeWidth={lineThickness}
+      isAnimationActive={false}
+      hide={isHidden}
+      dot={(props) => {
+        if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+        return renderCustomDot(props, lineColor, false);
+      }}
+    />
+  );
+})}
 
                     {/* Draw lines for each competency in negative PP IDs */}
                     {Object.entries(negativeCompetencies).map(([comp, points]) => {
-                      const color = COMPETENCY_COLORS[comp] || getStableColor(`negative-${comp}`);
-                      const isSimple = comp === "Negative"; // MC/CC case
-                      return (
-                        <Line
-                          key={`negative-${comp}`}
-                          type="linear"
-                          data={points}
-                          dataKey="y"
-                          name={getLegendName(comp, true)}
-                          stroke={color}
-                          strokeDasharray={chartProperties.negativeLineStyle === "dashed" ? "6 4"
-                            : chartProperties.negativeLineStyle === "dotted" ? "2 4"
-                            : chartProperties.negativeLineStyle === "dashdot" ? "8 4 2 4"
-                            : "0"}
-                          strokeWidth={chartProperties.negativeLineThickness || 2}
-                          isAnimationActive={false}
-                          hide={!chartProperties.negativeVisibility}
-                          dot={(props) => {
-                            const { index } = props;
-                            if (index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-                            return renderCustomDot(props, color);
-                          }}
-                        />
-                      );
-                    })}
+  const isAttained = comp === "attained";
+  const lineColor = isCompetencyChart
+    ? (isAttained ? chartProperties.negativeAttainedLineColor : chartProperties.negativeMaxLineColor)
+    : chartProperties.negativeLineColor;
+  const lineStyle = isCompetencyChart
+    ? (isAttained ? chartProperties.negativeAttainedLineStyle : chartProperties.negativeMaxLineStyle)
+    : chartProperties.negativeLineStyle;
+  const lineThickness = isCompetencyChart
+    ? (isAttained ? chartProperties.negativeAttainedLineThickness : chartProperties.negativeMaxLineThickness)
+    : chartProperties.negativeLineThickness;
+  const isHidden = isCompetencyChart
+    ? (isAttained ? !chartProperties.negativeAttainedVisibility : !chartProperties.negativeMaxVisibility)
+    : !chartProperties.negativeVisibility;
+
+  return (
+    <Line
+      key={`negative-${comp}`}
+      type="linear"
+      data={points}
+      dataKey="y"
+      name={getLegendName(comp, true)}
+      stroke={lineColor}
+      strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
+      strokeWidth={lineThickness}
+      isAnimationActive={false}
+      hide={isHidden}
+      dot={(props) => {
+        if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+        return renderCustomDot(props, lineColor, true);
+      }}
+    />
+  );
+})}
+
                   </LineChart>
                 </ResponsiveContainer>
                 )}

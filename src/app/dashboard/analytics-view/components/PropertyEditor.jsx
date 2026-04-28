@@ -185,7 +185,7 @@ export default function PropertyEditor({ properties, onChange }) {
               </span>
             </label>
 
-            <label className="flex items-center space-x-2">
+            {/* <label className="flex items-center space-x-2">
               <span>Layer:</span>
               <input
                 type="number"
@@ -198,7 +198,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 }}
                 className="border rounded px-2 py-1 w-20"
               />
-            </label>
+            </label> */}
           </div>
         )}
       </div>
@@ -326,7 +326,7 @@ export default function PropertyEditor({ properties, onChange }) {
               className="w-16 h-8 p-0 border rounded cursor-pointer"
             />
 
-            <label className="block font-semibold mb-1 mt-3">Symbol Frequency</label>
+            {/* <label className="block font-semibold mb-1 mt-3">Symbol Frequency</label>
             <input
               type="number"
               min={1}
@@ -338,7 +338,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 updateParent({ symbolFrequency: val });
               }}
               className="w-20 border rounded px-2 py-1"
-            />
+            /> */}
 
             <label className="block font-semibold mb-1 mt-3">Symbol Scale Size</label>
             <input

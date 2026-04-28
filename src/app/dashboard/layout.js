@@ -135,29 +135,32 @@ export default function DashboardLayout({ children }) {
       }
     
       // -------- CTRL shortcuts --------
-      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-        console.log("Ctrl key combo detected");
-        switch (e.key) {
-          case "1":
-            console.log("Ctrl+1 detected");
+      if (e.shiftKey && !e.ctrlKey && !e.altKey) {
+        console.log("Shift key combo detected");
+
+        switch (e.code) {
+          case "Digit1":
+            console.log("Shift+1 detected");
             e.preventDefault();
-            shouldNavigate = true;
-            path = "/dashboard/control-view";
-            keyHandled = true;
+            router.push("/dashboard/control-view");
+            setActiveTab("control");
+            setActiveButton("");
             break;
-          case "2":
-            console.log("Ctrl+2 detected");
+
+          case "Digit2":
+            console.log("Shift+2 detected");
             e.preventDefault();
-            shouldNavigate = true;
-            path = "/dashboard/setup-view";
-            keyHandled = true;
+            router.push("/dashboard/setup-view");
+            setActiveTab("setup");
+            setActiveButton("");
             break;
-          case "3":
-            console.log("Ctrl+3 detected");
+
+          case "Digit3":
+            console.log("Shift+3 detected");
             e.preventDefault();
-            shouldNavigate = true;
-            path = "/dashboard/analytics-view";
-            keyHandled = true;
+            router.push("/dashboard/analytics-view");
+            setActiveTab("analytics");
+            setActiveButton("");
             break;
         }
       }

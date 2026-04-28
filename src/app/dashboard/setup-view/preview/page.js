@@ -190,7 +190,7 @@ export default function PreviewPage() {
   });
 
   return (
-    <div className="flex h-full overflow-x-hidden">
+    <div className="flex h-full overflow-hidden">
       {/* Sidebar */}
       <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200">
         <div className="flex-grow flex flex-col">
@@ -332,7 +332,7 @@ export default function PreviewPage() {
             </div>
 
             {/* Competency Accounting Table */}
-            <div className="h-1/2 overflow-hidden border border-gray-300 m-1 flex flex-col"> 
+            <div className="h-1/2 min-h-0 overflow-hidden border border-gray-300 m-1 flex flex-col">
               <CompetencyAccountingTable data={competencyData} candidateId={selectedCandidate?.id} />
             </div>
           </>
