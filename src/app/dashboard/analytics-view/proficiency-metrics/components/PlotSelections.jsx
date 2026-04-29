@@ -937,7 +937,7 @@ const exportAsPDF = async () => {
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
-                  Property editor
+                  Property Editor
                 </button>
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Table"
@@ -958,6 +958,7 @@ const exportAsPDF = async () => {
                       <PropertyEditor
                         properties={chartProperties}
                         onChange={setChartProperties}
+                        selectedChart={selectedChart}
                       />
                     ) : (
                       <div className="text-sm text-center text-gray-400 py-4 italic">

@@ -130,7 +130,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
   };
 
   return (
-    <div className=" border border-gray-300 flex flex-col m-1">
+    <div className="flex flex-col h-full border border-gray-300 m-1 min-h-0">
       {/* Tab Buttons */}
       <div className="flex flex-col">
       
@@ -161,7 +161,7 @@ const CompetencyAccountingTable = ({ data, candidateId }) => {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
       <table className="min-w-full table-auto text-xs text-left border-collapse">
         <thead className="bg-gray-100 text-gray-900">
           <tr className="border-b border-gray-200">

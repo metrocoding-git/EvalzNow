@@ -343,7 +343,7 @@ export default function UnitControl() {
     fetchStaffById();
   }, [loggedInUser?.staffId]);
   
-  // ✅ Add handleCreate
+  //  Add handleCreate
   const handleCreate = async (newUnit) => {
     try {
       const duplicate = dataList.some(
@@ -609,7 +609,7 @@ export default function UnitControl() {
         });
 
 
-        // ✅ sort by ppId ascending before setting state
+        //  sort by ppId ascending before setting state
         classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
         workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
   
@@ -645,14 +645,14 @@ export default function UnitControl() {
     const handleKeyDown = (e) => {
       if (!selectedUnit) return; // require a selected unit
   
-      // Ctrl + E → Duplicate
-      if (e.ctrlKey && e.key.toLowerCase() === "e") {
+      // Shift + E → Duplicate
+      if (e.shiftKey && e.key.toLowerCase() === "e") {
         e.preventDefault();
         handleDuplicate(selectedUnit);
       }
   
-      // Ctrl + C → Unit Config
-      if (e.ctrlKey && e.key.toLowerCase() === "c") {
+      // Shift + C → Unit Config
+      if (e.shiftKey && e.key.toLowerCase() === "c") {
         e.preventDefault();
         setSelectedUnit(selectedUnit);
         setSelectedUnitId(selectedUnit.id);
@@ -672,13 +672,13 @@ export default function UnitControl() {
       }
   
       // Delete → Delete unit
-      if (e.key === "Delete") {
+      if (e.shiftKey && e.key === "Delete") {
         e.preventDefault();
         handleDelete(selectedUnit.id);
       }
   
-      // Ctrl + 2 → Activate Setup View
-      if (e.ctrlKey && e.key === "2") {
+      // Shift + 2 → Activate Setup View
+      if (e.shiftKey && e.code === "Digit2") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
@@ -687,8 +687,8 @@ export default function UnitControl() {
         );
       }
   
-      // Ctrl + 3 → Activate Analytics View
-      if (e.ctrlKey && e.key === "3") {
+      // Shift + 3 → Activate Analytics View
+      if (e.shiftKey && e.code === "Digit3") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
@@ -1010,7 +1010,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Copy className="w-4 h-4" /> Duplicate
               </span>
-              <span className="text-gray-400 text-xs ml-4">Ctrl + E</span>
+              <span className="text-gray-400 text-xs ml-4">Shift + E</span>
             </button>
 
 
@@ -1041,7 +1041,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Settings className="w-4 h-4" /> Unit Config
               </span>
-              <span className="text-gray-400 text-xs ml-4">Ctrl + C</span>
+              <span className="text-gray-400 text-xs ml-4">Shift + C</span>
             </button>
 
 
@@ -1055,7 +1055,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </span>
-              <span className="text-gray-400 text-xs ml-4">Del</span>
+              <span className="text-gray-400 text-xs ml-4">Shift + Del</span>
             </button>
 
             <button
@@ -1073,7 +1073,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Setup View
               </span>
-              <span className="text-gray-400 text-xs ml-4">CTRL + 2</span>
+              <span className="text-gray-400 text-xs ml-4">Shift + 2</span>
             </button>
 
 
@@ -1093,7 +1093,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Analytics View
               </span>
-              <span className="text-gray-400 text-xs ml-4">CTRL + 3</span>
+              <span className="text-gray-400 text-xs ml-4">Shift + 3</span>
             </button>
           </div>
         )}
