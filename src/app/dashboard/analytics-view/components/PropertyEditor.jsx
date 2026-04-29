@@ -15,7 +15,7 @@ const symbolStyles = [
   { label: "Diamond", value: "diamond" },
 ];
 
-export default function PropertyEditor({ properties, onChange }) {
+export default function PropertyEditor({ properties, onChange, selectedChart }) {
   const [expanded, setExpanded] = useState({
     standard: true,
     curveLabel: false,
@@ -215,12 +215,13 @@ export default function PropertyEditor({ properties, onChange }) {
           ) : (
             <ChevronRight className="w-5 h-5 mr-2" />
           )}
-          Line Attribute
+          {selectedChart.type === "line" ? "Line Attribute" : "Scatter Attribute"}
+          
         </button>
 
         {expanded.lineAttribute && (
           <div className="space-y-3 pl-7">
-            <label className="block font-semibold mb-1">Line Type</label>
+            <label className="block font-semibold mb-1">{selectedChart.type === "line" ? "Line Type" : "Scatter Type"}</label>
             <select
               value={selectedLineType}
               onChange={(e) => setSelectedLineType(e.target.value)}
@@ -231,26 +232,32 @@ export default function PropertyEditor({ properties, onChange }) {
             </select>
 
             {/* style */}
-            <label className="block font-semibold mb-1">Line Style</label>
-            <select
-              value={
-                selectedLineType === "positive"
-                  ? positiveLineStyle
-                  : negativeLineStyle
-              }
-              onChange={(e) => handleLineStyleChange(e.target.value)}
-              className="w-full border rounded px-2 py-1"
-            >
-              {lineStyles.map((style) => (
-                <option key={style.value} value={style.value}>
-                  {style.label}
-                </option>
-              ))}
-            </select>
+            { selectedChart.type === "line" && (
+              <>
+                <label className="block font-semibold mb-1">Line Style</label>
+                <select
+                  value={
+                    selectedLineType === "positive"
+                      ? positiveLineStyle
+                      : negativeLineStyle
+                  }
+                  onChange={(e) => handleLineStyleChange(e.target.value)}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  {lineStyles.map((style) => (
+                    <option key={style.value} value={style.value}>
+                      {style.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+
+            )}
+            
 
             {/* color */}
             <label className="block font-semibold mb-1 mt-3">
-              Line Color (
+              {selectedChart.type === "line" ? "Line Color" : "Symbol Color"} (
               {selectedLineType === "positive" ? "Positive" : "Negative"})
             </label>
             <div className="flex items-center space-x-3">
@@ -263,26 +270,31 @@ export default function PropertyEditor({ properties, onChange }) {
             </div>
 
             {/* thickness */}
-            <label className="block font-semibold mb-1 mt-3">
-              Line Thickness
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={
-                selectedLineType === "positive"
-                  ? positiveLineThickness
-                  : negativeLineThickness
-              }
-              onChange={(e) => handleLineThicknessChange(e.target.value)}
-              className="w-20 border rounded px-2 py-1"
-            />
+            { selectedChart.type === "line" && (
+              <>
+                <label className="block font-semibold mb-1 mt-3">
+                  Line Thickness
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={
+                    selectedLineType === "positive"
+                      ? positiveLineThickness
+                      : negativeLineThickness
+                  }
+                  onChange={(e) => handleLineThicknessChange(e.target.value)}
+                  className="w-20 border rounded px-2 py-1"
+                />
+              </>
+            )}
           </div>
         )}
       </div>
 
       {/* Symbol Attribute */}
+
       <div>
         <button
           onClick={() => toggleExpand("symbolAttribute")}
@@ -315,16 +327,20 @@ export default function PropertyEditor({ properties, onChange }) {
               ))}
             </select>
 
-            <label className="block font-semibold mb-1 mt-3">Symbol Color</label>
-            <input
-              type="color"
-              value={symbolColor}
-              onChange={(e) => {
-                setSymbolColor(e.target.value);
-                updateParent({ symbolColor: e.target.value });
-              }}
-              className="w-16 h-8 p-0 border rounded cursor-pointer"
-            />
+            { selectedChart.type === "line" && (
+              <>
+                <label className="block font-semibold mb-1 mt-3">Symbol Color</label>
+                <input
+                  type="color"
+                  value={symbolColor}
+                  onChange={(e) => {
+                    setSymbolColor(e.target.value);
+                    updateParent({ symbolColor: e.target.value });
+                  }}
+                  className="w-16 h-8 p-0 border rounded cursor-pointer"
+                />
+              </> 
+            )}
 
             {/* <label className="block font-semibold mb-1 mt-3">Symbol Frequency</label>
             <input
