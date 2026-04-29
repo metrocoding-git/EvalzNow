@@ -835,7 +835,7 @@ const getStableColor = (key) => {
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
-                  Property editor
+                  Property Editor
                 </button>
                 <button
                   className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Table"
