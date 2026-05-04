@@ -677,7 +677,7 @@ console.log("unit type check", tableData);
             </div>
           </div>
 
-          <div className=" h-full overflow-auto w-full flex-col gap-1 mb-11">
+          <div className="h-full overflow-hidden w-full flex flex-col gap-1 mb-11">
             <div className=" flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {candidate && (
@@ -721,7 +721,11 @@ console.log("unit type check", tableData);
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
               <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
               
-              <div ref={chartContainerRef} className="flex-1 overflow-auto mx-1">
+              <div className="flex-1 mx-1 overflow-x-auto">
+  <div
+    ref={chartContainerRef}
+    className="h-full max-h-[calc(100vh-320px)] overflow-y-auto"
+  >
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
@@ -857,6 +861,7 @@ console.log("unit type check", tableData);
                   </tfoot>
 
                 </table>
+                </div>
               </div>
             </div>
 

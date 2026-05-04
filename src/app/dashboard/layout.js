@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }) {
     localStorage.removeItem("user");
     sessionStorage.clear();
 
-    toast.error("Session expired due to inactivity");
+    // toast.error("Session expired due to inactivity");
     router.replace("/login");
   };
 

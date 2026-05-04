@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown, Trash } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
@@ -79,7 +79,9 @@ useEffect(() => {
   
     try {
       // Get the selected roster items to delete
-      const itemsToDelete = selectedEntitiyRows.map(index => displayRosterData[index]);
+      const itemsToDelete = displayRosterData.filter(item =>
+        selectedEntitiyRows.includes(item.id)
+      );
       setFormStatus("Processing");
       // Delete each item from the backend
       for (const item of itemsToDelete) {
@@ -398,11 +400,11 @@ const moveRowDown = () => {
   
 
 
-  const toggleRowSelectionMulti = (index) => {
-    setSelectedEntityRows((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
+  const toggleRowSelectionMulti = (id) => {
+    setSelectedEntityRows(prev =>
+      prev.includes(id)
+        ? prev.filter(i => i !== id)
+        : [...prev, id]
     );
   };
   
@@ -484,31 +486,39 @@ const moveRowDown = () => {
   console.log("filteredAssessmentBlocks:", filteredAssessmentBlocks);
 
   // Handle changes in table inputs/dropdowns
-  const handleChange = (index, field, value) => {
+  const handleChange = (id, field, value) => {
     setDisplayRosterData(prev => {
-      const updated = [...prev];
-      const item = { ...updated[index] };
-
-      switch (field) {
-        case "present": item.presentCount = parseInt(value) || 0; break;
-        case "excusedAbs": item.excusedAbsences = parseInt(value) || 0; break;
-        case "unexcusedAbs": item.unexcusedAbsences = parseInt(value) || 0; break;
-        case "excusedTardy": item.excusedTardies = parseInt(value) || 0; break;
-        case "unexcusedTardy": item.unexcusedTardies = parseInt(value) || 0; break;
-        case "unitOutcome": item.unitOutcome = value; break;
-        default: item[field] = value;
-      }
-
-      updated[index] = item;
-
-      // Auto-save if the item has an ID
-      if (item.id) saveRosterUpdate(item.id, item);
-
+      const updated = prev.map(item => {
+        if (item.id !== id) return item;
+  
+        const newItem = { ...item };
+  
+        switch (field) {
+          case "present": newItem.presentCount = parseInt(value) || 0; break;
+          case "excusedAbs": newItem.excusedAbsences = parseInt(value) || 0; break;
+          case "unexcusedAbs": newItem.unexcusedAbsences = parseInt(value) || 0; break;
+          case "excusedTardy": newItem.excusedTardies = parseInt(value) || 0; break;
+          case "unexcusedTardy": newItem.unexcusedTardies = parseInt(value) || 0; break;
+          case "unitOutcome": newItem.unitOutcome = value; break;
+        }
+  
+        // 
+        if (newItem.id) saveRosterUpdate(newItem.id, newItem);
+  
+        return newItem;
+      });
+  
       return updated;
     });
   };
    
-  
+  const sortedRoster = useMemo(() => {
+    return [...displayRosterData].sort((a, b) => {
+      const lastA = (a.candidate?.lastName || "").toLowerCase();
+      const lastB = (b.candidate?.lastName || "").toLowerCase();
+      return lastA.localeCompare(lastB);
+    });
+  }, [displayRosterData]);
 
   if (!visible) return null;
 
@@ -579,38 +589,44 @@ const moveRowDown = () => {
                 </tr>
               </thead>
               <tbody>
-                {[...displayRosterData]
-                  .sort((a, b) => {
-                    const lastA = (a.candidate?.lastName || "").toLowerCase();
-                    const lastB = (b.candidate?.lastName || "").toLowerCase();
-
-                    return lastA.localeCompare(lastB);
-                  })
-                .map((rosterItem, index) => {
+                {sortedRoster.map((rosterItem, index) => {
                   const candidate = rosterItem.candidate || {};
-                  const total = (rosterItem.presentCount || 0) +
+
+                  const total =
+                    (rosterItem.presentCount || 0) +
                     (rosterItem.excusedAbsences || 0) +
                     (rosterItem.unexcusedAbsences || 0) +
                     (rosterItem.excusedTardies || 0) +
                     (rosterItem.unexcusedTardies || 0);
 
-                  const isSelected = selectedEntitiyRows.includes(index);
+                  const isSelected = selectedEntitiyRows.includes(rosterItem.id);
 
                   return (
                     <tr
-                      key={index}
-                      className={`cursor-pointer ${selectedEntitiyRows.includes(index) ? "bg-gray-200" : "hover:bg-gray-50"}`}
-                      onClick={() => toggleRowSelectionMulti(index)}
+                      key={rosterItem.id}
+                      className={`cursor-pointer ${
+                        isSelected ? "bg-gray-200" : "hover:bg-gray-50"
+                      }`}
+                      onClick={() => toggleRowSelectionMulti(rosterItem.id)}
                     >
                       <td className="border text-center">{index + 1}</td>
-                      <td className="border text-center px-1">{candidate.lastName || "-"}</td>
-                      <td className="border text-center px-1">{candidate.firstName || "-"}</td>
-                      <td className="border text-center px-1">{candidate.candidateId || "-"}</td>
+                      <td className="border text-center px-1">
+                        {candidate.lastName || "-"}
+                      </td>
+                      <td className="border text-center px-1">
+                        {candidate.firstName || "-"}
+                      </td>
+                      <td className="border text-center px-1">
+                        {candidate.candidateId || "-"}
+                      </td>
+
                       <td className="border text-center px-1">
                         <select
                           className="w-full border px-1 py-0.5 text-xs text-center"
                           value={rosterItem.unitOutcome || "Ongoing"}
-                          onChange={(e) => handleChange(index, "unitOutcome", e.target.value)}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "unitOutcome", e.target.value)
+                          }
                           onFocus={() => setFormStatus("Editing...")}
                           onBlur={() => setFormStatus("Ready...")}
                         >
@@ -619,62 +635,70 @@ const moveRowDown = () => {
                           <option>Fail</option>
                         </select>
                       </td>
+
                       <td className="border px-1">
                         <input
                           type="number"
                           min="0"
                           value={rosterItem.presentCount || 0}
-                          onChange={(e) => handleChange(index, "present", e.target.value)}
-                          onFocus={() => setFormStatus("Editing...")}
-                          onBlur={() => setFormStatus("Ready...")}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "present", e.target.value)
+                          }
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
+
                       <td className="border px-1">
                         <input
                           type="number"
                           min="0"
                           value={rosterItem.excusedAbsences || 0}
-                          onChange={(e) => handleChange(index, "excusedAbs", e.target.value)}
-                          onFocus={() => setFormStatus("Editing...")}
-                          onBlur={() => setFormStatus("Ready...")}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "excusedAbs", e.target.value)
+                          }
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
+
                       <td className="border px-1">
                         <input
                           type="number"
                           min="0"
                           value={rosterItem.unexcusedAbsences || 0}
-                          onChange={(e) => handleChange(index, "unexcusedAbs", e.target.value)}
-                          onFocus={() => setFormStatus("Editing...")}
-                          onBlur={() => setFormStatus("Ready...")}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "unexcusedAbs", e.target.value)
+                          }
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
+
                       <td className="border px-1">
                         <input
                           type="number"
                           min="0"
                           value={rosterItem.excusedTardies || 0}
-                          onChange={(e) => handleChange(index, "excusedTardy", e.target.value)}
-                          onFocus={() => setFormStatus("Editing...")}
-                          onBlur={() => setFormStatus("Ready...")}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "excusedTardy", e.target.value)
+                          }
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
+
                       <td className="border px-1">
                         <input
                           type="number"
                           min="0"
                           value={rosterItem.unexcusedTardies || 0}
-                          onChange={(e) => handleChange(index, "unexcusedTardy", e.target.value)}
-                          onFocus={() => setFormStatus("Editing...")}
-                          onBlur={() => setFormStatus("Ready...")}
+                          onChange={(e) =>
+                            handleChange(rosterItem.id, "unexcusedTardy", e.target.value)
+                          }
                           className="w-full text-center border px-1 py-0.5 text-xs"
                         />
                       </td>
-                      <td className="border text-center px-1 text-center font-semibold">{total}</td>
+
+                      <td className="border text-center font-semibold">
+                        {total}
+                      </td>
                     </tr>
                   );
                 })}

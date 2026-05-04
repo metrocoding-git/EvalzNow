@@ -125,6 +125,13 @@ export default function StaffControl() {
   const handleCreate = async (newStaff) => {
     try {
 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(newStaff.emailAddress)) {
+        toast.error("Please enter a valid email address");
+        return false;
+      }
+
       const staffIdExists = dataList.some(
         (staff) => staff.staffId === newStaff.staffId
       );

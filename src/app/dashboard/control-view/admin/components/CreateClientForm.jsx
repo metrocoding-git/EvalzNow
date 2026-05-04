@@ -50,7 +50,9 @@ const countries = [
 
 
 export default function CreateClientForm({ onClose, onCreate }) {
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    Status: ""
+  });
   const [executiveId, setExecutiveId] = useState("");
 
   const [loading, setLoading] = useState(true);
@@ -252,17 +254,16 @@ export default function CreateClientForm({ onClose, onCreate }) {
               Status:
             </label>
             <select
-              defaultValue="Activate"
+              value={form["Status"] || ""}
               className="col-span-2 border border-gray-300 px-2 py-1 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               onChange={(e) => handleChange("Status", e.target.value)}
             >
+              <option value="" disabled>Select Status</option>
               <option value="Activate">Activate</option>
               <option value="Deactivate">Deactivate</option>
             </select>
           </div>
         </div>
-
-      
 
         {/* Fixed footer */}
         <div className="border-t border-gray-300 p-2 pr-6 bg-gray-50 flex-shrink-0">

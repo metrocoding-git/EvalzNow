@@ -283,7 +283,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         
           // 3. Build CC items
           const mappedCharts = sorted.map((c, index) => ({
-            name: `${c.criteria} (CC${c.criteriaId}) vs. Insert Score Row Counter`,
+            name: `${c.criteria} (CC${c.criteriaId + 20}) vs. Insert Score Row Counter`,
             key: `cc${index + 1}`,
             icon: "🔵",
             id: (mcItems.length + index + 1).toString(),
@@ -683,7 +683,7 @@ const getStableColor = (key) => {
     try {
       const canvas = await captureFullChart();
       canvas.toBlob(
-        (blob) => saveAs(blob, `chart-${selectedChart.key}-${Date.now()}.jpg`),
+        (blob) => saveAs(blob, `Plot Extraction.jpg`),
         'image/jpeg',
         0.95
       );
