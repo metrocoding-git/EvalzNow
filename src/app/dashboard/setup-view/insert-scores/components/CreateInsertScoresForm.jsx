@@ -178,66 +178,46 @@ const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 export default function CreateInsertScoresForm({ onClose, candidateId, unit }) {
 
-const [formData, setFormData] = useState({
-  ppId: "",
-  durationHrs: "",
-  criticalRefDate: "",
-  remarks: "",
-  workflowStage: "",
-  assessmentType: "",
-  scheduleImpact: "",
-  engageLevel: "",
-  competency: "",
-  attainedScore: null,
-  maxScore: null,
-  assessmentBlockId: null,
-  unitId: null,
-  candidate_id: null,
-  // Main criteria mc1 - mc20
-  mc1: "",
-  mc2: "",
-  mc3: "",
-  mc4: "",
-  mc5: "",
-  mc6: "",
-  mc7: "",
-  mc8: "",
-  mc9: "",
-  mc10: "",
-  mc11: "",
-  mc12: "",
-  mc13: "",
-  mc14: "",
-  mc15: "",
-  mc16: "",
-  mc17: "",
-  mc18: "",
-  mc19: "",
-  mc20: "",
-  // Custom criteria cc1 - cc20
-  cc1: "",
-  cc2: "",
-  cc3: "",
-  cc4: "",
-  cc5: "",
-  cc6: "",
-  cc7: "",
-  cc8: "",
-  cc9: "",
-  cc10: "",
-  cc11: "",
-  cc12: "",
-  cc13: "",
-  cc14: "",
-  cc15: "",
-  cc16: "",
-  cc17: "",
-  cc18: "",
-  cc19: "",
-  cc20: "",
-});
+  const [formData, setFormData] = useState({
+    ppId: "",
+    durationHrs: "",
+    criticalRefDate: "",
+    remarks: "",
+    workflowStage: "",
+    assessmentType: "",
+    scheduleImpact: "",
+    engageLevel: "",
+    competency: "",
+    attainedScore: null,
+    maxScore: null,
+    assessmentBlockId: null,
+    unitId: null,
+    candidate_id: null,
+    // Main criteria mc1 - mc20
+    mc1: "",
+    mc2: "",
+    mc3: "",
+    mc4: "",
+    mc5: "",
+    mc6: "",
+    mc7: "",
+    mc8: "",
+    mc9: "",
+    mc10: "",
+    mc11: "",
+    mc12: "",
+    mc13: "",
+    mc14: "",
+    mc15: "",
+    mc16: "",
+    mc17: "",
+    mc18: "",
+    mc19: "",
+    mc20: "",
+    
+  });
 
-
+  const [customCriteriaValues, setCustomCriteriaValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [ppIds, setPpIds] = useState([]);
@@ -439,22 +419,43 @@ const isSubmitDisabled = (() => {
           filledCount++;
         }
   
-        const rawCc = formData[`cc${i}`];
-        // Only process if not empty string
-        if (rawCc !== "" && rawCc !== null) {
-          const ccVal = parseFloat(rawCc);
-          
-          if (ccVal < 0) {
-            toast.error(`Negative value found in CC${i}. Please enter only positive values.`);
-            return;
-          }
-          if (maxAllowed !== null && ccVal > maxAllowed) {
-            toast.error(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
-            return;
-          }
-          total += ccVal;
-          filledCount++
-        }
+        // Custom Criteria
+for (const criteria of customCriteria) {
+  const rawCc =
+    customCriteriaValues[criteria.id];
+
+  if (rawCc !== "" && rawCc !== undefined) {
+    const ccVal = parseFloat(rawCc);
+
+    if (isNaN(ccVal)) {
+      toast.error(
+        `Invalid value found in ${criteria.criteria}.`
+      );
+      return;
+    }
+
+    if (ccVal < 0) {
+      toast.error(
+        `${criteria.criteria} cannot be negative.`
+      );
+      return;
+    }
+
+    if (
+      maxAllowed !== null &&
+      ccVal > maxAllowed
+    ) {
+      toast.error(
+        `${criteria.criteria} exceeds allowed maximum (${maxAllowed}).`
+      );
+      return;
+    }
+
+    total += ccVal;
+    filledCount++;
+  }
+}
+        
       }
   
       attained = total;
@@ -472,6 +473,25 @@ const isSubmitDisabled = (() => {
         unitId: parseInt(unitId),
         candidate_id: parseInt(candidateId),
         durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
+        customCriteria: customCriteria
+        .map((criteria) => {
+          const value =
+            customCriteriaValues[criteria.id];
+
+          if (
+            value === "" ||
+            value === null ||
+            value === undefined
+          ) {
+            return null;
+          }
+
+          return {
+            scoringCriteriaId: criteria.id,
+            value: parseFloat(value),
+          };
+        })
+        .filter(Boolean),
         // attainedScore: attained !== null ? parseFloat(attained.toFixed(2)) : null,
         // maxScore: maxScoreCalculated !== undefined ? parseFloat(maxScoreCalculated.toFixed(2)) : null,
       };
@@ -479,7 +499,8 @@ const isSubmitDisabled = (() => {
       // Convert empty strings to null for MC and CC fields
       for (let i = 1; i <= 20; i++) {
         payload[`mc${i}`] = formData[`mc${i}`] === "" ? null : parseFloat(formData[`mc${i}`]);
-        payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
+        // payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
+        
       }
   
       await createInsertScore(payload);
@@ -514,14 +535,6 @@ const isSubmitDisabled = (() => {
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
         setCustomCriteria(data.filter(c => c.criteria && c.criteria.trim() !== ""));
-
-
-        const ccData = {};
-        data.forEach((criteria, index) => {
-          ccData[`cc${index + 1}`] = criteria.criteria || "";
-        });
-
-        setFormData((prev) => ({ ...prev, ...ccData }));
   
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
@@ -634,7 +647,15 @@ const validateCriticalDate = (inputDateStr) => {
 };
 
 
-
+const handleCustomCriteriaChange = (
+  scoringCriteriaId,
+  value
+) => {
+  setCustomCriteriaValues((prev) => ({
+    ...prev,
+    [scoringCriteriaId]: value,
+  }));
+};
 
   return (
     <div className="flex flex-col h-full w-full bg-white z-20 border shadow-2xl border-gray-200">
@@ -855,33 +876,48 @@ const validateCriticalDate = (inputDateStr) => {
                 );
               })}
 
-              {customCriteria.length > 0 && customCriteria.map((criteria, index) => {
-                const fieldKey = `cc${index + 1}`;
-                return (
-                  <div key={fieldKey} className="flex items-center gap-2 w-full">
-                    <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
-                      CC{index + 1} ({criteria.criteria}):
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      onBlur={(e) => {
-                        const val = e.target.value;
-                        if (val !== "" && val !== null) {
-                          handleChange(fieldKey, parseFloat(val).toFixed(2));
+              {customCriteria.length > 0 &&
+                customCriteria.map((criteria) => {
+                  return (
+                    <div
+                      key={criteria.id}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
+                        {criteria.criteria}:
+                      </label>
+
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={
+                          customCriteriaValues[criteria.id] || ""
                         }
-                      }}
-                      value={formData[fieldKey]}
-                      onChange={(e) => handleChange(fieldKey, e.target.value)}
-                      // onBlur={(e) =>
-                      //   handleChange(fieldKey, parseFloat(e.target.value || 0).toFixed(2))
-                      // }
-                      className="border px-2 py-1 flex-1"
-                    />
-                  </div>
-                );
-              })}
+                        onChange={(e) =>
+                          handleCustomCriteriaChange(
+                            criteria.id,
+                            e.target.value
+                          )
+                        }
+                        onBlur={(e) => {
+                          const val = e.target.value;
+
+                          if (
+                            val !== "" &&
+                            val !== null
+                          ) {
+                            handleCustomCriteriaChange(
+                              criteria.id,
+                              parseFloat(val).toFixed(2)
+                            );
+                          }
+                        }}
+                        className="border px-2 py-1 flex-1"
+                      />
+                    </div>
+                  );
+                })}
             </div>
           )}
 

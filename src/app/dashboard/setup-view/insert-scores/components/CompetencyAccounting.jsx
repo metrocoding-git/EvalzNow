@@ -250,11 +250,29 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   const [visible, setVisible] = useState(true);
 
 
-  const activeCCIndices = new Set(
-    customCriteria
-      .map((item, index) => (item.name?.trim() ? index : -1))
-      .filter((i) => i !== -1)
-  );
+  const activeCCIndices = new Set();
+
+// Existing criteria
+customCriteria.forEach((item, index) => {
+  if (item.name?.trim()) {
+    activeCCIndices.add(index);
+  }
+});
+
+// Existing score values
+insertScores.forEach((row) => {
+  for (let i = 0; i < 20; i++) {
+    const value = row[`cc${i + 1}`];
+
+    if (
+      value !== null &&
+      value !== undefined &&
+      value !== ""
+    ) {
+      activeCCIndices.add(i);
+    }
+  }
+});
 
   
   const handlePointChange = (index, field, value) => {
@@ -791,6 +809,63 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
   };
   
 
+  const fetchInsertScores = async () => {
+    if (!unitId || !candidateId) return;
+  
+    setLoading(true);
+    setError(null);
+  
+    try {
+      const data = await getInsertScoreByUnitAndCandidate(unitId, candidateId);
+  
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid insert score response");
+      }
+  
+      setInsertScores(data);
+  
+      // keep your existing split logic if needed
+      const classroomRows = [];
+      const workforceRows = [];
+  
+      data.forEach((row) => {
+        const env = row.unit?.environment || "Workforce";
+        const ppNumber = parseInt(row.ppId, 10);
+  
+        if (isNaN(ppNumber)) return;
+  
+        const matchesTab =
+          activeTab === "Indirect" ? ppNumber < 0 : ppNumber > 0;
+  
+        if (!matchesTab) return;
+  
+        const mc = Array.from(
+          { length: 20 },
+          (_, i) => row[`mc${i + 1}`] ?? ""
+        );
+  
+        const cc = Array.from(
+          { length: 20 },
+          (_, i) => row[`cc${i + 1}`] ?? ""
+        );
+  
+        const normalizedRow = { ...row, mc, cc };
+  
+        if (env === "Classroom") classroomRows.push(normalizedRow);
+        else workforceRows.push(normalizedRow);
+      });
+  
+      setClassroomData(classroomRows);
+      setWorkforceData(workforceRows);
+  
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load insert scores.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200">
@@ -860,6 +935,7 @@ export default function CompetencyAccounting({ selectedRow, setSelectedRow, acti
                               if (value === "" && criteriaItem.id) {
                                 await deleteScoringCriteria(criteriaItem.id);
                                 const updated = [...customCriteria];
+                                await fetchInsertScores();
                                 updated[index] = { ...updated[index], id: null, criteriaId: null };
                                 setCustomCriteria(updated);
                               } else if (criteriaItem.id && value !== "") {
