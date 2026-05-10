@@ -922,8 +922,8 @@ const handleExportGraph = () => {
         <span className='pl-2 text-md'>Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
-      <div className="flex h-full w-full">
-        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1'>
+      <div className="flex h-full w-full min-h-0">
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full min-h-0 border-gray-200 p-1'>
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -1073,7 +1073,7 @@ const handleExportGraph = () => {
                     }`}
                     onClick={() => {
                       setActiveAdjustPropertieTab('projections');
-                      setShowProjectionTable(true); // ✅ Show modal
+                      setShowProjectionTable(true); // Show modal
                     }}
                 >
                   Projections
@@ -1081,13 +1081,14 @@ const handleExportGraph = () => {
               </div>
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="flex-1 overflow-auto p-2 min-h-0">
                 {activeAdjustPropertieTab === "Property editor" && (
                   <>
                     {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter") ? (
                       <PropertyEditor
                         properties={chartProperties}
                         onChange={setChartProperties}
+                        selectedChart={selectedChart}
                       />
                     ) : (
                       <div className="text-sm text-center text-gray-400 py-4 italic">
@@ -1129,7 +1130,7 @@ const handleExportGraph = () => {
                               value: row[keyName],
                             }));
 
-                          // ✅ If NO DATA → show message OUTSIDE table
+                          // If NO DATA → show message OUTSIDE table
                           if (combinedData.length === 0) {
                             return (
                               <div className="text-center text-gray-400 py-4 italic">
@@ -1194,7 +1195,7 @@ const handleExportGraph = () => {
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col h-full bg-white">
+        <div className="w-6/12 lg:w-9/12 flex flex-col h-full min-h-0 bg-white">
 
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0">
@@ -1216,7 +1217,7 @@ const handleExportGraph = () => {
 
                   const isProjectionChart = projectionCharts.includes(selectedChart.name);
 
-                  // 🆕 SEPARATE HANDLING FOR GROWTH PROJECTION CHARTS
+                  // SEPARATE HANDLING FOR GROWTH PROJECTION CHARTS
                   if (isProjectionChart) {
                     let curveData = [];
                     let chartTitle = selectedChart.name;
@@ -1240,6 +1241,7 @@ const handleExportGraph = () => {
                             data={curveData}
                             thirdPPDayCount={thirdPPDayCount}
                             title={selectedChart.name}
+                            properties={chartProperties}
                           />
                         </div>
                       </div>
@@ -1247,7 +1249,7 @@ const handleExportGraph = () => {
                     );
                   }
 
-                  // ✅ Existing chart handling for non-projection charts
+                  // Existing chart handling for non-projection charts
                   const keyName =
                     selectedChart.key ||
                     selectedChart.name.match(/\((.*?)\)/)?.[1];
@@ -1303,7 +1305,7 @@ const handleExportGraph = () => {
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart 
                               data={positiveData}
-                              margin={{ top: 30, right: 20, left: 20, bottom: 70 }}
+                              margin={{ top: 30, right: 20, left: 20, bottom: 5 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
@@ -1312,8 +1314,8 @@ const handleExportGraph = () => {
                               domain={[0, "auto"]}
                               tickFormatter={(value) =>
                                 isGTchart
-                                  ? parseInt(value, 10) // ✅ whole number for ppId
-                                  : Number(value).toFixed(2) // ✅ decimal for days
+                                  ? parseInt(value, 10) //  whole number for ppId
+                                  : Number(value).toFixed(2) //  decimal for days
                               }
                               allowDataOverflow={true}
                               >
@@ -1413,7 +1415,7 @@ const handleExportGraph = () => {
                     return (
                       <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <div className="flex-1 min-h-0">
+                        <div className="flex-1 min-h-0 overflow-hidden">
                           <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
@@ -1469,8 +1471,8 @@ const handleExportGraph = () => {
                                 <Scatter
                                   name="Positive PP IDs"
                                   data={positiveData}
-                                  fill={chartProperties.positiveLineColor}
-                                  shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
+                                  fill={chartProperties.symbolColor}
+                                  shape={(props) => renderCustomDot(props, chartProperties.symbolColor)}
                                 />
                               )}
                             </ScatterChart>

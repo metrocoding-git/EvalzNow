@@ -15,7 +15,7 @@ const symbolStyles = [
   { label: "Diamond", value: "diamond" },
 ];
 
-export default function PropertyEditor({ properties, onChange }) {
+export default function PropertyEditor({ properties, onChange, selectedChart }) {
   // Expand/collapse state for sections
   const [expanded, setExpanded] = useState({
     standard: true,
@@ -23,7 +23,7 @@ export default function PropertyEditor({ properties, onChange }) {
     lineAttribute: false,
     symbolAttribute: false,
   });
-
+  const projectionChartIds = ["acl-14", "acl-15", "acl-16"];
   const [selectedLineType, setSelectedLineType] = useState("positive");
 
   // Controlled states for all inputs, initialized from props or defaults
@@ -51,11 +51,24 @@ export default function PropertyEditor({ properties, onChange }) {
 
   // Update line color when selectedLineType changes
   React.useEffect(() => {
-    const newColor = selectedLineType === "positive" 
-      ? properties.positiveLineColor || "#10b981" 
-      : properties.negativeLineColor || "#ef4444";
+    let newColor;
+  
+    if (selectedLineType === "positive") {
+      newColor = properties.positiveLineColor || "#10b981";
+    } else if (selectedLineType === "negative") {
+      newColor = properties.negativeLineColor || "#ef4444";
+    } else {
+      // default for projections
+      newColor = properties.projectionLineColor || "#6366f1";
+    }
+  
     setLineColor(newColor);
-  }, [selectedLineType, properties.positiveLineColor, properties.negativeLineColor]);
+  }, [
+    selectedLineType,
+    properties.positiveLineColor,
+    properties.negativeLineColor,
+    properties.projectionLineColor,
+  ]);
 
   // Helper: update parent on any change
   const updateParent = (newProps) => {
@@ -95,10 +108,13 @@ export default function PropertyEditor({ properties, onChange }) {
   // Handle line color change based on selected line type
   const handleLineColorChange = (color) => {
     setLineColor(color);
+  
     if (selectedLineType === "positive") {
       updateParent({ positiveLineColor: color });
-    } else {
+    } else if (selectedLineType === "negative") {
       updateParent({ negativeLineColor: color });
+    } else {
+      updateParent({ projectionLineColor: color });
     }
   };
 
@@ -114,6 +130,8 @@ export default function PropertyEditor({ properties, onChange }) {
 
   const toggleExpand = (section) =>
     setExpanded((e) => ({ ...e, [section]: !e[section] }));
+
+  const hideSymbolAttributes = projectionChartIds.includes(selectedChart?.id);
 
   return (
     <div className="w-full space-y-6 text-gray-700 text-xs p-1 pt-1 pb-2 border-1 border-gray-300 bg-white mb-10">
@@ -145,7 +163,7 @@ export default function PropertyEditor({ properties, onChange }) {
               <span>Visibility</span>
             </label>
 
-            <label className="flex items-center space-x-2">
+            {/* <label className="flex items-center space-x-2">
               <span>Layer:</span>
               <input
                 type="number"
@@ -158,7 +176,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 }}
                 className="border rounded px-2 py-1 w-20"
               />
-            </label>
+            </label> */}
 
             {/* <label className="flex items-center space-x-2">
               <input
@@ -218,59 +236,7 @@ export default function PropertyEditor({ properties, onChange }) {
               </select>
             </label>
 
-            {/* <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={showLabelPrefix}
-                onChange={(e) => {
-                  setShowLabelPrefix(e.target.checked);
-                  updateParent({ showLabelPrefix: e.target.checked });
-                }}
-              />
-              <span>Show Label Prefix</span>
-            </label> */}
-
-            {/* {showLabelPrefix && (
-              <label className="flex items-center space-x-2 pl-6">
-                <span>Label Prefix:</span>
-                <input
-                  type="text"
-                  value={labelPrefix}
-                  onChange={(e) => {
-                    setLabelPrefix(e.target.value);
-                    updateParent({ labelPrefix: e.target.value });
-                  }}
-                  className="border rounded px-2 py-1 w-full max-w-xs"
-                />
-              </label>
-            )} */}
-
-            {/* <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={showLabelSuffix}
-                onChange={(e) => {
-                  setShowLabelSuffix(e.target.checked);
-                  updateParent({ showLabelSuffix: e.target.checked });
-                }}
-              />
-              <span>Show Label Suffix</span>
-            </label> */}
-
-            {/* {showLabelSuffix && (
-              <label className="flex items-center space-x-2 pl-6">
-                <span>Label Suffix:</span>
-                <input
-                  type="text"
-                  value={labelSuffix}
-                  onChange={(e) => {
-                    setLabelSuffix(e.target.value);
-                    updateParent({ labelSuffix: e.target.value });
-                  }}
-                  className="border rounded px-2 py-1 w-full max-w-xs"
-                />
-              </label>
-            )} */}
+           
           </div>
         )}
       </div>
@@ -287,38 +253,52 @@ export default function PropertyEditor({ properties, onChange }) {
           ) : (
             <ChevronRight className="w-5 h-5 mr-2" />
           )}
-          Line Attribute
+          {selectedChart.type === "line" ? "Line Attribute" : "Scatter Attribute"}
         </button>
         {expanded.lineAttribute && (
           <div className="space-y-3 pl-7">
-            <label className="block font-semibold mb-1">Line Type</label>
+            <label className="block font-semibold mb-1">{selectedChart.type === "line" ? "Line Type" : "Scatter Type"}</label>
             <select
               value={selectedLineType}
               onChange={(e) => handleLineTypeChange(e.target.value)}
               className="w-full border rounded px-2 py-1 mb-3"
             >
-              <option value="positive">Positive PP IDs</option>
-              <option value="negative">Negative PP IDs</option>
+
+              {projectionChartIds.includes(selectedChart?.id) ? (
+                <>
+                  <option value="cubicSpline">Cubic Spline Projection</option>
+                  <option value="linear">Linear Projection</option>
+                </>
+              ) : (
+                <>
+                  <option value="positive">Positive PP IDs</option>
+                </>
+              )}
             </select>
 
-            <label className="block font-semibold mb-1">Line Style</label>
-            <select
-              value={lineStyle}
-              onChange={(e) => {
-                setLineStyle(e.target.value);
-                updateParent({ lineStyle: e.target.value });
-              }}
-              className="w-full border rounded px-2 py-1"
-            >
-              {lineStyles.map((style) => (
-                <option key={style.value} value={style.value}>
-                  {style.label}
-                </option>
-              ))}
-            </select>
+
+            { selectedChart.type === "line" && (
+              <>
+                <label className="block font-semibold mb-1">Line Style</label>
+                <select
+                  value={lineStyle}
+                  onChange={(e) => {
+                    setLineStyle(e.target.value);
+                    updateParent({ lineStyle: e.target.value });
+                  }}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  {lineStyles.map((style) => (
+                    <option key={style.value} value={style.value}>
+                      {style.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
 
             <label className="block font-semibold mb-1 mt-3">
-              Line Color ({selectedLineType === "positive" ? "Positive" : "Negative"})
+              Line Color 
             </label>
             <div className="flex items-center space-x-3">
               <input
@@ -327,9 +307,7 @@ export default function PropertyEditor({ properties, onChange }) {
                 onChange={(e) => handleLineColorChange(e.target.value)}
                 className="w-16 h-8 p-0 border rounded cursor-pointer"
               />
-              <span className="text-xs text-gray-600">
-                {selectedLineType === "positive" ? "Positive" : "Negative"} Line
-              </span>
+             
             </div>
 
             {/* <label className="block font-semibold mb-1 mt-3">Line Color</label>
@@ -376,61 +354,52 @@ export default function PropertyEditor({ properties, onChange }) {
         </button>
         {expanded.symbolAttribute && (
           <div className="space-y-3 pl-7">
-            <label className="block font-semibold mb-1">Symbol Style</label>
-            <select
-              value={symbolStyle}
-              onChange={(e) => {
-                setSymbolStyle(e.target.value);
-                updateParent({ symbolStyle: e.target.value });
-              }}
-              className="w-full border rounded px-2 py-1"
-            >
-              {symbolStyles.map((style) => (
-                <option key={style.value} value={style.value}>
-                  {style.label}
-                </option>
-              ))}
-            </select>
 
-            <label className="block font-semibold mb-1 mt-3">Symbol Color</label>
-            <input
-              type="color"
-              value={symbolColor}
-              onChange={(e) => {
-                setSymbolColor(e.target.value);
-                updateParent({ symbolColor: e.target.value });
-              }}
-              className="w-16 h-8 p-0 border rounded cursor-pointer"
-            />
+            {!hideSymbolAttributes && (
+              <>
+                <label className="block font-semibold mb-1">Symbol Style</label>
+                <select
+                  value={symbolStyle}
+                  onChange={(e) => {
+                    setSymbolStyle(e.target.value);
+                    updateParent({ symbolStyle: e.target.value });
+                  }}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  {symbolStyles.map((style) => (
+                    <option key={style.value} value={style.value}>
+                      {style.label}
+                    </option>
+                  ))}
+                </select>
 
-            <label className="block font-semibold mb-1 mt-3">Symbol Frequency</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={symbolFrequency}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setSymbolFrequency(val);
-                updateParent({ symbolFrequency: val });
-              }}
-              className="w-20 border rounded px-2 py-1"
-            />
+                <label className="block font-semibold mb-1 mt-3">Symbol Color</label>
+                <input
+                  type="color"
+                  value={symbolColor}
+                  onChange={(e) => {
+                    setSymbolColor(e.target.value);
+                    updateParent({ symbolColor: e.target.value });
+                  }}
+                  className="w-16 h-8 p-0 border rounded cursor-pointer"
+                />
 
-            <label className="block font-semibold mb-1 mt-3">Symbol Scale Size</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              step={0.1}
-              value={symbolScaleSize}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setSymbolScaleSize(val);
-                updateParent({ symbolScaleSize: val });
-              }}
-              className="w-20 border rounded px-2 py-1"
-            />
+                <label className="block font-semibold mb-1 mt-3">Symbol Scale Size</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  step={0.1}
+                  value={symbolScaleSize}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setSymbolScaleSize(val);
+                    updateParent({ symbolScaleSize: val });
+                  }}
+                  className="w-20 border rounded px-2 py-1"
+                />
+              </>
+            )}
 
             <label className="block font-semibold mb-1 mt-3">Shade Area</label>
             <input
