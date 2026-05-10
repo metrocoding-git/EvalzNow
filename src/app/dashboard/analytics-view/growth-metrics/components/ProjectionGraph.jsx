@@ -1,6 +1,44 @@
-import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Label, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thirdPPDayCount }) {
+export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thirdPPDayCount, properties }) {
+
+  const getStrokeDashArray = (style) => {
+    switch (style) {
+      case "dashed":
+        return "6 4";
+      case "dotted":
+        return "2 2";
+      case "dashdot":
+        return "6 2 2 2";
+      default:
+        return undefined;
+    }
+  };
+  
+  const visibility = properties?.visibility ?? true;
+
+  const showLabel = properties?.showLabel ?? true;
+
+  const projectionLineColor =
+    properties?.projectionLineColor || "#6366f1";
+  
+  const positiveLineColor =
+    properties?.positiveLineColor || "#10b981";
+  
+  const lineThickness =
+    properties?.lineThickness || 2;
+  
+  const lineStyle =
+    properties?.lineStyle || "solid";
+  
+  const shadeArea =
+    properties?.shadeArea || "#ffffff";
+
+    const linearProjectionColor =
+    properties?.positiveLineColor || "#10b981";
+
+  const cubicSplineColor =
+    properties?.projectionLineColor || "#6366f1";
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -47,29 +85,69 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     }
   
     return (
-      <div className="w-full h-full">
-        {/* <h2 className="text-lg font-semibold mb-2 text-center">{title}</h2> */}
+      <div
+        className="w-full h-full rounded"
+        style={{
+          backgroundColor: shadeArea,
+        }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 20, bottom: 75 }}
+            margin={{
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: 75,
+            }}
           >
             <CartesianGrid strokeDasharray="3 3" />
+  
+            {/* X Axis */}
             <XAxis
-              dataKey="dayCount" 
+              dataKey="dayCount"
               type="number"
-              label={{ value: 'Days', position: 'insideBottom', offset: -10 }}
-              domain={['dataMin', 'dataMax']}
-            />
-            <YAxis 
-              label={{ value: `Growth Differential ${metricSuffix}`, angle: -90, position: "insideLeft",
-                textAnchor: "middle",
-                offset: -5, }}
-                tickFormatter={(value) => Number(value).toFixed(3)}
-            />
+              domain={["dataMin", "dataMax"]}
+            >
+              {showLabel && (
+                <Label
+                  value="Days"
+                  position="insideBottom"
+                  offset={-10}
+                />
+              )}
+            </XAxis>
+  
+            {/* Y Axis */}
+            <YAxis
+              tickFormatter={(value) =>
+                Number(value).toFixed(3)
+              }
+            >
+              {showLabel && (
+                <Label
+                  value={`Growth Differential ${metricSuffix}`}
+                  angle={-90}
+                  position="insideLeft"
+                  textAnchor="middle"
+                  offset={-5}
+                />
+              )}
+            </YAxis>
+  
             <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 35 }} />
-
+  
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{
+                paddingTop: 20,
+                paddingLeft: 35,
+              }}
+            />
+  
+            {/* Reference Lines */}
+  
             {ppPlus15 !== null && (
               <ReferenceLine
                 x={ppPlus15}
@@ -84,8 +162,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
                 }}
               />
             )}
-
-            {/* 🔵 Third PP + 30 */}
+  
             {ppPlus30 !== null && (
               <ReferenceLine
                 x={ppPlus30}
@@ -100,30 +177,36 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
                 }}
               />
             )}
-            
-            {/* Blue line (Linear Projection) */}
-            <Line
-              type="monotone"
-              dataKey="l"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={false}
-              name="Linear Projection"
-            />
-            
-            {/* Red line (Spline Projection) */}
-            <Line
-              type="monotone"
-              dataKey="s"
-              stroke="#ef4444"
-              strokeWidth={2}
-              dot={false}
-              name="Cubic Spline Projection"
-            />
+  
+            {/* Lines */}
+  
+            {visibility && (
+              <>
+                {/* Linear Projection */}
+                <Line
+                  type="monotone"
+                  dataKey="l"
+                  stroke={linearProjectionColor}
+                  strokeWidth={lineThickness}
+                  strokeDasharray={getStrokeDashArray(lineStyle)}
+                  dot={false}
+                  name="Linear Projection"
+                />
+  
+                {/* Cubic Spline Projection */}
+                <Line
+                  type="monotone"
+                  dataKey="s"
+                  stroke={cubicSplineColor}
+                  strokeWidth={lineThickness}
+                  strokeDasharray={getStrokeDashArray(lineStyle)}
+                  dot={false}
+                  name="Cubic Spline Projection"
+                />
+              </>
+            )}
           </LineChart>
         </ResponsiveContainer>
-        
-      
       </div>
     );
   };
