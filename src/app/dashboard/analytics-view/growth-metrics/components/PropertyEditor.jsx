@@ -50,57 +50,33 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
   const [shadeArea, setShadeArea] = useState(properties.shadeArea || "#ffffff");
 
   // Update line color when selectedLineType changes
-  React.useEffect(() => {
-    let newColor;
-  
-    if (selectedLineType === "positive") {
-      newColor = properties.positiveLineColor || "#10b981";
-    } else if (selectedLineType === "negative") {
-      newColor = properties.negativeLineColor || "#ef4444";
-    } else {
-      // default for projections
-      newColor = properties.projectionLineColor || "#6366f1";
-    }
-  
-    setLineColor(newColor);
-  }, [
-    selectedLineType,
-    properties.positiveLineColor,
-    properties.negativeLineColor,
-    properties.projectionLineColor,
-  ]);
+  // Update line color when selectedLineType changes
+React.useEffect(() => {
+  let newColor;
+
+  if (selectedLineType === "linear") {
+    newColor = properties.linearLineColor || properties.positiveLineColor || "#10b981";
+  } 
+  else if (selectedLineType === "cubicSpline") {
+    newColor = properties.projectionLineColor || "#6366f1";
+  } 
+  else if (selectedLineType === "positive") {
+    newColor = properties.positiveLineColor || "#10b981";
+  } 
+  else if (selectedLineType === "negative") {
+    newColor = properties.negativeLineColor || "#ef4444";
+  }
+
+  setLineColor(newColor);
+  //  Do NOT touch lineStyle here 
+}, [selectedLineType]);
 
   // Helper: update parent on any change
   const updateParent = (newProps) => {
-    onChange &&
-      onChange({
-        visibility,
-        layer,
-        reference,
-
-        showLabel,
-        labelType,
-        showLabelPrefix,
-        labelPrefix,
-        showLabelSuffix,
-        labelSuffix,
-
-        lineStyle,
-        lineColor,
-        lineThickness,
-
-        symbolStyle,
-        symbolColor,
-        symbolFrequency,
-        symbolScaleSize,
-
-        shadeArea,
-
-        positiveLineColor: properties.positiveLineColor || "#10b981",
-        negativeLineColor: properties.negativeLineColor || "#ef4444",
-
-        ...newProps,
-      });
+    onChange && onChange((prev) => ({
+      ...prev,
+      ...newProps,
+    }));
   };
 
   // When each input changes, update local state and notify parent
@@ -109,22 +85,46 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
   const handleLineColorChange = (color) => {
     setLineColor(color);
   
-    if (selectedLineType === "positive") {
+    // Projection charts
+    if (selectedLineType === "linear") {
       updateParent({ positiveLineColor: color });
-    } else if (selectedLineType === "negative") {
-      updateParent({ negativeLineColor: color });
-    } else {
+    } 
+    else if (selectedLineType === "cubicSpline") {
       updateParent({ projectionLineColor: color });
+    }
+  
+    // Normal charts
+    else if (selectedLineType === "positive") {
+      updateParent({ positiveLineColor: color });
+    } 
+    else if (selectedLineType === "negative") {
+      updateParent({ negativeLineColor: color });
     }
   };
 
   // Handle line type selection change
   const handleLineTypeChange = (type) => {
     setSelectedLineType(type);
-    // Update the color picker to show the current color for the selected type
-    const currentColor = type === "positive" 
-      ? properties.positiveLineColor || "#10b981" 
-      : properties.negativeLineColor || "#ef4444";
+  
+    let currentColor;
+  
+    if (type === "linear") {
+      currentColor =
+        properties.positiveLineColor || "#10b981";
+    } 
+    else if (type === "cubicSpline") {
+      currentColor =
+        properties.projectionLineColor || "#6366f1";
+    } 
+    else if (type === "positive") {
+      currentColor =
+        properties.positiveLineColor || "#10b981";
+    } 
+    else if (type === "negative") {
+      currentColor =
+        properties.negativeLineColor || "#ef4444";
+    }
+  
     setLineColor(currentColor);
   };
 
@@ -241,6 +241,8 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
         )}
       </div>
 
+      {selectedChart.type === "line" && (
+        <>
       {/* Line Attribute Section */}
       <div>
         <button
@@ -283,8 +285,28 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
                 <select
                   value={lineStyle}
                   onChange={(e) => {
-                    setLineStyle(e.target.value);
-                    updateParent({ lineStyle: e.target.value });
+                    const style = e.target.value;
+                  
+                    setLineStyle(style);
+                  
+                    // Projection charts
+                    if (selectedLineType === "linear") {
+                      updateParent({
+                        linearLineStyle: style,
+                      });
+                    } 
+                    else if (selectedLineType === "cubicSpline") {
+                      updateParent({
+                        projectionLineStyle: style,
+                      });
+                    }
+                  
+                    // Normal charts
+                    else {
+                      updateParent({
+                        lineStyle: style,
+                      });
+                    }
                   }}
                   className="w-full border rounded px-2 py-1"
                 >
@@ -336,7 +358,9 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
             />
           </div>
         )}
-      </div>
+      </div> 
+      </>
+      )}
 
       {/* Symbol Attribute Section */}
       <div>

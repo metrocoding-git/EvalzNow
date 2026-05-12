@@ -1110,6 +1110,7 @@ insertScores.forEach((row) => {
                       }`}  onClick={() => {
                         setSelectedRow(row);
                         setDeleteSelectedRow(idx);
+                        console.log("Selected row:", row);
                       }}>
                         <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.firstName}</td>
                         <td className="whitespace-nowrap border p-1 text-center">{row.candidate?.lastName}</td>

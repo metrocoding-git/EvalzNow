@@ -172,6 +172,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   
     // Line Attribute
     lineStyle: "solid",
+    linearLineStyle: "solid",
+    projectionLineStyle: "solid",
     lineColor: "#3b82f6",
     lineThickness: 2,
   

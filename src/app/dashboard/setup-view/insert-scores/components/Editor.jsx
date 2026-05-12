@@ -255,26 +255,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
     mc19: "",
     mc20: "",
     // Custom criteria cc1 - cc20
-    cc1: "",
-    cc2: "",
-    cc3: "",
-    cc4: "",
-    cc5: "",
-    cc6: "",
-    cc7: "",
-    cc8: "",
-    cc9: "",
-    cc10: "",
-    cc11: "",
-    cc12: "",
-    cc13: "",
-    cc14: "",
-    cc15: "",
-    cc16: "",
-    cc17: "",
-    cc18: "",
-    cc19: "",
-    cc20: "",
+    
   });
 
   const [loading, setLoading] = useState(false);
@@ -295,15 +276,14 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
   
-        setCustomCriteria(data.filter(c => c.criteria && c.criteria.trim() !== ""));
+        // setCustomCriteria(data.filter(c => c.criteria && c.criteria.trim() !== ""));
 
 
-        const ccData = {};
-        data.forEach((criteria, index) => {
-          ccData[`cc${index + 1}`] = criteria.criteria || "";
-        });
-
-        setFormData((prev) => ({ ...prev, ...ccData }));
+        setCustomCriteria(
+          data
+            .filter(c => c.criteria && c.criteria.trim() !== "")
+            .sort((a, b) => a.criteriaId - b.criteriaId)
+        );
   
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
@@ -325,69 +305,69 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
     "competency",
   ];
 
+  const ccFields = {};
+
+  if (details?.customCriteria?.length > 0) {
+    details.customCriteria.forEach((cc, index) => {
+      ccFields[`cc${index + 1}`] = cc.value ?? "";
+    });
+  }
   useEffect(() => {
     if (details) {
-      setFormData({
+      const mappedCcFields = {};
+
+      // STEP 1: DB flat fields (primary)
+      for (let i = 1; i <= 20; i++) {
+        mappedCcFields[`cc${i}`] = details?.[`cc${i}`] ?? "";
+      }
+
+      // STEP 2: fallback array if needed
+      if (Array.isArray(details?.cc)) {
+        details.cc.forEach((val, i) => {
+          if (!mappedCcFields[`cc${i + 1}`]) {
+            mappedCcFields[`cc${i + 1}`] = val ?? "";
+          }
+        });
+      }
+
+      // STEP 3: override using customCriteria (if exists)
+      details?.customCriteria?.forEach((cc) => {
+        const key = `cc${cc.criteria?.criteriaId ?? cc.scoringCriteriaId}`;
+        if (cc.value !== undefined && cc.value !== null) {
+          mappedCcFields[key] = cc.value;
+        }
+      });
+      
+  
+      const mappedMcFields = {};
+  
+      for (let i = 1; i <= 20; i++) {
+        mappedMcFields[`mc${i}`] = details[`mc${i}`] ?? "";
+      }
+  
+      setFormData((prev) => ({
+        ...prev,
+  
         ppId: details.ppId || "",
         durationHrs: details.durationHrs || "",
         criticalRefDate: details.criticalRefDate
-        ? new Date(details.criticalRefDate).toISOString().split("T")[0]
-        : "",
+          ? new Date(details.criticalRefDate).toISOString().split("T")[0]
+          : "",
         remarks: details.remarks || "",
         workflowStage: details.workflowStage || "",
         assessmentType: details.assessmentType || "",
         scheduleImpact: details.scheduleImpact || "",
         engageLevel: details.engageLevel || "",
         competency: details.competency || "",
-        attainedScore: details.attainedScore ?? null,
-        maxScore: details.maxScore ?? null,
+        attainedScore: details.attainedScore ?? "",
+        maxScore: details.maxScore ?? "",
         assessmentBlockId: details.assessmentBlockId || null,
         unitId: details.unitId || null,
         candidate_id: details.candidate_id || null,
-        task: details.task || "",
-
-        mc1: details.mc1 || "",
-        mc2: details.mc2 || "",
-        mc3: details.mc3 || "",
-        mc4: details.mc4 || "",
-        mc5: details.mc5 || "",
-        mc6: details.mc6 || "",
-        mc7: details.mc7 || "",
-        mc8: details.mc8 || "",
-        mc9: details.mc9 || "",
-        mc10: details.mc10 || "",
-        mc11: details.mc11 || "",
-        mc12: details.mc12 || "",
-        mc13: details.mc13 || "",
-        mc14: details.mc14 || "",
-        mc15: details.mc15 || "",
-        mc16: details.mc16 || "",
-        mc17: details.mc17 || "",
-        mc18: details.mc18 || "",
-        mc19: details.mc19 || "",
-        mc20: details.mc20 || "",
-        // Custom criteria cc1 - cc20
-        cc1: details.cc1 || "",
-        cc2: details.cc2 || "",
-        cc3: details.cc3 || "",
-        cc4: details.cc4 || "",
-        cc5: details.cc5 || "",
-        cc6: details.cc6 || "",
-        cc7: details.cc7 || "",
-        cc8: details.cc8 || "",
-        cc9: details.cc9 || "",
-        cc10: details.cc10 || "",
-        cc11: details.cc11 || "",
-        cc12: details.cc12 || "",
-        cc13: details.cc13 || "",
-        cc14: details.cc14 || "",
-        cc15: details.cc15 || "",
-        cc16: details.cc16 || "",
-        cc17: details.cc17 || "",
-        cc18: details.cc18 || "",
-        cc19: details.cc19 || "",
-        cc20: details.cc20 || "",
-      });
+  
+        ...mappedMcFields,
+        ...mappedCcFields,
+      }));
     }
   }, [details]);
 
@@ -456,8 +436,21 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       setLoading(true);
       setFormStatus("Processing...");
   
+      const customCriteriaPayload = customCriteria
+  .map((criteria) => {
+    const key = `cc${criteria.criteriaId}`;  // criteriaId from 
+    return {
+      scoringCriteriaId: criteria.id,
+      value: formData[key] !== "" && formData[key] !== undefined
+        ? parseFloat(formData[key])
+        : null,
+    };
+  })
+  .filter(cc => cc.value !== null && !isNaN(cc.value));
+
       const payload = {
         ...formData,
+        customCriteria: customCriteriaPayload,
         unitId: parseInt(formData.unitId), 
         candidate_id: parseInt(formData.candidate_id), 
         durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
@@ -471,7 +464,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       // Convert empty strings to null for MC and CC fields
       for (let i = 1; i <= 20; i++) {
         payload[`mc${i}`] = formData[`mc${i}`] === "" ? null : parseFloat(formData[`mc${i}`]);
-        payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
+        // payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
       }
 
       let attained = null;
@@ -835,12 +828,12 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
 
                   {/* Custom Criteria (CC1 - CC20) */}
                   {customCriteria.length > 0 &&
-                    customCriteria.map((criteria, index) => {
-                      const fieldKey = `cc${index + 1}`;
+                    customCriteria.map((criteria) => {
+                      const fieldKey = `cc${criteria.criteriaId}`;
                       return (
                         <React.Fragment key={fieldKey}>
                           <label className="text-left text-gray-700 whitespace-nowrap pr-2">
-                            CC{index + 21} ({criteria.criteria}):
+                            CC{criteria.criteriaId} ({criteria.criteria}):
                           </label>
                           <input
                             type="number"
@@ -850,7 +843,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                               const val = e.target.value;
                               handleChange(fieldKey, val === "" ? "" : parseFloat(val).toFixed(2));
                             }}
-                            value={formData[fieldKey]}
+                            value={formData[fieldKey] ?? ""}
                             onChange={(e) => handleChange(fieldKey, e.target.value)}
                             className="border px-2 py-1 w-full"
                           />
