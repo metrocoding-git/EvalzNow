@@ -28,8 +28,11 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
   const lineThickness =
     properties?.lineThickness || 2;
   
-  const lineStyle =
-    properties?.lineStyle || "solid";
+    const linearLineStyle =
+    properties?.linearLineStyle || "solid";
+  
+  const projectionLineStyle =
+    properties?.projectionLineStyle || "solid";
   
   const shadeArea =
     properties?.shadeArea || "#ffffff";
@@ -40,11 +43,15 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
   const cubicSplineColor =
     properties?.projectionLineColor || "#6366f1";
 
+  const labelType = properties?.labelType ?? "X Type";
+  const showXLabel = showLabel && labelType === "X Type";
+  const showYLabel = showLabel && labelType === "Y Type";
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-2 border rounded shadow text-sm">
-          {/* ✅ Add "Days:" label */}
+          {/*  Add "Days:" label */}
           <div>
             <strong>Days:</strong> {Number(label).toFixed(2)}
           </div>
@@ -109,7 +116,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
               type="number"
               domain={["dataMin", "dataMax"]}
             >
-              {showLabel && (
+              {showXLabel && (  
                 <Label
                   value="Days"
                   position="insideBottom"
@@ -124,7 +131,7 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
                 Number(value).toFixed(3)
               }
             >
-              {showLabel && (
+              {showYLabel && ( 
                 <Label
                   value={`Growth Differential ${metricSuffix}`}
                   angle={-90}
@@ -188,18 +195,17 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
                   dataKey="l"
                   stroke={linearProjectionColor}
                   strokeWidth={lineThickness}
-                  strokeDasharray={getStrokeDashArray(lineStyle)}
+                  strokeDasharray={getStrokeDashArray(linearLineStyle)}
                   dot={false}
                   name="Linear Projection"
                 />
-  
-                {/* Cubic Spline Projection */}
+
                 <Line
                   type="monotone"
                   dataKey="s"
                   stroke={cubicSplineColor}
                   strokeWidth={lineThickness}
-                  strokeDasharray={getStrokeDashArray(lineStyle)}
+                  strokeDasharray={getStrokeDashArray(projectionLineStyle)}
                   dot={false}
                   name="Cubic Spline Projection"
                 />

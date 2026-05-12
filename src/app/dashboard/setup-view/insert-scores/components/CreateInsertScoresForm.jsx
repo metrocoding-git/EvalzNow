@@ -877,14 +877,14 @@ const handleCustomCriteriaChange = (
               })}
 
               {customCriteria.length > 0 &&
-                customCriteria.map((criteria) => {
+                customCriteria.sort((a, b) => a.criteriaId - b.criteriaId).map((criteria) => {
                   return (
                     <div
                       key={criteria.id}
                       className="flex items-center gap-2 w-full"
                     >
                       <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
-                        {criteria.criteria}:
+                        CC{Number(criteria.criteriaId) + 20}  ({criteria.criteria}):
                       </label>
 
                       <input
