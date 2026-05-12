@@ -468,10 +468,17 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
           : null,
       };
 
-      // Convert empty strings to null for MC and CC fields
+      // Map cc1-cc20 fields to customCriteria array for the backend
+      const customCriteriaPayload = customCriteria.map((c, i) => ({
+        scoringCriteriaId: c.id,
+        value: formData[`cc${i + 1}`] === "" ? null : parseFloat(formData[`cc${i + 1}`])
+      }));
+      payload.customCriteria = customCriteriaPayload;
+
+      // Convert mc1-mc20 fields to numbers or null
       for (let i = 1; i <= 20; i++) {
-        payload[`mc${i}`] = formData[`mc${i}`] === "" ? null : parseFloat(formData[`mc${i}`]);
-        payload[`cc${i}`] = formData[`cc${i}`] === "" ? null : parseFloat(formData[`cc${i}`]);
+        const mcKey = `mc${i}`;
+        payload[mcKey] = formData[mcKey] === "" ? null : parseFloat(formData[mcKey]);
       }
 
       let attained = null;
@@ -513,11 +520,11 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
             const ccVal = parseFloat(rawCc);
             
             if (ccVal < 0) {
-              toast.error(`Negative value found in CC${i}. Please enter only positive values.`);
+              toast.error(`Negative value found in CC${i + 20}. Please enter only positive values.`);
               return;
             }
             if (maxAllowed !== null && ccVal > maxAllowed) {
-              toast.error(`CC${i} exceeds allowed maximum (${maxAllowed}).`);
+              toast.error(`CC${i + 20} exceeds allowed maximum (${maxAllowed}).`);
               return;
             }
             total += ccVal;
@@ -527,7 +534,9 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
     
         attained = total;
         maxScoreCalculated = maxAllowed * filledCount;
-      
+
+        payload.attainedScore = attained;
+        payload.maxScore = maxScoreCalculated;
       }
   
       const response = await updateInsertScore(details.id, payload); 
@@ -662,7 +671,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className=" text-xs space-y-3 bg-white">
-            <div className="grid grid-cols-[140px_1fr] items-center gap-x-2 gap-y-3 p-3">
+            <div className="grid grid-cols-[200px_1fr] items-center gap-x-2 gap-y-3 p-3">
               {/* PP ID */}
               <label className="text-gray-700 text-left">PP ID Callout:</label>
               <select
@@ -808,7 +817,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
               </select>
 
               {environment === "Workforce" && (
-                <div className="col-span-2 w-full grid grid-cols-[140px_1fr] gap-x-2 gap-y-2">
+                <div className="col-span-2 w-full grid grid-cols-[200px_1fr] gap-x-2 gap-y-3">
                   {/* Main Criteria (MC1 - MC20) */}
                   {MAIN_CRITERIA.map((criteria, index) => {
                     const fieldKey = `mc${index + 1}`;
@@ -833,30 +842,32 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                     );
                   })}
 
-                  {/* Custom Criteria (CC1 - CC20) */}
-                  {customCriteria.length > 0 &&
-                    customCriteria.map((criteria, index) => {
-                      const fieldKey = `cc${index + 1}`;
-                      return (
-                        <React.Fragment key={fieldKey}>
-                          <label className="text-left text-gray-700 whitespace-nowrap pr-2">
-                            CC{index + 21} ({criteria.criteria}):
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            onBlur={(e) => {
-                              const val = e.target.value;
-                              handleChange(fieldKey, val === "" ? "" : parseFloat(val).toFixed(2));
-                            }}
-                            value={formData[fieldKey]}
-                            onChange={(e) => handleChange(fieldKey, e.target.value)}
-                            className="border px-2 py-1 w-full"
-                          />
-                        </React.Fragment>
-                      );
-                    })}
+                  {/* Custom Criteria (CC21 - CC40) */}
+                  {Array.from({ length: 20 }).map((_, index) => {
+                    const criteria = customCriteria[index];
+                    const fieldKey = `cc${index + 1}`;
+                    return (
+                      <React.Fragment key={index}>
+                        <label className="text-left text-gray-700">
+                          CC{index + 21}:
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            handleChange(fieldKey, val === "" ? "" : parseFloat(val).toFixed(2));
+                          }}
+                          value={formData[fieldKey] || ""}
+                          onChange={(e) => handleChange(fieldKey, e.target.value)}
+                          className="border px-2 py-1 w-full"
+                          placeholder={criteria ? "" : "N/A"}
+                          disabled={!criteria}
+                        />
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               )}
 
@@ -903,15 +914,15 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
               <div className="flex justify-end  ">
                 <button
                   type="button"
-                  disabled={isSubmitDisabled || loading}
+                  disabled={loading}
                   onClick={handleSubmit}
                   className={`px-4 py-1 text-sm transition-colors ${
-                    isSubmitDisabled || loading
+                    loading
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-gray-200 hover:bg-gray-300"
                   }`}
                 >
-                  Edit
+                  {loading ? "Processing..." : "Edit"}
                 </button>
               </div>
             </div>

@@ -15,11 +15,14 @@ import {
 } from "lucide-react";
 import ScoringCriteria from "./ScoringCriteria";
 import { useSearchParams } from 'next/navigation';
-import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId, updateInsertScore } from "@/services/insertScoreService";
+import { deleteInsertScore, getInsertScoreByUnitAndCandidate, getInsertScoresByUnitId, updateInsertScore, createInsertScore } from "@/services/insertScoreService";
 import { createScoringCriteria, deleteScoringCriteria, getScoringCriteriaByUnitId, updateScoringCriteria } from "@/services/scoringCriteriaService";
 import { useFormStatus } from "@/context/FormStatusContext";
 import { useUnit } from "@/context/UnitContext";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { Upload } from "lucide-react";
 
 const MAIN_CRITERIA = [
   "Communication",
@@ -563,212 +566,138 @@ insertScores.forEach((row) => {
   };
 
 
-  const exportAsCSV = () => {
-    // ✅ Use raw insertScores (unfiltered by tab) for export
+  const exportToExcel = () => {
     const allScores = insertScores || [];
-  
-    const classroomData = allScores.filter(
-      (row) => (row.unit?.environment === "Classroom")
-    );
-    
-    const workforceData = allScores.filter(
-      (row) => (row.unit?.environment !== "Classroom")
-    );
+    const sourceData = environment === "Classroom" 
+      ? allScores.filter(row => row.unit?.environment === "Classroom")
+      : allScores.filter(row => row.unit?.environment !== "Classroom");
 
-    const sourceData = environment === "Classroom" ? classroomData : workforceData;
-
-    const indirectData = sourceData
-      .filter((row) => parseInt(row.ppId, 10) < 0)
-      .map((row) => ({
-        ...row,
-        mc: Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? ""),
-        cc: Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? ""),
-      }))
-      .sort((a, b) => {
-        const pa = parseInt(a.ppId, 10), pb = parseInt(b.ppId, 10);
-        if (pa !== pb) return pb - pa;
-        return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
-      });
-  
-    const directData = sourceData
-      .filter((row) => parseInt(row.ppId, 10) > 0)
-      .map((row) => ({
-        ...row,
-        mc: Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? ""),
-        cc: Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? ""),
-      }))
-      .sort((a, b) => {
-        const pa = parseInt(a.ppId, 10), pb = parseInt(b.ppId, 10);
-        if (pa !== pb) return pa - pb;
-        return new Date(a.criticalRefDate) - new Date(b.criticalRefDate);
-      });
-
-  
-    if (indirectData.length === 0 && directData.length === 0) {
+    if (sourceData.length === 0) {
       alert("No table data available to export");
       return;
     }
-  
-    try {
-      const escapeCSV = (value) => {
-        if (value === null || value === undefined) return "";
-        const str = value.toString();
-        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
+
+    const headers = [
+      "First Name", "Last Name", "CID", "PP ID", "Duration", 
+      "Critical Reference Date", "Task Declaration", "Workflow Stage", 
+      "Assessment Type", "Schedule Impact", "Engage Level", "Competency"
+    ];
+
+    if (environment === "Classroom") {
+      headers.push("Attained Score", "Max Score");
+    } else {
+      headers.push(
+        ...Array.from({ length: 20 }, (_, i) => `MC${i + 1}`),
+        ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
+      );
+    }
+
+    const data = sourceData.map(row => {
+      const base = {
+        "First Name": row.candidate?.firstName || "",
+        "Last Name": row.candidate?.lastName || "",
+        "CID": row.candidate?.candidateId || "",
+        "PP ID": row.ppId || "",
+        "Duration": row.durationHrs || 0,
+        "Critical Reference Date": row.criticalRefDate ? row.criticalRefDate.slice(0, 10) : "",
+        "Task Declaration": row.remarks || "",
+        "Workflow Stage": row.workflowStage || "",
+        "Assessment Type": row.assessmentType || "",
+        "Schedule Impact": row.scheduleImpact || "",
+        "Engage Level": row.engageLevel || "",
+        "Competency": row.competency || ""
       };
-  
-      const headers = [
-        "First Name",
-        "Last Name",
-        "CID",
-        "PP ID",
-        "Duration",
-        "Critical Reference Date",
-        "Task Declaration",
-        "Workflow Stage",
-        "Assessment Type",
-        "Schedule Impact",
-        "Engage Level",
-        "Competency",
-      ];
 
       if (environment === "Classroom") {
-        headers.push("Attained Score", "Max Score");
+        base["Attained Score"] = row.attainedScore || 0;
+        base["Max Score"] = row.maxScore || 0;
       } else {
-        headers.push(
-          ...Array.from({ length: 20 }, (_, i) => `MC${i + 1}`),
-          ...Array.from({ length: 20 }, (_, i) => `CC${i + 21}`)
-        );
+        const mc = Array.from({ length: 20 }, (_, i) => row[`mc${i + 1}`] ?? "-");
+        const cc = Array.from({ length: 20 }, (_, i) => row[`cc${i + 1}`] ?? "-");
+        mc.forEach((val, i) => base[`MC${i + 1}`] = val);
+        cc.forEach((val, i) => base[`CC${i + 21}`] = val);
       }
-  
-      // Build CSV content with header text
-      const rows = [];
+      return base;
+    });
 
-      const buildRow = (row) => {
-        const base = [
-          row.candidate?.firstName ?? "",
-          row.candidate?.lastName ?? "",
-          row.candidate?.candidateId ?? "",
-          row.ppId ?? "",
-          row.durationHrs !== null && row.durationHrs !== undefined
-            ? Number(row.durationHrs).toFixed(2)
-            : "-",
-          row.criticalRefDate?.slice(0, 10) ?? "",
-          row.remarks ?? "",
-          row.workflowStage ?? "",
-          row.assessmentType ?? "",
-          row.scheduleImpact ?? "",
-          row.engageLevel ?? "",
-          row.competency ?? "",
-        ];
-      
-        if (environment === "Classroom") {
-          base.push(
-            row.attainedScore ?? 0,
-            row.maxScore ?? 0
-          );
-        } else {
-          base.push(
-            ...(row.mc ?? Array(20).fill("-")).map(v =>
-              v !== null && v !== undefined && v !== "" ? Number(v).toFixed(2) : "-"
-            ),
-            ...(row.cc ?? Array(20).fill("-")).map(v =>
-              v !== null && v !== undefined && v !== "" ? Number(v).toFixed(2) : "-"
-            )
-          );
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Scores");
+    
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(blob, `Competency_Accounting_${Date.now()}.xlsx`);
+  };
+
+  const handleImportExcel = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        if (jsonData.length === 0) {
+          toast.error("The excel sheet is empty");
+          return;
         }
-      
-        return base;
-      };
-      
-      // Add header information
-      rows.push("EvalzNow – A Novel Human Capital Assessment Method");
-      rows.push("Competency Accounting for Education and Industry");
-      rows.push("Hybrid Proficiency & Growth Monitoring");
-      rows.push(`Data Extraction Date: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ')}`);
-      rows.push(""); // Empty line for spacing
-      rows.push(headers.map(escapeCSV).join(","));
-  
-      // Add Indirect data (negative ppId)
-      indirectData.forEach(row => {
-        const rowData = [
-          row.candidate?.firstName ?? "",
-          row.candidate?.lastName ?? "",
-          row.candidate?.candidateId ?? "",
-          row.ppId ?? "",
-          row.durationHrs !== null && row.durationHrs !== undefined
-            ? Number(row.durationHrs).toFixed(2)
-            : "-",
-          row.criticalRefDate?.slice(0, 10) ?? "",
-          row.remarks ?? "",
-          row.workflowStage ?? "",
-          row.assessmentType ?? "",
-          row.scheduleImpact ?? "",
-          row.engageLevel ?? "",
-          row.competency ?? "",
-          ...(row.mc ?? Array(20).fill("-")).map(val =>
-            val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
-          ),
-          ...(row.cc ?? Array(20).fill("-")).map(val =>
-            val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
-          )
-        ];
-        rows.push(buildRow(row).map(escapeCSV).join(","));
-      });
-  
-      // Add spacing between sections if there is Direct data
-      if (directData.length > 0) {
-        // Add Direct data (positive ppId)
-        directData.forEach(row => {
-          const rowData = [
-            row.candidate?.firstName ?? "",
-            row.candidate?.lastName ?? "",
-            row.candidate?.candidateId ?? "",
-            row.ppId ?? "",
-            row.durationHrs !== null && row.durationHrs !== undefined
-              ? Number(row.durationHrs).toFixed(2)
-              : "-",
-            row.criticalRefDate?.slice(0, 10) ?? "",
-            row.remarks ?? "",
-            row.workflowStage ?? "",
-            row.assessmentType ?? "",
-            row.scheduleImpact ?? "",
-            row.engageLevel ?? "",
-            row.competency ?? "",
-            ...(row.mc ?? Array(20).fill("-")).map(val =>
-              val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
-            ),
-            ...(row.cc ?? Array(20).fill("-")).map(val =>
-              val !== null && val !== undefined && val !== "" ? Number(val).toFixed(2) : "-"
-            )
-          ];
-          rows.push(buildRow(row).map(escapeCSV).join(","));
-        });
+
+        setFormStatus("Importing...");
+        let successCount = 0;
+
+        // Process imports
+        for (const row of jsonData) {
+          // This is a simplified import. In a real app, you'd need to map headers correctly.
+          // For now, we assume the headers match the export format.
+          const payload = {
+            unitId: parseInt(unitId),
+            candidate_id: candidateId, // Imported to current selected candidate
+            ppId: parseInt(row["PP ID"]),
+            durationHrs: parseFloat(row["Duration"]) || 0,
+            criticalRefDate: row["Critical Reference Date"] ? new Date(row["Critical Reference Date"]).toISOString() : new Date().toISOString(),
+            remarks: row["Task Declaration"] || "",
+            workflowStage: row["Workflow Stage"] || "",
+            assessmentType: row["Assessment Type"] || "",
+            scheduleImpact: row["Schedule Impact"] || "",
+            engageLevel: row["Engage Level"] || "",
+            competency: row["Competency"] || "",
+            customCriteria: []
+          };
+
+          // Map MC/CC if they exist
+          for (let i = 1; i <= 20; i++) {
+            if (row[`MC${i}`] !== undefined) payload[`mc${i}`] = row[`MC${i}`] === "-" ? null : parseFloat(row[`MC${i}`]);
+            if (row[`CC${i + 20}`] !== undefined) {
+              const ccVal = row[`CC${i + 20}`] === "-" ? null : parseFloat(row[`CC${i + 20}`]);
+              if (ccVal !== null) {
+                // Find criteria ID for CC column
+                const criteria = customCriteria[i - 1];
+                if (criteria) {
+                  payload.customCriteria.push({ scoringCriteriaId: criteria.id, value: ccVal });
+                }
+              }
+            }
+          }
+
+          await createInsertScore(payload);
+          successCount++;
+        }
+
+        toast.success(`Successfully imported ${successCount} records`);
+        handleRefresh();
+      } catch (error) {
+        console.error("Import failed:", error);
+        toast.error("Import failed: " + error.message);
+      } finally {
+        setFormStatus("Ready..");
       }
-  
-      const csvContent = "\uFEFF" + rows.join("\n"); // BOM for UTF-8
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  
-      // Use file-saver if available, otherwise fallback
-      if (typeof saveAs !== 'undefined') {
-        saveAs(blob, `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
-      } else {
-        // Fallback download
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.error("CSV export failed:", err);
-      alert("Failed to export CSV");
-    }
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const handleSubmit = async () => {
@@ -1007,12 +936,22 @@ insertScores.forEach((row) => {
                 {/* Export dropdown menu */}
                 {/* {environment === "Workforce" && ( */}
                   <button
-                    onClick={exportAsCSV}
-                    title="Export As CSV"
+                    onClick={exportToExcel}
+                    title="Export As Excel"
                     className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer"
                   >
                     <FolderOutput className="w-3.5 h-3.5" />
                   </button>
+
+                  <label className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer" title="Import From Excel">
+                    <Upload className="w-3.5 h-3.5" />
+                    <input 
+                      type="file" 
+                      accept=".xlsx, .xls, .csv" 
+                      className="hidden" 
+                      onChange={handleImportExcel}
+                    />
+                  </label>
                 {/* )} */}
 
                 <button
