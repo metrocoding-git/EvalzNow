@@ -722,17 +722,16 @@ console.log("unit type check", tableData);
               <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
               
               <div className="flex-1 mx-1 overflow-x-auto">
-  <div
-    ref={chartContainerRef}
-    className="h-full max-h-[calc(100vh-320px)] overflow-y-auto"
-  >
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-gray-50 sticky top-0 z-10">
+                <div ref={chartContainerRef}
+                  className="h-full max-h-[calc(100vh-320px)] overflow-y-auto" >
+                <table className="w-full text-left text-xs border-separate border-spacing-0">
+                  <thead className="bg-gray-50 sticky top-0 z-10 border-b border-black">
                     <tr>
                       {visibleHeaders.map((header) => (
                         <th
                           key={header}
                           className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50"
+                          style={{ borderColor: "black" }}
                         >
                           {header}
 
@@ -760,6 +759,7 @@ console.log("unit type check", tableData);
                               <td
                                 key={header}
                                 className="border text-center border-black px-2 py-1 whitespace-nowrap"
+                                style={{ borderColor: "black" }}
                               >
                                 {(() => {
                                   const value = row[header];
@@ -810,18 +810,19 @@ console.log("unit type check", tableData);
                     )}
                   </tbody>
 
-                  <tfoot className="sticky bottom-0 z-10">
+                  <tfoot className="sticky bottom-0 z-30 bg-gray-200">
                     {tableData
                       .filter((row) => ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
                       .map((row, rowIndex) => (
                         <tr
                           key={`summary-${rowIndex}`}
-                          className="bg-gray-200 font-semibold cursor-pointer hover:bg-gray-100"
+                          className="bg-gray-200 font-semibold relative z-20"
                         >
                           {visibleHeaders.map((header) => (
                             <td
                               key={header}
-                              className="border text-center border-black px-2 py-1 whitespace-nowrap bg-gray-200"
+                              className="border border-black text-center px-2 py-1 whitespace-nowrap bg-gray-200 relative z-20"
+                              style={{ borderColor: "black" }}
                             >
                               {(() => {
                                 const value = row[header];
