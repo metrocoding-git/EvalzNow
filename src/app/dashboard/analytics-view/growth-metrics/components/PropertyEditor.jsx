@@ -15,7 +15,7 @@ const symbolStyles = [
   { label: "Diamond", value: "diamond" },
 ];
 
-export default function PropertyEditor({ properties, onChange, selectedChart }) {
+export default function PropertyEditor({ properties, onChange, selectedChart, selectedSort }) {
   // Expand/collapse state for sections
   const [expanded, setExpanded] = useState({
     standard: true,
@@ -297,18 +297,21 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
               </>
             )}
 
-            <label className="block font-semibold mb-1 mt-3">
-              Line Color 
-            </label>
-            <div className="flex items-center space-x-3">
-              <input
-                type="color"
-                value={lineColor}
-                onChange={(e) => handleLineColorChange(e.target.value)}
-                className="w-16 h-8 p-0 border rounded cursor-pointer"
-              />
-             
-            </div>
+            {selectedSort !== 'activateUnitLevel' && (
+              <>
+                <label className="block font-semibold mb-1 mt-3">
+                  Line Color 
+                </label>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="color"
+                    value={lineColor}
+                    onChange={(e) => handleLineColorChange(e.target.value)}
+                    className="w-16 h-8 p-0 border rounded cursor-pointer"
+                  />
+                </div>
+              </>
+            )}
 
             {/* <label className="block font-semibold mb-1 mt-3">Line Color</label>
             <input
@@ -321,19 +324,23 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
               className="w-16 h-8 p-0 border rounded cursor-pointer"
             /> */}
 
-            <label className="block font-semibold mb-1 mt-3">Line Thickness</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={lineThickness}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setLineThickness(val);
-                updateParent({ lineThickness: val });
-              }}
-              className="w-20 border rounded px-2 py-1"
-            />
+            {selectedSort !== 'activateUnitLevel' && (
+              <>
+                <label className="block font-semibold mb-1 mt-3">Line Thickness</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={lineThickness}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setLineThickness(val);
+                    updateParent({ lineThickness: val });
+                  }}
+                  className="w-20 border rounded px-2 py-1"
+                />
+              </>
+            )}
           </div>
         )}
       </div>

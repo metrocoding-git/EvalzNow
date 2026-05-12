@@ -375,7 +375,7 @@ export default function EntitiesManager() {
           {scoreAdd && (
             <div className="w-1/2 lg:w-9/12 bg-white h-full">
               <div className="h-full flex flex-col w-5/7">
-                <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} unit={unitData} />
+                <CreateInsertScoresForm onClose={() => setScoreAdd(false)} candidateId={selectedEntity?.id} unit={unitData} onUpdate={() => setRefreshTrigger(prev => prev + 1)} />
               </div>
             </div>
           )}
