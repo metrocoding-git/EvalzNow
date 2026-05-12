@@ -176,7 +176,7 @@ const mockPpIds = ["001", "002", "003", "-001", "-002", "-003"];
 
 
 
-export default function CreateInsertScoresForm({ onClose, candidateId, unit }) {
+export default function CreateInsertScoresForm({ onClose, candidateId, unit, onUpdate }) {
 
   const [formData, setFormData] = useState({
     ppId: "",
@@ -343,7 +343,7 @@ const isSubmitDisabled = (() => {
 
 
   const handleSubmit = async () => {
-    if (!formData.assessmentBlockId || !unitId) {
+    if (!formData.assessmentBlockId || !unit?.unitId) {
       setError("Missing unitId or assessmentBlockId.");
       return;
     }
@@ -418,44 +418,33 @@ const isSubmitDisabled = (() => {
           total += mcVal;
           filledCount++;
         }
-  
-        // Custom Criteria
-for (const criteria of customCriteria) {
-  const rawCc =
-    customCriteriaValues[criteria.id];
+      }
 
-  if (rawCc !== "" && rawCc !== undefined) {
-    const ccVal = parseFloat(rawCc);
+      // Custom Criteria - MOVED OUT OF THE MC LOOP
+      for (const criteria of customCriteria) {
+        const rawCc = customCriteriaValues[criteria.id];
 
-    if (isNaN(ccVal)) {
-      toast.error(
-        `Invalid value found in ${criteria.criteria}.`
-      );
-      return;
-    }
+        if (rawCc !== "" && rawCc !== undefined && rawCc !== null) {
+          const ccVal = parseFloat(rawCc);
 
-    if (ccVal < 0) {
-      toast.error(
-        `${criteria.criteria} cannot be negative.`
-      );
-      return;
-    }
+          if (isNaN(ccVal)) {
+            toast.error(`Invalid value found in ${criteria.name}.`);
+            return;
+          }
 
-    if (
-      maxAllowed !== null &&
-      ccVal > maxAllowed
-    ) {
-      toast.error(
-        `${criteria.criteria} exceeds allowed maximum (${maxAllowed}).`
-      );
-      return;
-    }
+          if (ccVal < 0) {
+            toast.error(`${criteria.name} cannot be negative.`);
+            return;
+          }
 
-    total += ccVal;
-    filledCount++;
-  }
-}
-        
+          if (maxAllowed !== null && ccVal > maxAllowed) {
+            toast.error(`${criteria.name} exceeds allowed maximum (${maxAllowed}).`);
+            return;
+          }
+
+          total += ccVal;
+          filledCount++;
+        }
       }
   
       attained = total;
@@ -470,8 +459,8 @@ for (const criteria of customCriteria) {
       // Prepare payload with proper null handling for empty values
       const payload = {
         ...formData,
-        unitId: parseInt(unitId),
-        candidate_id: parseInt(candidateId),
+        unitId: parseInt(unit?.unitId),
+        candidate_id: candidateId, // Keep original ID (might be string)
         durationHrs: formData.durationHrs ? parseFloat(formData.durationHrs) : null,
         customCriteria: customCriteria
         .map((criteria) => {
@@ -505,8 +494,9 @@ for (const criteria of customCriteria) {
   
       await createInsertScore(payload);
       console.log("successfully submitted.", payload);
-      setFormStatus("Insert Score Created");
-     
+      const isDirect = parseInt(formData.ppId) > 0;
+      toast.success(`Score added successfully to the ${isDirect ? 'Direct' : 'Indirect'} tab.`);
+      if (onUpdate) onUpdate();
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
@@ -679,10 +669,10 @@ const handleCustomCriteriaChange = (
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-1 space-y-3  max-w-xl">
+        <div className="grid grid-cols-[200px_1fr] items-center gap-x-2 gap-y-3 max-w-xl">
 
           {/* PP ID */}
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             PP ID Callout:
           </label>
           <select
@@ -703,7 +693,7 @@ const handleCustomCriteriaChange = (
 
           {/* Duration */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Duration (Days):
           </label>
           <input
@@ -721,7 +711,7 @@ const handleCustomCriteriaChange = (
 
           {/* Critical Reference Date */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Critical Ref. Date:
           </label>
           <input
@@ -735,7 +725,7 @@ const handleCustomCriteriaChange = (
 
           {/* Task Declaration */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Task Declaration:
           </label>
           <input
@@ -749,7 +739,7 @@ const handleCustomCriteriaChange = (
 
           {/* Workflow Stage */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Workflow Stage:
           </label>
           <select
@@ -768,7 +758,7 @@ const handleCustomCriteriaChange = (
 
           {/* Assessment Type */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Assessment Type:
           </label>
           <select
@@ -787,7 +777,7 @@ const handleCustomCriteriaChange = (
 
           {/* Schedule Impact */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Schedule Impact:
           </label>
           <select
@@ -806,7 +796,7 @@ const handleCustomCriteriaChange = (
 
           {/* Engage Level */}
 
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Engage Level:
           </label>
           <select
@@ -826,7 +816,7 @@ const handleCustomCriteriaChange = (
 
 
           {/* Competency */}
-          <label className="w-40 pr-2 text-left text-gray-700">
+          <label className="text-left text-gray-700">
             Competency:
           </label>
           <select
@@ -844,23 +834,20 @@ const handleCustomCriteriaChange = (
             ))}
           </select>
 
-          
-          {environment === "Workforce" && (
-            <div className="col-span-2 space-y-4 w-full ">
+                    {environment === "Workforce" && (
+            <div className="col-span-2 grid grid-cols-[200px_1fr] items-center gap-x-2 gap-y-3 w-full">
               {MAIN_CRITERIA.map((criteria, index) => {
                 const fieldKey = `mc${index + 1}`;
 
                 return (
-                  <div key={fieldKey} className="flex items-center gap-2 w-full">
-                    {/* Left side label */}
-                    <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
+                  <React.Fragment key={fieldKey}>
+                    <label className="text-left text-gray-700">
                       {criteria.label} ({criteria.name}):
                     </label>
 
-                    {/* Right side input */}
                     <input
                       step="0.01"
-                       min="0"
+                      min="0"
                       type="number"
                       onBlur={(e) => {
                         const val = e.target.value;
@@ -872,59 +859,59 @@ const handleCustomCriteriaChange = (
                       onChange={(e) => handleChange(fieldKey, e.target.value)}
                       className="flex-1 border px-2 py-1"
                     />
-                  </div>
+                  </React.Fragment>
                 );
               })}
 
-              {customCriteria.length > 0 &&
-                customCriteria.map((criteria) => {
-                  return (
-                    <div
-                      key={criteria.id}
-                      className="flex items-center gap-2 w-full"
-                    >
-                      <label className="whitespace-nowrap w-55 pr-2 text-left text-gray-700">
-                        {criteria.criteria}:
-                      </label>
+              {Array.from({ length: 20 }).map((_, index) => {
+                const criteria = customCriteria[index];
+                return (
+                  <React.Fragment key={index}>
+                    <label className="text-left text-gray-700">
+                      CC{index + 21}:
+                    </label>
 
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={
-                          customCriteriaValues[criteria.id] || ""
-                        }
-                        onChange={(e) =>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      disabled={!criteria}
+                      placeholder={criteria ? "" : "N/A"}
+                      value={
+                        criteria ? (customCriteriaValues[criteria.id] || "") : ""
+                      }
+                      onChange={(e) =>
+                        criteria && handleCustomCriteriaChange(
+                          criteria.id,
+                          e.target.value
+                        )
+                      }
+                      onBlur={(e) => {
+                        const val = e.target.value;
+
+                        if (
+                          criteria &&
+                          val !== "" &&
+                          val !== null
+                        ) {
                           handleCustomCriteriaChange(
                             criteria.id,
-                            e.target.value
-                          )
+                            parseFloat(val).toFixed(2)
+                          );
                         }
-                        onBlur={(e) => {
-                          const val = e.target.value;
-
-                          if (
-                            val !== "" &&
-                            val !== null
-                          ) {
-                            handleCustomCriteriaChange(
-                              criteria.id,
-                              parseFloat(val).toFixed(2)
-                            );
-                          }
-                        }}
-                        className="border px-2 py-1 flex-1"
-                      />
-                    </div>
-                  );
-                })}
+                      }}
+                      className="border px-2 py-1 flex-1"
+                    />
+                  </React.Fragment>
+                );
+              })}
             </div>
           )}
 
 
           {environment === "Classroom" && (
             <>
-              <label className="w-40 pr-2 text-left text-gray-700">
+              <label className="text-left text-gray-700">
                 Attained Score:
               </label>
               <input
@@ -941,7 +928,7 @@ const handleCustomCriteriaChange = (
               />
 
 
-              <label className="w-40 pr-2 text-left text-gray-700">
+              <label className="text-left text-gray-700">
                 Maximum Score:
               </label>
               <input
@@ -970,15 +957,15 @@ const handleCustomCriteriaChange = (
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            disabled={isSubmitDisabled || loading}
+            disabled={loading}
             onClick={handleSubmit}
             className={`px-4 py-1 text-sm transition-colors ${
-              isSubmitDisabled || loading
+              loading
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
-            Close
+            {loading ? "Processing..." : "Close"}
           </button>
         </div>
       </div>

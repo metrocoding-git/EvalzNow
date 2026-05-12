@@ -1089,6 +1089,7 @@ const handleExportGraph = () => {
                         properties={chartProperties}
                         onChange={setChartProperties}
                         selectedChart={selectedChart}
+                        selectedSort={selectedSort}
                       />
                     ) : (
                       <div className="text-sm text-center text-gray-400 py-4 italic">

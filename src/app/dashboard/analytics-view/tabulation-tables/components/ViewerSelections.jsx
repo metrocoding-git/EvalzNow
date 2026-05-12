@@ -721,18 +721,17 @@ console.log("unit type check", tableData);
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
               <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
               
-              <div className="flex-1 mx-1 overflow-x-auto">
-  <div
-    ref={chartContainerRef}
-    className="h-full max-h-[calc(100vh-320px)] overflow-y-auto"
-  >
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-gray-50 sticky top-0 z-10">
+              <div 
+                ref={chartContainerRef}
+                className="flex-1 mx-1 overflow-auto border border-black max-h-[calc(100vh-300px)]"
+              >
+                <table className="w-full text-left text-xs border-collapse table-auto">
+                  <thead className="bg-gray-100 sticky top-0 z-20 shadow-sm">
                     <tr>
                       {visibleHeaders.map((header) => (
                         <th
                           key={header}
-                          className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50"
+                          className="whitespace-nowrap text-center border border-black px-3 py-2 group relative bg-gray-200 text-gray-800 font-bold min-w-[90px]"
                         >
                           {header}
 
@@ -759,7 +758,7 @@ console.log("unit type check", tableData);
                             {visibleHeaders.map((header) => (
                               <td
                                 key={header}
-                                className="border text-center border-black px-2 py-1 whitespace-nowrap"
+                                className="border text-center border-black px-3 py-1.5 whitespace-nowrap text-gray-700"
                               >
                                 {(() => {
                                   const value = row[header];
@@ -808,20 +807,18 @@ console.log("unit type check", tableData);
                         </td>
                       </tr>
                     )}
-                  </tbody>
-
-                  <tfoot className="sticky bottom-0 z-10">
+                    {/* Summary Rows (Average, Std Dev, Std Error) */}
                     {tableData
                       .filter((row) => ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
                       .map((row, rowIndex) => (
                         <tr
                           key={`summary-${rowIndex}`}
-                          className="bg-gray-200 font-semibold cursor-pointer hover:bg-gray-100"
+                          className="bg-gray-100 font-semibold hover:bg-gray-200"
                         >
                           {visibleHeaders.map((header) => (
                             <td
                               key={header}
-                              className="border text-center border-black px-2 py-1 whitespace-nowrap bg-gray-200"
+                              className="border text-center border-black px-3 py-1.5 whitespace-nowrap text-gray-900 font-bold"
                             >
                               {(() => {
                                 const value = row[header];
@@ -858,10 +855,9 @@ console.log("unit type check", tableData);
                           ))}
                         </tr>
                       ))}
-                  </tfoot>
+                  </tbody>
 
                 </table>
-                </div>
               </div>
             </div>
 
