@@ -184,7 +184,7 @@ const MAIN_CRITERIA = [
 ];
 
 
-export default function Editor({ details, performancePoints, onClose, onUpdate, unit }) {
+export default function Editor({ details, performancePoints, onClose, onUpdate, unit, criteriaRefreshTrigger }) {
   const [form, setForm] = useState({});
   // const searchParams = useSearchParams();
   const { setFormStatus } = useFormStatus();
@@ -291,7 +291,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
     };
   
     fetchCriteria();
-  }, [unitId]);
+  }, [unitId, criteriaRefreshTrigger]);
 
   const requiredFields = [
     "ppId",
@@ -437,16 +437,16 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       setFormStatus("Processing...");
   
       const customCriteriaPayload = customCriteria
-  .map((criteria) => {
-    const key = `cc${criteria.criteriaId}`;  // criteriaId from 
-    return {
-      scoringCriteriaId: criteria.id,
-      value: formData[key] !== "" && formData[key] !== undefined
-        ? parseFloat(formData[key])
-        : null,
-    };
-  })
-  .filter(cc => cc.value !== null && !isNaN(cc.value));
+      .map((criteria) => {
+        const key = `cc${criteria.criteriaId}`;  // criteriaId from 
+        return {
+          scoringCriteriaId: criteria.id,
+          value: formData[key] !== "" && formData[key] !== undefined
+            ? parseFloat(formData[key])
+            : null,
+        };
+      })
+      .filter(cc => cc.value !== null && !isNaN(cc.value));
 
       const payload = {
         ...formData,
@@ -833,7 +833,7 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
                       return (
                         <React.Fragment key={fieldKey}>
                           <label className="text-left text-gray-700 whitespace-nowrap pr-2">
-                            CC{criteria.criteriaId} ({criteria.criteria}):
+                            CC{Number(criteria.criteriaId) + 20} ({criteria.criteria}):
                           </label>
                           <input
                             type="number"
@@ -913,7 +913,5 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       </>
     )}
   </div>
-
-
   );
 }
