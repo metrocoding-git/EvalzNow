@@ -44,9 +44,13 @@ export function GrowthProjectionChart({ data, title, lineColor = "#3b82f6", thir
     properties?.projectionLineColor || "#6366f1";
 
   const labelType = properties?.labelType ?? "X Type";
-  const showXLabel = showLabel && labelType === "X Type";
-  const showYLabel = showLabel && labelType === "Y Type";
 
+    // When checkbox ON → show both
+    // When checkbox OFF → hide only selected label type
+    
+  const showXLabel = showLabel || (!showLabel && labelType !== "X Type");
+  const showYLabel = showLabel || (!showLabel && labelType !== "Y Type");
+  
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
