@@ -348,7 +348,7 @@ const isSubmitDisabled = (() => {
       return;
     }
 
-    // ✅ New validation for duration
+    // New validation for duration
     if (parseFloat(formData.durationHrs) === 0) {
       toast.error("Duration cannot be 0. Please enter a valid duration.");
       return;
@@ -420,41 +420,41 @@ const isSubmitDisabled = (() => {
         }
   
         // Custom Criteria
-for (const criteria of customCriteria) {
-  const rawCc =
-    customCriteriaValues[criteria.id];
+      for (const criteria of customCriteria) {
+        const rawCc =
+          customCriteriaValues[criteria.id];
 
-  if (rawCc !== "" && rawCc !== undefined) {
-    const ccVal = parseFloat(rawCc);
+        if (rawCc !== "" && rawCc !== undefined) {
+          const ccVal = parseFloat(rawCc);
 
-    if (isNaN(ccVal)) {
-      toast.error(
-        `Invalid value found in ${criteria.criteria}.`
-      );
-      return;
-    }
+          if (isNaN(ccVal)) {
+            toast.error(
+              `Invalid value found in ${criteria.criteria}.`
+            );
+            return;
+          }
 
-    if (ccVal < 0) {
-      toast.error(
-        `${criteria.criteria} cannot be negative.`
-      );
-      return;
-    }
+          if (ccVal < 0) {
+            toast.error(
+              `${criteria.criteria} cannot be negative.`
+            );
+            return;
+          }
 
-    if (
-      maxAllowed !== null &&
-      ccVal > maxAllowed
-    ) {
-      toast.error(
-        `${criteria.criteria} exceeds allowed maximum (${maxAllowed}).`
-      );
-      return;
-    }
+          if (
+            maxAllowed !== null &&
+            ccVal > maxAllowed
+          ) {
+            toast.error(
+              `${criteria.criteria} exceeds allowed maximum (${maxAllowed}).`
+            );
+            return;
+          }
 
-    total += ccVal;
-    filledCount++;
-  }
-}
+          total += ccVal;
+          filledCount++;
+        }
+      }
         
       }
   
@@ -510,7 +510,13 @@ for (const criteria of customCriteria) {
       onClose(); // Close the form after successful submission
     } catch (err) {
       console.error("Failed to create insert score:", err);
-      toast.error("Failed to save insert score.");
+    
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to save insert score.";
+    
+      toast.error(message);
     } finally {
       setLoading(false);
     }
