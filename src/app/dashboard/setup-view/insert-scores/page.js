@@ -69,7 +69,7 @@ export default function EntitiesManager() {
   const unitQuery = selectedUnitId;
   const [searchTerm, setSearchTerm] = useState("");
   const { activeClientId, setActiveClientId } = useClient();
-
+  const [criteriaRefreshTrigger, setCriteriaRefreshTrigger] = useState(0);
   useEffect(() => {
     const storedId = sessionStorage.getItem("selectedUnitId");
     setSelectedUnitId(storedId);
@@ -361,6 +361,7 @@ export default function EntitiesManager() {
                 performancePoints={activeTab}
                 onClose={() => setScoreAdd(false)}
                 unit={unitData}
+                criteriaRefreshTrigger={criteriaRefreshTrigger}
                 onUpdate={() => {
                   // Trigger refresh when editor updates data
                   setRefreshTrigger(prev => prev + 1); 
@@ -380,7 +381,8 @@ export default function EntitiesManager() {
             </div>
           )}
           {ScoresOpen && !scoreAdd && <CompetencyAccounting selectedRow={selectedRow} candidateId={selectedEntity?.id} setSelectedRow={setSelectedRow} activeTab={activeTab} setActiveTab={setActiveTab} scoreAdd={scoreAdd} setScoreAdd={setScoreAdd}
-          refreshTrigger={refreshTrigger} unit={unitData}
+          refreshTrigger={refreshTrigger} unit={unitData} criteriaRefreshTrigger={criteriaRefreshTrigger}
+          setCriteriaRefreshTrigger={setCriteriaRefreshTrigger}
             />}
         </div>
 

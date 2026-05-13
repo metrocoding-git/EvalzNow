@@ -44,7 +44,9 @@ const MAIN_CRITERIA = [
   "Sick/Injury Avoidance",
 ];
 
-export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId, refreshTrigger, unit }) {
+export default function CompetencyAccounting({ selectedRow, setSelectedRow, activeTab, setActiveTab, scoreAdd, setScoreAdd, candidateId, refreshTrigger, unit, criteriaRefreshTrigger,
+  setCriteriaRefreshTrigger,
+ }) {
 
   const [scores, setScores] = useState([]);
 
@@ -934,14 +936,17 @@ insertScores.forEach((row) => {
                             try {
                               if (value === "" && criteriaItem.id) {
                                 await deleteScoringCriteria(criteriaItem.id);
+                                setCriteriaRefreshTrigger(prev => prev + 1);
                                 const updated = [...customCriteria];
                                 await fetchInsertScores();
                                 updated[index] = { ...updated[index], id: null, criteriaId: null };
                                 setCustomCriteria(updated);
                               } else if (criteriaItem.id && value !== "") {
                                 await updateScoringCriteria(criteriaItem.id, { criteria: value, unitId: criteriaItem.unitId });
+                                setCriteriaRefreshTrigger(prev => prev + 1);
                               } else if (!criteriaItem.id && value !== "") {
                                 const created = await createScoringCriteria({ criteria: value, unitId: criteriaItem.unitId });
+                                setCriteriaRefreshTrigger(prev => prev + 1);
                                 const updated = [...customCriteria];
                                 updated[index] = {
                                   ...updated[index],

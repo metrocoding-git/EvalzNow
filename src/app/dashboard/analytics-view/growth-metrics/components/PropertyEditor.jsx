@@ -24,7 +24,8 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
     symbolAttribute: false,
   });
   const projectionChartIds = ["acl-14", "acl-15", "acl-16"];
-  const [selectedLineType, setSelectedLineType] = useState("positive");
+  const defaultLineType = projectionChartIds.includes(selectedChart?.id) ? "cubicSpline" : "positive";
+  const [selectedLineType, setSelectedLineType] = useState(defaultLineType);
 
   // Controlled states for all inputs, initialized from props or defaults
   const [visibility, setVisibility] = useState(properties.visibility ?? true);
@@ -38,7 +39,13 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
   const [showLabelSuffix, setShowLabelSuffix] = useState(properties.showLabelSuffix ?? false);
   const [labelSuffix, setLabelSuffix] = useState(properties.labelSuffix ?? "Y subcase");
 
-  const [lineStyle, setLineStyle] = useState(properties.lineStyle || "solid");
+  const [lineStyle, setLineStyle] = useState(() => {
+    if (projectionChartIds.includes(selectedChart?.id)) {
+      return properties.projectionLineStyle || "solid";
+    }
+  
+    return properties.lineStyle || "solid";
+  });
   const [lineColor, setLineColor] = useState(properties.lineColor || "#2185d0");
   const [lineThickness, setLineThickness] = useState(properties.lineThickness || 2);
 
@@ -102,6 +109,26 @@ React.useEffect(() => {
     }
   };
 
+  React.useEffect(() => {
+    if (projectionChartIds.includes(selectedChart?.id)) {
+      setSelectedLineType("cubicSpline");
+    } else {
+      setSelectedLineType("positive");
+    }
+  }, [selectedChart]);
+
+  React.useEffect(() => {
+    if (selectedLineType === "linear") {
+      setLineStyle(properties.linearLineStyle || "solid");
+    } 
+    else if (selectedLineType === "cubicSpline") {
+      setLineStyle(properties.projectionLineStyle || "solid");
+    } 
+    else {
+      setLineStyle(properties.lineStyle || "solid");
+    }
+  }, [selectedLineType, properties]);
+  
   // Handle line type selection change
   const handleLineTypeChange = (type) => {
     setSelectedLineType(type);
