@@ -41,29 +41,16 @@ export default function StaffControl() {
   });
 
   const [loggedInUser, setLoggedInUser] = useState(null);
-  // const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
-  // const [dataList, setDataList] = useState([
-  //   { id: "001", firstName: "John", lastName: "Doe" },
-  //   { id: "002", firstName: "Jane", lastName: "Smith" },
-  //   { id: "003", firstName: "Michael", lastName: "Brown" },
-  //   { id: "004", firstName: "Emily", lastName: "Clark" },
-  //   { id: "005", firstName: "David", lastName: "Lee" },
-  //   { id: "006", firstName: "Sarah", lastName: "Wilson" },
-  //   { id: "007", firstName: "Daniel", lastName: "Johnson" },
-  //   { id: "008", firstName: "Laura", lastName: "Martinez" },
-  //   { id: "009", firstName: "Chris", lastName: "Davis" },
-  //   { id: "010", firstName: "Anna", lastName: "White" },
-  // ]);
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const {formStatus, setFormStatus} = useFormStatus();
-  // const activeClientId = sessionStorage.getItem('activeClientId');
-  // const user = localStorage.getItem('user');
   const [user, setUser] = useState(null);
   const controlsRef = useRef(null);
   const [activeClientId, setActiveClientId] = useState(null);
+  // NEW: ref for the staff list container
+  const staffListRef = useRef(null);
 
 
   console.log("active Client Id on staff:", activeClientId);
@@ -234,33 +221,44 @@ export default function StaffControl() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      const isContextMenuClick =
-      contextRef.current && contextRef.current.contains(e.target);
+      const isContextMenuClick = contextRef.current?.contains(e.target);
       const isStaffClick = e.target.closest(".staff-item");
-      const isFormClick = formRef.current && formRef.current.contains(e.target);
-      const isCreateFormClick = createFormRef.current && createFormRef.current.contains(e.target);
-      const isControlClick = controlsRef.current && controlsRef.current.contains(e.target);
+      const isFormClick = formRef.current?.contains(e.target);
+      const isCreateFormClick = createFormRef.current?.contains(e.target);
+      const isControlClick = controlsRef.current?.contains(e.target);
+      // NEW: check if click is inside the staff list panel (but NOT on a staff item)
+      const isStaffListClick = staffListRef.current?.contains(e.target);
 
-      // Only deselect if click is outside staff item, context menu, and form
-      if (!isContextMenuClick && !isStaffClick && !isFormClick && !isControlClick & !isCreateFormClick) {
+      // Always close context menu when clicking outside it
+      if (!isContextMenuClick) {
         setContextMenu({ visible: false, x: 0, y: 0, selectedStaff: null });
+      }
+
+      // Deselect staff when clicking outside the staff list and its controls
+      if (
+        !isContextMenuClick &&
+        !isStaffClick &&
+        !isControlClick
+      ) {
         setSelectedStaff(null);
         setShowEdit(false);
         setFormStatus("Ready...");
       }
     };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-    if (dataList.length > 0) {
+  useEffect(() => {
+    if (dataList.length > 0 && !selectedStaff) {
       setSelectedStaff(dataList[0]);
       setShowEdit(true);
-      setShowAdd(false);
-    } else {
-      setSelectedStaff(null);
-      setShowEdit(false);
     }
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
-  }, [dataList]);
+  }, []);
 
   const handleDelete = async (id) => {
     try {
@@ -274,14 +272,11 @@ export default function StaffControl() {
         setShowEdit(false);
       }
   
-      // console.log("Staff deleted successfully");
     } catch (err) {
       console.error("Failed to delete staff:", err);
       setError("Failed to delete staff. Please try again.");
     }
   };
-  
-  // console.log("staffs: ", dataList);
 
   return (
     <div className="flex w-full h-full overflow-hidden">
@@ -325,8 +320,8 @@ export default function StaffControl() {
                   type="text"
                   className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
                   placeholder="Search"
-                  value={searchTerm}                 // ✅ Controlled input
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
@@ -357,7 +352,8 @@ export default function StaffControl() {
           </div>
 
           {/* List Toggle */}
-          <div className="flex-[1.1] min-h-0 overflow-auto">
+          {/* NEW: staffListRef added here so clicks inside the panel are tracked */}
+          <div className="flex-[1.1] min-h-0 overflow-auto" ref={staffListRef}>
             <div
               className="flex items-center px-4 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors"
               onClick={() => setShowList((prev) => !prev)}
@@ -386,7 +382,6 @@ export default function StaffControl() {
                       setSelectedStaff(item);
                       setShowEdit(true);
                       setShowAdd(false);
-                      // setFormStatus("Editing...");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -400,35 +395,25 @@ export default function StaffControl() {
                       });
                     }}
                   >
-                    <p
-                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                    >
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
                       {item.lastName}
                     </p>
-                    <p
-                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                    >
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
                       {item.firstName}
                     </p>
-                    <p
-                      className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"
-                        }`}
-                    >
+                    <p className={`text-sm font-medium truncate ${isSelected ? "text-black" : "text-gray-800"}`}>
                       {item.staffId}
                     </p>
                   </div>
                 );
               })}
-
-
           </div>
         </div>
 
         {/* Context Menu */}
         {contextMenu.visible && (
           <div
+            ref={contextRef}
             className="absolute bg-gray-200 border border-gray-300 shadow-md z-50 w-56"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
@@ -448,23 +433,21 @@ export default function StaffControl() {
         )}
 
         {/* Staff editor Section */}
-
         <div className="h-1/2 overflow-auto my-0.5" ref={formRef}>
-        <StaffEditor
-          staff={selectedStaff}
-          showForm={showEdit}
-          onClose={() => setShowEdit(false)}
-          onSave={(updatedStaff) => {
-            setDataList((prev) =>
-              prev.map((item) =>
-                item.id === updatedStaff.id ? updatedStaff : item
-              )
-            );
-            setSelectedStaff(updatedStaff);
-            setFormStatus("Staff Updated");
-
-          }}
-        />
+          <StaffEditor
+            staff={selectedStaff}
+            showForm={showEdit}
+            onClose={() => setShowEdit(false)}
+            onSave={(updatedStaff) => {
+              setDataList((prev) =>
+                prev.map((item) =>
+                  item.id === updatedStaff.id ? updatedStaff : item
+                )
+              );
+              setSelectedStaff(updatedStaff);
+              setFormStatus("Staff Updated");
+            }}
+          />
         </div>
       </div>
 
