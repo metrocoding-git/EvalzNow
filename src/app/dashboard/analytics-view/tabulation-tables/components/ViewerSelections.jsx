@@ -725,12 +725,12 @@ console.log("unit type check", tableData);
                 <div ref={chartContainerRef}
                   className="h-full max-h-[calc(100vh-320px)] overflow-y-auto" >
                 <table className="w-full text-left text-xs border-separate border-spacing-0">
-                  <thead className="bg-gray-50 sticky top-0 z-10 border-b border-black">
+                  <thead className="bg-gray-200 sticky top-0 z-10 border-b border-black">
                     <tr>
                       {visibleHeaders.map((header) => (
                         <th
                           key={header}
-                          className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50"
+                          className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-200"
                           style={{ borderColor: "black" }}
                         >
                           {header}
