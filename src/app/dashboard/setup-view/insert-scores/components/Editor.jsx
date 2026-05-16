@@ -470,6 +470,43 @@ export default function Editor({ details, performancePoints, onClose, onUpdate, 
       let attained = null;
       let maxScoreCalculated = null;
 
+      // =========================
+      // CLASSROOM VALIDATIONS
+      // =========================
+      if (environment === "Classroom") {
+        attained = parseFloat(formData.attainedScore || 0);
+        const max = parseFloat(formData.maxScore || 0);
+
+        // Max score cannot be 0
+        if (max === 0) {
+          toast.error("Maximum score must be greater than 0.");
+          return;
+        }
+
+        // Negative validations
+        if (attained < 0) {
+          toast.error("Attained score cannot be a negative value.");
+          return;
+        }
+
+        if (max < 0) {
+          toast.error("Maximum score cannot be a negative value.");
+          return;
+        }
+
+        // Attained score cannot exceed max score
+        if (attained > max) {
+          toast.error(
+            "Attained score cannot be greater than the maximum score."
+          );
+          return;
+        }
+
+        // Optional: assign validated values
+        payload.attainedScore = attained;
+        payload.maxScore = max;
+      }
+      
       if (environment === "Workforce") {
         let maxAllowed = null;
         if (scoringSystem === "3-Point") maxAllowed = 3;
