@@ -972,7 +972,7 @@ insertScores.forEach((row) => {
         </div>
       )}
 
-      <div className={` ${environment === 'Classroom' ? 'h-full' : 'h-[65%]'} border border-gray-300 flex flex-col m-1`}>
+<div className={`${environment === 'Classroom' ? 'h-full overflow-hidden' : 'h-[65%]'} border border-gray-300 flex flex-col m-1`}>
         <div className="flex flex-col flex-1 p-1 overflow-hidden">
           {/* Tab Buttons */}
           <div className="flex flex-col">
@@ -1068,7 +1068,7 @@ insertScores.forEach((row) => {
             </div>
           </div>
 
-          <div className="flex-1 p-2  overflow-auto h-full">
+          <div className="flex-1 p-2  overflow-auto ">
             <div className="min-w-full overflow-auto h-full">
               <table className="w-full text-left text-xs mb-7"> 
                 <thead className="bg-gray-100">
