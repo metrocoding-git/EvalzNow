@@ -373,6 +373,23 @@ const isSubmitDisabled = (() => {
       attained = parseFloat(formData.attainedScore || 0);
       const max = parseFloat(formData.maxScore || 0);
   
+      // Max score cannot be 0
+      if (max === 0) {
+        toast.error("Maximum score must be greater than 0.");
+        return;
+      }
+
+      // Negative validations
+      if (attained < 0) {
+        toast.error("Attained score cannot be a negative value.");
+        return;
+      }
+
+      if (max < 0) {
+        toast.error("Maximum score cannot be a negative value.");
+        return;
+      }
+
       if (attained > max) {
         toast.error("Attained score cannot be greater than maximum score.");
         return; // stop submission
