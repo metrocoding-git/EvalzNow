@@ -733,7 +733,7 @@ const getStableColor = (key) => {
                     onResetFilters();
                   }
                 }}
-                title="Reset"
+                title="Reset Filter"
                 className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
