@@ -182,7 +182,7 @@ export default function CurveEditor({activeAdjustPropertieTab, setActiveAdjustPr
                     <button onClick={handlePlusClick} title="Add Neuro Object" className="text-red-600 hover:text-red-800 cursor-pointer">
                       <Plus className="w-4 h-4 hover:text-blue-600" />
                     </button>
-                    <button onClick={() => setScoreAdd(true)} title="Create Material" className="text-blue-600 hover:text-blue-800 cursor-pointer">
+                    <button onClick={() => setScoreAdd(true)} title="Reset Filter" className="text-blue-600 hover:text-blue-800 cursor-pointer">
                       <RefreshCw className="w-4 h-4 hover:text-green-600" />
                     </button>
                     <button onClick={handleDeleteCurve} title="Delete Curve" className="text-red-600 hover:text-red-800 cursor-pointer">

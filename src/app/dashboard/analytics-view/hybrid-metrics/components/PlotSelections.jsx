@@ -2309,7 +2309,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowCreateMaterial(true)} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+              <button onClick={() => setShowCreateMaterial(true)} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
                   if (typeof onResetFilters === "function") {
                     onResetFilters(); // reset filters in parent

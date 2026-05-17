@@ -929,7 +929,7 @@ const handleExportGraph = () => {
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => {}} title="Create Material" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+              <button onClick={() => {}} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" 
                   onClick={() => {
                     if (typeof onResetFilters === "function") {
