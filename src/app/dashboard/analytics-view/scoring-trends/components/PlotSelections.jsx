@@ -946,7 +946,9 @@ const getStableColor = (key) => {
                                   <th className="border px-2 py-1 text-center">Row Counter</th>
                                   <th className="border px-2 py-1 text-center">PP ID</th>
                                   <th className="border px-2 py-1 text-center">
-                                    {selectedChart?.key?.toUpperCase()}
+                                  {selectedChart?.key?.startsWith("cc")
+    ? `CC${Number(selectedChart.key.replace("cc", "")) + 20}`
+    : selectedChart?.key?.toUpperCase()}
                                   </th>
                                 </tr>
                               </thead>
