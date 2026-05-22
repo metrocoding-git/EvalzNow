@@ -13,7 +13,7 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, deleteAssessmentChain, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
@@ -608,6 +608,37 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     insertScores: insertScoreMap[row.ppId] || []
   }));
 
+  const renderPieLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    percentage,
+    name,
+  }) => {
+    const RADIAN = Math.PI / 180;
+  
+    // push labels further outside
+    const radius = outerRadius + 28;
+  
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#111"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={600}
+      >
+        {`${name}: ${(percentage).toFixed(3)}`}
+      </text>
+    );
+  };
+
   const sortedFinalTableData = [...finalMergedTableData].sort((a, b) => {
     const aNeg = a.ppId < 0;
     const bNeg = b.ppId < 0;
@@ -1109,7 +1140,30 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
   }
 };
 
-  
+const handleDeleteChain = async (chainId) => {
+  try {
+    setLoading(true);
+
+    await deleteAssessmentChain(chainId);
+
+    // remove from UI immediately (optimistic update)
+    setChainData((prev) =>
+      prev.filter((c) => c.chainId !== chainId)
+    );
+
+    // if deleted active chain, reset selection
+    if (activeChainId === chainId) {
+      setActiveChainId(null);
+    }
+
+  } catch (err) {
+    console.error("Failed to delete chain:", err);
+    alert("Failed to delete assessment chain");
+  } finally {
+    setLoading(false);
+  }
+};
+
   const getTableConfig = () => {
   if (!selectedChart) return null;
 
@@ -1578,10 +1632,21 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
               >
       
                 {/* 🔹 Chain Header */}
-                <div className="bg-gray-100 border-b border-gray-300 px-4 py-2">
+                <div className=" flex justify-between items-center bg-gray-100 border-b border-gray-300 px-4 py-2">
                   <div className="font-semibold text-gray-800">
                     Assessment Chain {chainIndex + 1}
                   </div>
+
+                  <button
+                    className="p-1.5 text-gray-800  bg-gray-200 hover:bg-gray-300 hover:text-gray-900 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevents selecting the chain
+                      handleDeleteChain(chain.chainId);
+                    }}
+                  
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                   {/* <div className="text-xs text-gray-600">
                     Unit ID: {chain.unitId} &nbsp;|&nbsp; Candidate ID: {chain.candidateId}
                   </div> */}
@@ -1990,11 +2055,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 cx="50%"
                 cy="50%"
                 outerRadius="75%"
-                label={({ name, value, percentage }) => {
-                  const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} `;
-                }}
+                label={renderPieLabel}
                 labelLine={true}
+                isAnimationActive={false}
               >
                 {attendanceDataWithPercentage.map((entry, index) => (
                   <Cell 
@@ -2049,11 +2112,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 cx="50%"
                 cy="50%"
                 outerRadius="75%"
-                label={({ name, value, percentage }) => {
-                  const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay}`;
-                }}
+                label={renderPieLabel}
                 labelLine={true}
+                isAnimationActive={false}
               >
                 {engageDataWithPercentage.map((entry, index) => (
                   <Cell 
@@ -2106,11 +2167,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 cx="50%"
                 cy="50%"
                 outerRadius="70%"
-                label={({ name, value, percentage }) => {
-                  const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} `;
-                }}
+                label={renderPieLabel}
                 labelLine={true}
+                isAnimationActive={false}
               >
                 {unitOutcomeDataWithPercentage.map((entry, index) => (
                   <Cell 
@@ -2163,11 +2222,9 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
                 cx="50%"
                 cy="50%"
                 outerRadius="70%"
-                label={({ name, value, percentage }) => {
-                  const percentDisplay = (percentage).toFixed(3);
-                  return `${name}: ${percentDisplay} `;
-                }}
+                label={renderPieLabel}
                 labelLine={true}
+                isAnimationActive={false}
               >
                 {needAssessmentDataWithPercentage.map((entry, index) => (
                   <Cell 
@@ -2313,24 +2370,21 @@ const handleBenchmarkSelectionUnitLevel = async (selectedBenchmarkIds) => {
       const rect = container.getBoundingClientRect();
   
       // Wait a bit to ensure charts fully render
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
   
       const canvas = await html2canvas(container, {
-        scale: 2,
-        width: rect.width,
-        height: rect.height,
-        windowWidth: document.documentElement.clientWidth,
-        windowHeight: document.documentElement.clientHeight,
+        scale: 3,
         useCORS: true,
         backgroundColor: "#ffffff",
-        scrollX: -window.scrollX,
-        scrollY: -window.scrollY,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
       });
   
       canvas.toBlob((blob) => {
         saveAs(
           blob,
-          `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, "_")}-${Date.now()}.jpg`
+          `Plot Extraction.jpg`
         );
       }, "image/jpeg", 0.95);
   

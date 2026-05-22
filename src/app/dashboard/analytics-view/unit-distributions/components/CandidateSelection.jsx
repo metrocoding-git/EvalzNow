@@ -144,7 +144,19 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
 
 
   const selectedCount = rows.filter(row => row.isSelected).length;
-  const isSubmitEnabled = selectedCount >= 3;
+  const selectedRows = rows.filter(row => row.isSelected);
+
+  const isSubmitEnabled =
+    selectedRows.length >= 3 &&
+    selectedRows.every(row => {
+      if (row.value === "Available + PP ID Listings") {
+        return row.ppListings && row.ppListings !== "";
+      }
+      if (row.value === "Candidate Average") {
+        return true;
+      }
+      return false; // Omit or invalid state
+  });
 
   return (
     <div className="fixed inset-0 bg-black/0 backdrop-blur-xs flex justify-center items-center z-50 border shadow-2xl border-gray-200">
@@ -186,7 +198,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
                     >
                       <option value="Omit">Omit Candidate</option>
                       <option value="Candidate Average">Candidate Average</option>
-                      <option value="Available + PP ID Listings">Available by PP ID</option>
+                      <option value="Available + PP ID Listings">Available PP ID</option>
                     </select>
                   </td>
                   <td className="px-2 py-1 border text-center">
@@ -196,7 +208,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
                         value={row.ppListings}
                         onChange={(e) => handlePPChange(row.id, e.target.value)}
                       >
-                        <option value="">Select PP ID</option>
+                        <option value="" disabled>Select PP ID</option>
 
                         {row.availablePP.length > 0 ? (
                           row.availablePP.map((pp) => (

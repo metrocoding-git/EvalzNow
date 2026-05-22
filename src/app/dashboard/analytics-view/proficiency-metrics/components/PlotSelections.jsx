@@ -729,7 +729,7 @@ const exportAsJPG = async () => {
     });
 
     canvas.toBlob((blob) => {
-      saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+      saveAs(blob, `Plot Extraction.jpg`);
     }, 'image/jpeg', 0.95);
 
     // Restore original styles
@@ -1408,7 +1408,8 @@ const exportAsPDF = async () => {
                   
                     
                     return (
-                      <div className="flex flex-col h-full p-4 bg-white overflow-hidden">
+                      <div ref={chartContainerRef}
+                      className="flex flex-col h-full p-4 bg-white overflow-hidden">
                         <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>

@@ -128,6 +128,16 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const deleteAssessmentChain = async (id) => {
+    try {
+      const response = await api.delete(`${API_ROUTES.AUXILIARY}/chain/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching chain data:", error);
+      throw error;
+    }
+  };
+
   export const getLeaderMarks = async (unitId) => {
     try {
       const response = await api.get(`${API_ROUTES.AUXILIARY}/leader/${unitId}`);
