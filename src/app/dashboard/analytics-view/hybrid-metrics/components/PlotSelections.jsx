@@ -200,7 +200,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       id: "1"
     },
     {
-      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
       icon: "🔵",
       type: "scatter-2d",
       id: "2"
@@ -209,7 +209,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     ...(unitType === "Third Parameter"
       ? [
           {
-            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
             icon: "🔵",
             type: "scatter-2d",
             id: "3"
@@ -221,7 +221,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             id: "4"
           },
           {
-            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
             icon: "🔵",
             type: "scatter-3d",
             id: "5"
@@ -239,7 +239,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       id: "1"
     },
     {
-      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+      name: "Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
       icon: "🔵",
       type: "scatter-2d",
       id: "2"
@@ -248,7 +248,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     ...(unitType === "Third Parameter"
       ? [
           {
-            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) 2-D Cross Plot",
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
             icon: "🔵",
             type: "scatter-2d",
             id: "3"
@@ -260,7 +260,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             id: "4"
           },
           {
-            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) 3-D Cross Plot",
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
             icon: "🔵",
             type: "scatter-3d",
             id: "5"
@@ -2098,7 +2098,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           
           // Save the composite image
           compositeCanvas.toBlob((blob) => {
-            saveAs(blob, `Analytical-Chart.jpg`);
+            saveAs(blob, `Plot Extraction.jpg`);
           }, 'image/jpeg', 0.95);
           
         } else {
@@ -2138,7 +2138,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           container.style.height = originalHeight;
           
           canvas.toBlob((blob) => {
-            saveAs(blob, `Analytical-Chart.jpg`);
+            saveAs(blob, `Plot Extraction.jpg`);
           }, 'image/jpeg', 0.95);
         }
         return;
@@ -2197,7 +2197,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       });
   
       canvas.toBlob((blob) => {
-        saveAs(blob, `Analytical-Chart.jpg`);
+        saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
   
     } catch (error) {

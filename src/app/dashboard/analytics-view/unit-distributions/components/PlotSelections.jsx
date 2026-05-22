@@ -1449,7 +1449,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       canvas.toBlob((blob) => {
         saveAs(
           blob,
-          `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, "_")}-${Date.now()}.jpg`
+          `Plot Extraction.jpg`
         );
       }, "image/jpeg", 0.95);
   
@@ -1501,7 +1501,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-blue-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={handlePlusClick} title="Add Distribution Object"  className='text-blue-600 hover:text-red-800 cursor-pointer'>
                     <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
               <button

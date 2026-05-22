@@ -875,7 +875,7 @@ const handleExportGraph = () => {
       });
   
       canvas.toBlob((blob) => {
-        saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
+        saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
   
     } catch (error) {
@@ -1510,7 +1510,7 @@ const handleExportGraph = () => {
                     ];
                     // const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
                     return (
-                      <div className="flex flex-col h-full p-2 bg-white overflow-hidden">
+                      <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white overflow-hidden">
                         <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
