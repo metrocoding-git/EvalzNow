@@ -55,7 +55,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   ]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
-
+  const exportMenuRef = useRef(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [candidatePpList, setCandidatePpList] = useState([]);
   const [candidateRows, setCandidateRows] = useState([]);
@@ -187,6 +187,23 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(event.target)
+      ) {
+        setShowExportMenu(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     if (!unitId) return;
 
@@ -1515,7 +1532,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   className="w-4 h-4 hover:text-blue-800"
                 />
               </button>
-              <div className="relative">
+              <div className="relative" ref={exportMenuRef}>
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"

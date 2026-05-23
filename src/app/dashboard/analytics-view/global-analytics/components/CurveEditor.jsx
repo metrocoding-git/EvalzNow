@@ -1,9 +1,11 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, Search, X } from 'lucide-react';
+import { Plus, Trash2, Copy, Search, X, FolderOutput } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 import { getAllGLobalAnalyticsData, getICValue, getProductivityValue, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
+import html2canvas from 'html2canvas-pro';
+import { saveAs } from 'file-saver';
 
 const assignedWeights = [
   0.500, 1.000, 0.250, 0.250,
@@ -78,6 +80,11 @@ export default function CurveEditor() {
   const [icDistributionData, setIcDistributionData] = useState(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [ProductivityData, setProductivityData] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const chartContainerRef = useRef(null);
+  const exportMenuRef = useRef(null);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -160,6 +167,23 @@ export default function CurveEditor() {
     total ? Number((value / total).toFixed(4)) : null;
   
   
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(event.target)
+      ) {
+        setShowExportMenu(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedClientId = sessionStorage.getItem("activeClientId");
@@ -334,6 +358,34 @@ export default function CurveEditor() {
     ];
   };
   
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) return;
+  
+    try {
+      setIsExporting(true);
+  
+      // wait for re-render with labels
+      await new Promise(r => setTimeout(r, 300));
+  
+      const canvas = await html2canvas(chartContainerRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+      });
+  
+      canvas.toBlob((blob) => {
+        saveAs(blob, `Plot Extraction.jpg`);
+      }, "image/jpeg", 0.95);
+  
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const buildPieData = () => {
     if (!selectedChart || !globalAnalytics || !thresholdAnalytics) return [];
   
@@ -885,8 +937,8 @@ export default function CurveEditor() {
               <tr>
                 <th className="border border-gray-300 px-2 py-1 text-center">Metric Descriptions</th>
                 <th className="border border-gray-300 px-2 py-1 text-center">Metric Values</th>
-                <th className="border border-gray-300 px-2 py-1 text-center">Assigned Weights</th>
-                <th className="border border-gray-300 px-2 py-1 text-center">Metric Weights</th>
+                {/* <th className="border border-gray-300 px-2 py-1 text-center">Assigned Weights</th>
+                <th className="border border-gray-300 px-2 py-1 text-center">Metric Weights</th> */}
               </tr>
             </thead>
             <tbody>
@@ -901,13 +953,13 @@ export default function CurveEditor() {
                   </td>
 
                   {/*  3rd Column: Assigned Weights */}
-                  <td className="border border-gray-300 px-2 py-1 text-center font-medium">
+                  {/* <td className="border border-gray-300 px-2 py-1 text-center font-medium">
                     {row.assignedWeight.toFixed(3)}
                   </td>
 
                   <td className="border border-gray-300 px-2 py-1 text-center">
                     {row.metricWeight}
-                  </td>
+                  </td> */}
                 </tr>
               ))}
 
@@ -918,12 +970,12 @@ export default function CurveEditor() {
                 <td className="border border-gray-300 px-2 py-1 text-center">
                  {indexRating}
                 </td> 
-                <td className="border border-gray-300 px-2 py-1 text-center">
+                {/* <td className="border border-gray-300 px-2 py-1 text-center">
                  {totalAssignedWeight?.toFixed(3)}
                 </td>
                 <td className="border border-gray-300 px-2 py-1 text-center">
                   {totalMetricWeight?.toFixed?.(3)}
-                </td> 
+                </td>  */}
              </tr>
 
              <tr className="hover:bg-gray-50">
@@ -965,11 +1017,12 @@ export default function CurveEditor() {
             cy="50%"
             outerRadius="80%"
             
-            label={({ name, value }) =>
-              shouldFormatTwoDecimals(selectedChart.id)
-                ? `${Number(value).toFixed(3)}`
+            label={({ name, value, percent }) =>
+              isExporting
+                ? `${name}: ${(value * 100).toFixed(1)}%`
                 : `${Number(value).toFixed(3)}`
             }
+            labelLine={true}
           >
             {pieData.map((_, index) => (
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -1004,7 +1057,29 @@ export default function CurveEditor() {
         <div className='w-6/12 lg:w-5/12 flex flex-col border-2 h-full border-gray-200  p-1'>
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
+            <div className="relative" ref={exportMenuRef}>
+              <button
+                onClick={() => setShowExportMenu((prev) => !prev)}
+                title="Export Graph"
+                className="text-blue-600 hover:text-red-800 cursor-pointer pt-2"
+              >
+                <FolderOutput className="w-4 h-4 hover:text-blue-600" />
+              </button>
 
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
+                  <button
+                    onClick={() => {
+                      exportAsJPG();
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                  >
+                    Export as JPG
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
@@ -1042,7 +1117,7 @@ export default function CurveEditor() {
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
-          <div className="m-5 flex flex-col h-full">
+          <div  ref={chartContainerRef} className="m-5 flex flex-col h-full">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
             <div className="flex-1 flex overflow-auto p-2">
               {renderChartContent()}

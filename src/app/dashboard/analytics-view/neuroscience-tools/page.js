@@ -303,6 +303,7 @@ export default function NeuroscienceTools() {
                         onClose={() => setShowEdit(false)} unitId={unitData?.id} candidateId={activeCandidateId}
                         client={true} refreshSignal={neuroRefreshSignal}
                         showForm={showEdit}
+                        onNeuroUpdated={triggerNeuroRefresh}
                       />
                     </div>
                   </div>
@@ -314,7 +315,7 @@ export default function NeuroscienceTools() {
                 {/* {ScoresOpen && <CurveEditor />} */}
 
                 <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
-                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} onNeuroRefresh={triggerNeuroRefresh} />
+                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} neuroRefreshSignal={neuroRefreshSignal} />
 
 
               </div>

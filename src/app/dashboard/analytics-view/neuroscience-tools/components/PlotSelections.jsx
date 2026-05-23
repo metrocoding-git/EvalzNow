@@ -58,12 +58,15 @@ function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
 
 
 
-export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters, onNeuroRefresh }) {
+export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters, neuroRefreshSignal }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
   const [showLobeImage, setShowLobeImage] = useState(false);
-
+  const tableRef = useRef(null);
+  const bottomScrollRef = useRef(null);
+  const tableRefLoads = useRef(null);
+  const bottomScrollRefLoads = useRef(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [indicatorsData, setIndicatorsData] = useState([]);
   const floatChartData = [
@@ -77,17 +80,48 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const chartContainerRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const refetchNeuroData = () => {
-    setRefreshKey(prev => prev + 1);
+  // const refetchNeuroData = () => {
+  //   setRefreshKey(prev => prev + 1);
+  // };
+  
+  // useEffect(() => {
+  //   if (onNeuroRefresh) {
+  //     onNeuroRefresh();
+  //   }
+  // }, [refreshKey]);
+
+  const formatValue = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num.toFixed(3) : "0.000";
+  };
+
+  const syncScroll = (source) => {
+    if (!tableRef.current || !bottomScrollRef.current) return;
+  
+    const table = tableRef.current;
+    const bottom = bottomScrollRef.current;
+  
+    if (source === "table") {
+      bottom.scrollLeft = table.scrollLeft;
+    } else {
+      table.scrollLeft = bottom.scrollLeft;
+    }
   };
   
-  useEffect(() => {
-    if (onNeuroRefresh) {
-      onNeuroRefresh();
-    }
-  }, [refreshKey]);
 
+  const syncScrollLoads = (source) => {
+    if (!tableRefLoads.current || !bottomScrollRefLoads.current) return;
   
+    const table = tableRefLoads.current;
+    const bottom = bottomScrollRefLoads.current;
+  
+    if (source === "table") {
+      bottom.scrollLeft = table.scrollLeft;
+    } else {
+      table.scrollLeft = bottom.scrollLeft;
+    }
+  };
+
   const [showExportMenu, setShowExportMenu] = useState(false);
   const neuroToolsTable = [
     { index: 1, ppId: 1, value: 'Yes' },
@@ -388,7 +422,7 @@ const lobeData = [
     };
   
     fetchData();
-  }, [unitId, candidateId, refreshKey, filters, onResetFilters]);
+  }, [unitId, candidateId, refreshKey, filters, neuroRefreshSignal]);
 
   
   useEffect(() => {
@@ -1000,78 +1034,123 @@ const handleExportGraph = () => {
                 )}
 
                 {activeAdjustPropertieTab === 'Indicators' && (
+                  <div className="flex flex-col h-full min-h-0">
 
-                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto pb-5">
-                    <table className="table-auto w-full text-xs border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Frontal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Occipital Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Parietal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Frontal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Occipital Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Parietal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">RMS - Temporal Lobe (R)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {indicatorsData.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS1).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS2).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS3).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS4).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS5).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS6).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS7).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.RMS8).toFixed(3)}</td>
+                    {/* TABLE (vertical scroll only) */}
+                    <div
+                      ref={tableRef}
+                      onScroll={() => syncScroll("table")}
+                      className="flex-1 min-h-0 overflow-auto"
+                    >
+                      <table className="table-auto min-w-max text-xs border border-gray-300">
+                        <thead className="bg-gray-100 sticky top-0 z-10">
+                          <tr>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">PP ID Callout</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">Target</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Frontal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Occipital Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Parietal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Temporal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Frontal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Occipital Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Parietal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border px-2 py-1">RMS - Temporal Lobe (R)</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+
+                        <tbody>
+                          {indicatorsData.map((row, idx) => (
+                            <tr key={idx}>
+                              <td className="text-center border px-2 py-1">{row.ppId}</td>
+                              <td className="text-center border px-2 py-1">{row.target}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS1)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS2)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS3)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS4)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS5)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS6)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS7)}</td>
+                              <td className="text-center border px-2 py-1">{formatValue(row.RMS8)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* FIXED BOTTOM SCROLLBAR (always visible) */}
+                    <div className="sticky bottom-0 z-20 bg-white border-t overflow-x-auto overflow-y-hidden">
+                      <div
+                        ref={bottomScrollRef}
+                        onScroll={() => syncScroll("bottom")}
+                        className="min-w-max"
+                    >
+                        {/* fake width sync */}
+                        <div className="h-3 min-w-full" />
+                      </div>
+                    </div>
+
                   </div>
                 )}
 
 
                 {activeAdjustPropertieTab === 'Loads' && (
-                  <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
-                    <table className="table-auto w-full text-xs border border-gray-300">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (L)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (R)</th>
-                          <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (R)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {indicatorsWithLoads.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50">
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.ppId}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{row.target}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive1).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive2).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive3).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive4).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive5).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive6).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive7).toFixed(3)}</td>
-                            <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">{Number(row.Cognitive8).toFixed(3)}</td>
+                  <div className="flex flex-col h-full min-h-0">
+
+                    {/* TABLE AREA */}
+                    <div
+                      ref={tableRefLoads}
+                      onScroll={() => syncScrollLoads("table")}
+                      className="flex-1 min-h-0 overflow-auto"
+                    >
+                      <table className="table-auto min-w-max text-xs border border-gray-300">
+
+                        <thead className="bg-gray-100 sticky top-0 z-10">
+                          <tr>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (R)</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+
+                        <tbody>
+                          {indicatorsWithLoads.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-blue-50">
+                              <td className="text-center border px-2 py-1">{row.ppId}</td>
+                              <td className="text-center border px-2 py-1">{row.target}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive1).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive2).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive3).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive4).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive5).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive6).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive7).toFixed(3)}</td>
+                              <td className="text-center border px-2 py-1">{Number(row.Cognitive8).toFixed(3)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* FIXED BOTTOM HORIZONTAL SCROLLBAR */}
+                    <div className="sticky bottom-0 z-20 bg-white border-t overflow-x-auto overflow-y-hidden">
+                    <div
+                      ref={bottomScrollRefLoads}
+                      onScroll={() => syncScrollLoads("bottom")}
+                      className="min-w-max"
+                    >
+                      {/* fake width sync */}
+                      <div className="h-3 min-w-full" />
+
+                      </div>
+                    </div>
+
                   </div>
                 )}
               </div>
