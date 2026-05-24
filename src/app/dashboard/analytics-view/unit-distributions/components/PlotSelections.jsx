@@ -55,7 +55,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   ]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
-
+  const exportMenuRef = useRef(null);
   const [ScoreAdd, setScoreAdd] = useState(false);
   const [candidatePpList, setCandidatePpList] = useState([]);
   const [candidateRows, setCandidateRows] = useState([]);
@@ -188,6 +188,23 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
  
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(event.target)
+      ) {
+        setShowExportMenu(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!unitId) return;
 
     const fetchUnitData = async () => {
@@ -314,6 +331,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+          console.log("exponential data: ", data);
           onWeibullSelect(false);
 
           console.log("exponential data: ", getExponentialDistributionData({
@@ -354,6 +372,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+          console.log("beta dis: ", data);
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "uniform") {
@@ -481,6 +500,27 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         value: num(row.y),
       })) || [];
   
+    const getPatternCounts = () => {
+      if (
+        !tableData?.patterns ||
+        !selectedChart ||
+        !["beta", "uniform"].includes(selectedChart.distribution)
+      ) {
+        return null;
+      }
+    
+      const patternKey = selectedChart.key; // STAP or STAG
+      const patterns = tableData.patterns?.[patternKey] || [];
+    
+      const stableCount = patterns.filter((p) => p === "S").length;
+      const unstableCount = patterns.filter((p) => p === "U").length;
+    
+      return {
+        stableCount,
+        unstableCount,
+        total: patterns.length,
+      };
+    };
 
   // Map chartProperties into Recharts-friendly props
   const getLineStyle = () => {
@@ -512,7 +552,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   
     if (!unitData) return null;
   
-    // 🔥 unitData is already the unit object
+    // unitData is already the unit object
     if (selectedChart.key === "XEP") {
       return Number(unitData.XEP);
     }
@@ -1297,6 +1337,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     if (selectedChart.distribution === "chi-square") {
       return "Chi-Square Value";
     }
+    if (selectedChart.distribution === "exponential") {
+      return "Time (Days)";
+    }
     return "Z-Score";
   };
 
@@ -1449,7 +1492,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
       canvas.toBlob((blob) => {
         saveAs(
           blob,
-          `chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, "_")}-${Date.now()}.jpg`
+          `Plot Extraction.jpg`
         );
       }, "image/jpeg", 0.95);
   
@@ -1501,7 +1544,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
           <div className="flex items-center justify-between mb-3 px-1 mx-1 mt-1 text-gray-700 ">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={handlePlusClick} title="Add Neuro Object"  className='text-blue-600 hover:text-red-800 cursor-pointer'>
+              <button onClick={handlePlusClick} title="Add Distribution Object"  className='text-blue-600 hover:text-red-800 cursor-pointer'>
                     <Plus className="w-4 h-4 hover:text-blue-600" />
                 </button>
               <button
@@ -1515,7 +1558,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   className="w-4 h-4 hover:text-blue-800"
                 />
               </button>
-              <div className="relative">
+              <div className="relative" ref={exportMenuRef}>
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   title="Export Graph"
@@ -1708,9 +1751,31 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
         <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 border-gray-200 ml-1 h-full" style={{ backgroundColor: chartProperties.shadeArea }} >
           <div ref={chartInnerRef} className="h-full flex flex-col m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart.icon} {selectedChart.name}
-            </h2>
+            <div className="flex items-center justify-between mb-4 w-full">
+  
+              {/* Left spacer to keep title centered */}
+              <div className="w-[120px]" />
+
+              {/* Center Title */}
+              <h2 className="text-lg text-center font-semibold text-gray-700 flex-1">
+                {selectedChart.icon} {selectedChart.name}
+              </h2>
+
+              {/* Right Side Counts */}
+              <div className="w-[50px] flex justify-end gap-2">
+                {getPatternCounts() && (
+                  <div className="">
+                    <div className="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                      UNSTABLE: {getPatternCounts().unstableCount}
+                    </div>
+
+                    <div className="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                      STABLE: {getPatternCounts().stableCount}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="flex-1 flex items-center justify-center min-h-0 relative">
               {loading && (

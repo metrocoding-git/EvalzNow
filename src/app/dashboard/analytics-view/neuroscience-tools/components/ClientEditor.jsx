@@ -139,7 +139,7 @@ const rows = [
   { lobe: "Temporal Lobe - Right", func: "Functional Capacity - Temporal Lobe (R)", value: "Yes" },
 ];
 
-export default function ClientEditor({ client, onClose, unitId, candidateId, refreshSignal, }) {
+export default function ClientEditor({ client, onClose, unitId, candidateId, refreshSignal, onNeuroUpdated,}) {
   const [ppId, setPpId] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -221,6 +221,10 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
       );
       
       alert("Saved successfully!");
+
+      if (onNeuroUpdated) {
+        onNeuroUpdated();
+      }
     } catch (error) {
       console.error("Error saving:", error);
       alert("Failed to save. Please try again.");
@@ -429,7 +433,7 @@ export default function ClientEditor({ client, onClose, unitId, candidateId, ref
             onClick={handleSave} disabled={saving}
             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm transition-colors"
           >
-            Close
+            Edit
           </button>
         </div>
       </div>
