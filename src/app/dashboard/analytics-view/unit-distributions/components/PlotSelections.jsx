@@ -331,6 +331,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+          console.log("exponential data: ", data);
           onWeibullSelect(false);
 
           console.log("exponential data: ", getExponentialDistributionData({
@@ -371,6 +372,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
             candidatePpList,
             key: selectedChart.key
           });
+          console.log("beta dis: ", data);
           onWeibullSelect(false);
 
         } else if (selectedChart.distribution === "uniform") {
@@ -498,6 +500,27 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
         value: num(row.y),
       })) || [];
   
+    const getPatternCounts = () => {
+      if (
+        !tableData?.patterns ||
+        !selectedChart ||
+        !["beta", "uniform"].includes(selectedChart.distribution)
+      ) {
+        return null;
+      }
+    
+      const patternKey = selectedChart.key; // STAP or STAG
+      const patterns = tableData.patterns?.[patternKey] || [];
+    
+      const stableCount = patterns.filter((p) => p === "S").length;
+      const unstableCount = patterns.filter((p) => p === "U").length;
+    
+      return {
+        stableCount,
+        unstableCount,
+        total: patterns.length,
+      };
+    };
 
   // Map chartProperties into Recharts-friendly props
   const getLineStyle = () => {
@@ -529,7 +552,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
   
     if (!unitData) return null;
   
-    // 🔥 unitData is already the unit object
+    // unitData is already the unit object
     if (selectedChart.key === "XEP") {
       return Number(unitData.XEP);
     }
@@ -1314,6 +1337,9 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
     if (selectedChart.distribution === "chi-square") {
       return "Chi-Square Value";
     }
+    if (selectedChart.distribution === "exponential") {
+      return "Time (Days)";
+    }
     return "Z-Score";
   };
 
@@ -1725,9 +1751,31 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
 
         <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col border-2 border-gray-200 ml-1 h-full" style={{ backgroundColor: chartProperties.shadeArea }} >
           <div ref={chartInnerRef} className="h-full flex flex-col m-5">
-            <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">
-              {selectedChart.icon} {selectedChart.name}
-            </h2>
+            <div className="flex items-center justify-between mb-4 w-full">
+  
+              {/* Left spacer to keep title centered */}
+              <div className="w-[120px]" />
+
+              {/* Center Title */}
+              <h2 className="text-lg text-center font-semibold text-gray-700 flex-1">
+                {selectedChart.icon} {selectedChart.name}
+              </h2>
+
+              {/* Right Side Counts */}
+              <div className="w-[50px] flex justify-end gap-2">
+                {getPatternCounts() && (
+                  <div className="">
+                    <div className="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                      UNSTABLE: {getPatternCounts().unstableCount}
+                    </div>
+
+                    <div className="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                      STABLE: {getPatternCounts().stableCount}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div className="flex-1 flex items-center justify-center min-h-0 relative">
               {loading && (
