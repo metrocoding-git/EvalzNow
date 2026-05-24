@@ -66,7 +66,7 @@ const getICValue = (unitType, signatureProfile, icString) => {
     }
 
     // ---------- CASE 3b: RECEPTIVE ----------
-    if (signatureProfile === "Case 3b: Receptive-Weighed") {
+    if (signatureProfile === "Case 3b: Receptive-Weighted") {
       const map = {
         "0R0P": 0, "1R0P": 0.5, "2R0P": 1,
         "2R1P": 1.5, "2R2P": 2, "3R2P": 2.5,
@@ -869,7 +869,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const caseKey = signatureProfile.includes("Solid Balanced") ? "Case1: Solid Balanced" :
                   signatureProfile.includes("Rigorous Balanced") ? "Case2: Rigorous Balanced" :
                   signatureProfile.includes("Productive-Weighted") ? "Case3a: Productive-Weighted" :
-                  signatureProfile.includes("Receptive-Weighed") ? "Case3b: Receptive-Weighed" : null;
+                  signatureProfile.includes("Receptive-Weighted") ? "Case3b: Receptive-Weighed" : null;
     
     if (!caseKey || !ICCurveData[caseKey] || !ICCurveData[caseKey][icLevel]) {
       return null;
@@ -2205,6 +2205,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       alert('Failed to export as JPG: ' + error.message);
     }
   };
+
   
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
