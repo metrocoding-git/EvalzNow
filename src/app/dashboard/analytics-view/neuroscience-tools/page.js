@@ -315,7 +315,7 @@ export default function NeuroscienceTools() {
                 {/* {ScoresOpen && <CurveEditor />} */}
 
                 <PlotSelections activeChart={activeChart} unitId={unitData?.id} candidateId={activeCandidateId}
-                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} neuroRefreshSignal={neuroRefreshSignal} />
+                  setActiveChart={setActiveChart} filters={secondaryValues} onResetFilters={resetFilters} neuroRefreshSignal={neuroRefreshSignal} onNeuroRefresh={triggerNeuroRefresh} />
 
 
               </div>

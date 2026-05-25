@@ -2045,11 +2045,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         const Plotly = window.Plotly;
         
         if (Plotly && Plotly.toImage) {
+
+          const currentCamera = plotDiv._fullLayout?.scene?.camera;
+
           // Capture just the Plotly chart as image data URL
           const chartDataURL = await Plotly.toImage(plotDiv, {
             format: 'jpeg',
             width: 1200,
-            height: 800
+            height: 800,
+
+            layout: {
+              scene: {
+                camera: currentCamera
+              }
+            }
           });
           
           // Create a composite image with title
