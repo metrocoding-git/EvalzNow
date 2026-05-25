@@ -58,7 +58,7 @@ function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
 
 
 
-export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters, neuroRefreshSignal }) {
+export default function PlotSelections({ activeChart, setActiveChart, unitId, candidateId, filters, onResetFilters, neuroRefreshSignal, onNeuroRefresh }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -80,15 +80,15 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const chartContainerRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // const refetchNeuroData = () => {
-  //   setRefreshKey(prev => prev + 1);
-  // };
+  const refetchNeuroData = () => {
+    setRefreshKey(prev => prev + 1);
+  };
   
-  // useEffect(() => {
-  //   if (onNeuroRefresh) {
-  //     onNeuroRefresh();
-  //   }
-  // }, [refreshKey]);
+  useEffect(() => {
+    if (onNeuroRefresh) {
+      onNeuroRefresh();
+    }
+  }, [refreshKey]);
 
   const formatValue = (value) => {
     const num = Number(value);
@@ -459,7 +459,6 @@ const lobeData = [
       Cognitive8: computeRowCognitiveNS(indicatorsData, row, "RMS8"),
     }));
   }, [indicatorsData]);
-    
 
   const chartData = useMemo(() => {
     if (!selectedChart || selectedChart.type !== "chart") return [];
@@ -1106,16 +1105,16 @@ const handleExportGraph = () => {
 
                         <thead className="bg-gray-100 sticky top-0 z-10">
                           <tr>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">PP ID Callout</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Target</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (L)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (L)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (L)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (L)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Frontal Lobe (R)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Occipital Lobe (R)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Parietal Lobe (R)</th>
-                            <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1">Cognitive Load - Temporal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">PP ID Callout</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Target</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Frontal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Occipital Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Parietal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Temporal Lobe (L)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Frontal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Occipital Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Parietal Lobe (R)</th>
+                            <th className="whitespace-nowrap text-center border  px-2 py-1">Cognitive Load - Temporal Lobe (R)</th>
                           </tr>
                         </thead>
 

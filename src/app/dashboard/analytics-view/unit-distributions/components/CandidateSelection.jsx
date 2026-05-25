@@ -79,7 +79,7 @@ export default function CandidateSelectionTable({ rows, setRows, onClose }) {
           value: "Omit",
           ppListings: "",
           isSelected: false,
-          availablePP: ppMap[c.id] || []
+          availablePP: (ppMap[c.id] || []).sort((a, b) => a - b),
         }));
   
         setRows(finalRows);
