@@ -175,6 +175,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const ICCurveData = IcCurve();
   const canvasRef = useRef(null);
+  const cameraRef = useRef({ eye: { x: 1.7, y: 1.7, z: 1.7 } });
+  const plotDivRef = useRef(null);
+  const isExportingRef = useRef(false);  
 
   // Example line chart data
   const data = [
@@ -1492,7 +1495,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           color: '#8b5cf6',
           symbol: 'star'
         },
-        name: "Performance PP ID",
+        name: "Performance PP IDs",
         showlegend: true,
         legendrank: 4,
         hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
@@ -1602,59 +1605,51 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   
     return (
-      <Plot 
+      <Plot
+        ref={plotDivRef}
         data={plotData}
         layout={{
           autosize: true,
           height: undefined,
           title: "Butler Hybrid Model",
-  
-          //  All 3D properties must be inside scene
           scene: {
-            domain: { x: [0.05, 1], y: [0.1, 1] }, 
-            
-            camera: {
-              eye: { x: 1.7, y: 1.7, z: 1.7 }
-            },
-  
+            domain: { x: [0.05, 1], y: [0.1, 1] },
+            camera: cameraRef.current,  // ← always use our ref
             aspectratio: { x: 1, y: 1, z: 1 },
-  
             xaxis: {
               title: { text: "RECEPTIVE RATIO (RR)" },
-              nticks: 10,
-              range: [0, 1],
-              dtick: 0.1,
-              tickformat: ".3f",
+              nticks: 10, range: [0, 1], dtick: 0.1, tickformat: ".3f",
             },
             yaxis: {
               title: { text: "PRODUCTIVE RATIO (PR)" },
-              nticks: 10,
-              range: [0, 1],
-              dtick: 0.1,
-              tickformat: ".3f",
+              nticks: 10, range: [0, 1], dtick: 0.1, tickformat: ".3f",
             },
             zaxis: {
               title: { text: "ACUITY RATIO (AR)" },
-              nticks: 10,
-              range: [0, 1],
-              dtick: 0.1,
-              tickformat: ".3f",
+              nticks: 10, range: [0, 1], dtick: 0.1, tickformat: ".3f",
             },
           },
-  
           margin: { l: 0, r: 160, b: 0, t: 20 },
           showlegend: true,
           legend: {
-          x: 1.00,
-          y: 0.8,        // ← was 1, lower this value to move legends down
-          xanchor: "left",
-          yanchor: "top", 
-          bgcolor: "rgba(255,255,255,0.9)",
-          bordercolor: "#e5e7eb",
-          borderwidth: 1,
-          font: { size: 10 },
-          traceorder: "normal"
-        }
+            x: 1.00, y: 0.8, xanchor: "left", yanchor: "top",
+            bgcolor: "rgba(255,255,255,0.9)", bordercolor: "#e5e7eb",
+            borderwidth: 1, font: { size: 10 }, traceorder: "normal"
+          }
+        }}
+        onRelayout={(layoutUpdate) => {
+          // ✅ Block cameraRef updates during export
+          // When we call Plotly.relayout() inside exportAsJPG, it fires this
+          // callback — without the guard it would overwrite cameraRef with
+          // the export camera before toImage finishes
+          if (isExportingRef.current) return;
+        
+          if (layoutUpdate['scene.camera']) {
+            cameraRef.current = JSON.parse(
+              JSON.stringify(layoutUpdate['scene.camera'])
+            );
+            console.log("📷 Camera updated:", cameraRef.current);
+          }
         }}
         style={{ width: "100%", height: "100%" }}
         useResizeHandler={true}
@@ -2028,163 +2023,130 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       return;
     }
   
-    try {
-      // Special handling for 3D chart
-      if (selectedChart?.id === "5") {
-        const plotDiv = chartContainerRef.current.querySelector('.js-plotly-plot');
-        
-        if (!plotDiv || !plotDiv._fullLayout) {
+    // ─── 3D Export ────────────────────────────────────────────────────────────
+    if (selectedChart?.id === "5") {
+      try {
+        const plotEl = plotDivRef.current?.el ?? plotDivRef.current;
+    
+        if (!plotEl) {
           alert("3D plot not ready for export");
           return;
         }
-  
-        // Get the title element (external h2)
-        const titleElement = chartContainerRef.current.querySelector('h2');
-        
-        // Get Plotly instance
+    
         const Plotly = window.Plotly;
-        
-        if (Plotly && Plotly.toImage) {
-
-          const currentCamera = plotDiv._fullLayout?.scene?.camera;
-
-          // Capture just the Plotly chart as image data URL
-          const chartDataURL = await Plotly.toImage(plotDiv, {
+        if (!Plotly?.toImage) {
+          alert("Plotly not available for export");
+          return;
+        }
+    
+        // ✅ Snapshot the camera BEFORE touching anything
+        const cameraToExport = JSON.parse(JSON.stringify(cameraRef.current));
+        console.log("📷 Exporting with camera:", cameraToExport);
+    
+        // ✅ Lock cameraRef — prevents onRelayout from overwriting it
+        // during the Plotly.relayout call below
+        isExportingRef.current = true;
+    
+        try {
+          // Apply the saved camera to the live plot before capturing
+          await Plotly.relayout(plotEl, {
+            'scene.camera': cameraToExport
+          });
+    
+          // Wait for re-render
+          await new Promise(resolve => setTimeout(resolve, 150));
+    
+          // Capture at the correct camera state
+          const chartDataURL = await Plotly.toImage(plotEl, {
             format: 'jpeg',
             width: 1200,
             height: 800,
-
-            layout: {
-              scene: {
-                camera: currentCamera
-              }
-            }
           });
-          
-          // Create a composite image with title
-          const compositeCanvas = document.createElement('canvas');
-          const ctx = compositeCanvas.getContext('2d');
-          
-          // Load the chart image
-          const chartImg = new Image();
-          await new Promise((resolve) => {
-            chartImg.onload = resolve;
-            chartImg.src = chartDataURL;
+    
+          // ✅ Restore camera so live chart stays at user's position
+          await Plotly.relayout(plotEl, {
+            'scene.camera': cameraToExport
           });
-          
-          // If there's a title, capture it with html2canvas
+    
+          // ─── Composite: title + chart ────────────────────────────────────
+          const titleElement = chartContainerRef.current.querySelector('h2');
+          let titleCanvas = null;
+          let titleHeight = 0;
+    
           if (titleElement) {
-            // Set composite canvas size (chart width, chart height + title height)
-            const titleCanvas = await html2canvas(titleElement, {
+            titleCanvas = await html2canvas(titleElement, {
               scale: 2,
               backgroundColor: '#ffffff',
-              logging: false
+              logging: false,
             });
-            
-            const titleHeight = titleCanvas.height;
-            const chartWidth = chartImg.width;
-            const chartHeight = chartImg.height;
-            
-            compositeCanvas.width = chartWidth;
-            compositeCanvas.height = chartHeight + titleHeight;
-            
-            // Fill white background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-            
-            // Draw title at the top
-            ctx.drawImage(titleCanvas, 0, 0, chartWidth, titleHeight);
-            
-            // Draw chart below title
-            ctx.drawImage(chartImg, 0, titleHeight, chartWidth, chartHeight);
-            
-          } else {
-            // Just use the chart image
-            compositeCanvas.width = chartImg.width;
-            compositeCanvas.height = chartImg.height;
-            ctx.drawImage(chartImg, 0, 0);
+            titleHeight = titleCanvas.height;
           }
-          
-          // Save the composite image
+    
+          const chartImg = new Image();
+          await new Promise((resolve, reject) => {
+            chartImg.onload = resolve;
+            chartImg.onerror = reject;
+            chartImg.src = chartDataURL;
+          });
+    
+          const compositeCanvas = document.createElement('canvas');
+          const ctx = compositeCanvas.getContext('2d');
+          compositeCanvas.width = chartImg.width;
+          compositeCanvas.height = chartImg.height + titleHeight;
+    
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+    
+          if (titleCanvas) {
+            ctx.drawImage(titleCanvas, 0, 0, compositeCanvas.width, titleHeight);
+          }
+    
+          ctx.drawImage(chartImg, 0, titleHeight, compositeCanvas.width, chartImg.height);
+    
           compositeCanvas.toBlob((blob) => {
             saveAs(blob, `Plot Extraction.jpg`);
           }, 'image/jpeg', 0.95);
-          
-        } else {
-          // Fallback: manual capture with html2canvas for everything
-          const container = chartContainerRef.current;
-          
-          // Temporarily modify styles to ensure full capture
-          const originalOverflow = container.style.overflow;
-          const originalHeight = container.style.height;
-          
-          container.style.overflow = 'visible';
-          container.style.height = 'auto';
-          
-          await new Promise(resolve => setTimeout(resolve, 200));
-          
-          const canvas = await html2canvas(container, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            onclone: (clonedDoc, element) => {
-              // Ensure WebGL canvas is captured in the clone
-              const clonedCanvas = clonedDoc.querySelector('canvas');
-              if (clonedCanvas && plotDiv.querySelector('canvas')) {
-                const originalCanvas = plotDiv.querySelector('canvas');
-                const ctx = clonedCanvas.getContext('2d');
-                if (ctx && originalCanvas) {
-                  ctx.drawImage(originalCanvas, 0, 0);
-                }
-              }
-            }
-          });
-          
-          // Restore styles
-          container.style.overflow = originalOverflow;
-          container.style.height = originalHeight;
-          
-          canvas.toBlob((blob) => {
-            saveAs(blob, `Plot Extraction.jpg`);
-          }, 'image/jpeg', 0.95);
+    
+        } finally {
+          // ✅ Always unlock, even if export failed
+          // Use a small delay so the final relayout's onRelayout callback
+          // fires and completes before we re-enable updates
+          setTimeout(() => {
+            isExportingRef.current = false;
+          }, 300);
         }
-        return;
+    
+      } catch (error) {
+        console.error('3D JPG Export failed:', error);
+        alert('Failed to export 3D chart: ' + error.message);
+        isExportingRef.current = false;
       }
+    
+      return;
+    }
   
-      // For all other (non-3D) charts, use existing html2canvas logic
+    // ─── 2D Export ────────────────────────────────────────────────────────────
+    try {
       const container = chartContainerRef.current;
-      const scrollableElements = container.querySelectorAll('[class*="overflow"]');
-      const originalStyles = [];
   
-      const containerOriginalStyles = {
-        overflow: container.style.overflow,
-        maxHeight: container.style.maxHeight,
-        height: container.style.height,
-        width: container.style.width,
-      };
-  
-      container.style.overflow = 'visible';
-      container.style.maxHeight = 'none';
-      container.style.height = 'auto';
-      container.style.width = 'auto';
-  
-      scrollableElements.forEach((el) => {
-        originalStyles.push({
-          element: el,
-          overflow: el.style.overflow,
-          maxHeight: el.style.maxHeight,
-          height: el.style.height,
-        });
+      // Temporarily remove clipping so html2canvas captures the full chart
+      const clippedEls = container.querySelectorAll('[class*="overflow"]');
+      const savedStyles = [];
+      clippedEls.forEach(el => {
+        savedStyles.push({ el, overflow: el.style.overflow });
         el.style.overflow = 'visible';
-        el.style.maxHeight = 'none';
-        el.style.height = 'auto';
       });
   
-      await new Promise(resolve => setTimeout(resolve, 200));
+      const savedOverflow = container.style.overflow;
+      const savedHeight = container.style.height;
+      const savedMaxHeight = container.style.maxHeight;
+      container.style.overflow = 'visible';
+      container.style.height = 'auto';
+      container.style.maxHeight = 'none';
   
-      const canvas = await html2canvas(container, {
+      await new Promise(resolve => setTimeout(resolve, 300));
+  
+      const chartCanvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -2194,23 +2156,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         scrollY: 0,
       });
   
-      container.style.overflow = containerOriginalStyles.overflow;
-      container.style.maxHeight = containerOriginalStyles.maxHeight;
-      container.style.height = containerOriginalStyles.height;
-      container.style.width = containerOriginalStyles.width;
-  
-      originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
-        element.style.overflow = overflow;
-        element.style.maxHeight = maxHeight;
-        element.style.height = height;
+      // Restore styles
+      container.style.overflow = savedOverflow;
+      container.style.height = savedHeight;
+      container.style.maxHeight = savedMaxHeight;
+      savedStyles.forEach(({ el, overflow }) => {
+        el.style.overflow = overflow;
       });
   
-      canvas.toBlob((blob) => {
+      chartCanvas.toBlob((blob) => {
         saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
   
     } catch (error) {
-      console.error('JPG Export failed:', error);
+      console.error('2D JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
     }
   };
