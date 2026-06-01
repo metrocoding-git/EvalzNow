@@ -77,7 +77,7 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
         impactType: form.impactType,
         concernIdentified: form.concernIdentified,
         identityDate: form.identityDate,
-        concernResolved: form.concernResolved,
+        concernResolved: form.concernResolved || "No",
         resolutionDate: form.resolutionDate,
       };
 
