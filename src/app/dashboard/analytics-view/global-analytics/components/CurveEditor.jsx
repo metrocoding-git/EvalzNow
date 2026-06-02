@@ -486,13 +486,47 @@ export default function CurveEditor() {
       }    
       
       case 8: { 
-        const rate = globalAnalytics.candidateMarks?.impactScore;
-        return toPercentagePie(rate, false);
+        const data = globalAnalytics.candidateMarks;
+      
+        if (!data || data.totalMarks === 0) return [];
+      
+        const success = data.impactScore * data.totalMarks;
+        const fail = data.totalMarks - success;
+      
+        return [
+          {
+            name: "Positive",
+            count: success,
+            value: data.impactScore
+          },
+          {
+            name: "Negative",
+            count: fail,
+            value: Number((1 - data.impactScore).toFixed(3))
+          }
+        ];
       }
       
       case 9: { 
-        const rate = globalAnalytics.leaderMarks?.impactScore;
-        return toPercentagePie(rate, false);
+        const data = globalAnalytics.leaderMarks;
+      
+        if (!data || data.totalMarks === 0) return [];
+      
+        const success = data.impactScore * data.totalMarks;
+        const fail = data.totalMarks - success;
+      
+        return [
+          {
+            name: "Positive",
+            count: success,
+            value: data.impactScore
+          },
+          {
+            name: "Negative",
+            count: fail,
+            value: Number((1 - data.impactScore).toFixed(3))
+          }
+        ];
       }
           
       case 10:
@@ -676,7 +710,11 @@ export default function CurveEditor() {
     (g.attendance?.excusedTardies ?? 0) +
     (g.attendance?.unexcusedTardies ?? 0);
     
-  
+    const totalAssessmentBlockCount = (g) =>
+      (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) +
+      (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) +
+      (g.assessmentBlocks?.["AB > 20"] ?? 0);
+
   const metricValueResolvers = {
     // ===== Signature Profiles =====
     "Global Percentage of Case 1 Profiles": (g) =>
@@ -689,7 +727,7 @@ export default function CurveEditor() {
       percent(g.signatureProfiles?.["Case 3a: Productive-Weighted"], g.totalUnits),
   
     "Global Percentage of Case 3b Profiles": (g) =>
-      percent(g.signatureProfiles?.["Case 3b: Receptive-Weighed"], g.totalUnits),
+      percent(g.signatureProfiles?.["Case 3b: Receptive-Weighted"], g.totalUnits),
   
     // ===== Unit Types =====
     "Global Percentage of CI/CO": (g) =>
@@ -722,14 +760,26 @@ export default function CurveEditor() {
       percent(g.benchmarkCounts?.["BC > 25"], g.totalUnits),
   
     // ===== Assessment Blocks =====
-    "Global Percentage of Assessment Blocks, AB ≤ 8": (g) =>
-      percent(g.assessmentBlocks?.["AB ≤ 8"], g.totalUnits),
-  
-    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20": (g) =>
-      percent(g.assessmentBlocks?.["8 < AB ≤ 20"], g.totalUnits),
-  
-    "Global Percentage of Assessment Blocks, AB > 20": (g) =>
-      percent(g.assessmentBlocks?.["AB > 20"], g.totalUnits),
+    "Global Percentage of Assessment Blocks, AB ≤ 8": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) / total
+        : null;
+    },
+
+    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) / total
+        : null;
+    },
+
+    "Global Percentage of Assessment Blocks, AB > 20": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["AB > 20"] ?? 0) / total
+        : null;
+    },
   
     // ===== Attendance =====
     "Global Percentage of Attendance - Present": (g) =>
