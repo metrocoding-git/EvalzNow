@@ -2039,12 +2039,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           return;
         }
     
-        // ✅ Snapshot the camera BEFORE touching anything
+        // Snapshot the camera BEFORE touching anything
         const cameraToExport = JSON.parse(JSON.stringify(cameraRef.current));
         console.log("📷 Exporting with camera:", cameraToExport);
     
-        // ✅ Lock cameraRef — prevents onRelayout from overwriting it
-        // during the Plotly.relayout call below
+        // Lock cameraRef — prevents onRelayout from overwriting it
         isExportingRef.current = true;
     
         try {
@@ -2063,12 +2062,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             height: 800,
           });
     
-          // ✅ Restore camera so live chart stays at user's position
+          // Restore camera so live chart stays at user's position
           await Plotly.relayout(plotEl, {
             'scene.camera': cameraToExport
           });
     
-          // ─── Composite: title + chart ────────────────────────────────────
+          // Composite: title + chart
           const titleElement = chartContainerRef.current.querySelector('h2');
           let titleCanvas = null;
           let titleHeight = 0;
@@ -2108,9 +2107,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           }, 'image/jpeg', 0.95);
     
         } finally {
-          // ✅ Always unlock, even if export failed
-          // Use a small delay so the final relayout's onRelayout callback
-          // fires and completes before we re-enable updates
+          // Always unlock, even if export failed
           setTimeout(() => {
             isExportingRef.current = false;
           }, 300);
@@ -2125,27 +2122,69 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       return;
     }
   
-    // ─── 2D Export ────────────────────────────────────────────────────────────
+    // ─── 2D Export - FIXED VERSION ────────────────────────────────────────────
     try {
       const container = chartContainerRef.current;
-  
-      // Temporarily remove clipping so html2canvas captures the full chart
-      const clippedEls = container.querySelectorAll('[class*="overflow"]');
-      const savedStyles = [];
-      clippedEls.forEach(el => {
-        savedStyles.push({ el, overflow: el.style.overflow });
+      
+      // Store original styles
+      const originalStyles = {
+        overflow: container.style.overflow,
+        height: container.style.height,
+        maxHeight: container.style.maxHeight,
+      };
+      
+      // Instead of changing container height, create a clone for export
+      // This prevents visual reflow on the visible chart
+      
+      // Method 1: Use a hidden clone (preferred - no visual disruption)
+      const cloneContainer = container.cloneNode(true);
+      cloneContainer.style.position = 'absolute';
+      cloneContainer.style.top = '-9999px';
+      cloneContainer.style.left = '-9999px';
+      cloneContainer.style.width = container.offsetWidth + 'px';
+      cloneContainer.style.height = 'auto';
+      cloneContainer.style.maxHeight = 'none';
+      cloneContainer.style.overflow = 'visible';
+      
+      // Fix any clipped elements in the clone
+      const clippedElsInClone = cloneContainer.querySelectorAll('[class*="overflow"]');
+      clippedElsInClone.forEach(el => {
         el.style.overflow = 'visible';
       });
-  
-      const savedOverflow = container.style.overflow;
-      const savedHeight = container.style.height;
-      const savedMaxHeight = container.style.maxHeight;
+      
+      document.body.appendChild(cloneContainer);
+      
+      // Wait for clone to render
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const chartCanvas = await html2canvas(cloneContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+      });
+      
+      // Clean up clone
+      document.body.removeChild(cloneContainer);
+      
+      // Alternative Method 2 (fallback if clone doesn't work well):
+      // If the clone approach causes issues with chart rendering, use this instead:
+      /*
+      // Store original scroll position
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      
+      // Make temporary style changes but immediately capture without repaint
       container.style.overflow = 'visible';
       container.style.height = 'auto';
       container.style.maxHeight = 'none';
-  
-      await new Promise(resolve => setTimeout(resolve, 300));
-  
+      
+      // Force a synchronous reflow calculation without visual update
+      void container.offsetHeight;
+      
       const chartCanvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
@@ -2155,18 +2194,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         scrollX: 0,
         scrollY: 0,
       });
-  
-      // Restore styles
-      container.style.overflow = savedOverflow;
-      container.style.height = savedHeight;
-      container.style.maxHeight = savedMaxHeight;
-      savedStyles.forEach(({ el, overflow }) => {
-        el.style.overflow = overflow;
-      });
-  
+      
+      // Restore styles immediately
+      container.style.overflow = originalStyles.overflow;
+      container.style.height = originalStyles.height;
+      container.style.maxHeight = originalStyles.maxHeight;
+      */
+      
       chartCanvas.toBlob((blob) => {
         saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
+      
+      console.log('2D export completed without visual disruption');
   
     } catch (error) {
       console.error('2D JPG Export failed:', error);

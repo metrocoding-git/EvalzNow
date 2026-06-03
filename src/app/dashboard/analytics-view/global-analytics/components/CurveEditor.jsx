@@ -359,30 +359,39 @@ export default function CurveEditor() {
   };
   
   const exportAsJPG = async () => {
-    if (!chartContainerRef.current) return;
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
   
     try {
-      setIsExporting(true);
+      const container = chartContainerRef.current;
   
-      // wait for re-render with labels
-      await new Promise(r => setTimeout(r, 300));
+      // Get actual visible size (NOT scroll size)
+      const rect = container.getBoundingClientRect();
   
-      const canvas = await html2canvas(chartContainerRef.current, {
+      // Wait a bit to ensure charts fully render
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+      const canvas = await html2canvas(container, {
         scale: 3,
         useCORS: true,
         backgroundColor: "#ffffff",
+        logging: false,
         scrollX: 0,
         scrollY: 0,
       });
   
       canvas.toBlob((blob) => {
-        saveAs(blob, `Plot Extraction.jpg`);
+        saveAs(
+          blob,
+          `Plot Extraction.jpg`
+        );
       }, "image/jpeg", 0.95);
   
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsExporting(false);
+    } catch (error) {
+      console.error("JPG Export failed:", error);
+      alert("Failed to export as JPG: " + error.message);
     }
   };
 
@@ -486,13 +495,47 @@ export default function CurveEditor() {
       }    
       
       case 8: { 
-        const rate = globalAnalytics.candidateMarks?.impactScore;
-        return toPercentagePie(rate, false);
+        const data = globalAnalytics.candidateMarks;
+      
+        if (!data || data.totalMarks === 0) return [];
+      
+        const success = data.impactScore * data.totalMarks;
+        const fail = data.totalMarks - success;
+      
+        return [
+          {
+            name: "Positive",
+            count: success,
+            value: data.impactScore
+          },
+          {
+            name: "Negative",
+            count: fail,
+            value: Number((1 - data.impactScore).toFixed(3))
+          }
+        ];
       }
       
       case 9: { 
-        const rate = globalAnalytics.leaderMarks?.impactScore;
-        return toPercentagePie(rate, false);
+        const data = globalAnalytics.leaderMarks;
+      
+        if (!data || data.totalMarks === 0) return [];
+      
+        const success = data.impactScore * data.totalMarks;
+        const fail = data.totalMarks - success;
+      
+        return [
+          {
+            name: "Positive",
+            count: success,
+            value: data.impactScore
+          },
+          {
+            name: "Negative",
+            count: fail,
+            value: Number((1 - data.impactScore).toFixed(3))
+          }
+        ];
       }
           
       case 10:
@@ -676,7 +719,11 @@ export default function CurveEditor() {
     (g.attendance?.excusedTardies ?? 0) +
     (g.attendance?.unexcusedTardies ?? 0);
     
-  
+    const totalAssessmentBlockCount = (g) =>
+      (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) +
+      (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) +
+      (g.assessmentBlocks?.["AB > 20"] ?? 0);
+
   const metricValueResolvers = {
     // ===== Signature Profiles =====
     "Global Percentage of Case 1 Profiles": (g) =>
@@ -689,7 +736,7 @@ export default function CurveEditor() {
       percent(g.signatureProfiles?.["Case 3a: Productive-Weighted"], g.totalUnits),
   
     "Global Percentage of Case 3b Profiles": (g) =>
-      percent(g.signatureProfiles?.["Case 3b: Receptive-Weighed"], g.totalUnits),
+      percent(g.signatureProfiles?.["Case 3b: Receptive-Weighted"], g.totalUnits),
   
     // ===== Unit Types =====
     "Global Percentage of CI/CO": (g) =>
@@ -722,14 +769,26 @@ export default function CurveEditor() {
       percent(g.benchmarkCounts?.["BC > 25"], g.totalUnits),
   
     // ===== Assessment Blocks =====
-    "Global Percentage of Assessment Blocks, AB ≤ 8": (g) =>
-      percent(g.assessmentBlocks?.["AB ≤ 8"], g.totalUnits),
-  
-    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20": (g) =>
-      percent(g.assessmentBlocks?.["8 < AB ≤ 20"], g.totalUnits),
-  
-    "Global Percentage of Assessment Blocks, AB > 20": (g) =>
-      percent(g.assessmentBlocks?.["AB > 20"], g.totalUnits),
+    "Global Percentage of Assessment Blocks, AB ≤ 8": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) / total
+        : null;
+    },
+
+    "Global Percentage of Assessment Blocks, 8 < AB ≤ 20": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) / total
+        : null;
+    },
+
+    "Global Percentage of Assessment Blocks, AB > 20": (g) => {
+      const total = totalAssessmentBlockCount(g);
+      return total
+        ? (g.assessmentBlocks?.["AB > 20"] ?? 0) / total
+        : null;
+    },
   
     // ===== Attendance =====
     "Global Percentage of Attendance - Present": (g) =>
@@ -912,6 +971,37 @@ export default function CurveEditor() {
 
   console.log("benchmarks:", globalAnalytics);
 
+  const renderPieLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    value,
+    name,
+  }) => {
+    const RADIAN = Math.PI / 180;
+  
+    // push labels further outside
+    const radius = outerRadius + 28;
+  
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#111"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={600}
+      >
+        {`${name}: ${Number(value || 0).toFixed(3)}`}
+      </text>
+    );
+  };
+
   const renderChartContent = () => {
     if (!selectedChart) {
       return (
@@ -1005,7 +1095,7 @@ export default function CurveEditor() {
         </div>
       );
     }
-
+    
     return (
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
@@ -1016,13 +1106,9 @@ export default function CurveEditor() {
             cx="50%"
             cy="50%"
             outerRadius="80%"
-            
-            label={({ name, value, percent }) =>
-              isExporting
-                ? `${name}: ${(value * 100).toFixed(1)}%`
-                : `${Number(value).toFixed(3)}`
-            }
+            label={renderPieLabel}
             labelLine={true}
+            isAnimationActive={false}
           >
             {pieData.map((_, index) => (
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
