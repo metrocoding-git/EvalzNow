@@ -2122,6 +2122,162 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       return;
     }
   
+
+    if (selectedChart?.id === "1") {
+      try {
+        // Get the actual chart container
+        const chartContainer = chartContainerRef.current;
+        const chartWrapper = chartContainer.querySelector('.recharts-wrapper');
+        if (!chartWrapper) {
+          alert("Line chart not ready for export");
+          return;
+        }
+    
+        const titleElement = chartContainer.querySelector('h2');
+        let titleCanvas = null;
+        let titleHeight = 0;
+    
+        if (titleElement) {
+          titleCanvas = await html2canvas(titleElement, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+          });
+          titleHeight = titleCanvas.height;
+        }
+    
+        // Create a temporary container that exactly matches the original dimensions
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        
+        // Get the exact dimensions of the original container
+        const originalRect = chartContainer.getBoundingClientRect();
+        tempContainer.style.width = originalRect.width + 'px';
+        tempContainer.style.height = originalRect.height + 'px';
+        tempContainer.style.backgroundColor = '#ffffff';
+        tempContainer.style.overflow = 'visible';
+        
+        // Clone the entire chart container (not just the wrapper)
+        const chartClone = chartContainer.cloneNode(true);
+        
+        // REMOVE the title from the clone to avoid duplication
+        const clonedTitle = chartClone.querySelector('h2');
+        if (clonedTitle) {
+          clonedTitle.remove();
+        }
+        
+        // Preserve all computed styles
+        const originalStyles = window.getComputedStyle(chartContainer);
+        chartClone.style.cssText = originalStyles.cssText;
+        chartClone.style.width = originalRect.width + 'px';
+        chartClone.style.height = originalRect.height + 'px';
+        chartClone.style.position = 'relative';
+        chartClone.style.backgroundColor = '#ffffff';
+        
+        // Find and fix the legend position in the clone
+        const legendInClone = chartClone.querySelector('.recharts-legend-wrapper');
+        if (legendInClone) {
+          // Get the original legend position
+          const originalLegend = chartContainer.querySelector('.recharts-legend-wrapper');
+          if (originalLegend) {
+            const legendRect = originalLegend.getBoundingClientRect();
+            const containerRect = chartContainer.getBoundingClientRect();
+            
+            // Calculate relative position
+            const relativeTop = legendRect.top - containerRect.top;
+            const relativeLeft = legendRect.left - containerRect.left;
+            
+            // Apply exact same position to cloned legend
+            legendInClone.style.position = 'absolute';
+            legendInClone.style.top = relativeTop + 'px';
+            legendInClone.style.left = relativeLeft + 'px';
+            legendInClone.style.right = 'auto';
+            legendInClone.style.bottom = 'auto';
+            
+            // Also fix the legend items layout
+            const legendItems = legendInClone.querySelectorAll('.recharts-legend-item');
+            legendItems.forEach(item => {
+              item.style.display = 'inline-flex';
+              item.style.alignItems = 'center';
+              item.style.marginRight = '15px';
+            });
+          }
+        }
+        
+        // Ensure the SVG maintains proper dimensions
+        const svgInClone = chartClone.querySelector('svg');
+        if (svgInClone) {
+          const originalSvg = chartContainer.querySelector('svg');
+          if (originalSvg) {
+            const svgRect = originalSvg.getBoundingClientRect();
+            svgInClone.setAttribute('width', svgRect.width);
+            svgInClone.setAttribute('height', svgRect.height);
+            svgInClone.style.width = svgRect.width + 'px';
+            svgInClone.style.height = svgRect.height + 'px';
+          }
+        }
+        
+        // Fix the x-axis label position if needed
+        const xAxisLabel = chartClone.querySelector('.recharts-xAxis .recharts-label');
+        if (xAxisLabel) {
+          const originalXAxisLabel = chartContainer.querySelector('.recharts-xAxis .recharts-label');
+          if (originalXAxisLabel) {
+            const labelRect = originalXAxisLabel.getBoundingClientRect();
+            const containerRect = chartContainer.getBoundingClientRect();
+            xAxisLabel.style.transform = `translate(${labelRect.left - containerRect.left}px, ${labelRect.top - containerRect.top}px)`;
+          }
+        }
+        
+        tempContainer.appendChild(chartClone);
+        document.body.appendChild(tempContainer);
+        
+        // Wait for rendering
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Capture the clone (now without the title)
+        const chartCanvas = await html2canvas(tempContainer, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          useCORS: true,
+          allowTaint: false,
+          windowWidth: originalRect.width,
+          windowHeight: originalRect.height,
+        });
+        
+        // Clean up
+        document.body.removeChild(tempContainer);
+        
+        // Composite with title (only the original title, not the cloned one)
+        const compositeCanvas = document.createElement('canvas');
+        const ctx = compositeCanvas.getContext('2d');
+        compositeCanvas.width = Math.max(chartCanvas.width, titleCanvas?.width || 0);
+        compositeCanvas.height = chartCanvas.height + titleHeight;
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+        
+        if (titleCanvas) {
+          ctx.drawImage(titleCanvas, 0, 0, compositeCanvas.width, titleHeight);
+        }
+        
+        ctx.drawImage(chartCanvas, 0, titleHeight, compositeCanvas.width, chartCanvas.height);
+        
+        compositeCanvas.toBlob((blob) => {
+          saveAs(blob, `Plot Extraction.jpg`);
+        }, 'image/jpeg', 0.95);
+        
+        console.log('Line chart export completed with preserved legend position');
+        
+      } catch (error) {
+        console.error('Line chart export failed:', error);
+        alert('Failed to export line chart: ' + error.message);
+      }
+      return;
+    }
+
     // ─── 2D Export - FIXED VERSION ────────────────────────────────────────────
     try {
       const container = chartContainerRef.current;
