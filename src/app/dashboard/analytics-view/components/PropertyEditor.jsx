@@ -215,13 +215,13 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
           ) : (
             <ChevronRight className="w-5 h-5 mr-2" />
           )}
-          {selectedChart.type === "line" ? "Line Attribute" : "Scatter Attribute"}
+          {selectedChart?.type === "line" ? "Line Attribute" : "Scatter Attribute"}
           
         </button>
 
         {expanded.lineAttribute && (
           <div className="space-y-3 pl-7">
-            <label className="block font-semibold mb-1">{selectedChart.type === "line" ? "Line Type" : "Scatter Type"}</label>
+            <label className="block font-semibold mb-1">{selectedChart?.type === "line" ? "Line Type" : "Scatter Type"}</label>
             <select
               value={selectedLineType}
               onChange={(e) => setSelectedLineType(e.target.value)}
@@ -232,7 +232,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
             </select>
 
             {/* style */}
-            { selectedChart.type === "line" && (
+            { selectedChart?.type === "line" && (
               <>
                 <label className="block font-semibold mb-1">Line Style</label>
                 <select
@@ -257,7 +257,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
 
             {/* color */}
             <label className="block font-semibold mb-1 mt-3">
-              {selectedChart.type === "line" ? "Line Color" : "Symbol Color"} (
+              {selectedChart?.type === "line" ? "Line Color" : "Symbol Color"} (
               {selectedLineType === "positive" ? "Positive" : "Negative"})
             </label>
             <div className="flex items-center space-x-3">
@@ -270,7 +270,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
             </div>
 
             {/* thickness */}
-            { selectedChart.type === "line" && (
+            { selectedChart?.type === "line" && (
               <>
                 <label className="block font-semibold mb-1 mt-3">
                   Line Thickness
@@ -327,7 +327,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart }) 
               ))}
             </select>
 
-            { selectedChart.type === "line" && (
+            { selectedChart?.type === "line" && (
               <>
                 <label className="block font-semibold mb-1 mt-3">Symbol Color</label>
                 <input

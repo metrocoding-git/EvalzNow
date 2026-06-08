@@ -57,9 +57,9 @@ const getICValue = (unitType, signatureProfile, icString) => {
     // ---------- CASE 3a: PRODUCTIVE ----------
     if (signatureProfile === "Case 3a: Productive-Weighted") {
       const map = {
-        "0R0P": 0, "0R1P": 0.5, "0R2P": 1,
-        "1R2P": 1.5, "2R2P": 2, "2R3P": 2.5,
-        "3R3P": 3, "3R4P": 3.5, "4R4P": 4,
+        "0R0P": 0,   "0R1P": 0.5, "0R2P": 1,
+        "1R2P": 1.5, "2R2P": 2,   "2R3P": 2.5,
+        "3R3P": 3,   "3R4P": 3.5, "4R4P": 4,
         "5R5P": 5
       };
       return map[icString] ?? 0;
@@ -177,7 +177,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const canvasRef = useRef(null);
   const cameraRef = useRef({ eye: { x: 1.7, y: 1.7, z: 1.7 } });
   const plotDivRef = useRef(null);
-  const isExportingRef = useRef(false);
+  const isExportingRef = useRef(false);  
 
   // Example line chart data
   const data = [
@@ -187,7 +187,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   ];
 
   const isCommunicativeOrTheory =
-    unitType === "Communicative I/O" || unitType === "Theory & Practice";
+  unitType === "Communicative I/O" || unitType === "Theory & Practice";
+
+  console.log("unit signature in plot selection: ", isCommunicativeOrTheory);
+  console.log("unit type in plot selection: ", unitType);
 
 
   const [selectedChart, setSelectedChart] = useState(null);
@@ -208,26 +211,26 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     ...(unitType === "Third Parameter"
       ? [
-        {
-          name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-2d",
-          id: "3"
-        },
-        {
-          name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-2d",
-          id: "4"
-        },
-        {
-          name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-3d",
-          id: "5"
-        }
-
-      ]
+          {
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "3"
+          },
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "4"
+          },
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-3d",
+            id: "5"
+          }
+          
+        ]
       : [])
   ];
 
@@ -244,36 +247,36 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       type: "scatter-2d",
       id: "2"
     },
-
+  
     ...(unitType === "Third Parameter"
       ? [
-        {
-          name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-2d",
-          id: "3"
-        },
-        {
-          name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-2d",
-          id: "4"
-        },
-        {
-          name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
-          icon: "🔵",
-          type: "scatter-3d",
-          id: "5"
-        }
-      ]
+          {
+            name: "Acuity Ratio (AR) vs. Receptive Ratio (RR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "3"
+          },
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-2d",
+            id: "4"
+          },
+          {
+            name: "Acuity Ratio (AR) vs. Productive Ratio (PR) vs. Receptive Ratio (RR) Cross Plot",
+            icon: "🔵",
+            type: "scatter-3d",
+            id: "5"
+          }
+        ]
       : [])
   ];
-
+  
 
 
   const getTableColumns = () => {
     if (!selectedChart) return null;
-
+  
     switch (selectedChart.id) {
       case "1":
         return {
@@ -282,7 +285,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             { key: "IC", label: "Interaction Class (IC)" }
           ]
         };
-
+  
       case "2":
         return {
           columns: [
@@ -291,7 +294,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             { key: "PRN", label: "PR" }
           ]
         };
-
+  
       case "3":
         return {
           columns: [
@@ -300,7 +303,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             { key: "ARN", label: "AR" }
           ]
         };
-
+  
       case "4":
         return {
           columns: [
@@ -309,7 +312,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             { key: "ARN", label: "AR" }
           ]
         };
-
+  
       case "5": // 3D
         return {
           columns: [
@@ -319,12 +322,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             { key: "ARN", label: "AR" }
           ]
         };
-
+  
       default:
         return null;
     }
   };
-
+  
 
   const applyChartStyling = {
     lineStrokeDasharray: (style) => {
@@ -334,7 +337,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         default: return ""; // solid
       }
     },
-
+  
     symbolShape: (style, props, color, size) => {
       switch (style) {
         case "square":
@@ -371,9 +374,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       }
     }
   };
-
+  
   useEffect(() => {
-    console.log("filters in plot selection: ", filters);
+    console.log( "filters in plot selection: ", filters);
   }, [filters]);
 
   const copyToClipboard = async () => {
@@ -390,10 +393,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const renderReferenceLinesForLineChart = () => {
     if (!filters?.thresholdEnabled) return null;
-
+  
     // Use default value 2.0 if threshold is missing
     const yValue = thresholdValue?.IC ?? 2.0;
-
+  
     return (
       <ReferenceLine
         y={yValue}
@@ -416,7 +419,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     return Object.entries(thresholdValue).map(([key, value]) => {
       if (value === null || value === undefined) return null;
-
+      
       // Determine if this threshold applies to X or Y axis
       const axisKey = key.toUpperCase();
       const isXAxis = ['RRN', 'PRN', 'ARN'].includes(axisKey) && xKey.toUpperCase().includes(axisKey);
@@ -456,7 +459,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           />
         );
       }
-
+      
       return null;
     });
   };
@@ -483,7 +486,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setTableData([]);
         return;
       }
-
+      
       setLoading(true);
       setError(null);
       try {
@@ -494,13 +497,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           selectedPpId: filters?.selectedPpId,
           rawFilters: filters
         });
-
+  
         // Build API filters
         const apiFilters = {
           unitId: unitId,
           candidate_id: candidateId,
         };
-
+  
         // Handle PP ID range - special case when both are the same
         if (filters?.ppIdFrom !== undefined && filters?.ppIdTo !== undefined) {
           // When both are the same (either positive or negative), we want just that one PP ID
@@ -514,25 +517,25 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             console.log(`🔄 Using PP ID range: ${filters.ppIdFrom} to ${filters.ppIdTo}`);
           }
         }
-
+  
         // Handle selectedPpId if present (single selection)
         if (filters?.selectedPpId !== undefined && filters?.selectedPpId !== null) {
           apiFilters.ppId = filters.selectedPpId;
           console.log(`🔄 Using selected PP ID: ${filters.selectedPpId}`);
         }
-
+  
         // Add other filters
         if (filters?.criticalDateFrom) apiFilters.criticalRefDateFrom = filters.criticalDateFrom;
         if (filters?.criticalDateTo) apiFilters.criticalRefDateTo = filters.criticalDateTo;
-
+  
         console.log("🔍 Final API filters being sent:", apiFilters);
-
+  
         const data = await getUnitAndMultipleCandidateSummary(apiFilters);
-
+  
         console.log("🔵 API Response:", data);
-
-        const { results, averages, stdDev, stdErr } = data;
-
+  
+        const { results, averages, stdDev, stdErr } = data;  
+  
         // Format the data
         const formattedData = results.map(row => ({
           ppId: row.ppId,
@@ -541,16 +544,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           PRN: Number(row.PRN).toFixed(3) || 0.000,
           ARN: Number(row.ARN).toFixed(3) || 0.000,
         }));
-
+  
         console.log("🔵 Formatted Data:", formattedData);
         console.log(`🔵 Data Count: ${formattedData.length} rows`);
-
+  
         // Debug: Show what PP IDs we got
         const ppIds = formattedData.map(item => item.ppId);
         console.log("🔵 PP IDs in response:", ppIds);
-
+  
         setTableData(formattedData);
-
+  
         // Handle averages data
         const averageData = averages?.map(item => ({
           ppId: item.ppId,
@@ -558,10 +561,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           PRN: Number(item.PRN).toFixed(3) || 0.000,
           ARN: Number(item.ARN).toFixed(3) || 0.000,
         })) || [];
-
+  
         setAverageData(averageData);
         console.log("averages data: ", averageData);
-
+  
         // Handle growth target data
         const growthTargetData = results
           .filter(item => item.ppId > 0)
@@ -583,9 +586,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             PRGT5: item.PRGT5 || 0,
             ARGT5: item.ARGT5 || 0,
           }));
-
+        
         setGrowthTargetData(growthTargetData);
-
+        
       } catch (err) {
         console.error("❌ Failed to fetch tabulation data:", err);
         setError("Failed to load table data.");
@@ -594,13 +597,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setLoading(false);
       }
     };
-
+    
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
   console.log("growth target data: ", growthTargetData);
 
-
+  
 
   useEffect(() => {
     const fetchThreshold = async () => {
@@ -608,24 +611,24 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setThresholdValue(null);
         return;
       }
-
+  
       try {
         const data = await getUnitById(unitId);
-
+  
         // Safely extract only threshold ratio fields
         const extractedThresholds = {
           IC: parseFloat(data?.IC) ?? null,
         };
-
+  
         setThresholdValue(extractedThresholds);
-
+  
         console.log("✅ Extracted Threshold Values:", extractedThresholds);
       } catch (error) {
         console.error("❌ Failed to fetch threshold values:", error);
         setThresholdValue(null);
       }
     };
-
+  
     fetchThreshold();
   }, [unitId]);
 
@@ -635,34 +638,34 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setProjectionData([]);
         return;
       }
-
+  
       try {
         const data = await getProjection(unitId, candidateId);
-
+        
         console.log("projection data:", data);
-
+        
         // Check if data is an array of sessions
         if (data && Array.isArray(data)) {
           // Collect all projection points from all sessions
           const allProjectionPoints = [];
-
+          
           data.forEach(session => {
             if (session.points && Array.isArray(session.points)) {
               // Filter for 15 days or 30 days with Average callout (trim values to handle spaces)
               const sessionProjectionPoints = session.points.filter(item => {
                 const trimmedPpId = item.ppId ? item.ppId.trim() : '';
                 const trimmedCallout = item.callout ? item.callout.trim() : '';
-
+                
                 return (
-                  (trimmedPpId === '15 days' || trimmedPpId === '30 days') &&
+                  (trimmedPpId === '15 days' || trimmedPpId === '30 days') && 
                   trimmedCallout === 'Average'
                 );
               });
-
+              
               allProjectionPoints.push(...sessionProjectionPoints);
             }
           });
-
+          
           // Extract RRN, PRN, ARN values
           const formattedProjection = allProjectionPoints.map(item => ({
             RRN: parseFloat(item.RRN) || 0,
@@ -673,21 +676,21 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             dayCount: item.dayCount,
             sessionId: item.sessionId
           }));
-
+          
           setProjectionData(formattedProjection);
-
+          
           console.log("Filtered projection data (15 & 30 days, Average):", formattedProjection);
         } else {
           console.log("Invalid data structure - expected array of sessions");
           setProjectionData([]);
         }
-
+        
       } catch (error) {
         console.error("❌ Failed to fetch projection data:", error);
         setProjectionData([]);
       }
     };
-
+  
     fetchProjection();
   }, [unitId, candidateId]);
 
@@ -696,17 +699,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // if (unitType !== "Communicative I/O" && unitType !== "Theory & Practice") {
     //   return null;
     // }
-
+  
     const biasLines = Object.keys(biasLinesData);
     const lineStyles = {
       "Receptive Bias": { strokeDasharray: "1 0" }, // dashed line
       "Balanced Line": { strokeDasharray: "1 0" },  // dotted line  
       "Productive Bias": { strokeDasharray: "1 0" } // dashed line
     };
-
+  
     return biasLines.map((biasLine) => {
       const lineData = biasLinesData[biasLine];
-
+      
       // For scatter charts, transform data to match the expected structure
       if (chartType === "scatter") {
         const scatterPoints = lineData.x.map((x, i) => ({
@@ -714,9 +717,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           [yKey]: lineData.y[i],
           bias: biasLine
         }));
-
+        
         return (
-          <Line
+          <Line 
             key={biasLine}
             data={scatterPoints}
             dataKey={yKey}
@@ -727,16 +730,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             tooltipType="none"
             isAnimationActive={false}
             activeDot={false}
-            legendType="none"
-            hide={false}
+            legendType="none"   
+            hide={false} 
             {...lineStyles[biasLine]}
           />
         );
       }
-
+      
       // For line charts
       return (
-        <Line
+        <Line 
           key={biasLine}
           data={lineData.x.map((x, i) => ({ ppId: x, value: lineData.y[i] }))}
           dataKey="value"
@@ -746,8 +749,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           dot={false}
           tooltipType="none"
           isAnimationActive={false}
-          legendType="none"
-          hide={false}
+          legendType="none"   
+          hide={false} 
           {...lineStyles[biasLine]}
         />
       );
@@ -756,9 +759,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   // const getGrowthTargetPoints = (chartId, growthTargetData) => {
   //   if (!growthTargetData || growthTargetData.length === 0) return [];
-
+  
   //   const points = [];
-
+  
   //   growthTargetData.forEach(item => {
   //     switch (chartId) {
   //       case "2": // RR vs PR (X: RRN, Y: PRN)
@@ -779,7 +782,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   //           points.push({ RRN: item.RRGT5, PRN: item.PRGT5, ppId: item.ppId, gt: "GT5" });
   //         }
   //         break;
-
+  
   //       case "3": // AR vs RR (X: RRN, Y: ARN)
   //         if (item.RRGT1 > 0 || item.ARGT1 > 0) {
   //           points.push({ RRN: item.RRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
@@ -797,7 +800,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   //           points.push({ RRN: item.RRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
   //         }
   //         break;
-
+  
   //       case "4": // PR vs AR (X: PRN, Y: ARN)
   //         if (item.PRGT1 > 0 || item.ARGT1 > 0) {
   //           points.push({ PRN: item.PRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
@@ -815,38 +818,38 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   //           points.push({ PRN: item.PRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
   //         }
   //         break;
-
+  
   //       default:
   //         break;
   //     }
   //   });
-
+  
   //   console.log("✅ Filtered Growth Target Points:", points);
   //   return points;
   // };
 
   const getGrowthTargetPoints = (chartId, growthTargetData) => {
     if (!growthTargetData || growthTargetData.length === 0) return [];
-
+  
     const points = [];
-
+  
     // Define dynamic mapping for each chart
     const mapping = {
       "2": { xPrefix: "RRGT", yPrefix: "PRGT", xKey: "RRN", yKey: "PRN" }, // RR vs PR
       "3": { xPrefix: "RRGT", yPrefix: "ARGT", xKey: "RRN", yKey: "ARN" }, // AR vs RR
       "4": { xPrefix: "PRGT", yPrefix: "ARGT", xKey: "PRN", yKey: "ARN" }, // PR vs AR
     };
-
+  
     const map = mapping[chartId];
     if (!map) return [];
-
+  
     const { xPrefix, yPrefix, xKey, yKey } = map;
-
+  
     growthTargetData.forEach(item => {
       for (let i = 1; i <= 5; i++) {
         const xVal = item[`${xPrefix}${i}`];
         const yVal = item[`${yPrefix}${i}`];
-
+  
         // Only include points where both X and Y are > 0
         if (xVal > 0 && yVal > 0) {
           points.push({
@@ -858,23 +861,23 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         }
       }
     });
-
+  
     console.log("✅ Filtered Growth Target Points:", points);
     return points;
   };
 
   const getICCurveData = (signatureProfile, icLevel) => {
     if (!signatureProfile || !icLevel) return null;
-
+    
     const caseKey = signatureProfile.includes("Solid Balanced") ? "Case1: Solid Balanced" :
-      signatureProfile.includes("Rigorous Balanced") ? "Case2: Rigorous Balanced" :
-        signatureProfile.includes("Productive-Weighted") ? "Case3a: Productive-Weighted" :
-          signatureProfile.includes("Receptive-Weighted") ? "Case3b: Receptive-Weighed" : null;
-
+                  signatureProfile.includes("Rigorous Balanced") ? "Case2: Rigorous Balanced" :
+                  signatureProfile.includes("Productive-Weighted") ? "Case3a: Productive-Weighted" :
+                  signatureProfile.includes("Receptive-Weighted") ? "Case3b: Receptive-Weighed" : null;
+    
     if (!caseKey || !ICCurveData[caseKey] || !ICCurveData[caseKey][icLevel]) {
       return null;
     }
-
+    
     return ICCurveData[caseKey][icLevel];
   };
 
@@ -888,23 +891,23 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     ) {
       return null;
     }
-
+  
     const icLevels = ["IC1", "IC2", "IC3", "IC4", "IC5"];
     const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57"];
-
+    
     return icLevels.map((icLevel, index) => {
       const curveData = getICCurveData(signatureProfile, icLevel);
       if (!curveData) return null;
-
+  
       if (chartType === "scatter") {
         const scatterPoints = curveData.x.map((x, i) => ({
           [xKey]: x,
           [yKey]: curveData.y[i],
           IC: icLevel
         }));
-
+        
         return (
-          <Line
+          <Line 
             key={icLevel}
             data={scatterPoints}
             dataKey={yKey}
@@ -920,10 +923,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           />
         );
       }
-
+  
       // Line chart fallback
       return (
-        <Line
+        <Line 
           key={icLevel}
           data={curveData.x.map((x, i) => ({ ppId: x, value: curveData.y[i] }))}
           dataKey="value"
@@ -938,7 +941,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       );
     });
   };
-
+  
 
   const generateTicks = (min, max, step = 0.1) => {
     const ticks = [];
@@ -947,28 +950,28 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
     return ticks;
   };
-
+  
 
   // 
   const ScatterSquare = ({ children, backgroundColor }) => {
     const wrapperRef = useRef(null);
     const [size, setSize] = useState(400);
-
+  
     useEffect(() => {
       // ✅ Observe the PARENT, not self — so the container doesn't influence its own measurement
       const el = wrapperRef.current?.parentElement;
       if (!el) return;
-
+  
       const observer = new ResizeObserver(([entry]) => {
         const { width, height } = entry.contentRect;
         const square = Math.floor(Math.min(width, height)) - 16;
         setSize(Math.max(square, 100)); // minimum 100px
       });
-
+  
       observer.observe(el);
       return () => observer.disconnect();
     }, []);
-
+  
     return (
       <div
         ref={wrapperRef}
@@ -997,16 +1000,16 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const renderICScatter = (data) => {
     const positiveData = data.filter(d => d.ppId > 0);
     const negativeData = data.filter(d => d.ppId < 0);
-
+  
     return (
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 30 }}>
           <CartesianGrid strokeDasharray="3 3" />
-
+  
           <XAxis dataKey="ppId" type="number">
             <Label value="PP ID" position="bottom" offset={2} textAnchor="middle" />
           </XAxis>
-
+  
           <YAxis dataKey="IC">
             <Label
               value="Interaction Class (IC)"
@@ -1016,14 +1019,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               textAnchor="middle"
             />
           </YAxis>
-
+  
           <Tooltip />
           <Legend
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
           />
-
+  
           {/* Positive */}
           <Scatter
             data={positiveData}
@@ -1039,7 +1042,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             }
             isAnimationActive={false}
           />
-
+  
           {/* Negative */}
           <Scatter
             data={negativeData}
@@ -1063,289 +1066,289 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
 
   const renderScatter = (tableData, xKey, yKey, xLabel, yLabel, signatureProfile, unitType) => {
-    const containerStyle = {
-      backgroundColor: chartProperties.shadeArea,
-      width: '100%',
-      aspectRatio: '1 / 1',
-    };
-
-    const isTargetMode = filters?.unitMode === "target";
-    const targetPpId = filters?.selectedPpId;
-    const isPositiveTarget = targetPpId > 0;
-
-    // Check if we should show averages
-    const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
-    // Check if we should show projection data
-    const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
-    // Check if we should show growth target data
-    const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
-
-    // Get growth target points for the current chart
-    // const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
-
-    const growthTargetPoints = filters?.showGrowthTarget && growthTargetData.length > 0
-      ? getGrowthTargetPoints(selectedChart?.id, growthTargetData)
-      : [];
-
-    // Determine the axis keys dynamically for growth target points
-    const growthXKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).find(k => k !== "ppId" && k !== "gt") : xKey;
-    const growthYKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).filter(k => k !== "ppId" && k !== growthXKey)[0] : yKey;
-
-    console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
-
-    // Separate positive and negative PP IDs for scatter plots
-    const positiveData = tableData.filter(item => item.ppId > 0);
-    const negativeData = tableData.filter(item => item.ppId < 0);
-
-    console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
-    console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
-
-    const FIXED_MIN = 0.1;
-    const FIXED_MAX = 1.0;
-    const STEP = 0.1;
-
-    const allXValues = [
-      ...tableData.map(d => d[xKey]),
-      ...growthTargetPoints.map(d => d[xKey]),
-    ];
-
-    const allYValues = [
-      ...tableData.map(d => d[yKey]),
-      ...growthTargetPoints.map(d => d[yKey]),
-    ];
-
-    // Always go up to at least 1.0
-    const xMax = Math.max(
-      FIXED_MAX,
-      Math.ceil(Math.max(...allXValues) * 10) / 10
-    );
-
-    const yMax = Math.max(
-      FIXED_MAX,
-      Math.ceil(Math.max(...allYValues) * 10) / 10
-    );
-
-    const xTicks = generateTicks(FIXED_MIN, xMax, STEP);
-    const yTicks = generateTicks(FIXED_MIN, yMax, STEP);
-
-
-    return (
-      <ScatterSquare backgroundColor={chartProperties.shadeArea}>
-        {(size) => (
-          <ResponsiveContainer width={size} height={size}>
-            <ScatterChart
-              margin={{ top: 10, right: 20, left: 0, bottom: 70 }}
-            >
-              <CartesianGrid />
-              <XAxis
-                dataKey={xKey}
-                type="number"
-                name={xLabel}
-                domain={[FIXED_MIN, xMax]}
-                ticks={xTicks}
-                allowDecimals
-              >
-                <Label value={xLabel} position="bottom" offset={-2} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
-              </XAxis>
-              <YAxis
-                dataKey={yKey}
-                type="number"
-                name={yLabel}
-                domain={[FIXED_MIN, yMax]}
-                ticks={yTicks}
-                allowDecimals
-              >
-                <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
-              </YAxis>
-
-              {/*  Tooltip - only show for Scatter components */}
-              <Tooltip
-                cursor={{ strokeDasharray: '3 3' }}
-                // Add this to improve default behavior
-                allowEscapeViewBox={{ x: true, y: true }}
-                content={({ active, payload, label }) => {
-                  if (!active || !payload || !payload.length) return null;
-
-                  // ───────────────────────────────────────────────
-                  // Filter to only show tooltip for ACTUAL scatter points
-                  // We look for payload items that come from a Scatter series
-                  // (they usually have .payload.ppId or similar real data marker)
-                  // ───────────────────────────────────────────────
-                  const realPoint = payload.find(item =>
-                    item.payload &&
-                    item.payload.seriesType &&
-                    item.payload[xKey] !== undefined &&
-                    item.payload[yKey] !== undefined
-                  );
-
-
-                  if (!realPoint) return null;   // ← hide tooltip if hovering over line/bias/IC
-
-                  const data = realPoint.payload;
-
-                  const isGrowthTarget = data.gt !== undefined;
-                  const isProjection = data.callout !== undefined;
-                  const isAverage = averageData.some(avg => avg.ppId === data.ppId);
-
-                  return (
-                    <div style={{
-                      backgroundColor: 'white',
-                      padding: '10px 14px',
-                      border: '1px solid #ccc',
-                      borderRadius: '6px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      minWidth: '180px'
-                    }}>
-                      {isGrowthTarget && (
-                        <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#2563eb' }}>
-                          Growth Target: {data.gt}
-                        </p>
-                      )}
-                      {isProjection && (
-                        <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#7c3aed' }}>
-                          Projection: {data.ppId} ({data.callout})
-                        </p>
-                      )}
-                      {isAverage && (
-                        <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#ff6b6b' }}>
-                          Average Point
-                        </p>
-                      )}
-                      {!isGrowthTarget && !isProjection && !isAverage && (
-                        <p style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>
-                          PP ID: {data.ppId}
-                        </p>
-                      )}
-
-                      <p style={{ margin: '4px 0' }}>
-                        {xLabel}: <strong>{Number(data[xKey]).toFixed(3)}</strong>
-                      </p>
-                      <p style={{ margin: '4px 0' }}>
-                        {yLabel}: <strong>{Number(data[yKey]).toFixed(3)}</strong>
-                      </p>
-                    </div>
-                  );
-                }}
-              />
-
-              <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
-
-              {/* Reference Lines */}
-              {renderReferenceLinesForScatter(xKey, yKey)}
-
-              {/* IC Curves - These will now be ignored by tooltip */}
-              {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
-
-              {/* Bias Lines - These will now be ignored by tooltip */}
-              {renderBiasLines(unitType, "scatter", xKey, yKey)}
-
-              {/* Positive PP IDs (Red) */}
-              {positiveData.length > 0 && (
-                <Scatter
-                  data={positiveData.map(d => ({ ...d, seriesType: 'positive' }))}
-                  dataKey={yKey}
-                  name="Positive PP IDs"
-                  isAnimationActive={false}
-                  fill={chartProperties.positiveLineColor}
-                  shape={(props) =>
-                    applyChartStyling.symbolShape(
-                      chartProperties.symbolStyle,
-                      props,
-                      chartProperties.positiveSymbolColor,
-                      chartProperties.symbolScaleSize
-                    )
-                  }
-                />
-              )}
-
-              {negativeData.length > 0 && (
-                <Scatter
-                  data={negativeData.map(d => ({ ...d, seriesType: 'negative' }))}
-                  dataKey={yKey}
-                  name="Negative PP IDs"
-                  isAnimationActive={false}
-                  fill={chartProperties.negativeLineColor}
-                  shape={(props) =>
-                    applyChartStyling.symbolShape(
-                      chartProperties.symbolStyle,
-                      props,
-                      chartProperties.negativeSymbolColor,
-                      chartProperties.symbolScaleSize
-                    )
-                  }
-                />
-              )}
-
-              {showAverages && (
-                <Scatter
-                  data={averageData.map(d => ({ ...d, seriesType: 'average' }))}
-                  dataKey={yKey}
-                  fill="#ff6b6b"
-                  isAnimationActive={false}
-                  name="Average Points"
-                  shape={(props) => (
-                    <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={6}
-                      fill="#ff6b6b"
-                      stroke="#000000"
-                      strokeWidth={1}
-                    />
-                  )}
-                />
-              )}
-
-              {/* Growth Target data points */}
-              {growthTargetPoints.length > 0 && (
-                <Scatter
-                  data={growthTargetPoints.map(d => ({ ...d, seriesType: "growthTarget" }))}
-                  dataKey={growthYKey} // use dynamic Y key
-                  fill="#2563eb"
-                  name="Growth Targets"
-                  isAnimationActive={false}
-                  shape={(props) => (
-                    <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={3}
-                      fill="#2563eb"
-                    />
-                  )}
-                />
-              )}
-
-              {/* Projection data points (Performance Points G) */}
-              {showProjection && (
-                <Scatter
-                  data={projectionData.map(d => ({
-                    ...d,
-                    seriesType: "projection"
-                  }))}
-                  dataKey={yKey}
-                  fill="#7c3aed"
-                  name="Projection PP ID"
-                  isAnimationActive={false}
-                  // legendType="none"
-                  shape={(props) => (
-                    <circle
-                      cx={props.cx}
-                      cy={props.cy}
-                      r={3}
-                      fill="#7c3aed"
-                      stroke="#000000"
-                      strokeWidth={1}
-                    />
-                  )}
-                />
-              )}
-            </ScatterChart>
-          </ResponsiveContainer>
-        )}
-      </ScatterSquare>
-    );
+  const containerStyle = {
+    backgroundColor: chartProperties.shadeArea,
+    width: '100%',
+    aspectRatio: '1 / 1',
   };
 
+  const isTargetMode = filters?.unitMode === "target";
+  const targetPpId = filters?.selectedPpId;
+  const isPositiveTarget = targetPpId > 0;
+
+  // Check if we should show averages
+  const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+  // Check if we should show projection data
+  const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
+  // Check if we should show growth target data
+  const showGrowthTarget = filters?.showGrowthTarget === true && growthTargetData.length > 0;
+  
+  // Get growth target points for the current chart
+  // const growthTargetPoints = showGrowthTarget ? getGrowthTargetPoints(selectedChart?.id, growthTargetData) : [];
+  
+  const growthTargetPoints = filters?.showGrowthTarget && growthTargetData.length > 0
+  ? getGrowthTargetPoints(selectedChart?.id, growthTargetData)
+  : [];
+
+  // Determine the axis keys dynamically for growth target points
+  const growthXKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).find(k => k !== "ppId" && k !== "gt") : xKey;
+  const growthYKey = growthTargetPoints.length > 0 ? Object.keys(growthTargetPoints[0]).filter(k => k !== "ppId" && k !== growthXKey)[0] : yKey;
+
+  console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
+  
+  // Separate positive and negative PP IDs for scatter plots
+  const positiveData = tableData.filter(item => item.ppId > 0);
+  const negativeData = tableData.filter(item => item.ppId < 0);
+  
+  console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
+  console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
+
+  const FIXED_MIN = 0.1;
+  const FIXED_MAX = 1.0;
+  const STEP = 0.1;
+
+  const allXValues = [
+    ...tableData.map(d => d[xKey]),
+    ...growthTargetPoints.map(d => d[xKey]),
+  ];
+
+  const allYValues = [
+    ...tableData.map(d => d[yKey]),
+    ...growthTargetPoints.map(d => d[yKey]),
+  ];
+
+  // Always go up to at least 1.0
+  const xMax = Math.max(
+    FIXED_MAX,
+    Math.ceil(Math.max(...allXValues) * 10) / 10
+  );
+
+  const yMax = Math.max(
+    FIXED_MAX,
+    Math.ceil(Math.max(...allYValues) * 10) / 10
+  );
+
+  const xTicks = generateTicks(FIXED_MIN, xMax, STEP);
+  const yTicks = generateTicks(FIXED_MIN, yMax, STEP);
+
+
+  return (
+    <ScatterSquare backgroundColor={chartProperties.shadeArea}>
+      {(size) => (
+      <ResponsiveContainer width={size} height={size}>
+        <ScatterChart
+          margin={{ top: 10, right: 20, left: 0, bottom: 70 }}
+        >
+          <CartesianGrid />
+          <XAxis 
+            dataKey={xKey} 
+            type="number"
+            name={xLabel}
+            domain={[FIXED_MIN, xMax]}
+            ticks={xTicks}
+            allowDecimals
+          >
+            <Label value={xLabel} position="bottom" offset={-2} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
+          </XAxis>
+          <YAxis 
+            dataKey={yKey} 
+            type="number"
+            name={yLabel}
+            domain={[FIXED_MIN, yMax]}
+            ticks={yTicks}
+            allowDecimals
+          >
+            <Label value={yLabel} angle={-90} position="left" offset={-7} textAnchor='middle' style={{ fontSize: "14px", fontWeight: "500" }} />
+          </YAxis>
+          
+          {/*  Tooltip - only show for Scatter components */}
+          <Tooltip
+            cursor={{ strokeDasharray: '3 3' }}
+            // Add this to improve default behavior
+            allowEscapeViewBox={{ x: true, y: true }}
+            content={({ active, payload, label }) => {
+              if (!active || !payload || !payload.length) return null;
+
+              // ───────────────────────────────────────────────
+              // Filter to only show tooltip for ACTUAL scatter points
+              // We look for payload items that come from a Scatter series
+              // (they usually have .payload.ppId or similar real data marker)
+              // ───────────────────────────────────────────────
+              const realPoint = payload.find(item =>
+                item.payload &&
+                item.payload.seriesType &&     
+                item.payload[xKey] !== undefined &&
+                item.payload[yKey] !== undefined
+              );
+              
+
+              if (!realPoint) return null;   // ← hide tooltip if hovering over line/bias/IC
+
+              const data = realPoint.payload;
+
+              const isGrowthTarget = data.gt !== undefined;
+              const isProjection  = data.callout !== undefined;
+              const isAverage     = averageData.some(avg => avg.ppId === data.ppId);
+
+              return (
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '10px 14px',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  minWidth: '180px'
+                }}>
+                  {isGrowthTarget && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#2563eb' }}>
+                      Growth Target: {data.gt}
+                    </p>
+                  )}
+                  {isProjection && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#7c3aed' }}>
+                      Projection: {data.ppId} ({data.callout})
+                    </p>
+                  )}
+                  {isAverage && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: '#ff6b6b' }}>
+                      Average Point
+                    </p>
+                  )}
+                  {!isGrowthTarget && !isProjection && !isAverage && (
+                    <p style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>
+                      PP ID: {data.ppId}
+                    </p>
+                  )}
+
+                  <p style={{ margin: '4px 0' }}>
+                    {xLabel}: <strong>{Number(data[xKey]).toFixed(3)}</strong>
+                  </p>
+                  <p style={{ margin: '4px 0' }}>
+                    {yLabel}: <strong>{Number(data[yKey]).toFixed(3)}</strong>
+                  </p>
+                </div>
+              );
+            }}
+          />
+          
+          <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+          
+          {/* Reference Lines */}
+          {renderReferenceLinesForScatter(xKey, yKey)}
+          
+          {/* IC Curves - These will now be ignored by tooltip */}
+          {renderICCurves(signatureProfile, unitType, "scatter", xKey, yKey)}
+
+          {/* Bias Lines - These will now be ignored by tooltip */}
+          {renderBiasLines(unitType, "scatter", xKey, yKey)}
+          
+          {/* Positive PP IDs (Red) */}
+          {positiveData.length > 0 && (
+            <Scatter 
+              data={positiveData.map(d => ({...d, seriesType: 'positive'}))} 
+              dataKey={yKey} 
+              name="Positive PP IDs"
+              isAnimationActive={false}
+              fill={chartProperties.positiveLineColor}
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.symbolStyle,
+                  props,
+                  chartProperties.positiveSymbolColor,
+                  chartProperties.symbolScaleSize
+                )
+              }
+            />
+          )}
+
+          {negativeData.length > 0 && (
+            <Scatter 
+              data={negativeData.map(d => ({...d, seriesType: 'negative'}))} 
+              dataKey={yKey} 
+              name="Negative PP IDs"
+              isAnimationActive={false}
+              fill={chartProperties.negativeLineColor}
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.symbolStyle,
+                  props,
+                  chartProperties.negativeSymbolColor,
+                  chartProperties.symbolScaleSize
+                )
+              }
+            />
+          )}
+
+          {showAverages && (
+            <Scatter 
+              data={averageData.map(d => ({...d, seriesType: 'average'}))} 
+              dataKey={yKey} 
+              fill="#ff6b6b" 
+              isAnimationActive={false}
+              name="Average Points"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={6} 
+                  fill="#ff6b6b" 
+                  stroke="#000000"
+                  strokeWidth={1}
+                />
+              )}
+            />
+          )}
+
+          {/* Growth Target data points */}
+          {growthTargetPoints.length > 0 && (
+            <Scatter 
+              data={growthTargetPoints.map(d => ({ ...d, seriesType: "growthTarget" }))}
+              dataKey={growthYKey} // use dynamic Y key
+              fill="#2563eb"
+              name="Growth Targets"
+              isAnimationActive={false}
+              shape={(props) => (
+                <circle 
+                  cx={props.cx}
+                  cy={props.cy}
+                  r={3}
+                  fill="#2563eb"
+                />
+              )}
+            />
+          )}
+          
+          {/* Projection data points (Performance Points G) */}
+          {showProjection && (
+            <Scatter 
+              data={projectionData.map(d => ({
+                ...d,
+                seriesType: "projection"
+              }))} 
+              dataKey={yKey} 
+              fill="#7c3aed" 
+              name="Projection PP ID"
+              isAnimationActive={false}
+              // legendType="none"
+              shape={(props) => (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={3} 
+                  fill="#7c3aed"  
+                  stroke="#000000"
+                  strokeWidth={1}
+                />
+              )}
+            />
+          )}  
+          </ScatterChart>
+        </ResponsiveContainer>
+      )}
+    </ScatterSquare>
+  );
+};
+  
   const toFixed3 = (val) => {
     const num = Number(val);
     return isNaN(num) ? null : Number(num.toFixed(3));
@@ -1379,7 +1382,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         name: "Positive PP IDs",
         showlegend: true,
         legendrank: 1,
-        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>",
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
 
@@ -1398,14 +1401,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         name: "Negative PP IDs",
         showlegend: true,
         legendrank: 2,
-        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>",
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
 
-
+  
     if (showGrowthTarget && growthTargetData.length > 0) {
       const gtPoints3D = [];
-
+      
       growthTargetData.forEach(item => {
         // Add GT1 points
         if (item.RRGT1 !== undefined && item.PRGT1 !== undefined && item.ARGT1 !== undefined) {
@@ -1428,7 +1431,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           gtPoints3D.push({ x: item.RRGT5, y: item.PRGT5, z: item.ARGT5, ppId: item.ppId, gt: "GT5" });
         }
       });
-
+  
       if (gtPoints3D.length > 0) {
         plotData.push({
           x: gtPoints3D.map(gt => toFixed3(gt.x)),
@@ -1436,29 +1439,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           z: gtPoints3D.map(gt => toFixed3(gt.z)),
           type: "scatter3d",
           mode: "markers",
-          marker: {
+          marker: { 
             size: 4,
             color: '#2563eb',
             symbol: 'circle'
           },
           name: "Growth Targets",
-          hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>",
+          hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
         });
       }
     }
-
+    
     // Get plane data
     const receptiveData = ReceptiveBias();
     const balancedData = BalancedPlane();
     const productiveData = ProductivePlane();
-
+    
     const interaction1 = Interaction1();
     const interaction2 = Interaction2();
     const interaction3 = Interaction3();
     const interaction4 = Interaction4();
     const interaction5 = Interaction5();
-
-
+  
+    
     // Add average points if enabled
     if (showAverages) {
       plotData.push({
@@ -1467,7 +1470,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         z: averageData.map(avg => toFixed3(avg.ARN)),
         type: "scatter3d",
         mode: "markers",
-        marker: {
+        marker: { 
           size: 6,
           color: '#ff6b6b',
           symbol: 'diamond'
@@ -1475,10 +1478,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         name: "Average Points",
         showlegend: true,
         legendrank: 3,
-        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>",
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
-
+  
     // Add projection points if enabled
     if (showProjection) {
       plotData.push({
@@ -1487,7 +1490,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         z: projectionData.map(proj => toFixed3(proj.ARN)),
         type: "scatter3d",
         mode: "markers",
-        marker: {
+        marker: { 
           size: 4,
           color: '#8b5cf6',
           symbol: 'star'
@@ -1495,10 +1498,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         name: "Performance PP IDs",
         showlegend: true,
         legendrank: 4,
-        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>",
+        hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
       });
     }
-
+  
     // Add surfaces only for Third Parameter unit type
     if (unitType === "Third Parameter") {
       plotData.push(
@@ -1600,7 +1603,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         }
       );
     }
-
+  
     return (
       <Plot
         ref={plotDivRef}
@@ -1640,7 +1643,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           // callback — without the guard it would overwrite cameraRef with
           // the export camera before toImage finishes
           if (isExportingRef.current) return;
-
+        
           if (layoutUpdate['scene.camera']) {
             cameraRef.current = JSON.parse(
               JSON.stringify(layoutUpdate['scene.camera'])
@@ -1653,7 +1656,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       />
     );
   };
-
+  
   const renderSelectedChart = () => {
     if (!selectedChart) return null;
 
@@ -1664,7 +1667,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       padding: '10px',
       borderRadius: '8px'
     };
-
+  
     switch (selectedChart.id) {
       case "1":  // Interaction Class vs PP ID (Line) - No averages or projections for this chart
         const positives = tableData.filter(r => r.ppId > 0);
@@ -1677,9 +1680,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             </div>
           );
         }
-
+  
         return (
-          <div style={{ width: '100%', height: '100%' }}>
+          <div style={{ width: '100%', height: '100%' }}>  
             <ResponsiveContainer width="100%" height="100%">
               <LineChart margin={{ top: 20, right: 20, left: 0, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1687,26 +1690,26 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
                 </XAxis>
                 <YAxis dataKey="IC">
-                  <Label value="Interaction Class (IC)" angle={-90} position="insideLeft" offset={10}
-                    textAnchor='middle' />
+                  <Label value="Interaction Class (IC)" angle={-90} position="insideLeft" offset={10} 
+                  textAnchor='middle' />
                 </YAxis>
                 <Tooltip />
-                <Legend verticalAlign="bottom" align="center"
+                <Legend verticalAlign="bottom" align="center" 
                   wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
-
+    
                 {/* Reference Lines */}
                 {renderReferenceLinesForLineChart()}
-
-                <Line data={positives} dataKey="IC" type="linear" name="Positive PP IDs"
+                
+                <Line data={positives} dataKey="IC"  type="linear" name="Positive PP IDs"
                   stroke={chartProperties.positiveLineColor}
                   strokeDasharray={
                     chartProperties.positiveLineStyle === "dashed"
                       ? "6 4"
                       : chartProperties.positiveLineStyle === "dotted"
-                        ? "2 4"
-                        : chartProperties.positiveLineStyle === "dashdot"
-                          ? "8 4 2 4"
-                          : "0"
+                      ? "2 4"
+                      : chartProperties.positiveLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
                   }
                   strokeWidth={chartProperties.positiveLineThickness}
                   isAnimationActive={false}
@@ -1718,18 +1721,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                       chartProperties.positiveSymbolColor,
                       chartProperties.symbolScaleSize
                     )
-                  }
-                />
-                <Line data={negatives} dataKey="IC" type="linear" name="Negative PP IDs"
+                  } 
+                />  
+                <Line data={negatives} dataKey="IC"  type="linear"  name="Negative PP IDs"
                   stroke={chartProperties.negativeLineColor}
                   strokeDasharray={
                     chartProperties.negativeLineStyle === "dashed"
                       ? "6 4"
                       : chartProperties.negativeLineStyle === "dotted"
-                        ? "2 4"
-                        : chartProperties.negativeLineStyle === "dashdot"
-                          ? "8 4 2 4"
-                          : "0"
+                      ? "2 4"
+                      : chartProperties.negativeLineStyle === "dashdot"
+                      ? "8 4 2 4"
+                      : "0"
                   }
                   strokeWidth={chartProperties.negativeLineThickness}
                   isAnimationActive={false}
@@ -1743,46 +1746,46 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     )
                   }
                 />
-
+                
                 {/* IC Curves for line chart */}
                 {/* {renderICCurves(unitSignature, unitType, "line")} */}
-
+    
                 {/* Bias Lines for line chart */}
                 {/* {renderBiasLines(unitType, "line")} */}
               </LineChart>
             </ResponsiveContainer>
           </div>
         );
-
+  
       case "2": // PR vs RR
         return (
-          <div style={{ width: '100%', height: '100%' }}>
-            {renderScatter(tableData, "RRN", "PRN", "Receptive Ratio (RR)", "Productive Ratio (PR)", unitSignature, unitType)}
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "RRN", "PRN",  "Receptive Ratio (RR)",   "Productive Ratio (PR)", unitSignature, unitType) }
           </div>
         );
-
+        
       case "3": // AR vs RR
         return (
-          <div style={{ width: '100%', height: '100%' }}>
-            {renderScatter(tableData, "RRN", "ARN", "Receptive Ratio (RR)", "Acuity Ratio (AR)", unitSignature, unitType)}
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "RRN", "ARN", "Receptive Ratio (RR)",  "Acuity Ratio (AR)", unitSignature, unitType)}
           </div>
         );
-
+  
       case "4": // PR vs AR
-        return (
-          <div style={{ width: '100%', height: '100%' }}>
-            {renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)", "Acuity Ratio (AR)", unitSignature, unitType)}
+        return  (
+          <div style={{ width: '100%', height: '100%' }}>  
+            {renderScatter(tableData, "PRN", "ARN", "Productive Ratio (PR)",  "Acuity Ratio (AR)",  unitSignature, unitType)}
           </div>
         );
-      case "5":
-        return (
-          <div style={{ position: 'relative', width: '100%', height: '100%' }} className=''>
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full max-w-[900px] h-full">
-                {render3DScatter(tableData, unitType)}
+        case "5":
+          return (
+            <div style={{ position: 'relative', width: '100%', height: '100%' }} className=''>
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="w-full max-w-[900px] h-full">
+                  {render3DScatter(tableData, unitType)}
+                </div>
               </div>
-            </div>
-            {/* <div style={{ 
+              {/* <div style={{ 
                 position: 'absolute', 
                 top: 25, 
                 right: 10, 
@@ -1793,21 +1796,21 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               }}>
                 <div>3D Surface Plot</div>
               </div> */}
-          </div>
-        );
-
+            </div>
+          );
+  
       default:
         return null;
     }
   };
-
+  
 
   const exportToExcelWithImage = async () => {
     if (!selectedChart || !chartContainerRef.current) {
       alert("Please select a chart first.");
       return;
     }
-
+  
     try {
       // Extract key name from chart selection
       const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
@@ -1815,7 +1818,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         alert("Invalid chart selection.");
         return;
       }
-
+  
       // 1. Capture chart as image
       const chartContainer = chartContainerRef.current;
       const canvas = await html2canvas(chartContainer, {
@@ -1824,7 +1827,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         backgroundColor: '#ffffff',
         logging: false
       });
-
+  
       // Convert canvas to buffer
       const chartImageBuffer = await new Promise((resolve) => {
         canvas.toBlob((blob) => {
@@ -1833,11 +1836,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           reader.readAsArrayBuffer(blob);
         }, 'image/png');
       });
-
+  
       // 2. Create workbook with ExcelJS
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Chart Report');
-
+  
       // Set column widths
       worksheet.columns = [
         { width: 15 }, // Column A
@@ -1845,45 +1848,45 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         { width: 15 }, // Column C
         { width: 15 }, // Column D
       ];
-
+  
       // 3. Add header section
       const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
       headerRow.font = { size: 14, bold: true };
       headerRow.height = 30;
       worksheet.mergeCells('A1:D1');
       worksheet.getCell('A1').alignment = { horizontal: 'center' };
-
+  
       worksheet.addRow(['Chart Name:', selectedChart.name]);
       worksheet.addRow(['Key Name:', keyName]);
       worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
       worksheet.addRow([]); // Empty row
-
+  
       // 4. Add the chart image
       // Skip some rows for the image
       worksheet.addRow([]);
       worksheet.addRow([]);
       worksheet.addRow([]);
-
+  
       const imageId = workbook.addImage({
         buffer: chartImageBuffer,
         extension: 'png',
       });
-
+  
       // Insert image at specific position
       worksheet.addImage(imageId, {
         tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
         br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
       });
-
+  
       // Move down past the image
       let currentRow = 27;
-
+  
       // 5. Add data points header
       worksheet.getRow(currentRow).values = ['DATA POINTS'];
       worksheet.getRow(currentRow).font = { bold: true };
       worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
       currentRow++;
-
+  
       const dataHeaderRow = worksheet.getRow(currentRow);
       dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
       dataHeaderRow.font = { bold: true };
@@ -1893,7 +1896,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         fgColor: { argb: 'FFE8F4FF' } // Light blue background
       };
       currentRow++;
-
+  
       // 6. Add all data points
       tableData.forEach(row => {
         if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
@@ -1907,25 +1910,25 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           currentRow++;
         }
       });
-
+  
       // 7. Add summary section
       currentRow++;
       worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
       worksheet.getRow(currentRow).font = { bold: true };
       worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
       currentRow++;
-
+  
       // Calculate statistics
       const validData = tableData
         .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
         .map(row => row[keyName]);
-
+  
       if (validData.length > 0) {
         const min = Math.min(...validData);
         const max = Math.max(...validData);
         const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
         const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-
+  
         worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
         worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
         worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
@@ -1933,9 +1936,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
       } else {
         worksheet.getRow(currentRow++).values = ['No valid data points available'];
-        worksheet.mergeCells(`A${currentRow - 1}:D${currentRow - 1}`);
+        worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
       }
-
+  
       // 8. Add threshold information if available
       if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
         currentRow++;
@@ -1943,11 +1946,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         worksheet.getRow(currentRow).font = { bold: true };
         worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
         currentRow++;
-
+  
         worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
         worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
       }
-
+  
       // 9. Add some formatting
       // Format numeric cells
       for (let i = 27; i < currentRow; i++) {
@@ -1956,27 +1959,27 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           cell.numFmt = '0.000';
         }
       }
-
+  
       // 10. Save the workbook
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
       });
-
+      
       // Generate filename
       const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
+      
       // Download the file
       saveAs(blob, fileName);
-
+  
       console.log("✅ Excel file with chart image exported successfully:", fileName);
-
+  
     } catch (error) {
       console.error("❌ Failed to export Excel with image:", error);
       alert("Failed to export Excel file. Please try again. Error: " + error.message);
     }
   };
-
+  
   // Update your export button to ONLY use this function (remove the simple version)
   const handleExportGraph = () => {
     exportToExcelWithImage();
@@ -1997,12 +2000,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (a.ppId < 0 && b.ppId < 0) {
       return b.ppId - a.ppId; // Descending order for negatives
     }
-
+    
     // Handle positive PP IDs (ascending: 1, 2, 3, ...)
     if (a.ppId > 0 && b.ppId > 0) {
       return a.ppId - b.ppId; // Ascending order for positives
     }
-
+    
     // Negative PP IDs come before positive PP IDs
     if (a.ppId < 0 && b.ppId > 0) {
       return -1;
@@ -2010,7 +2013,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (a.ppId > 0 && b.ppId < 0) {
       return 1;
     }
-
+    
     return 0;
   });
 
@@ -2019,56 +2022,56 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       alert("No chart available to export");
       return;
     }
-
+  
     // ─── 3D Export ────────────────────────────────────────────────────────────
     if (selectedChart?.id === "5") {
       try {
         const plotEl = plotDivRef.current?.el ?? plotDivRef.current;
-
+    
         if (!plotEl) {
           alert("3D plot not ready for export");
           return;
         }
-
+    
         const Plotly = window.Plotly;
         if (!Plotly?.toImage) {
           alert("Plotly not available for export");
           return;
         }
-
+    
         // Snapshot the camera BEFORE touching anything
         const cameraToExport = JSON.parse(JSON.stringify(cameraRef.current));
         console.log("📷 Exporting with camera:", cameraToExport);
-
+    
         // Lock cameraRef — prevents onRelayout from overwriting it
         isExportingRef.current = true;
-
+    
         try {
           // Apply the saved camera to the live plot before capturing
           await Plotly.relayout(plotEl, {
             'scene.camera': cameraToExport
           });
-
+    
           // Wait for re-render
           await new Promise(resolve => setTimeout(resolve, 150));
-
+    
           // Capture at the correct camera state
           const chartDataURL = await Plotly.toImage(plotEl, {
             format: 'jpeg',
             width: 1200,
             height: 800,
           });
-
+    
           // Restore camera so live chart stays at user's position
           await Plotly.relayout(plotEl, {
             'scene.camera': cameraToExport
           });
-
+    
           // Composite: title + chart
           const titleElement = chartContainerRef.current.querySelector('h2');
           let titleCanvas = null;
           let titleHeight = 0;
-
+    
           if (titleElement) {
             titleCanvas = await html2canvas(titleElement, {
               scale: 2,
@@ -2077,48 +2080,48 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             });
             titleHeight = titleCanvas.height;
           }
-
+    
           const chartImg = new Image();
           await new Promise((resolve, reject) => {
             chartImg.onload = resolve;
             chartImg.onerror = reject;
             chartImg.src = chartDataURL;
           });
-
+    
           const compositeCanvas = document.createElement('canvas');
           const ctx = compositeCanvas.getContext('2d');
           compositeCanvas.width = chartImg.width;
           compositeCanvas.height = chartImg.height + titleHeight;
-
+    
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-
+    
           if (titleCanvas) {
             ctx.drawImage(titleCanvas, 0, 0, compositeCanvas.width, titleHeight);
           }
-
+    
           ctx.drawImage(chartImg, 0, titleHeight, compositeCanvas.width, chartImg.height);
-
+    
           compositeCanvas.toBlob((blob) => {
             saveAs(blob, `Plot Extraction.jpg`);
           }, 'image/jpeg', 0.95);
-
+    
         } finally {
           // Always unlock, even if export failed
           setTimeout(() => {
             isExportingRef.current = false;
           }, 300);
         }
-
+    
       } catch (error) {
         console.error('3D JPG Export failed:', error);
         alert('Failed to export 3D chart: ' + error.message);
         isExportingRef.current = false;
       }
-
+    
       return;
     }
-
+  
 
     if (selectedChart?.id === "1") {
       try {
@@ -2129,11 +2132,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           alert("Line chart not ready for export");
           return;
         }
-
+    
         const titleElement = chartContainer.querySelector('h2');
         let titleCanvas = null;
         let titleHeight = 0;
-
+    
         if (titleElement) {
           titleCanvas = await html2canvas(titleElement, {
             scale: 2,
@@ -2142,29 +2145,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           });
           titleHeight = titleCanvas.height;
         }
-
+    
         // Create a temporary container that exactly matches the original dimensions
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'absolute';
         tempContainer.style.top = '-9999px';
         tempContainer.style.left = '-9999px';
-
+        
         // Get the exact dimensions of the original container
         const originalRect = chartContainer.getBoundingClientRect();
         tempContainer.style.width = originalRect.width + 'px';
         tempContainer.style.height = originalRect.height + 'px';
         tempContainer.style.backgroundColor = '#ffffff';
         tempContainer.style.overflow = 'visible';
-
+        
         // Clone the entire chart container (not just the wrapper)
         const chartClone = chartContainer.cloneNode(true);
-
+        
         // REMOVE the title from the clone to avoid duplication
         const clonedTitle = chartClone.querySelector('h2');
         if (clonedTitle) {
           clonedTitle.remove();
         }
-
+        
         // Preserve all computed styles
         const originalStyles = window.getComputedStyle(chartContainer);
         chartClone.style.cssText = originalStyles.cssText;
@@ -2172,7 +2175,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         chartClone.style.height = originalRect.height + 'px';
         chartClone.style.position = 'relative';
         chartClone.style.backgroundColor = '#ffffff';
-
+        
         // Find and fix the legend position in the clone
         const legendInClone = chartClone.querySelector('.recharts-legend-wrapper');
         if (legendInClone) {
@@ -2181,18 +2184,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           if (originalLegend) {
             const legendRect = originalLegend.getBoundingClientRect();
             const containerRect = chartContainer.getBoundingClientRect();
-
+            
             // Calculate relative position
             const relativeTop = legendRect.top - containerRect.top;
             const relativeLeft = legendRect.left - containerRect.left;
-
+            
             // Apply exact same position to cloned legend
             legendInClone.style.position = 'absolute';
             legendInClone.style.top = relativeTop + 'px';
             legendInClone.style.left = relativeLeft + 'px';
             legendInClone.style.right = 'auto';
             legendInClone.style.bottom = 'auto';
-
+            
             // Also fix the legend items layout
             const legendItems = legendInClone.querySelectorAll('.recharts-legend-item');
             legendItems.forEach(item => {
@@ -2202,7 +2205,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             });
           }
         }
-
+        
         // Ensure the SVG maintains proper dimensions
         const svgInClone = chartClone.querySelector('svg');
         if (svgInClone) {
@@ -2215,7 +2218,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             svgInClone.style.height = svgRect.height + 'px';
           }
         }
-
+        
         // Fix the x-axis label position if needed
         const xAxisLabel = chartClone.querySelector('.recharts-xAxis .recharts-label');
         if (xAxisLabel) {
@@ -2226,13 +2229,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             xAxisLabel.style.transform = `translate(${labelRect.left - containerRect.left}px, ${labelRect.top - containerRect.top}px)`;
           }
         }
-
+        
         tempContainer.appendChild(chartClone);
         document.body.appendChild(tempContainer);
-
+        
         // Wait for rendering
         await new Promise(resolve => setTimeout(resolve, 200));
-
+        
         // Capture the clone (now without the title)
         const chartCanvas = await html2canvas(tempContainer, {
           scale: 2,
@@ -2243,31 +2246,31 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           windowWidth: originalRect.width,
           windowHeight: originalRect.height,
         });
-
+        
         // Clean up
         document.body.removeChild(tempContainer);
-
+        
         // Composite with title (only the original title, not the cloned one)
         const compositeCanvas = document.createElement('canvas');
         const ctx = compositeCanvas.getContext('2d');
         compositeCanvas.width = Math.max(chartCanvas.width, titleCanvas?.width || 0);
         compositeCanvas.height = chartCanvas.height + titleHeight;
-
+        
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-
+        
         if (titleCanvas) {
           ctx.drawImage(titleCanvas, 0, 0, compositeCanvas.width, titleHeight);
         }
-
+        
         ctx.drawImage(chartCanvas, 0, titleHeight, compositeCanvas.width, chartCanvas.height);
-
+        
         compositeCanvas.toBlob((blob) => {
           saveAs(blob, `Plot Extraction.jpg`);
         }, 'image/jpeg', 0.95);
-
+        
         console.log('Line chart export completed with preserved legend position');
-
+        
       } catch (error) {
         console.error('Line chart export failed:', error);
         alert('Failed to export line chart: ' + error.message);
@@ -2278,17 +2281,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // ─── 2D Export - FIXED VERSION ────────────────────────────────────────────
     try {
       const container = chartContainerRef.current;
-
+      
       // Store original styles
       const originalStyles = {
         overflow: container.style.overflow,
         height: container.style.height,
         maxHeight: container.style.maxHeight,
       };
-
+      
       // Instead of changing container height, create a clone for export
       // This prevents visual reflow on the visible chart
-
+      
       // Method 1: Use a hidden clone (preferred - no visual disruption)
       const cloneContainer = container.cloneNode(true);
       cloneContainer.style.position = 'absolute';
@@ -2298,18 +2301,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       cloneContainer.style.height = 'auto';
       cloneContainer.style.maxHeight = 'none';
       cloneContainer.style.overflow = 'visible';
-
+      
       // Fix any clipped elements in the clone
       const clippedElsInClone = cloneContainer.querySelectorAll('[class*="overflow"]');
       clippedElsInClone.forEach(el => {
         el.style.overflow = 'visible';
       });
-
+      
       document.body.appendChild(cloneContainer);
-
+      
       // Wait for clone to render
       await new Promise(resolve => setTimeout(resolve, 100));
-
+      
       const chartCanvas = await html2canvas(cloneContainer, {
         scale: 2,
         useCORS: true,
@@ -2319,10 +2322,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         scrollX: 0,
         scrollY: 0,
       });
-
+      
       // Clean up clone
       document.body.removeChild(cloneContainer);
-
+      
       // Alternative Method 2 (fallback if clone doesn't work well):
       // If the clone approach causes issues with chart rendering, use this instead:
       /*
@@ -2353,33 +2356,33 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       container.style.height = originalStyles.height;
       container.style.maxHeight = originalStyles.maxHeight;
       */
-
+      
       chartCanvas.toBlob((blob) => {
         saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
-
+      
       console.log('2D export completed without visual disruption');
-
+  
     } catch (error) {
       console.error('2D JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
     }
   };
 
-
+  
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
       return;
     }
-
+  
     try {
       const container = chartContainerRef.current;
-
+      
       // Find all scrollable children
       const scrollableElements = container.querySelectorAll('[class*="overflow"]');
       const originalStyles = [];
-
+      
       // Store and modify styles for container
       const containerOriginalStyles = {
         overflow: container.style.overflow,
@@ -2387,12 +2390,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         height: container.style.height,
         width: container.style.width,
       };
-
+      
       container.style.overflow = 'visible';
       container.style.maxHeight = 'none';
       container.style.height = 'auto';
       container.style.width = 'auto';
-
+      
       // Store and modify styles for all scrollable children
       scrollableElements.forEach((el) => {
         originalStyles.push({
@@ -2401,15 +2404,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           maxHeight: el.style.maxHeight,
           height: el.style.height,
         });
-
+        
         el.style.overflow = 'visible';
         el.style.maxHeight = 'none';
         el.style.height = 'auto';
       });
-
+      
       // Wait for layout to settle
       await new Promise(resolve => setTimeout(resolve, 200));
-
+      
       const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
@@ -2419,44 +2422,44 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         scrollX: 0,
         scrollY: 0,
       });
-
+  
       // Restore container styles
       container.style.overflow = containerOriginalStyles.overflow;
       container.style.maxHeight = containerOriginalStyles.maxHeight;
       container.style.height = containerOriginalStyles.height;
       container.style.width = containerOriginalStyles.width;
-
+      
       // Restore all scrollable children styles
       originalStyles.forEach(({ element, overflow, maxHeight, height }) => {
         element.style.overflow = overflow;
         element.style.maxHeight = maxHeight;
         element.style.height = height;
       });
-
+  
       const imgData = canvas.toDataURL('image/png');
-
+      
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-
+      
       const pdfWidth = imgWidth * 0.264583;
       const pdfHeight = imgHeight * 0.264583;
-
+      
       const pdf = new jsPDF({
         orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
         unit: 'mm',
         format: [pdfWidth, pdfHeight]
       });
-
+  
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
+      
       pdf.save(`chart-${selectedChart?.name.replace(/[^a-z0-9]/gi, '_')}-${new Date().getTime()}.pdf`);
-
+  
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
     }
   };
-
+  
   if (!visible) return null;
 
   return (
@@ -2467,8 +2470,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       </h2>
       <div className="flex h-full w-full my-2">
         <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1'>
-          <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
-            <h2 className="text-sm font-semibold">Plots</h2>
+            <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
+              <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => setShowCreateMaterial(true)} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" onClick={() => {
@@ -2512,7 +2515,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   </div>
                 )}
               </div>
-
+           
             </div>
           </div>
 
@@ -2524,7 +2527,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                   <div className="col-span-9 px-1 py-1 text-left">Entities</div>
                   <div className="col-span-3  py-1 text-left">ID</div>
                 </div>
-
+                
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' ? (
@@ -2588,21 +2591,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
               {/* Tab Content */}
               <div className="flex-1 overflow-auto p-2 h-full">
-                {activeAdjustPropertieTab === "Property editor" && (
-                  <>
-                    {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter-2d" || selectedChart.type === "scatter-3d" || selectedChart.type === "scatter") ? (
-                      <PropertyEditor
-                        properties={chartProperties}
-                        onChange={setChartProperties}
-                        selectedChart={selectedChart}
-
-                      />
-                    ) : (
-                      <div className="text-sm text-center text-gray-400 py-4 italic">
-                        NOT AVAILABLE FOR SELECTED CHART OR TABLE
-                      </div>
-                    )}
-                  </>
+                {activeAdjustPropertieTab === 'Property editor' && (
+                  <PropertyEditor
+                    properties={chartProperties}
+                    onChange={setChartProperties}
+                    selectedChart={selectedChart}
+                  />
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (() => {
@@ -2617,7 +2611,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
                   const cols = getTableColumns();
                   if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;
-
+                  
                   return (
                     <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16 pb-1">
                       {sortedData.length === 0 ? (
@@ -2699,7 +2693,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white ml-1">
-
+  
           <div ref={chartContainerRef} className="flex flex-col h-full">
             {selectedChart ? (
               <h2 className="text-lg text-center font-semibold text-gray-700 mt-2">
@@ -2711,7 +2705,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               </div>
             )}
 
-            <div className="h-full flex-1 flex items-center overflow-hidden p-2 min-h-0">
+            <div className="h-full flex-1 flex items-center overflow-hidden p-2 min-h-0">  
               <div className="w-full max-w-[900px] h-full">
                 {renderSelectedChart()}
               </div>
