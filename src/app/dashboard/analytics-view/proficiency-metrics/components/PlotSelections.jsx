@@ -253,16 +253,15 @@ useEffect(() => {
 
       setThresholdValue(extractedThresholds);
 
-      console.log("✅ Extracted Threshold Values:", extractedThresholds);
+      console.log(" Extracted Threshold Values:", extractedThresholds);
     } catch (error) {
-      console.error("❌ Failed to fetch threshold values:", error);
+      console.error(" Failed to fetch threshold values:", error);
       setThresholdValue(null);
     }
   };
 
   fetchThreshold();
 }, [unitId]);
-
 
 
   const copyToClipboard = async () => {
@@ -276,8 +275,6 @@ useEffect(() => {
       alert("Chart copied to clipboard!");
     }
   };
-
-
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -1365,12 +1362,14 @@ const exportAsPDF = async () => {
                               <Scatter
                                 name="Negative PP IDs"
                                 data={negativeData}
+                                hide={!chartProperties.negativeVisibility}
                                 fill={chartProperties.negativeLineColor} // red
                                 shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
                               />
                               <Scatter
                                 name="Positive PP IDs"
                                 data={positiveData}
+                                hide={!chartProperties.positiveVisibility}
                                 fill={chartProperties.positiveLineColor} // blue
                                 shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
                               />
@@ -1442,6 +1441,7 @@ const exportAsPDF = async () => {
                                   return `${percentage}`;
                                 }}
                                 labelLine={true}
+                                isAnimationActive={false}
                               >
                                 <Cell key="stable" fill="#10b981" />   {/* Green for Stable */}
                                 <Cell key="unstable" fill="#ef4444" /> {/* Red for Unstable */}
