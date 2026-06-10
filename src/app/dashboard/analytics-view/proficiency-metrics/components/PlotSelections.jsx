@@ -1362,12 +1362,14 @@ const exportAsPDF = async () => {
                               <Scatter
                                 name="Negative PP IDs"
                                 data={negativeData}
+                                hide={!chartProperties.negativeVisibility}
                                 fill={chartProperties.negativeLineColor} // red
                                 shape={(props) => renderCustomDot(props, chartProperties.negativeLineColor)}
                               />
                               <Scatter
                                 name="Positive PP IDs"
                                 data={positiveData}
+                                hide={!chartProperties.positiveVisibility}
                                 fill={chartProperties.positiveLineColor} // blue
                                 shape={(props) => renderCustomDot(props, chartProperties.positiveLineColor)}
                               />

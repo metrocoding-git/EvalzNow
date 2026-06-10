@@ -123,7 +123,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const chartContainerRef = useRef(null);
 
-  // console.log("filtres: ", filters);
+  // console.log("candiidate Id:-> ", candidateId);
+
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
     { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
@@ -139,7 +140,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     negativeVisibility: true,
     layer: 1,
     reference: false,
-
+  
     // Curve Label
     showLabel: true,
     labelType: "X Type",
@@ -147,12 +148,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     // labelPrefix: "X File name",
     // showLabelSuffix: false,
     // labelSuffix: "Y subcase",
-
+  
     // Line Attribute
     lineStyle: "solid",
     lineColor: "#3b82f6",
     lineThickness: 2,
-
+  
     // Symbol Attribute
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
@@ -160,7 +161,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
-
+  
     // Shade area
     shadeArea: "#ffffff",
     positiveLineColor: "#10b981", // Green for positive
@@ -487,6 +488,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         return;
       }
       
+      console.log("API CALL", {
+        unitId,
+        candidateId
+      });
+
       setLoading(true);
       setError(null);
       try {
@@ -757,77 +763,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     });
   };
 
-  // const getGrowthTargetPoints = (chartId, growthTargetData) => {
-  //   if (!growthTargetData || growthTargetData.length === 0) return [];
-  
-  //   const points = [];
-  
-  //   growthTargetData.forEach(item => {
-  //     switch (chartId) {
-  //       case "2": // RR vs PR (X: RRN, Y: PRN)
-  //         // Only add points where both values are non-zero
-  //         if (item.RRGT1 > 0 || item.PRGT1 > 0) {
-  //           points.push({ RRN: item.RRGT1, PRN: item.PRGT1, ppId: item.ppId, gt: "GT1" });
-  //         }
-  //         if (item.RRGT2 > 0 || item.PRGT2 > 0) {
-  //           points.push({ RRN: item.RRGT2, PRN: item.PRGT2, ppId: item.ppId, gt: "GT2" });
-  //         }
-  //         if (item.RRGT3 > 0 || item.PRGT3 > 0) {
-  //           points.push({ RRN: item.RRGT3, PRN: item.PRGT3, ppId: item.ppId, gt: "GT3" });
-  //         }
-  //         if (item.RRGT4 > 0 || item.PRGT4 > 0) {
-  //           points.push({ RRN: item.RRGT4, PRN: item.PRGT4, ppId: item.ppId, gt: "GT4" });
-  //         }
-  //         if (item.RRGT5 > 0 || item.PRGT5 > 0) {
-  //           points.push({ RRN: item.RRGT5, PRN: item.PRGT5, ppId: item.ppId, gt: "GT5" });
-  //         }
-  //         break;
-  
-  //       case "3": // AR vs RR (X: RRN, Y: ARN)
-  //         if (item.RRGT1 > 0 || item.ARGT1 > 0) {
-  //           points.push({ RRN: item.RRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
-  //         }
-  //         if (item.RRGT2 > 0 && item.ARGT2 > 0) {
-  //           points.push({ RRN: item.RRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
-  //         }
-  //         if (item.RRGT3 > 0 || item.ARGT3 > 0) {
-  //           points.push({ RRN: item.RRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
-  //         }
-  //         if (item.RRGT4 > 0 || item.ARGT4 > 0) {
-  //           points.push({ RRN: item.RRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
-  //         }
-  //         if (item.RRGT5 > 0 || item.ARGT5 > 0) {
-  //           points.push({ RRN: item.RRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
-  //         }
-  //         break;
-  
-  //       case "4": // PR vs AR (X: PRN, Y: ARN)
-  //         if (item.PRGT1 > 0 || item.ARGT1 > 0) {
-  //           points.push({ PRN: item.PRGT1, ARN: item.ARGT1, ppId: item.ppId, gt: "GT1" });
-  //         }
-  //         if (item.PRGT2 > 0 || item.ARGT2 > 0) {
-  //           points.push({ PRN: item.PRGT2, ARN: item.ARGT2, ppId: item.ppId, gt: "GT2" });
-  //         }
-  //         if (item.PRGT3 > 0 || item.ARGT3 > 0) {
-  //           points.push({ PRN: item.PRGT3, ARN: item.ARGT3, ppId: item.ppId, gt: "GT3" });
-  //         }
-  //         if (item.PRGT4 > 0 || item.ARGT4 > 0) {
-  //           points.push({ PRN: item.PRGT4, ARN: item.ARGT4, ppId: item.ppId, gt: "GT4" });
-  //         }
-  //         if (item.PRGT5 > 0 || item.ARGT5 > 0) {
-  //           points.push({ PRN: item.PRGT5, ARN: item.ARGT5, ppId: item.ppId, gt: "GT5" });
-  //         }
-  //         break;
-  
-  //       default:
-  //         break;
-  //     }
-  //   });
-  
-  //   console.log("✅ Filtered Growth Target Points:", points);
-  //   return points;
-  // };
-
   const getGrowthTargetPoints = (chartId, growthTargetData) => {
     if (!growthTargetData || growthTargetData.length === 0) return [];
   
@@ -872,7 +807,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const caseKey = signatureProfile.includes("Solid Balanced") ? "Case1: Solid Balanced" :
                   signatureProfile.includes("Rigorous Balanced") ? "Case2: Rigorous Balanced" :
                   signatureProfile.includes("Productive-Weighted") ? "Case3a: Productive-Weighted" :
-                  signatureProfile.includes("Receptive-Weighted") ? "Case3b: Receptive-Weighed" : null;
+                  signatureProfile.includes("Receptive-Weighted") ? "Case3b: Receptive-Weighted" : null;
     
     if (!caseKey || !ICCurveData[caseKey] || !ICCurveData[caseKey][icLevel]) {
       return null;
@@ -1002,6 +937,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const negativeData = data.filter(d => d.ppId < 0);
   
     return (
+      <div style={{ width: '100%', height: '100%', backgroundColor: chartProperties.shadeArea }}>
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 30 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -1031,12 +967,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           <Scatter
             data={positiveData}
             name="Positive PP IDs"
+            hide={!chartProperties.positiveVisibility}
             fill={chartProperties.positiveLineColor}
             shape={(props) =>
               applyChartStyling.symbolShape(
                 chartProperties.symbolStyle,
                 props,
-                chartProperties.positiveSymbolColor,
+                chartProperties.positiveLineColor,
                 chartProperties.symbolScaleSize
               )
             }
@@ -1047,12 +984,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           <Scatter
             data={negativeData}
             name="Negative PP IDs"
+            hide={!chartProperties.negativeVisibility}
             fill={chartProperties.negativeLineColor}
             shape={(props) =>
               applyChartStyling.symbolShape(
                 chartProperties.symbolStyle,
                 props,
-                chartProperties.negativeSymbolColor,
+                chartProperties.negativeLineColor,
                 chartProperties.symbolScaleSize
               )
             }
@@ -1062,6 +1000,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {renderReferenceLinesForLineChart()}
         </ScatterChart>
       </ResponsiveContainer>
+      </div>
     );
   };
 
@@ -1131,6 +1070,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const xTicks = generateTicks(FIXED_MIN, xMax, STEP);
   const yTicks = generateTicks(FIXED_MIN, yMax, STEP);
 
+  const showTableDataPoints = selectedSort !== "activateUnitLevel";
 
   return (
     <ScatterSquare backgroundColor={chartProperties.shadeArea}>
@@ -1242,37 +1182,40 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           {/* Bias Lines - These will now be ignored by tooltip */}
           {renderBiasLines(unitType, "scatter", xKey, yKey)}
           
+          
           {/* Positive PP IDs (Red) */}
-          {positiveData.length > 0 && (
+          {showTableDataPoints && positiveData.length > 0 && (
             <Scatter 
               data={positiveData.map(d => ({...d, seriesType: 'positive'}))} 
               dataKey={yKey} 
               name="Positive PP IDs"
               isAnimationActive={false}
+              hide={!chartProperties.positiveVisibility}
               fill={chartProperties.positiveLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  chartProperties.positiveSymbolColor,
+                  chartProperties.positiveLineColor,
                   chartProperties.symbolScaleSize
                 )
               }
             />
           )}
 
-          {negativeData.length > 0 && (
+          {showTableDataPoints && negativeData.length > 0 && (
             <Scatter 
               data={negativeData.map(d => ({...d, seriesType: 'negative'}))} 
               dataKey={yKey} 
               name="Negative PP IDs"
               isAnimationActive={false}
+              hide={!chartProperties.negativeVisibility}
               fill={chartProperties.negativeLineColor}
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.symbolStyle,
                   props,
-                  chartProperties.negativeSymbolColor,
+                  chartProperties.negativeLineColor,
                   chartProperties.symbolScaleSize
                 )
               }
@@ -1682,8 +1625,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         }
   
         return (
-          <div style={{ width: '100%', height: '100%' }}>  
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ width: '100%', height: '100%', backgroundColor: chartProperties.shadeArea }}>  
+            <ResponsiveContainer width="100%" height="100%" >
               <LineChart margin={{ top: 20, right: 20, left: 0, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
