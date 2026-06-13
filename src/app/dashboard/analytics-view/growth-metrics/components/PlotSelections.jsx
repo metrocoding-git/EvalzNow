@@ -1544,6 +1544,7 @@ const handleExportGraph = () => {
                                   return `${percentage}`;
                                 }}
                                 labelLine={true}
+                                isAnimationActive={false}
                               >
                                 <Cell key="stable" fill="#10b981" />
                                 <Cell key="unstable" fill="#ef4444" />
