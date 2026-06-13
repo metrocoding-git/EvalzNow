@@ -1,6 +1,6 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
-import { createCandidateMarks, createLeaderMarks } from "@/services/auxiliaryService";
+import { createCandidateMarks, createLeaderMarks, updateCandidateMarks, updateLeaderMarks } from "@/services/auxiliaryService";
 import { getUnitById } from "@/services/unitService";
 import { ListFilterPlus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -10,14 +10,17 @@ const impactTypes = ["Negative", "Positive"];
 
 const concernResolved = ["Yes", "No"];
 
-export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId}) {
-  const [form, setForm] = useState({
-    impactType: "",
-    concernIdentified: "",
-    identityDate: "",
-    concernResolved: "",
-    resolutionDate: "",
-  });
+const initialForm = {
+  staffLookupId: "",
+  impactType: "",
+  concernIdentified: "",
+  identityDate: "",
+  concernResolved: "",
+  resolutionDate: "",
+};
+
+export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId, editData, isOpen}) {
+  const [form, setForm] = useState(initialForm);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leaderData, setleaderData] = useState();
@@ -55,6 +58,29 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
     fetchLeaderData();
   }, [unitId]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+  
+    if (editData) {
+      setForm({
+        staffLookupId: editData.staffLookupId || "",
+        impactType: editData.impactType || "",
+        concernIdentified: editData.concernIdentified || "",
+        identityDate: editData.identityDate || "",
+        concernResolved: editData.concernResolved || "",
+        resolutionDate: editData.resolutionDate || "",
+      });
+    } else {
+      setForm(initialForm);
+    }
+  }, [editData, isOpen]);
+
+  useEffect(() => {
+    if (!editData) {
+      setForm(initialForm);
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -81,12 +107,19 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
         resolutionDate: form.resolutionDate,
       };
 
-      const response = await createLeaderMarks(data);
+      let response;
+
+      if (editData) {
+        response = await updateLeaderMarks(editData.id, data);
+      } else {
+        response = await createLeaderMarks(data);
+      }
   
       if (response) {
         onSuccess();
         onClose();
         setFormStatus("Leader Mark Created");
+        setForm(initialForm);
       }
 
     } catch (error) {
@@ -103,9 +136,10 @@ export default function LeaderMarksForm({ onClose, onSuccess, entryNumber = 1 , 
       
       {/* HEADER */}
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
+
         <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-5 h-5" />
-          Create Leader Mark
+          {editData ? "Edit Leader Mark" : "Create Leader Mark"}
         </div>
 
         <button
