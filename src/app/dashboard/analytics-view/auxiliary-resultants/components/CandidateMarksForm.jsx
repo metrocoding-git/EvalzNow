@@ -1,22 +1,24 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
-import { createCandidateMarks } from "@/services/auxiliaryService";
+import { createCandidateMarks, updateCandidateMarks } from "@/services/auxiliaryService";
 import { ListFilterPlus, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 const impactTypes = ["Negative", "Positive"];
 
 const concernResolved = ["Yes", "No"];
 
-export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId}) {
-  const [form, setForm] = useState({
-    impactType: "",
-    concernIdentified: "",
-    identityDate: "",
-    concernResolved: "",
-    resolutionDate: "",
-  });
+const initialForm = {
+  impactType: "",
+  concernIdentified: "",
+  identityDate: "",
+  concernResolved: "",
+  resolutionDate: "",
+};
+
+export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1 , unitId, candidateId, editData, isOpen}) {
+  const [form, setForm] = useState(initialForm);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setFormStatus } = useFormStatus();
@@ -35,6 +37,25 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
       form.identityDate.trim() !== ""
     );
   };
+
+
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        impactType: editData.impactType || "",
+        concernIdentified: editData.concernIdentified || "",
+        identityDate: editData.identityDate || "",
+        concernResolved: editData.concernResolved || "",
+        resolutionDate: editData.resolutionDate || "",
+      });
+    }
+  }, [editData, isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !editData) {
+      setForm(initialForm);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +83,14 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
         resolutionDate: form.resolutionDate,
       };
 
-      const response = await createCandidateMarks(data);
+      let response;
+
+      if (editData) {
+        response = await updateCandidateMarks(editData.id, data);
+      } else {
+        response = await createCandidateMarks(data);
+      }
+
   
       if (response) {
         onSuccess();
@@ -86,7 +114,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
       <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-2 text-black font-semibold">
           <ListFilterPlus className="w-5 h-5" />
-          Create Candidate Marks
+          {editData ? "Edit Candidate Mark" : "Create Candidate Marks"}
         </div>
 
         <button

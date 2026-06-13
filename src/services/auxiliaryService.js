@@ -47,6 +47,16 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const updateCandidateMarks = async (id, payload) => {
+    try {
+      const response = await api.put(`${API_ROUTES.AUXILIARY}/marks/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
   export const getNeedAssessment = async (unitId, candidateId) => {
     try {
       const response = await api.get(`${API_ROUTES.AUXILIARY}/assessment/${unitId}/${candidateId}`);
@@ -158,6 +168,15 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const updateLeaderMarks = async (id, payload) => {
+    try {
+      const response = await api.put(`${API_ROUTES.AUXILIARY}/leader/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching leader marks:", error);
+      throw error;
+    }
+  };
 
   export const getEffortBu = async (unitId, candidateId, filters = {}) => {
     const response = await api.get(
@@ -227,3 +246,5 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
       throw error;
     }
   };
+
+  

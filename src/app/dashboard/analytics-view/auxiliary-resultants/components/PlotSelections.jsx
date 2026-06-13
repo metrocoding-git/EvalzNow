@@ -35,8 +35,10 @@ const ROSTER_SUM_KEYS = [
   "unexcusedTardies",
 ];
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen, onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, refreshChainData, onChartSelect, 
-  filters, onResetFilters, onAssessmentChainSelect, onActiveChainIdChange  }) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen,
+   onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, 
+   refreshChainData, onChartSelect, filters, onResetFilters, onAssessmentChainSelect, 
+   onActiveChainIdChange, onCandidateMarkEdit, onLeaderMarkEdit  }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -55,6 +57,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [chainData, setChainData] = useState([]);
   const chartContainerRef = useRef(null);
   const [engageSummary, setEngageSummary] = useState(null);
+  const [editingCandidateMark, setEditingCandidateMark] = useState(null);
 
   const floatChartData = [
     { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
@@ -297,6 +300,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
   
   
+  const handleEditCandidateMark = (row) => {
+    setFormStatus("Editing...");
+  
+    onCandidateMarkEdit(row);
+  };
+
+  const handleEditLeaderMark = (row) => {
+    setFormStatus("Editing...");
+  
+    onLeaderMarkEdit(row);
+  };
+
   const aggregateRosterData = (roster = []) => {
     return roster.reduce((acc, row) => {
       ROSTER_SUM_KEYS.forEach((key) => {
@@ -1519,6 +1534,7 @@ const handleDeleteChain = async (chainId) => {
                   <th className="border border-gray-300 px-2 py-1  text-center">Identity Date</th>
                   <th className="border border-gray-300 px-2 py-1  text-center">Concern Resolved </th>
                   <th className="border border-gray-300 px-2 py-1  text-center">Resolution Date </th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Action</th>
                   
                 </tr>
               </thead>
@@ -1534,6 +1550,15 @@ const handleDeleteChain = async (chainId) => {
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.identityDate}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.concernResolved}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.resolutionDate}</td>
+                    <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
+                    <button
+                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => handleEditLeaderMark(item)}
+
+                      >
+                        EDIT
+                    </button>
+                  </td>
                   </tr>
                 ))}
               </tbody>
@@ -1880,6 +1905,7 @@ const handleDeleteChain = async (chainId) => {
                 <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Identity Date</th>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Concern Resolved</th>
                 <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Resolution Date</th>
+                <th className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -1891,6 +1917,15 @@ const handleDeleteChain = async (chainId) => {
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.identityDate}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernResolved}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.resolutionDate}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
+                    <button
+                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                        onClick={() => handleEditCandidateMark(row)}
+
+                      >
+                        EDIT
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

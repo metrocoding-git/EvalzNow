@@ -37,6 +37,8 @@ export default function AuxiliaryResultants() {
   const [showUnitImprovementForm, setShowUnitImprovementForm] = useState(false);
   const [showLeaderMarkForm, setShowLeaderMarkForm] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingCandidateMark, setEditingCandidateMark] = useState(null);
+  const [editingLeaderMark, setEditingLeaderMark] = useState(null);
 
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
@@ -394,6 +396,14 @@ export default function AuxiliaryResultants() {
                   setShowSecondary(true); // auto-open secondary
                 }}
                 onActiveChainIdChange={(chainId) => setActiveChainId(chainId)} 
+                onCandidateMarkEdit={(row) => {
+                  setEditingCandidateMark(row);
+                  setShowCandidateMarksForm(true);
+                }}
+                onLeaderMarkEdit={(row) => {
+                  setEditingLeaderMark(row);
+                  setShowLeaderMarkForm(true);
+                }}
               />}
 
                 
@@ -407,12 +417,16 @@ export default function AuxiliaryResultants() {
                         entryNumber={1} 
                         onClose={() => {
                           setFormStatus("Ready..");
-                          setShowCandidateMarksForm(false)}
+                          setShowCandidateMarksForm(false)
+                          setEditingCandidateMark(null);
+                          }
                         }
                         onSuccess={() => {
                           setRefreshMarks(prev => prev + 1)
                           setFormStatus("Candidate Mark Created");
                         }}
+                        editData={editingCandidateMark}
+                        isOpen={showCandidateMarksForm}
                       />
                     </div>
                   </div>
@@ -468,7 +482,7 @@ export default function AuxiliaryResultants() {
 
                     {/* Form container */}
                     <div className="relative bg-white w-1/2 h-auto rounded-lg shadow-2xl border border-gray-300 z-50">
-                      <LeaderMarksForm unitId={selectedUnitId} 
+                      <LeaderMarksForm unitId={selectedUnitId}  
                         entryNumber={1} 
                         candidateId={
                           selectedSort === "activateUnitLevel" 
@@ -477,12 +491,15 @@ export default function AuxiliaryResultants() {
                         }
                         onClose={() => {
                           setFormStatus("Ready..");
-                          setShowLeaderMarkForm(false)}
+                          setShowLeaderMarkForm(false)
+                          setEditingLeaderMark(null);}
                         }  
                         onSuccess={() => {
                           setRefreshLeaderMarks(prev => prev + 1)
                           setFormStatus("Leader Mark Created");
                         }}
+                        isOpen={showLeaderMarkForm}
+                        editData={editingLeaderMark}
                       />
                     </div>
                   </div>
@@ -490,7 +507,7 @@ export default function AuxiliaryResultants() {
 
               </div>
             </div>
-            {/* ------- */}
+            
           </div>
         </div>
       </div>
