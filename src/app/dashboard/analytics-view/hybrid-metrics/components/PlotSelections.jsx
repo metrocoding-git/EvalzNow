@@ -893,7 +893,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const [size, setSize] = useState(400);
   
     useEffect(() => {
-      // ✅ Observe the PARENT, not self — so the container doesn't influence its own measurement
+      // Observe the PARENT, not self — so the container doesn't influence its own measurement
       const el = wrapperRef.current?.parentElement;
       if (!el) return;
   
@@ -917,7 +917,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',   // ✅ prevent the square from pushing parent bigger
+          overflow: 'hidden',   //
         }}
       >
         <div style={{
@@ -1035,12 +1035,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   console.log("🔵 Growth Target Points for chart", selectedChart?.id, ":", growthTargetPoints);
   
-  // Separate positive and negative PP IDs for scatter plots
-  const positiveData = tableData.filter(item => item.ppId > 0);
-  const negativeData = tableData.filter(item => item.ppId < 0);
   
-  console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
-  console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
+  // console.log("🔍 Positive PP IDs data:", positiveData.length, "points");
+  // console.log("🔍 Negative PP IDs data:", negativeData.length, "points");
 
   const FIXED_MIN = 0.1;
   const FIXED_MAX = 1.0;
@@ -1070,7 +1067,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const xTicks = generateTicks(FIXED_MIN, xMax, STEP);
   const yTicks = generateTicks(FIXED_MIN, yMax, STEP);
 
-  const showTableDataPoints = selectedSort !== "activateUnitLevel";
+  const hasSelectedPp = filters?.selectedPpId !== null && filters?.selectedPpId !== undefined;
+
+  const showTableDataPoints =
+    selectedSort !== "activateUnitLevel" || hasSelectedPp;
+
+  const filteredTableData =
+    selectedSort === "activateUnitLevel" && hasSelectedPp
+      ? tableData.filter(d => d.ppId === filters.selectedPpId)
+      : tableData;
+
+  // Separate positive and negative PP IDs for scatter plots
+  const positiveData = tableData.filter(item => item.ppId > 0);
+  const negativeData = tableData.filter(item => item.ppId < 0);
+  
 
   return (
     <ScatterSquare backgroundColor={chartProperties.shadeArea}>
