@@ -160,6 +160,15 @@ export default function HybridMetrics() {
     }
   };
 
+  useEffect(() => {
+    if (
+      selectedSort === "activateCandidateLevel" &&
+      data.length > 0
+    ) {
+      setSelectedCandidateIds([]); 
+    }
+  }, [selectedSort, data]);
+
   const sortedData = [...data].sort((a, b) => {
     if (sortKey === "id") {
       return sortOrder === "asc" ? a.id - b.id : b.id - a.id;
@@ -382,7 +391,9 @@ export default function HybridMetrics() {
                 {ScoresOpen && <PlotSelections selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData.unitType} unitSignature ={unitData.signatureProfile}
                   candidateId={
                     selectedSort === "activateUnitLevel"
-                      ? selectedCandidateIds.join(",")
+                      ? selectedCandidateIds.length > 0
+                        ? selectedCandidateIds
+                        : null
                       : activeCandidateId
                   } onInteractionClassSelect={setIsSelectedInteractionClass} filters={secondaryValues} onResetFilters={resetFilters} />}
               </div>

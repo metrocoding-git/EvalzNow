@@ -30,6 +30,7 @@ export default function SettingsPage() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.removeItem("activeClientId");
+    sessionStorage.removeItem("selectedUnitId");
     router.push("/login");
   };
 

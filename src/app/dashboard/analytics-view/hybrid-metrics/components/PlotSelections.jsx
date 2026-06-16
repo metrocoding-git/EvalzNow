@@ -507,7 +507,9 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         // Build API filters
         const apiFilters = {
           unitId: unitId,
-          candidate_id: candidateId,
+          candidate_id: Array.isArray(candidateId)
+  ? candidateId.join(",")
+  : candidateId
         };
   
         // Handle PP ID range - special case when both are the same
@@ -1016,7 +1018,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const isPositiveTarget = targetPpId > 0;
 
   // Check if we should show averages
-  const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+  const hasCandidates =
+  Array.isArray(candidateId)
+    ? candidateId.length > 0
+    : !!candidateId;
+
+const showAverages =
+  filters?.unitMode === "averages" &&
+  averageData.length > 0 &&
+  hasCandidates;
   // Check if we should show projection data
   const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
   // Check if we should show growth target data
@@ -1309,7 +1319,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   const render3DScatter = (tableData, unitType) => {
     // Check if we should show averages
-    const showAverages = filters?.unitMode === "averages" && averageData.length > 0;
+    const hasCandidates = Array.isArray(candidateId) ? candidateId.length > 0 : !!candidateId;
+
+    const hasSelectedPp = filters?.selectedPpId !== null && filters?.selectedPpId !== undefined;
+
+    const showTableDataPoints = selectedSort !== "activateUnitLevel" || hasSelectedPp;
+
+    const showAverages = filters?.unitMode === "averages" && averageData.length > 0 && hasCandidates;
+
     // Check if we should show projection data
     const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
     // Check if we should show growth target data
@@ -1321,16 +1338,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const plotData = [];
 
     //  Positive PP IDs
-    if (positiveData.length > 0) {
+    if (showTableDataPoints && positiveData.length > 0 && chartProperties.positiveVisibility) {
       plotData.push({
         x: positiveData.map(r => toFixed3(r.RRN)),
         y: positiveData.map(r => toFixed3(r.PRN)),
         z: positiveData.map(r => toFixed3(r.ARN)),
         type: "scatter3d",
         mode: "markers",
+        
         marker: {
-          size: 4,
-          color: "#22c55e" // green
+          size: chartProperties.symbolScaleSize,
+          color: chartProperties.positiveLineColor // green
         },
         name: "Positive PP IDs",
         showlegend: true,
@@ -1340,7 +1358,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
 
     //  Negative PP IDs
-    if (negativeData.length > 0) {
+    if (showTableDataPoints && negativeData.length > 0 && chartProperties.negativeVisibility) {
       plotData.push({
         x: negativeData.map(r => toFixed3(r.RRN)),
         y: negativeData.map(r => toFixed3(r.PRN)),
@@ -1348,8 +1366,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         type: "scatter3d",
         mode: "markers",
         marker: {
-          size: 4,
-          color: "#ef4444" // red
+          size: chartProperties.symbolScaleSize,
+          color: chartProperties.negativeLineColor // red
         },
         name: "Negative PP IDs",
         showlegend: true,
