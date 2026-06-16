@@ -1338,16 +1338,17 @@ const showAverages =
     const plotData = [];
 
     //  Positive PP IDs
-    if (showTableDataPoints && positiveData.length > 0) {
+    if (showTableDataPoints && positiveData.length > 0 && chartProperties.positiveVisibility) {
       plotData.push({
         x: positiveData.map(r => toFixed3(r.RRN)),
         y: positiveData.map(r => toFixed3(r.PRN)),
         z: positiveData.map(r => toFixed3(r.ARN)),
         type: "scatter3d",
         mode: "markers",
+        
         marker: {
-          size: 4,
-          color: "#22c55e" // green
+          size: chartProperties.symbolScaleSize,
+          color: chartProperties.positiveLineColor // green
         },
         name: "Positive PP IDs",
         showlegend: true,
@@ -1357,7 +1358,7 @@ const showAverages =
     }
 
     //  Negative PP IDs
-    if (showTableDataPoints && negativeData.length > 0) {
+    if (showTableDataPoints && negativeData.length > 0 && chartProperties.negativeVisibility) {
       plotData.push({
         x: negativeData.map(r => toFixed3(r.RRN)),
         y: negativeData.map(r => toFixed3(r.PRN)),
@@ -1365,8 +1366,8 @@ const showAverages =
         type: "scatter3d",
         mode: "markers",
         marker: {
-          size: 4,
-          color: "#ef4444" // red
+          size: chartProperties.symbolScaleSize,
+          color: chartProperties.negativeLineColor // red
         },
         name: "Negative PP IDs",
         showlegend: true,
