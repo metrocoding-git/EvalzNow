@@ -543,7 +543,7 @@ export default function DataReports() {
                                 <span className="text-gray-800">
                                   {item.firstName}
                                 </span>
-                                <span>{item.id}</span>
+                                <span>{item.candidateId}</span>
                               </div>
                             ))}
                           </div>

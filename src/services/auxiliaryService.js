@@ -138,6 +138,26 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
     }
   };
 
+  export const deleteLeaderMark = async (id) => {
+    try {
+      const response = await api.delete(`${API_ROUTES.AUXILIARY}/leader/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching leader marks:", error);
+      throw error;
+    }
+  };
+
+  export const deleteCandidateMark = async (id) => {
+    try {
+      const response = await api.delete(`${API_ROUTES.AUXILIARY}/marks/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching candidate marks:", error);
+      throw error;
+    }
+  };
+
   export const deleteAssessmentChain = async (id) => {
     try {
       const response = await api.delete(`${API_ROUTES.AUXILIARY}/chain/${id}`);

@@ -1,11 +1,14 @@
 "use client";
 import { useFormStatus } from "@/context/FormStatusContext";
-import { createCandidateMarks, createUnitImprovement } from "@/services/auxiliaryService";
+import { createCandidateMarks, createUnitImprovement, updateUnitImprovement } from "@/services/auxiliaryService";
 import { ListFilterPlus, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 1 , unitId}) {
+const initialForm = {
+  lesson: ""
+};
+export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 1 , unitId, editData, isOpen}) {
   const [form, setForm] = useState({
     lesson: ""});
   const { setFormStatus } = useFormStatus();
@@ -21,6 +24,20 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
       form.lesson.trim() !== ""
     );
   };
+
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        lesson: editData.lesson || "",
+      });
+    }
+  }, [editData, isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !editData) {
+      setForm(initialForm);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,15 +61,22 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
         unitId: unitId,
         lesson: form.lesson,
       };
-  
-      const response = await createUnitImprovement(data);
+
+      let response;
+      
+      if (editData) {
+        response = await updateUnitImprovement(editData.id, data);
+      } else {
+        response = await createUnitImprovement(data);
+      }
   
       if (response) {
         onSuccess();
         onClose();
         setFormStatus("Assessment Chain Created");
-        
+        setForm(initialForm);
       }
+
     } catch (error) {
       toast.error("Failed to save entry.");
       setFormStatus("Creating...");
