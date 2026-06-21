@@ -39,6 +39,7 @@ export default function AuxiliaryResultants() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingCandidateMark, setEditingCandidateMark] = useState(null);
   const [editingLeaderMark, setEditingLeaderMark] = useState(null);
+  const [editingUnitImprovement, setEditingUnitImprovement] = useState(null);
 
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
@@ -328,7 +329,7 @@ export default function AuxiliaryResultants() {
                               <span className="text-gray-800">
                                 {item.firstName}
                               </span>
-                              <span className="text-gray-600">{item.id}</span>
+                              <span className="text-gray-600">{item.candidateId}</span>
                             </div>
                           ))}
                         </div>
@@ -404,6 +405,10 @@ export default function AuxiliaryResultants() {
                   setEditingLeaderMark(row);
                   setShowLeaderMarkForm(true);
                 }}
+                onUnitImprovmentEdit={(row) => {
+                  setEditingUnitImprovement(row); 
+                  setShowUnitImprovementForm(true);
+                }}
               />}
 
                 
@@ -465,12 +470,16 @@ export default function AuxiliaryResultants() {
                         }
                         onClose={() => {
                           setFormStatus("Ready..");
-                          setShowUnitImprovementForm(false)}
+                          setShowUnitImprovementForm(false)
+                          setEditingUnitImprovement(null);
+                        }
                         }  
                         onSuccess={() => {
                           setRefreshUnitImprovement(prev => prev + 1)
                           setFormStatus("Unit Improvement Created");
                         }}
+                        editData={editingUnitImprovement}
+                        isOpen={showUnitImprovementForm}
                       />
                     </div>
                   </div>

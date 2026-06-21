@@ -13,7 +13,7 @@ import {
   Scatter
 } from 'recharts';
 import PropertyEditor from '../../components/PropertyEditor';
-import { createNeedAssessment, createUnitImprovement, deleteAssessmentChain, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
+import { createNeedAssessment, createUnitImprovement, deleteAssessmentChain, deleteCandidateMark, deleteLeaderMark, deleteNeedAssessment, deleteUnitImprovement, getAssessmentChain, getAuxiliarydata, getCandidateMarks, getLeaderMarks, getNeedAssessment, getNeedAssessmentSummary, getUnitImprovement, updateNeedAssessment, updateUnitImprovement } from '@/services/auxiliaryService';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
@@ -38,7 +38,7 @@ const ROSTER_SUM_KEYS = [
 export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, oncandidateFormOpen, onUnitImprovementFormOpen, onLeaderMarkFormOpen,
    onCreateChainFormOpen, refresh, refreshUnitImprovement, refreshLeaderMarks, 
    refreshChainData, onChartSelect, filters, onResetFilters, onAssessmentChainSelect, 
-   onActiveChainIdChange, onCandidateMarkEdit, onLeaderMarkEdit  }) {
+   onActiveChainIdChange, onCandidateMarkEdit, onLeaderMarkEdit, onUnitImprovmentEdit  }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -305,11 +305,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
     onCandidateMarkEdit(row);
   };
+  
 
   const handleEditLeaderMark = (row) => {
     setFormStatus("Editing...");
   
     onLeaderMarkEdit(row);
+  };
+
+  const handleEditUnitImprovment = (row) => {
+    setFormStatus("Editing...");
+  
+    onUnitImprovmentEdit(row);
   };
 
   const aggregateRosterData = (roster = []) => {
@@ -530,30 +537,28 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
   // console.log("unit improvement: ", unitImprovement);
 
+  const fetchCandidateMarks = async () => {
+    if (!unitId || !candidateId) {
+      setCandidateMarks([]);
+      return;
+    }
+  
+    setLoading(true);
+    setError(null);
+  
+    try {
+      const result = await getCandidateMarks(unitId, candidateId);
+      setCandidateMarks(result.data);
+    } catch (err) {
+      console.error("Failed to fetch candidate marks:", err);
+      setError("Failed to load table data.");
+      setCandidateMarks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    const fetchCandidateMarks = async () => {
-      if (!unitId || !candidateId) {
-        setCandidateMarks([]); // clear previous table data
-        return;
-      }
-  
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await getCandidateMarks(unitId, candidateId);  
-        
-        setCandidateMarks(result.data);
-        
-      } catch (err) {
-        console.error("Failed to  candidate marks data:", err);
-        setError("Failed to load table data.");
-        
-        setCandidateMarks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
     fetchCandidateMarks();
   }, [unitId, candidateId, refresh]);
 
@@ -604,6 +609,61 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }, {});
   }, [insertScores]);
   
+  const handleDeleteUnitImprovment = async (row) => {
+
+    try {
+      setFormStatus("Deleting...");
+  
+      await deleteUnitImprovement(Number(row.id));
+
+      setUnitImprovement(prev =>
+        prev.filter(mark => mark.id !== row.id)
+      );
+
+      setFormStatus("");
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+    
+
+  };
+
+  const handleDeleteCandidateMark = async (row) => {
+
+    try {
+      setFormStatus("Deleting...");
+  
+      await deleteCandidateMark(Number(row.id));
+
+      setCandidateMarks(prev =>
+        prev.filter(mark => mark.id !== row.id)
+      );
+  
+      setFormStatus("");
+    }
+    
+    catch (error) {
+      console.error("Delete failed:", error);
+    }
+  };
+
+  const handleDeleteLeaderMark = async (row) => {
+    try {
+      setFormStatus("Deleting...");
+    
+      await deleteLeaderMark(Number(row.id));
+
+      setleaderMarks(prev =>
+        prev.filter(mark => mark.id !== row.id)
+      );
+
+      setFormStatus("");
+
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+
+  };
 
   // Merge need assessments into tableData by PP ID
   const mergedTableData = tableData.map(row => {
@@ -1551,14 +1611,24 @@ const handleDeleteChain = async (chainId) => {
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.concernResolved}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.resolutionDate}</td>
                     <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
-                    <button
-                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                        onClick={() => handleEditLeaderMark(item)}
+                      <div className='flex gap-2 items-center'>
+                        <button
+                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            onClick={() => handleEditLeaderMark(item)}
 
-                      >
-                        EDIT
-                    </button>
-                  </td>
+                          >
+                            EDIT
+                        </button>
+                        <span>/</span>
+                        <button
+                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            onClick={() => handleDeleteLeaderMark(item)}
+
+                          >
+                            DELETE
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1597,7 +1667,8 @@ const handleDeleteChain = async (chainId) => {
                   <th className="border border-gray-300 px-2 py-1  text-center">Entry</th>
                   <th className="border border-gray-300 px-2 py-1  text-center">Lesson Learned & Improvements</th>
                   <th className="border border-gray-300 px-2 py-1  text-center">Linked BIDs</th>
-                  <th className="border border-gray-300 px-2 py-1  text-center"> BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">BIDs</th>
+                  <th className="border border-gray-300 px-2 py-1  text-center">Action</th>
                 </tr>
               </thead>
       
@@ -1620,6 +1691,25 @@ const handleDeleteChain = async (chainId) => {
                     </td>
                     <td className="border border-gray-300 px-2 py-1  text-center">
                       {item.benchmarkIds.length > 0 ? item.benchmarkIds.join(", ") : "-"}
+                    </td>
+                    <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
+                      <div className='flex gap-2 items-center justify-center'>
+                        <button
+                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            onClick={() => handleEditUnitImprovment(item)}
+
+                          >
+                            EDIT
+                        </button>
+                        <span>/</span>
+                        <button
+                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            onClick={() => handleDeleteUnitImprovment(item)}
+
+                          >
+                            DELETE
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1918,13 +2008,24 @@ const handleDeleteChain = async (chainId) => {
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernResolved}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.resolutionDate}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
-                    <button
-                        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
-                        onClick={() => handleEditCandidateMark(row)}
+                    <div className='flex gap-2 items-center'>
+                      <button
+                          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          onClick={() => handleEditCandidateMark(row)}
 
-                      >
-                        EDIT
-                    </button>
+                        >
+                          EDIT
+                      </button>
+                      <span>/</span>
+                      <button
+                          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          onClick={() => handleDeleteCandidateMark(row)}
+
+                        >
+                          DELETE
+                      </button>
+                    </div>
+                    
                   </td>
                 </tr>
               ))}

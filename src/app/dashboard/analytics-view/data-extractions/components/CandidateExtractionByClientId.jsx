@@ -146,7 +146,7 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
           rows.push(buildRow([
             candidate.lastName,
             candidate.firstName,
-            candidate.candidateId,
+            candidate.candidateCode,
             candidate.candidateStartDate,
             candidate.nationality,
             candidate.gender,
@@ -267,6 +267,6 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
       });
     });
   
-    downloadCSV( HEADERS, rows, `client_${clientId}_candidates.csv`);
+    downloadCSV( HEADERS, rows, `Data Extraction.csv`);
   };
   

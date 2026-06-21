@@ -158,7 +158,7 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
       rows.push([
         safe(candidate.lastName),
         safe(candidate.firstName),
-        safe(candidate.candidateId, "number"),
+        safe(candidate.candidateCode),
         safe(candidate.candidateStartDate, "date"),
         safe(candidate.nationality),
         safe(candidate.gender),
@@ -274,5 +274,5 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
     });
   });
 
-  downloadCSV(headers, rows, `Active_Unit_Candidates_${Date.now()}.csv`);
+  downloadCSV(headers, rows, `Data Extraction.csv`);
 };
