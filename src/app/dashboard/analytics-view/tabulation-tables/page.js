@@ -290,7 +290,7 @@ export default function TabulationTables() {
                                 <span className="text-gray-800">
                                   {item.firstName}
                                 </span>
-                                <span className="text-gray-600">{item.id}</span>
+                                <span className="text-gray-600">{item.candidateId}</span>
                               </div>
                             ))}
                           </div>

@@ -9,7 +9,7 @@ import {
   Scatter,
   ReferenceLine
 } from 'recharts';
-import PropertyEditor from '../../components/PropertyEditor';
+import PropertyEditor from '../components/PropertyEditor';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 // import Plot from "react-plotly.js";
 import IcCurve from './IcCurveData';
@@ -161,6 +161,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
+
+      // Average Points
+    averageVisibility: true,
+    averageColor: "#ff6b6b",
+    averageSymbolStyle: "circle",
+    averageSymbolScaleSize: 3,
   
     // Shade area
     shadeArea: "#ffffff",
@@ -349,7 +355,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               width={size * 2}
               height={size * 2}
               fill={color}
-              stroke="#000"
             />
           );
         case "triangle":
@@ -363,6 +368,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               fill={color}
             />
           );
+        
+        case "diamond":
+          return (
+            <polygon
+              points={`
+                ${props.cx},${props.cy - size}
+                ${props.cx + size},${props.cy}
+                ${props.cx},${props.cy + size}
+                ${props.cx - size},${props.cy}
+              `}
+              fill={color}
+            />
+          );
+
         default: // circle
           return (
             <circle
@@ -895,17 +914,30 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const [size, setSize] = useState(400);
   
     useEffect(() => {
-      // Observe the PARENT, not self — so the container doesn't influence its own measurement
-      const el = wrapperRef.current?.parentElement;
+      const el = wrapperRef.current;
       if (!el) return;
   
       const observer = new ResizeObserver(([entry]) => {
-        const { width, height } = entry.contentRect;
-        const square = Math.floor(Math.min(width, height)) - 16;
-        setSize(Math.max(square, 100)); // minimum 100px
+      const { width, height } = entry.contentRect;
+
+      // Ignore transient near-zero measurements caused by sibling re-renders
+      // (e.g. switching the Property editor / Table tab triggers a reflow
+      // tick where this container is briefly measured smaller than it
+      // should be). A genuine resize settles at a stable non-zero size,
+      // so this only filters out the single-tick collapse.
+      if (width < 50 || height < 50) return;
+
+      const square = Math.min(
+        width - 16,
+        height - 16,
+        900
+      );
+
+      setSize(Math.max(square, 100));
       });
   
       observer.observe(el);
+  
       return () => observer.disconnect();
     }, []);
   
@@ -913,23 +945,74 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       <div
         ref={wrapperRef}
         style={{
-          width: '100%',
-          height: '100%',
+          width: "100%",
+          height: "100%",
           backgroundColor,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',   //
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <div style={{
-          width: size,
-          height: size,
-          flexShrink: 0,
-          overflow: 'hidden',
-        }}>
+        <div
+          style={{
+            width: size,
+            height: size,
+            flexShrink: 0,
+          }}
+        >
           {children(size)}
         </div>
+      </div>
+    );
+  };
+
+  // Same resize-stability idea as ScatterSquare, but keeps the natural
+  // rectangle shape of the parent instead of forcing a square. Used for
+  // the IC vs PP ID chart so it matches the Line chart's full-rectangle
+  // sizing (used at candidate level) instead of being boxed into a square.
+  const ResizeStableBox = ({ children, backgroundColor }) => {
+    const wrapperRef = useRef(null);
+    const [dims, setDims] = useState({ width: 600, height: 400 });
+
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (!el) return;
+
+      const observer = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+
+        // Ignore transient near-zero / collapsed measurements caused by
+        // sibling re-renders (e.g. switching the Property editor / Table
+        // tab can trigger a reflow tick where this container is briefly
+        // measured smaller than it should be). A genuine resize settles
+        // at a stable non-zero size, so this only filters out the
+        // single-tick collapse rather than masking real resizes.
+        if (width < 50 || height < 50) return;
+
+        setDims(prev => {
+          // Skip no-op updates to avoid extra re-renders
+          if (Math.abs(prev.width - width) < 1 && Math.abs(prev.height - height) < 1) {
+            return prev;
+          }
+          return { width, height };
+        });
+      });
+
+      observer.observe(el);
+
+      return () => observer.disconnect();
+    }, []);
+
+    return (
+      <div
+        ref={wrapperRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor,
+        }}
+      >
+        {children(dims.width, dims.height)}
       </div>
     );
   };
@@ -939,70 +1022,72 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     const negativeData = data.filter(d => d.ppId < 0);
   
     return (
-      <div style={{ width: '100%', height: '100%', backgroundColor: chartProperties.shadeArea }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 30 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-  
-          <XAxis dataKey="ppId" type="number">
-            <Label value="PP ID" position="bottom" offset={2} textAnchor="middle" />
-          </XAxis>
-  
-          <YAxis dataKey="IC">
-            <Label
-              value="Interaction Class (IC)"
-              angle={-90}
-              position="insideLeft"
-              offset={10}
-              textAnchor="middle"
-            />
-          </YAxis>
-  
-          <Tooltip />
-          <Legend
-            verticalAlign="bottom"
-            align="center"
-            wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-          />
-  
-          {/* Positive */}
-          <Scatter
-            data={positiveData}
-            name="Positive PP IDs"
-            hide={!chartProperties.positiveVisibility}
-            fill={chartProperties.positiveLineColor}
-            shape={(props) =>
-              applyChartStyling.symbolShape(
-                chartProperties.symbolStyle,
-                props,
-                chartProperties.positiveLineColor,
-                chartProperties.symbolScaleSize
-              )
-            }
-            isAnimationActive={false}
-          />
-  
-          {/* Negative */}
-          <Scatter
-            data={negativeData}
-            name="Negative PP IDs"
-            hide={!chartProperties.negativeVisibility}
-            fill={chartProperties.negativeLineColor}
-            shape={(props) =>
-              applyChartStyling.symbolShape(
-                chartProperties.symbolStyle,
-                props,
-                chartProperties.negativeLineColor,
-                chartProperties.symbolScaleSize
-              )
-            }
-            isAnimationActive={false}
-          />
+      <ResizeStableBox backgroundColor={chartProperties.shadeArea}>
+        {(width, height) => (
+          <ResponsiveContainer width={width} height={height}>
+            <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 90 }}>
+              <CartesianGrid strokeDasharray="3 3" />
 
-          {renderReferenceLinesForLineChart()}
-        </ScatterChart>
-      </ResponsiveContainer>
-      </div>
+              <XAxis dataKey="ppId" type="number">
+                <Label value="PP ID" position="bottom" offset={2} textAnchor="middle" />
+              </XAxis>
+
+              <YAxis dataKey="IC">
+                <Label
+                  value="Interaction Class (IC)"
+                  angle={-90}
+                  position="insideLeft"
+                  offset={10}
+                  textAnchor="middle"
+                />
+              </YAxis>
+
+              <Tooltip />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+              />
+
+              {/* Positive */}
+              <Scatter
+                data={positiveData}
+                name="Positive PP IDs"
+                hide={!chartProperties.positiveVisibility}
+                fill={chartProperties.positiveLineColor}
+                shape={(props) =>
+                  applyChartStyling.symbolShape(
+                    chartProperties.symbolStyle,
+                    props,
+                    chartProperties.positiveLineColor,
+                    chartProperties.symbolScaleSize
+                  )
+                }
+                isAnimationActive={false}
+              />
+
+              {/* Negative */}
+              <Scatter
+                data={negativeData}
+                name="Negative PP IDs"
+                hide={!chartProperties.negativeVisibility}
+                fill={chartProperties.negativeLineColor}
+                shape={(props) =>
+                  applyChartStyling.symbolShape(
+                    chartProperties.symbolStyle,
+                    props,
+                    chartProperties.negativeLineColor,
+                    chartProperties.symbolScaleSize
+                  )
+                }
+                isAnimationActive={false}
+              />
+
+              {renderReferenceLinesForLineChart()}
+            </ScatterChart>
+          </ResponsiveContainer>
+        )}
+      </ResizeStableBox>
     );
   };
 
@@ -1243,22 +1328,21 @@ const showAverages =
           )}
 
           {showAverages && (
-            <Scatter 
-              data={averageData.map(d => ({...d, seriesType: 'average'}))} 
-              dataKey={yKey} 
-              fill="#ff6b6b" 
+            <Scatter
+              data={averageData.map(d => ({ ...d, seriesType: 'average' }))}
+              dataKey={yKey}
+              fill={chartProperties.averageColor}
               isAnimationActive={false}
+              hide={!chartProperties.averageVisibility}  // 
               name="Average Points"
-              shape={(props) => (
-                <circle 
-                  cx={props.cx} 
-                  cy={props.cy} 
-                  r={6} 
-                  fill="#ff6b6b" 
-                  stroke="#000000"
-                  strokeWidth={1}
-                />
-              )}
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.averageSymbolStyle,   // 
+                  props,
+                  chartProperties.averageColor,         // 
+                  chartProperties.averageSymbolScaleSize // 
+                )
+              }
             />
           )}
 
@@ -1609,7 +1693,7 @@ const showAverages =
           }
         }}
         onRelayout={(layoutUpdate) => {
-          // ✅ Block cameraRef updates during export
+          //  Block cameraRef updates during export
           // When we call Plotly.relayout() inside exportAsJPG, it fires this
           // callback — without the guard it would overwrite cameraRef with
           // the export camera before toImage finishes
@@ -1655,7 +1739,7 @@ const showAverages =
         return (
           <div style={{ width: '100%', height: '100%', backgroundColor: chartProperties.shadeArea }}>  
             <ResponsiveContainer width="100%" height="100%" >
-              <LineChart margin={{ top: 20, right: 20, left: 0, bottom: 70 }}>
+              <LineChart margin={{ top: 20, right: 20, left: 0, bottom: 90 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ppId" type="number">
                   <Label value="PP ID" position="bottom" offset={2} textAnchor='middle' />
@@ -1689,7 +1773,7 @@ const showAverages =
                     applyChartStyling.symbolShape(
                       chartProperties.symbolStyle,
                       props,
-                      chartProperties.positiveSymbolColor,
+                      chartProperties.symbolColor,
                       chartProperties.symbolScaleSize
                     )
                   } 
@@ -1712,7 +1796,7 @@ const showAverages =
                     applyChartStyling.symbolShape(
                       chartProperties.symbolStyle,
                       props,
-                      chartProperties.negativeSymbolColor,
+                      chartProperties.symbolColor,
                       chartProperties.symbolScaleSize
                     )
                   }
@@ -2440,7 +2524,7 @@ const showAverages =
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1'>
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1 min-h-0 min-w-0'>
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -2491,8 +2575,8 @@ const showAverages =
           </div>
 
           <div className=" h-full overflow-hidden w-full my-2">
-            <div className="h-[40%] flex flex-col border border-gray-200">
-              <div className="flex-1 overflow-auto p-1">
+            <div className="h-[40%] flex flex-col border border-gray-200 min-h-0">
+              <div className="flex-1 overflow-auto p-1 min-h-0">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
                   <div className="col-span-9 px-1 py-1 text-left">Entities</div>
@@ -2536,9 +2620,9 @@ const showAverages =
             </div>
 
 
-            <div className="h-[60%] flex flex-col border border-gray-200">
+            <div className="h-[60%] flex flex-col border border-gray-200 min-h-0">
               {/* Tab Buttons */}
-              <div className="flex space-x-2 border-b p-2">
+              <div className="flex space-x-2 border-b p-2 shrink-0">
                 <button
                   className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === 'Property editor'
                     ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
@@ -2561,12 +2645,18 @@ const showAverages =
               </div>
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="flex-1 overflow-auto p-2 min-h-0 mb-5">
                 {activeAdjustPropertieTab === 'Property editor' && (
                   <PropertyEditor
                     properties={chartProperties}
                     onChange={setChartProperties}
                     selectedChart={selectedChart}
+                    showAverages={
+                      filters?.unitMode === "averages" &&
+                      averageData.length > 0 &&
+                      (Array.isArray(candidateId) ? candidateId.length > 0 : !!candidateId) &&
+                      !(selectedChart?.id === "1" && selectedSort === "activateUnitLevel") // 👈
+                    }  
                   />
                 )}
 
@@ -2584,7 +2674,7 @@ const showAverages =
                   if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;
                   
                   return (
-                    <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-16 pb-1">
+                    <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10 pb-1">
                       {sortedData.length === 0 ? (
                         <div className="flex justify-center items-center py-6 text-gray-500 uppercase">
                           No Data Available
@@ -2663,9 +2753,9 @@ const showAverages =
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white ml-1">
+        <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 bg-white ml-1 min-h-0 min-w-0">
   
-          <div ref={chartContainerRef} className="flex flex-col h-full">
+          <div ref={chartContainerRef} className="flex flex-col h-full min-h-0">
             {selectedChart ? (
               <h2 className="text-lg text-center font-semibold text-gray-700 mt-2">
                 {selectedChart.icon} {selectedChart.name}
@@ -2676,8 +2766,10 @@ const showAverages =
               </div>
             )}
 
-            <div className="h-full flex-1 flex items-center overflow-hidden p-2 min-h-0">  
-              <div className="w-full max-w-[900px] h-full">
+            <div className="h-full flex-1 overflow-hidden min-h-0">
+              <div
+                className="w-full h-full max-w-[900px]"
+              >
                 {renderSelectedChart()}
               </div>
             </div>
