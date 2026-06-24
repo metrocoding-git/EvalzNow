@@ -9,7 +9,7 @@ import {
   Scatter,
   ReferenceLine
 } from 'recharts';
-import PropertyEditor from '../../components/PropertyEditor';
+import PropertyEditor from '../components/PropertyEditor';
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 // import Plot from "react-plotly.js";
 import IcCurve from './IcCurveData';
@@ -161,6 +161,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
+
+      // Average Points
+    averageVisibility: true,
+    averageColor: "#ff6b6b",
+    averageSymbolStyle: "circle",
+    averageSymbolScaleSize: 3,
   
     // Shade area
     shadeArea: "#ffffff",
@@ -349,7 +355,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
               width={size * 2}
               height={size * 2}
               fill={color}
-              stroke="#000"
             />
           );
         case "triangle":
@@ -1323,22 +1328,21 @@ const showAverages =
           )}
 
           {showAverages && (
-            <Scatter 
-              data={averageData.map(d => ({...d, seriesType: 'average'}))} 
-              dataKey={yKey} 
-              fill="#ff6b6b" 
+            <Scatter
+              data={averageData.map(d => ({ ...d, seriesType: 'average' }))}
+              dataKey={yKey}
+              fill={chartProperties.averageColor}
               isAnimationActive={false}
+              hide={!chartProperties.averageVisibility}  // 
               name="Average Points"
-              shape={(props) => (
-                <circle 
-                  cx={props.cx} 
-                  cy={props.cy} 
-                  r={6} 
-                  fill="#ff6b6b" 
-                  // stroke="#000000"
-                  strokeWidth={1}
-                />
-              )}
+              shape={(props) =>
+                applyChartStyling.symbolShape(
+                  chartProperties.averageSymbolStyle,   // 
+                  props,
+                  chartProperties.averageColor,         // 
+                  chartProperties.averageSymbolScaleSize // 
+                )
+              }
             />
           )}
 
@@ -1689,7 +1693,7 @@ const showAverages =
           }
         }}
         onRelayout={(layoutUpdate) => {
-          // ✅ Block cameraRef updates during export
+          //  Block cameraRef updates during export
           // When we call Plotly.relayout() inside exportAsJPG, it fires this
           // callback — without the guard it would overwrite cameraRef with
           // the export camera before toImage finishes
@@ -2647,6 +2651,12 @@ const showAverages =
                     properties={chartProperties}
                     onChange={setChartProperties}
                     selectedChart={selectedChart}
+                    showAverages={
+                      filters?.unitMode === "averages" &&
+                      averageData.length > 0 &&
+                      (Array.isArray(candidateId) ? candidateId.length > 0 : !!candidateId) &&
+                      !(selectedChart?.id === "1" && selectedSort === "activateUnitLevel") // 👈
+                    }  
                   />
                 )}
 
@@ -2756,13 +2766,13 @@ const showAverages =
               </div>
             )}
 
-<div className="h-full flex-1 overflow-hidden min-h-0">
-  <div
-    className="w-full h-full max-w-[900px]"
-  >
-    {renderSelectedChart()}
-  </div>
-</div>
+            <div className="h-full flex-1 overflow-hidden min-h-0">
+              <div
+                className="w-full h-full max-w-[900px]"
+              >
+                {renderSelectedChart()}
+              </div>
+            </div>
           </div>
         </div>
       </div>
