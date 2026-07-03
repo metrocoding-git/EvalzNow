@@ -118,6 +118,12 @@ const HEADERS = [
     );  
   
   
+    const getActionStatus = (status) => {
+      return status === null || status === undefined || status === ""
+        ? "Open"
+        : status;
+    };
+    
 /**
  * OPTION 2
  * candidate-level extraction
@@ -214,7 +220,7 @@ export const extractCandidateUnitsCSV = ({ extractionData, clientId, candidateId
             competency.PRGT5,
             competency.ARGT5,
   
-            need.bIds?.join("|"),
+            need.bIds?.join(","),
 
             // ===================== RMS / PROFICIENCY =====================
             getRMS(neuro, pp.ppId, "Frontal Lobe - Left"),
@@ -261,7 +267,7 @@ export const extractCandidateUnitsCSV = ({ extractionData, clientId, candidateId
             getLoadG(neuro, pp.ppId, "Temporal Lobe - Right"),
 
             need.observation,
-            need.status
+            need.status || "Open"
           ]));
         });
       });

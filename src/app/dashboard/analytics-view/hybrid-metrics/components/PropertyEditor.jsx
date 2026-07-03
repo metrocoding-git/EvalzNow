@@ -152,15 +152,15 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
             className="flex items-center w-full font-semibold mb-2 cursor-pointer"
             type="button"
           >
-            {expanded.standard ? (
+            {/* {expanded.standard ? (
               <ChevronDown className="w-5 h-5 mr-2" />
             ) : (
               <ChevronRight className="w-5 h-5 mr-2" />
-            )}
+            )} */}
             Standard
           </button>
 
-          {expanded.standard && (
+          {/* {expanded.standard && ( */}
             <div className="space-y-3 pl-7">
               <label className="block font-semibold mb-1">Select Type</label>
               <select
@@ -212,7 +212,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 />
               </label> */}
             </div>
-          )}
+          {/* )} */}
         </div>
       )}
 
@@ -224,16 +224,16 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
             className="flex items-center w-full font-semibold mb-2 cursor-pointer"
             type="button"
           >
-            {expanded.lineAttribute ? (
+            {/* {expanded.lineAttribute ? (
               <ChevronDown className="w-5 h-5 mr-2" />
             ) : (
               <ChevronRight className="w-5 h-5 mr-2" />
-            )}
+            )} */}
             {selectedChart?.type === "line" ? "Line Attribute" : "Scatter Attribute"}
             
           </button>
 
-          {expanded.lineAttribute && (
+          {/* {expanded.lineAttribute && ( */}
             <div className="space-y-3 pl-7">
               <label className="block font-semibold mb-1">{selectedChart?.type === "line" ? "Line Type" : "Scatter Type"}</label>
               <select
@@ -304,7 +304,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 </>
               )}
             </div>
-          )}
+          {/* )} */}
         </div>
       )}
 
@@ -316,15 +316,15 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
             className="flex items-center w-full font-semibold mb-2 cursor-pointer"
             type="button"
           >
-            {expanded.symbolAttribute ? (
+            {/* {expanded.symbolAttribute ? (
               <ChevronDown className="w-5 h-5 mr-2" />
             ) : (
               <ChevronRight className="w-5 h-5 mr-2" />
-            )}
+            )} */}
             Symbol Attribute
           </button>
 
-          {expanded.symbolAttribute && (
+          {/* {expanded.symbolAttribute && ( */}
             <div className="space-y-3 pl-7">
               <label className="block font-semibold mb-1">Symbol Style</label>
               <select
@@ -397,7 +397,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 className="w-16 h-8 p-0 border rounded cursor-pointer"
               />
             </div>
-          )}
+          {/* )} */}
         </div>
       )}
 
@@ -409,15 +409,15 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
             className="flex items-center w-full font-semibold mb-2 cursor-pointer"
             type="button"
           >
-            {expanded.averageAttribute ? (
+            {/* {expanded.averageAttribute ? (
               <ChevronDown className="w-5 h-5 mr-2" />
             ) : (
               <ChevronRight className="w-5 h-5 mr-2" />
-            )}
+            )} */}
             Average Attribute
           </button>
 
-          {expanded.averageAttribute && (
+          {/* {expanded.averageAttribute && ( */}
             <div className="space-y-3 pl-7">
               {/* Visibility */}
               <label className="flex items-center space-x-2">
@@ -477,7 +477,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 className="w-20 border rounded px-2 py-1"
               />
             </div>
-          )}
+          {/* )} */}
         </div>
       )}
     </div>
