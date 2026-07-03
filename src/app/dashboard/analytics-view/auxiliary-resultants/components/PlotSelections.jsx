@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
+import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput, Edit } from 'lucide-react';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
@@ -1602,7 +1602,7 @@ const handleDeleteChain = async (chainId) => {
               <tbody>
                 {leaderMarks.map((item, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-2 py-1  text-center">{item.entryNumber}</td>
+                    <td className="border border-gray-300 px-2 py-1  text-center">{index + 1}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.staffFirstName}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.staffLastName}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.impactType}</td>         
@@ -1611,21 +1611,21 @@ const handleDeleteChain = async (chainId) => {
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.concernResolved}</td>
                     <td className="border border-gray-300 px-2 py-1  text-center">{item.resolutionDate}</td>
                     <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
-                      <div className='flex gap-2 items-center'>
+                      <div className='flex gap-1 items-center'>
                         <button
-                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            className="px-2 py-1 rounded hover:bg-gray-100"
                             onClick={() => handleEditLeaderMark(item)}
 
                           >
-                            EDIT
+                            <Edit className="w-3.5 h-3.5" />
                         </button>
-                        <span>/</span>
+                        {/* <span>/</span> */}
                         <button
-                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            className="px-2 py-1 rounded hover:bg-gray-100"
                             onClick={() => handleDeleteLeaderMark(item)}
 
                           >
-                            DELETE
+                            <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -1693,21 +1693,21 @@ const handleDeleteChain = async (chainId) => {
                       {item.benchmarkIds.length > 0 ? item.benchmarkIds.join(", ") : "-"}
                     </td>
                     <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
-                      <div className='flex gap-2 items-center justify-center'>
+                      <div className='flex gap-1 items-center justify-center'>
                         <button
-                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            className="px-2 py-1 rounded hover:bg-gray-100"
                             onClick={() => handleEditUnitImprovment(item)}
 
                           >
-                            EDIT
+                            <Edit className="w-3.5 h-3.5" />
                         </button>
-                        <span>/</span>
+                        {/* <span>/</span> */}
                         <button
-                            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                            className="px-2 py-1 rounded hover:bg-gray-100"
                             onClick={() => handleDeleteUnitImprovment(item)}
 
                           >
-                            DELETE
+                            <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -2001,28 +2001,28 @@ const handleDeleteChain = async (chainId) => {
             <tbody>
               {candidateMarks.map((row, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.entryNumber}</td>
+                  <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{index + 1}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.impactType}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernIdentified}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.identityDate}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.concernResolved}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">{row.resolutionDate}</td>
                   <td className="whitespace-nowrap text-center border border-gray-300 px-2 py-1 ">
-                    <div className='flex gap-2 items-center'>
+                    <div className='flex gap-1 items-center'>
                       <button
-                          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          className="px-2 py-1 rounded hover:bg-gray-100"
                           onClick={() => handleEditCandidateMark(row)}
 
                         >
-                          EDIT
+                          <Edit className="w-3.5 h-3.5" />
                       </button>
-                      <span>/</span>
+                      {/* <span>/</span> */}
                       <button
-                          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          className="px-2 py-1 rounded hover:bg-gray-100"
                           onClick={() => handleDeleteCandidateMark(row)}
 
                         >
-                          DELETE
+                          <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     

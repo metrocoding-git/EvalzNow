@@ -17,11 +17,23 @@ const downloadCSV = (headers, rows, filename) => {
       " ", // blank line before table
     ];
   
-    const csv =
-      metaLines.join("\n") +
-      headers.join(",") +
+    const csvEscape = (value) => {
+      if (value === null || value === undefined) return "-";
+    
+      const str = String(value);
+      const escaped = str.replace(/"/g, '""');
+    
+      if (/[",\n]/.test(escaped)) {
+        return `"${escaped}"`;
+      }
+    
+      return escaped;
+    };
+
+    const csv = metaLines.join("\n") +
+      headers.map(csvEscape).join(",") +
       "\n" +
-      rows.map(r => r.map(v => v).join(",")).join("\n");
+      rows.map(r => r.map(csvEscape).join(",")).join("\n");
   
     const blob = new Blob(
       ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
@@ -118,6 +130,11 @@ const HEADERS = [
       neuro?.cognitiveLoad?.[lobe]?.growth?.find(p => p.ppId === ppId)?.value
     );
   
+  const getActionStatus = (status) => {
+    return status === null || status === undefined || status === ""
+      ? "Open"
+      : status;
+  };
   
 /**
  * OPTION 3
@@ -214,7 +231,7 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
             safeNumber(competency.PRGT5),
             safeNumber(competency.ARGT5),
             
-            need.bIds?.join("|"),
+            need.bIds?.join(","),
 
             // ===================== RMS / PROFICIENCY =====================
             getRMS(neuro, pp.ppId, "Frontal Lobe - Left"),
@@ -261,7 +278,7 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
             getLoadG(neuro, pp.ppId, "Temporal Lobe - Right"),
 
             need.observation,
-            need.status
+            getActionStatus(need.status)
           ]));
         });
       });
