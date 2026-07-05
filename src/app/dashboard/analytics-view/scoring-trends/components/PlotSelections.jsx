@@ -33,16 +33,16 @@ import jsPDF from 'jspdf';
 import PropertyEditor from "./PropertyEditor";
 
 const COMPETENCY_COLORS = {
-  Listening:  "#3b82f6",
-  Reading:    "#10b981",
-  Writing:    "#f59e0b",
-  Speaking:   "#ef4444",
-  Theory:     "#8b5cf6",
-  Practice:   "#06b6d4",
+  Listening: "#3b82f6",
+  Reading: "#10b981",
+  Writing: "#f59e0b",
+  Speaking: "#ef4444",
+  Theory: "#8b5cf6",
+  Practice: "#06b6d4",
   Productive: "#f97316",
-  Receptive:  "#84cc16",
-  Acuity:     "#ec4899",
-  Unknown:    "#6b7280",
+  Receptive: "#84cc16",
+  Acuity: "#ec4899",
+  Unknown: "#6b7280",
 };
 
 export default function PlotSelections({ filters, unitId, environment, candidateId, onResetFilters, unitType }) {
@@ -114,21 +114,21 @@ export default function PlotSelections({ filters, unitId, environment, candidate
 
 
     positiveAttainedLineColor: "#10b981",
-  positiveMaxLineColor: "#3b82f6",
-  negativeAttainedLineColor: "#ef4444",
-  negativeMaxLineColor: "#f59e0b",
-  positiveAttainedLineStyle: "solid",
-  positiveMaxLineStyle: "solid",
-  negativeAttainedLineStyle: "solid",
-  negativeMaxLineStyle: "solid",
-  positiveAttainedLineThickness: 2,
-  positiveMaxLineThickness: 2,
-  negativeAttainedLineThickness: 2,
-  negativeMaxLineThickness: 2,
-  positiveAttainedVisibility: true,
-  positiveMaxVisibility: true,
-  negativeAttainedVisibility: true,
-  negativeMaxVisibility: true,
+    positiveMaxLineColor: "#3b82f6",
+    negativeAttainedLineColor: "#ef4444",
+    negativeMaxLineColor: "#f59e0b",
+    positiveAttainedLineStyle: "solid",
+    positiveMaxLineStyle: "solid",
+    negativeAttainedLineStyle: "solid",
+    negativeMaxLineStyle: "solid",
+    positiveAttainedLineThickness: 2,
+    positiveMaxLineThickness: 2,
+    negativeAttainedLineThickness: 2,
+    negativeMaxLineThickness: 2,
+    positiveAttainedVisibility: true,
+    positiveMaxVisibility: true,
+    negativeAttainedVisibility: true,
+    negativeMaxVisibility: true,
   });
 
   const SCORE_SHORTCUTS = {
@@ -206,7 +206,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     "listening", "reading", "speaking", "writing",
     "theory", "practical", "receptive", "productive", "acuity",
   ];
-  
+
   const isCompetencyChart = COMPETENCY_KEYS.includes(selectedChart?.key);
   const [customCriteria, setCustomCriteria] = useState([]);
 
@@ -218,14 +218,14 @@ export default function PlotSelections({ filters, unitId, environment, candidate
 
   const getLegendName = (comp, isNegative = false) => {
     const key = selectedChart?.key;
-  
+
     //  If competency chart
     if (SCORE_SHORTCUTS[key]) {
       const short = SCORE_SHORTCUTS[key][comp]; // ALS / MLS etc
       const prefix = isNegative ? "Negative PP ID" : "Positive PP ID";
       return `${prefix}: ${short}`;
     }
-  
+
     //  MC / CC fallback
     return isNegative ? "Negative PP IDs" : "Positive PP IDs";
   };
@@ -263,24 +263,24 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   useEffect(() => {
     const fetchCriteria = async () => {
       if (!unitId) return;
-  
+
       try {
         const data = await getScoringCriteriaByUnitId(unitId);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
-  
+
         const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
-  
+
         setChart((prev) => {
           // 1. MC items (fixed)
           const mcItems = prev.filter(item => item.key.startsWith("mc"));
-        
+
           // 2. Conditional items (NOT mc and NOT cc)
           const conditionalItems = prev.filter(
             item =>
               !item.key.startsWith("mc") &&
               !item.key.startsWith("cc")
           );
-        
+
           // 3. Build CC items
           const mappedCharts = sorted.map((c, index) => ({
             name: `${c.criteria} (CC${c.criteriaId + 20}) vs. Insert Score Row Counter`,
@@ -288,17 +288,17 @@ export default function PlotSelections({ filters, unitId, environment, candidate
             icon: "🔵",
             id: (mcItems.length + index + 1).toString(),
           }));
-        
+
           // ✅ Final order: MC → CC → Conditional
           return [...mcItems, ...mappedCharts, ...conditionalItems];
         });
-        
+
         setCustomCriteria(data);
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
       }
     };
-  
+
     fetchCriteria();
   }, [unitId]);
 
@@ -310,7 +310,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         const data = await getScoringTrendsSummary({
           unitId: unitId,
           candidate_id: candidateId,
-          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdFrom: filters?.ppIdFrom ?? undefined,
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
@@ -336,7 +336,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         const data = await getAttainedScoreSummary({
           unitId: unitId,
           candidate_id: candidateId,
-          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdFrom: filters?.ppIdFrom ?? undefined,
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
@@ -358,7 +358,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         const data = await getMaxScoresSummary({
           unitId: unitId,
           candidate_id: candidateId,
-          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdFrom: filters?.ppIdFrom ?? undefined,
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
@@ -381,9 +381,9 @@ export default function PlotSelections({ filters, unitId, environment, candidate
     selectedChart
   ) => {
     if (!selectedChart) return { positiveCompetencies: {}, negativeCompetencies: {} };
-  
+
     const key = selectedChart.key;
-  
+
     // ── Attained Score & Max Score — x = ppId, grouped by competency ──
     const CONDITIONAL_MAP = {
       listening: "Listening",
@@ -396,32 +396,32 @@ export default function PlotSelections({ filters, unitId, environment, candidate
       productive: "Productive",
       acuity: "Acuity",
     };
-    
+
     if (CONDITIONAL_MAP[key]) {
       const source = attainedScoreData || [];
       if (!source.length) return { positiveCompetencies: {}, negativeCompetencies: {} };
-    
+
       const selectedCompetency = CONDITIONAL_MAP[key];
-    
+
       const positive = {};
       const negative = {};
-    
+
       source.forEach((row) => {
         if (row.competency !== selectedCompetency) return;
-    
+
         const ppId = Number(row.ppId ?? 0);
-    
+
         const target =
           ppId > 0 ? positive :
-          ppId < 0 ? negative :
-          null;
-    
+            ppId < 0 ? negative :
+              null;
+
         if (!target) return;
-    
+
         //  Create 2 lines per side
         if (!target["attained"]) target["attained"] = [];
         if (!target["max"]) target["max"] = [];
-    
+
         target["attained"].push({
           x: ppId,
           y: Number(row.attainedScore ?? 0),
@@ -429,7 +429,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
           ppId,
           rowCount: Number(row.count ?? 1),
         });
-    
+
         target["max"].push({
           x: ppId,
           y: Number(row.maxScore ?? 0),
@@ -438,7 +438,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
           rowCount: Number(row.count ?? 1),
         });
       });
-    
+
       const sortPoints = (obj, isNegative = false) => {
         const result = {};
         Object.entries(obj).forEach(([k, arr]) => {
@@ -448,18 +448,18 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         });
         return result;
       };
-    
+
       return {
         positiveCompetencies: sortPoints(positive, false),
         negativeCompetencies: sortPoints(negative, true),
       };
     }
-  
+
     // ── MC / CC Charts — x = row counter (serialNo), one line per positive/negative ──
     // MC/CC only exist for Workforce environment
     if (!positiveData && !negativeData)
       return { positiveCompetencies: {}, negativeCompetencies: {} };
-  
+
 
 
     const buildMCCCPoints = (data) => {
@@ -479,7 +479,7 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         })
         .sort((a, b) => a.x - b.x);
     };
-  
+
     //  Use a fixed key name so legend shows "Positive" / "Negative"
     return {
       positiveCompetencies: positiveData?.length
@@ -490,26 +490,26 @@ export default function PlotSelections({ filters, unitId, environment, candidate
         : {},
     };
   };
-  
+
   useEffect(() => {
     if (!chart || chart.length === 0) return;
-  
+
     const visibleCharts = chart.filter((item) => {
       if (environment === "Workforce") return true;
       return ["attained", "max"].includes(item.key);
     });
-  
+
     if (visibleCharts.length === 0) return;
-  
+
     const isSelectedVisible = visibleCharts.some(
       (item) => item.key === selectedChart?.key
     );
-  
+
     if (!isSelectedVisible) {
       setSelectedChart(null);
     }
   }, [environment, chart]);
-  
+
   const { positiveCompetencies = {}, negativeCompetencies = {} } = buildXYChartData(
     positiveScoringData,
     negativeScoringData,
@@ -519,18 +519,18 @@ export default function PlotSelections({ filters, unitId, environment, candidate
   );
 
   // Stable fallback colors — computed once per unique competency key, never random on re-render
-const stableColorMap = useRef({});
+  const stableColorMap = useRef({});
 
-const getStableColor = (key) => {
-  if (stableColorMap.current[key]) return stableColorMap.current[key];
-  const palette = [
-    "#6366f1","#f59e0b","#14b8a6","#f43f5e","#8b5cf6",
-    "#0ea5e9","#84cc16","#fb923c","#a78bfa","#34d399",
-  ];
-  const idx = Object.keys(stableColorMap.current).length % palette.length;
-  stableColorMap.current[key] = palette[idx];
-  return stableColorMap.current[key];
-};
+  const getStableColor = (key) => {
+    if (stableColorMap.current[key]) return stableColorMap.current[key];
+    const palette = [
+      "#6366f1", "#f59e0b", "#14b8a6", "#f43f5e", "#8b5cf6",
+      "#0ea5e9", "#84cc16", "#fb923c", "#a78bfa", "#34d399",
+    ];
+    const idx = Object.keys(stableColorMap.current).length % palette.length;
+    stableColorMap.current[key] = palette[idx];
+    return stableColorMap.current[key];
+  };
 
   // Combine all competencies for table display
   const allCompetencies = [...Object.keys(positiveCompetencies), ...Object.keys(negativeCompetencies)]
@@ -541,11 +541,11 @@ const getStableColor = (key) => {
     const { cx, cy } = props;
     const r = chartProperties.symbolScaleSize;
     const finalColor = chartProperties.symbolColor ||
-  lineColor; // fallback
+      lineColor; // fallback
 
     // optional advanced (if you later add separate colors)
     const symbolColor = isNegative ? chartProperties.negativeSymbolColor || finalColor
-    : chartProperties.positiveSymbolColor || finalColor;
+      : chartProperties.positiveSymbolColor || finalColor;
     switch (chartProperties.symbolStyle) {
       case "square":
         return (
@@ -587,25 +587,25 @@ const getStableColor = (key) => {
     const inner = chartInnerRef.current;
     const outer = chartContainerRef.current;
     if (!inner || !outer) throw new Error("Chart not found");
-  
-    const savedInnerHeight   = inner.style.height;
-    const savedInnerMaxH     = inner.style.maxHeight;
+
+    const savedInnerHeight = inner.style.height;
+    const savedInnerMaxH = inner.style.maxHeight;
     const savedInnerOverflow = inner.style.overflow;
-    const savedInnerWidth    = inner.style.width;      // ← save width
+    const savedInnerWidth = inner.style.width;      // ← save width
     const savedOuterOverflow = outer.style.overflow;
-    const savedOuterHeight   = outer.style.height;
-  
+    const savedOuterHeight = outer.style.height;
+
     const captureWidth = outer.scrollWidth;            // ← lock to outer width
-  
-    inner.style.height   = `${inner.scrollHeight}px`;
+
+    inner.style.height = `${inner.scrollHeight}px`;
     inner.style.maxHeight = 'none';
     inner.style.overflow = 'visible';
-    inner.style.width    = `${captureWidth}px`;        // ← pin width explicitly
+    inner.style.width = `${captureWidth}px`;        // ← pin width explicitly
     outer.style.overflow = 'visible';
-    outer.style.height   = `${inner.scrollHeight + 40}px`;
-  
+    outer.style.height = `${inner.scrollHeight + 40}px`;
+
     await new Promise((r) => setTimeout(r, 400));
-  
+
     const canvas = await html2canvas(inner, {
       scale: 2,
       useCORS: true,
@@ -619,24 +619,24 @@ const getStableColor = (key) => {
       windowWidth: captureWidth,
       windowHeight: inner.scrollHeight,
     });
-  
+
     // Restore everything
-    inner.style.height   = savedInnerHeight;
+    inner.style.height = savedInnerHeight;
     inner.style.maxHeight = savedInnerMaxH;
     inner.style.overflow = savedInnerOverflow;
-    inner.style.width    = savedInnerWidth;            // ← restore width
+    inner.style.width = savedInnerWidth;            // ← restore width
     outer.style.overflow = savedOuterOverflow;
-    outer.style.height   = savedOuterHeight;
-  
+    outer.style.height = savedOuterHeight;
+
     return canvas;
   };
-  
+
 
   const getYAxisDynamicLabel = () => {
     if (!selectedChart) return "";
-  
+
     const key = selectedChart.key;
-  
+
     // Competency charts
     const CONDITIONAL_MAP = {
       listening: "Listening Score",
@@ -649,33 +649,33 @@ const getStableColor = (key) => {
       productive: "Productive Score",
       acuity: "Acuity Score",
     };
-  
+
     if (CONDITIONAL_MAP[key]) {
       return CONDITIONAL_MAP[key];
     }
-  
+
     //  CC charts
     if (key.startsWith("cc")) {
       return selectedChart.name.replace(" vs. Insert Score Row Counter", "");
     }
-  
+
     //  MC charts
     if (key.startsWith("mc")) {
       const item = chart.find(c => c.key === selectedChart?.key);
       if (!item) return selectedChart.key;
-  
+
       const match = item.name.match(/^(.*?)\s*\((MC\d+)\)/);
       return match ? `${match[1]} (${match[2]})` : item.name;
     }
-  
+
     return "";
   };
 
   const getShortcutLabels = () => {
     const key = selectedChart?.key;
     if (!SCORE_SHORTCUTS[key]) return null;
-  
-    return SCORE_SHORTCUTS[key]; 
+
+    return SCORE_SHORTCUTS[key];
     // { attained: "ALS", max: "MLS" }
   };
 
@@ -692,7 +692,7 @@ const getStableColor = (key) => {
       alert('Failed to export as JPG: ' + error.message);
     }
   };
-  
+
   const exportAsPDF = async () => {
     try {
       const canvas = await captureFullChart();
@@ -711,7 +711,7 @@ const getStableColor = (key) => {
       alert('Failed to export as PDF: ' + error.message);
     }
   };
-  
+
   console.log("Scoring Trends Data: ", scoringData);
 
   if (!visible) return null;
@@ -738,7 +738,7 @@ const getStableColor = (key) => {
               >
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
-              
+
               <div className="relative">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
@@ -782,12 +782,12 @@ const getStableColor = (key) => {
                     <div className="col-span-10 px-2 py-1 text-left font-medium">Entities</div>
                     <div className="col-span-2 py-1 text-left font-medium">ID</div>
                   </div>
-                  
+
                   <div className="flex-1 overflow-y-auto">
                     {chart
                       .filter((item) => {
                         if (environment === "Workforce") return true;
-                      
+
                         return [
                           "attained",
                           "max",
@@ -805,9 +805,8 @@ const getStableColor = (key) => {
                       .map((item, index) => (
                         <div
                           key={index}
-                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${
-                            selectedChart?.name === item.name ? "bg-gray-200" : ""
-                          }`}
+                          className={`grid grid-cols-12 hover:bg-gray-200 cursor-pointer ${selectedChart?.name === item.name ? "bg-gray-200" : ""
+                            }`}
                           onClick={() => setSelectedChart(item)}
                         >
                           <div className="col-span-10 px-2 py-1 whitespace-nowrap text-xs">
@@ -830,7 +829,7 @@ const getStableColor = (key) => {
               <div className="flex space-x-2 border-b p-2">
                 <button
                   className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Property editor"
-                      ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
+                    ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
@@ -839,7 +838,7 @@ const getStableColor = (key) => {
                 </button>
                 <button
                   className={`px-3 py-1 text-sm cursor-pointer ${activeAdjustPropertieTab === "Table"
-                      ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
+                    ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
@@ -864,15 +863,15 @@ const getStableColor = (key) => {
 
                       const renderTable = (title, competencies) => {
                         if (Object.keys(competencies).length === 0) return null;
-                      
+
                         const isConditional = SCORE_SHORTCUTS[selectedChart?.key];
                         const shortcut = getShortcutLabels();
-                      
+
                         // For conditional charts, merge attained and max scores by PP ID
                         if (isConditional) {
                           // Merge attained and max data by PP ID
                           const mergedData = new Map();
-                          
+
                           Object.entries(competencies).forEach(([comp, points]) => {
                             points.forEach(point => {
                               const ppId = point.ppId;
@@ -884,7 +883,7 @@ const getStableColor = (key) => {
                                   maxScore: null
                                 });
                               }
-                              
+
                               const record = mergedData.get(ppId);
                               if (comp === "attained") {
                                 record.attainedScore = point.y;
@@ -893,14 +892,14 @@ const getStableColor = (key) => {
                               }
                             });
                           });
-                      
+
                           // Convert to array and sort by PP ID
                           const mergedArray = Array.from(mergedData.values());
-                          
+
                           // Sort positive ascending, negative descending
                           const isNegative = title.includes("Negative");
                           mergedArray.sort((a, b) => isNegative ? b.ppId - a.ppId : a.ppId - b.ppId);
-                      
+
                           return (
                             <div className="mb-6">
                               <h3 className="text-sm font-semibold mb-2 px-2 py-1 rounded text-gray-700">
@@ -933,7 +932,7 @@ const getStableColor = (key) => {
                             </div>
                           );
                         }
-                      
+
                         // Original MC/CC table rendering (unchanged)
                         return (
                           <div className="mb-6">
@@ -946,9 +945,9 @@ const getStableColor = (key) => {
                                   <th className="border px-2 py-1 text-center">Row Counter</th>
                                   <th className="border px-2 py-1 text-center">PP ID</th>
                                   <th className="border px-2 py-1 text-center">
-                                  {selectedChart?.key?.startsWith("cc")
-    ? `CC${Number(selectedChart.key.replace("cc", "")) + 20}`
-    : selectedChart?.key?.toUpperCase()}
+                                    {selectedChart?.key?.startsWith("cc")
+                                      ? `CC${Number(selectedChart.key.replace("cc", "")) + 20}`
+                                      : selectedChart?.key?.toUpperCase()}
                                   </th>
                                 </tr>
                               </thead>
@@ -989,7 +988,7 @@ const getStableColor = (key) => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col p-5 border-2 h-full border-gray-200 ml-1`} 
+        <div ref={chartContainerRef} className={`w-6/12 lg:w-9/12 flex flex-col p-5 border-2 h-full border-gray-200 ml-1`}
           style={{ backgroundColor: chartProperties.shadeArea }}>
           <div ref={chartInnerRef} className="h-full overflow-hidden mx-5 mt-1 mb-2 flex flex-col">
             <h2
@@ -1007,173 +1006,175 @@ const getStableColor = (key) => {
                   SELECT PLOT
                 </div>) : (
                 <div className="font-semibold">
-                  {selectedChart?.icon} {selectedChart?.name} 
+                  {selectedChart?.icon} {selectedChart?.name}
                 </div>
               )}
             </h2>
-            <div className="flex-1 min-h-0 flex items-center ">
-              <div className="w-full h-full">
-                
-              {!selectedChart ? (
-                <div className="flex justify-center h-full text-gray-400 text-lg">
-                 
-                </div>) : (
+            <div className="h-full flex-1 min-h-0">
+              <div
+                className="w-full h-[75vh] flex-1 overflow-auto min-h-0"
+              >
 
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    key={
-                      chartProperties.positiveLineColor +
-                      chartProperties.negativeLineColor +
-                      chartProperties.positiveLineStyle +
-                      chartProperties.negativeLineStyle +
-                      chartProperties.symbolStyle +
-                      chartProperties.symbolScaleSize +
-                      chartProperties.shadeArea +
-                      selectedChart.key
-                    }
-                    margin={{ top: 20, right: 30, left: 20, bottom: 75 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
+                {!selectedChart ? (
+                  <div className="flex justify-center h-full text-gray-400 text-lg">
 
-                    <XAxis
-                      dataKey="x"
-                      type="number"
-                      domain={["dataMin", "dataMax"]}
-                      allowDecimals={false}
-                      label={{
-                        value: ["attained", "max", "listening", "reading", "speaking", "writing", "theory",
+                  </div>) : (
+
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      key={
+                        chartProperties.positiveLineColor +
+                        chartProperties.negativeLineColor +
+                        chartProperties.positiveLineStyle +
+                        chartProperties.negativeLineStyle +
+                        chartProperties.symbolStyle +
+                        chartProperties.symbolScaleSize +
+                        chartProperties.shadeArea +
+                        selectedChart.key
+                      }
+                      margin={{ top: 20, right: 30, left: 20, bottom: 75 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+
+                      <XAxis
+                        dataKey="x"
+                        type="number"
+                        domain={["dataMin", "dataMax"]}
+                        allowDecimals={false}
+                        label={{
+                          value: ["attained", "max", "listening", "reading", "speaking", "writing", "theory",
                             "practical", "receptive", "productive", "acuity"].includes(selectedChart?.key)
-                          ? "PP ID"
-                          : "Insert Score Row Counter",
-                        position: "insideBottom",
-                        offset: -10
-                      }}
-                    />
+                            ? "PP ID"
+                            : "Insert Score Row Counter",
+                          position: "insideBottom",
+                          offset: -10
+                        }}
+                      />
 
-                    <YAxis
-                      type="number"
-                      dataKey="y"
-                      label={{
-                        value: getYAxisDynamicLabel(),
-                        angle: -90,
-                        position: "insideLeft",
-                        textAnchor: "middle",
-                      }}
-                    />
+                      <YAxis
+                        type="number"
+                        dataKey="y"
+                        label={{
+                          value: getYAxisDynamicLabel(),
+                          angle: -90,
+                          position: "insideLeft",
+                          textAnchor: "middle",
+                        }}
+                      />
 
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          const isAttainedMax = ["attained", "max"].includes(selectedChart?.key);
+                          return (
+                            <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
+                              <p style={{ fontWeight: 600, marginBottom: 4 }}>
+                                {isAttainedMax ? `PP ID: ${label}` : `Row: ${label}`}
+                              </p>
+                              {payload.map((entry, i) => {
+                                const point = entry.payload;
+                                return (
+                                  <div key={i} style={{ color: entry.stroke, marginBottom: 2 }}>
+                                    <span>{entry.name}: {Number(entry.value).toFixed(2)}</span>
+                                    {point?.rowCount !== undefined && point.rowCount > 1 && (
+                                      <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                        ({point.rowCount} rows)
+                                      </span>
+                                    )}
+                                    {!isAttainedMax && point?.ppId !== undefined && (
+                                      <span style={{ color: "#6b7280", marginLeft: 6 }}>
+                                        PP ID: {point.ppId}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        }}
+                      />
+
+                      <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        wrapperStyle={{ paddingTop: 30, paddingLeft: 50 }}
+                      />
+
+                      {/* Draw lines for each competency in positive PP IDs */}
+                      {Object.entries(positiveCompetencies).map(([comp, points]) => {
+                        const color = COMPETENCY_COLORS[comp] || getStableColor(`positive-${comp}`);
+                        const isAttained = comp === "attained";
+                        const lineColor = isCompetencyChart
+                          ? (isAttained ? chartProperties.positiveAttainedLineColor : chartProperties.positiveMaxLineColor)
+                          : chartProperties.positiveLineColor;
+                        const lineStyle = isCompetencyChart
+                          ? (isAttained ? chartProperties.positiveAttainedLineStyle : chartProperties.positiveMaxLineStyle)
+                          : chartProperties.positiveLineStyle;
+                        const lineThickness = isCompetencyChart
+                          ? (isAttained ? chartProperties.positiveAttainedLineThickness : chartProperties.positiveMaxLineThickness)
+                          : chartProperties.positiveLineThickness;
+                        const isHidden = isCompetencyChart
+                          ? (isAttained ? !chartProperties.positiveAttainedVisibility : !chartProperties.positiveMaxVisibility)
+                          : !chartProperties.positiveVisibility;
+
                         return (
-                          <div style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
-                            <p style={{ fontWeight: 600, marginBottom: 4 }}>
-                              {isAttainedMax ? `PP ID: ${label}` : `Row: ${label}`}
-                            </p>
-                            {payload.map((entry, i) => {
-                              const point = entry.payload;
-                              return (
-                                <div key={i} style={{ color: entry.stroke, marginBottom: 2 }}>
-                                  <span>{entry.name}: {Number(entry.value).toFixed(2)}</span>
-                                  {point?.rowCount !== undefined && point.rowCount > 1 && (
-                                    <span style={{ color: "#6b7280", marginLeft: 6 }}>
-                                      ({point.rowCount} rows)
-                                    </span>
-                                  )}
-                                  {!isAttainedMax && point?.ppId !== undefined && (
-                                    <span style={{ color: "#6b7280", marginLeft: 6 }}>
-                                      PP ID: {point.ppId}
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <Line
+                            key={`positive-${comp}`}
+                            type="linear"
+                            data={points}
+                            dataKey="y"
+                            name={getLegendName(comp, false)}
+                            stroke={lineColor}
+                            strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
+                            strokeWidth={lineThickness}
+                            isAnimationActive={false}
+                            hide={isHidden}
+                            dot={(props) => {
+                              if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                              return renderCustomDot(props, lineColor, false);
+                            }}
+                          />
                         );
-                      }}
-                    />
+                      })}
 
-                    <Legend
-                      verticalAlign="bottom"
-                      align="center"
-                      wrapperStyle={{ paddingTop: 30, paddingLeft: 50 }}
-                    />
+                      {/* Draw lines for each competency in negative PP IDs */}
+                      {Object.entries(negativeCompetencies).map(([comp, points]) => {
+                        const isAttained = comp === "attained";
+                        const lineColor = isCompetencyChart
+                          ? (isAttained ? chartProperties.negativeAttainedLineColor : chartProperties.negativeMaxLineColor)
+                          : chartProperties.negativeLineColor;
+                        const lineStyle = isCompetencyChart
+                          ? (isAttained ? chartProperties.negativeAttainedLineStyle : chartProperties.negativeMaxLineStyle)
+                          : chartProperties.negativeLineStyle;
+                        const lineThickness = isCompetencyChart
+                          ? (isAttained ? chartProperties.negativeAttainedLineThickness : chartProperties.negativeMaxLineThickness)
+                          : chartProperties.negativeLineThickness;
+                        const isHidden = isCompetencyChart
+                          ? (isAttained ? !chartProperties.negativeAttainedVisibility : !chartProperties.negativeMaxVisibility)
+                          : !chartProperties.negativeVisibility;
 
-                    {/* Draw lines for each competency in positive PP IDs */}
-                    {Object.entries(positiveCompetencies).map(([comp, points]) => {
-  const color = COMPETENCY_COLORS[comp] || getStableColor(`positive-${comp}`);
-  const isAttained = comp === "attained";
-  const lineColor = isCompetencyChart
-    ? (isAttained ? chartProperties.positiveAttainedLineColor : chartProperties.positiveMaxLineColor)
-    : chartProperties.positiveLineColor;
-  const lineStyle = isCompetencyChart
-    ? (isAttained ? chartProperties.positiveAttainedLineStyle : chartProperties.positiveMaxLineStyle)
-    : chartProperties.positiveLineStyle;
-  const lineThickness = isCompetencyChart
-    ? (isAttained ? chartProperties.positiveAttainedLineThickness : chartProperties.positiveMaxLineThickness)
-    : chartProperties.positiveLineThickness;
-  const isHidden = isCompetencyChart
-    ? (isAttained ? !chartProperties.positiveAttainedVisibility : !chartProperties.positiveMaxVisibility)
-    : !chartProperties.positiveVisibility;
+                        return (
+                          <Line
+                            key={`negative-${comp}`}
+                            type="linear"
+                            data={points}
+                            dataKey="y"
+                            name={getLegendName(comp, true)}
+                            stroke={lineColor}
+                            strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
+                            strokeWidth={lineThickness}
+                            isAnimationActive={false}
+                            hide={isHidden}
+                            dot={(props) => {
+                              if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
+                              return renderCustomDot(props, lineColor, true);
+                            }}
+                          />
+                        );
+                      })}
 
-  return (
-    <Line
-      key={`positive-${comp}`}
-      type="linear"
-      data={points}
-      dataKey="y"
-      name={getLegendName(comp, false)}
-      stroke={lineColor}
-      strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
-      strokeWidth={lineThickness}
-      isAnimationActive={false}
-      hide={isHidden}
-      dot={(props) => {
-        if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-        return renderCustomDot(props, lineColor, false);
-      }}
-    />
-  );
-})}
-
-                    {/* Draw lines for each competency in negative PP IDs */}
-                    {Object.entries(negativeCompetencies).map(([comp, points]) => {
-  const isAttained = comp === "attained";
-  const lineColor = isCompetencyChart
-    ? (isAttained ? chartProperties.negativeAttainedLineColor : chartProperties.negativeMaxLineColor)
-    : chartProperties.negativeLineColor;
-  const lineStyle = isCompetencyChart
-    ? (isAttained ? chartProperties.negativeAttainedLineStyle : chartProperties.negativeMaxLineStyle)
-    : chartProperties.negativeLineStyle;
-  const lineThickness = isCompetencyChart
-    ? (isAttained ? chartProperties.negativeAttainedLineThickness : chartProperties.negativeMaxLineThickness)
-    : chartProperties.negativeLineThickness;
-  const isHidden = isCompetencyChart
-    ? (isAttained ? !chartProperties.negativeAttainedVisibility : !chartProperties.negativeMaxVisibility)
-    : !chartProperties.negativeVisibility;
-
-  return (
-    <Line
-      key={`negative-${comp}`}
-      type="linear"
-      data={points}
-      dataKey="y"
-      name={getLegendName(comp, true)}
-      stroke={lineColor}
-      strokeDasharray={lineStyle === "dashed" ? "6 4" : lineStyle === "dotted" ? "2 4" : lineStyle === "dashdot" ? "8 4 2 4" : "0"}
-      strokeWidth={lineThickness}
-      isAnimationActive={false}
-      hide={isHidden}
-      dot={(props) => {
-        if (props.index % (chartProperties.symbolFrequency || 1) !== 0) return null;
-        return renderCustomDot(props, lineColor, true);
-      }}
-    />
-  );
-})}
-
-                  </LineChart>
-                </ResponsiveContainer>
+                    </LineChart>
+                  </ResponsiveContainer>
                 )}
               </div>
             </div>

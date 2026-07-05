@@ -1367,7 +1367,7 @@ const showAverages =
               fill={chartProperties.averageColor}
               isAnimationActive={false}
               hide={!chartProperties.averageVisibility}  // 
-              name="Average Points"
+              name="Average PPID"
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.averageSymbolStyle,   // 
@@ -1565,7 +1565,7 @@ const showAverages =
           color: chartProperties.averageColor,
           symbol: getPlotlySymbol(chartProperties.averageSymbolStyle)        
         },
-        name: "Average Points",
+        name: "Average PPID",
         showlegend: true,
         legendrank: 3,
         hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
@@ -2665,7 +2665,7 @@ const showAverages =
                     }`}
                   onClick={() => setActiveAdjustPropertieTab('Property editor')}
                 >
-                  Property editor
+                  Property Editor
                 </button>
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === 'Table'
@@ -2862,9 +2862,9 @@ const showAverages =
               </div>
             )}
 
-            <div className="h-full flex-1 overflow-hidden min-h-0">
+            <div className="h-full flex-1 min-h-0">
               <div
-                className="w-full h-full max-w-[900px]"
+                className="w-full h-[75vh] flex-1 overflow-auto min-h-0"
               >
                 {renderSelectedChart()}
               </div>

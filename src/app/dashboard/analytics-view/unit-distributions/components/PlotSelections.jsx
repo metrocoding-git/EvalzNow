@@ -1648,7 +1648,7 @@ export default function PlotSelections({ onCandidatesSelected, unitId, onWeibull
                   }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
                 >
-                  Property editor
+                  Property Editor
                 </button>
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${

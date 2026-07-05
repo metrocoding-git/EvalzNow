@@ -24,7 +24,7 @@ import { getUnitAndCandidateSummary, getUnitAndMultipleCandidateSummary } from '
 import { getUnitById } from '@/services/unitService';
 import jsPDF from 'jspdf';
 
-export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters}) {
+export default function PlotSelections({ selectedSort, unitId, candidateId, unitType, filters, onResetFilters }) {
   const [curves, setCurves] = useState([{ id: 1, name: 'curve1' }, { id: 2, name: 'curve2' }, { id: 3, name: 'curve3' }, { id: 4, name: 'curve4' }, { id: 5, name: 'curve5' }, { id: 6, name: 'curve6' }, { id: 7, name: 'curve7' }, { id: 8, name: 'curve8' }, { id: 9, name: 'curve9' }, { id: 10, name: 'curve10' }, { id: 11, name: 'curve11' }, { id: 12, name: 'curve12' },]);
   const [selectedCurveId, setSelectedCurveId] = useState(1);
   const [showCreateMaterial, setShowCreateMaterial] = useState(false);
@@ -84,12 +84,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       "Acuity Variable Score Ratio (XAVSR)",
     ],
   };
-  
-  
+
+
   const activateCandidateLevel = [
     { id: "1", name: "Equivalent Proficiency (XEP)", icon: "🔵", type: "line" },
     // { id: "2", name: "Unilateral Proficiency (XBP)", icon: "🔵", type: "line" },
-    { id: "2", name: "Reading Ratio (XRR)", icon: "🔵", type: "line"  },
+    { id: "2", name: "Reading Ratio (XRR)", icon: "🔵", type: "line" },
     { id: "3", name: "Listening Ratio (XLR)", icon: "🔵", type: "line" },
     { id: "4", name: "Speaking Ratio (XSR)", icon: "🔵", type: "line" },
     { id: "5", name: "Writing Ratio (XWR)", icon: "🔵", type: "line" },
@@ -121,147 +121,147 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     { id: "13", name: "Butler Interaction Proficiency (MSIP)", icon: "🔵", type: "scatter" },
     { id: "14", name: "Stability in Proficiency (STA-P)", icon: "🔵", type: "pie" },
   ];
-  
+
   const [chartProperties, setChartProperties] = useState({
-  // Standard
-  positiveVisibility: true,
-  negativeVisibility: true,
-  layer: 1,
-  reference: false,
+    // Standard
+    positiveVisibility: true,
+    negativeVisibility: true,
+    layer: 1,
+    reference: false,
 
-  // Curve Label
-  showLabel: true,
-  labelType: "X Type",
-  // showLabelPrefix: false,
-  // labelPrefix: "X File name",
-  // showLabelSuffix: false,
-  // labelSuffix: "Y subcase",
+    // Curve Label
+    showLabel: true,
+    labelType: "X Type",
+    // showLabelPrefix: false,
+    // labelPrefix: "X File name",
+    // showLabelSuffix: false,
+    // labelSuffix: "Y subcase",
 
-  // Line Attribute
-  lineStyle: "solid",
-  lineColor: "#3b82f6",
-  lineThickness: 2,
+    // Line Attribute
+    lineStyle: "solid",
+    lineColor: "#3b82f6",
+    lineThickness: 2,
 
-  // Symbol Attribute
-  symbolStyle: "circle",
-  symbolColor: "#3b82f6",
-  positiveSymbolColor: "#10b981", // Separate symbol color for positive
-  negativeSymbolColor: "#ef4444",
-  symbolFrequency: 1,
-  symbolScaleSize: 3,
+    // Symbol Attribute
+    symbolStyle: "circle",
+    symbolColor: "#3b82f6",
+    positiveSymbolColor: "#10b981", // Separate symbol color for positive
+    negativeSymbolColor: "#ef4444",
+    symbolFrequency: 1,
+    symbolScaleSize: 3,
 
-  // Shade area
-  shadeArea: "#ffffff",
-  positiveLineColor: "#10b981", // Green for positive
-  negativeLineColor: "#ef4444",
-});
+    // Shade area
+    shadeArea: "#ffffff",
+    positiveLineColor: "#10b981", // Green for positive
+    negativeLineColor: "#ef4444",
+  });
 
-console.log("candidate IdS::", candidateId);
-useEffect(() => {
-  const fetchTabulationData = async () => {
-    if (!unitId || !candidateId) {
-      setTableData([]); // clear previous table data
-      setStabilitySummary({ stable: 0, unstable: 0 });
-      return;
-    }
+  console.log("candidate IdS::", candidateId);
+  useEffect(() => {
+    const fetchTabulationData = async () => {
+      if (!unitId || !candidateId) {
+        setTableData([]); // clear previous table data
+        setStabilitySummary({ stable: 0, unstable: 0 });
+        return;
+      }
 
-    console.log("logging data::-> ", filters);
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getUnitAndMultipleCandidateSummary({
-        unitId: unitId,
-        candidate_id: candidateId,       // make sure filters contains candidate_id
-        ppIdFrom: filters?.ppIdFrom ?? undefined,    
-        ppIdTo: filters?.ppIdTo ?? undefined,
-        criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
-        criticalRefDateTo: filters?.criticalDateTo ?? undefined
-      });
+      console.log("logging data::-> ", filters);
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUnitAndMultipleCandidateSummary({
+          unitId: unitId,
+          candidate_id: candidateId,       // make sure filters contains candidate_id
+          ppIdFrom: filters?.ppIdFrom ?? undefined,
+          ppIdTo: filters?.ppIdTo ?? undefined,
+          criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
+          criticalRefDateTo: filters?.criticalDateTo ?? undefined
+        });
 
 
-      const { results, average, stdDev, stdErr } = data;  
+        const { results, average, stdDev, stdErr } = data;
 
-      const formattedData = results.map(row => ({
-        candidateId: row.candidateId, 
-        ppId: row.ppId,
-        XEP: row.XEP || 0,
-        XBP: row.XBP || 0,
-        XRR: row.XRR || 0,
-        XLR: row.XLR || 0,
-        XSR: row.XSR || 0,
-        XWR: row.XWR || 0,
-        XTR: row.XTR || 0,
-        XPR: row.XPR || 0,
-        XRVSR: row.XRVSR || 0,
-        XPVSR: row.XPVSR || 0,
-        XAVSR: row.XAVSR || 0,
-        XCP: row.XCP || 0,
-        MSIP: row.MSIP || 0, 
-        STAP: row.STAP || 0,
-      }));
-      
-      
-      setTableData(formattedData);
+        const formattedData = results.map(row => ({
+          candidateId: row.candidateId,
+          ppId: row.ppId,
+          XEP: row.XEP || 0,
+          XBP: row.XBP || 0,
+          XRR: row.XRR || 0,
+          XLR: row.XLR || 0,
+          XSR: row.XSR || 0,
+          XWR: row.XWR || 0,
+          XTR: row.XTR || 0,
+          XPR: row.XPR || 0,
+          XRVSR: row.XRVSR || 0,
+          XPVSR: row.XPVSR || 0,
+          XAVSR: row.XAVSR || 0,
+          XCP: row.XCP || 0,
+          MSIP: row.MSIP || 0,
+          STAP: row.STAP || 0,
+        }));
 
-      // ✅ Calculate stability counts
-      const stableCount = results.filter(r => r.STAP === "STABLE").length;
-      const unstableCount = results.filter(r => r.STAP === "UNSTABLE").length;
 
-      setStabilitySummary({ stable: stableCount, unstable: unstableCount });
+        setTableData(formattedData);
 
-      console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
-      
-    } catch (err) {
-      console.error("Failed to fetch tabulation data:", err);
-      setError("Failed to load table data.");
-      setStabilitySummary({ stable: 0, unstable: 0 });
-      setTableData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        // ✅ Calculate stability counts
+        const stableCount = results.filter(r => r.STAP === "STABLE").length;
+        const unstableCount = results.filter(r => r.STAP === "UNSTABLE").length;
 
-  fetchTabulationData();
-}, [unitId, candidateId, filters]);
+        setStabilitySummary({ stable: stableCount, unstable: unstableCount });
 
-useEffect(() => {
-  const fetchThreshold = async () => {
-    if (!unitId) {
-      setThresholdValue(null);
-      return;
-    }
+        console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
 
-    try {
-      const data = await getUnitById(unitId);
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        setStabilitySummary({ stable: 0, unstable: 0 });
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Safely extract only threshold ratio fields
-      const extractedThresholds = {
-        XEP: parseFloat(data?.XEP) ?? null,
-        XRR: parseFloat(data?.XRR) ?? null,
-        XLR: parseFloat(data?.XLR) ?? null,
-        XSR: parseFloat(data?.XSR) ?? null,
-        XWR: parseFloat(data?.XWR) ?? null,
-        XTR: parseFloat(data?.XTR) ?? null,
-        XPR: parseFloat(data?.XPR) ?? null,
-        XRVSR: parseFloat(data?.XRVSR) ?? null,
-        XPVSR: parseFloat(data?.XPVSR) ?? null,
-        XAVSR: parseFloat(data?.XAVSR) ?? null,
-        XCP: parseFloat(data?.XCP) ?? null,
-        XBP: parseFloat(data?.XBP) ?? null,
-        MSIP: parseFloat(data?.MSIP) ?? null,
-      };
+    fetchTabulationData();
+  }, [unitId, candidateId, filters]);
 
-      setThresholdValue(extractedThresholds);
+  useEffect(() => {
+    const fetchThreshold = async () => {
+      if (!unitId) {
+        setThresholdValue(null);
+        return;
+      }
 
-      console.log(" Extracted Threshold Values:", extractedThresholds);
-    } catch (error) {
-      console.error(" Failed to fetch threshold values:", error);
-      setThresholdValue(null);
-    }
-  };
+      try {
+        const data = await getUnitById(unitId);
 
-  fetchThreshold();
-}, [unitId]);
+        // Safely extract only threshold ratio fields
+        const extractedThresholds = {
+          XEP: parseFloat(data?.XEP) ?? null,
+          XRR: parseFloat(data?.XRR) ?? null,
+          XLR: parseFloat(data?.XLR) ?? null,
+          XSR: parseFloat(data?.XSR) ?? null,
+          XWR: parseFloat(data?.XWR) ?? null,
+          XTR: parseFloat(data?.XTR) ?? null,
+          XPR: parseFloat(data?.XPR) ?? null,
+          XRVSR: parseFloat(data?.XRVSR) ?? null,
+          XPVSR: parseFloat(data?.XPVSR) ?? null,
+          XAVSR: parseFloat(data?.XAVSR) ?? null,
+          XCP: parseFloat(data?.XCP) ?? null,
+          XBP: parseFloat(data?.XBP) ?? null,
+          MSIP: parseFloat(data?.MSIP) ?? null,
+        };
+
+        setThresholdValue(extractedThresholds);
+
+        console.log(" Extracted Threshold Values:", extractedThresholds);
+      } catch (error) {
+        console.error(" Failed to fetch threshold values:", error);
+        setThresholdValue(null);
+      }
+    };
+
+    fetchThreshold();
+  }, [unitId]);
 
 
   const copyToClipboard = async () => {
@@ -289,501 +289,501 @@ useEffect(() => {
   console.log("unit type: ", unitType);
 
   // ✅ Sort and prepare chart data
-const sortedTableData = [...tableData].sort((a, b) => {
-  if (isNaN(a.ppId)) return 1;
-  if (isNaN(b.ppId)) return -1;
+  const sortedTableData = [...tableData].sort((a, b) => {
+    if (isNaN(a.ppId)) return 1;
+    if (isNaN(b.ppId)) return -1;
 
-  if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // both negative → descending
-  if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId; // both positive → ascending
-  if (a.ppId < 0 && b.ppId > 0) return -1; // negatives before positives
-  if (a.ppId > 0 && b.ppId < 0) return 1;
-  return 0;
-});
+    if (a.ppId < 0 && b.ppId < 0) return b.ppId - a.ppId; // both negative → descending
+    if (a.ppId > 0 && b.ppId > 0) return a.ppId - b.ppId; // both positive → ascending
+    if (a.ppId < 0 && b.ppId > 0) return -1; // negatives before positives
+    if (a.ppId > 0 && b.ppId < 0) return 1;
+    return 0;
+  });
 
-// ✅ Prepare data for the selected chart
-let chartData = [];
-if (selectedChart && sortedTableData.length > 0) {
-  const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1]; // extract "XEP" etc.
-  if (keyName) {
-    chartData = sortedTableData.map(row => ({
-      ppId: row.ppId,
-      value: row[keyName],
-    }));
-  }
-}
-
-
-// Function to render dot based on symbol style
-const renderCustomDot = (props, color) => {
-  const { cx, cy } = props;
-  const r = chartProperties.symbolScaleSize;
-
-  switch (chartProperties.symbolStyle) {
-    case "square":
-      return (
-        <rect
-          x={cx - r}
-          y={cy - r}
-          width={2 * r}
-          height={2 * r}
-          fill={color}
-        />
-      );
-    case "triangle":
-      return (
-        <polygon
-          points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
-          fill={color}
-        />
-      );
-    case "diamond":
-      return (
-        <polygon
-          points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
-          fill={color}
-        />
-      );
-    default:
-      return (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r}
-          fill={color}
-        />
-      );
-  }
-};
-
-
-// Function to export with image and data in single worksheet
-
-
-// Add this function inside your component (after the other functions)
-const exportToExcel = () => {
-  if (!selectedChart) {
-    alert("Please select a chart first.");
-    return;
+  // ✅ Prepare data for the selected chart
+  let chartData = [];
+  if (selectedChart && sortedTableData.length > 0) {
+    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1]; // extract "XEP" etc.
+    if (keyName) {
+      chartData = sortedTableData.map(row => ({
+        ppId: row.ppId,
+        value: row[keyName],
+      }));
+    }
   }
 
-  try {
-    // Extract key name from chart selection
-    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-    if (!keyName) {
-      alert("Invalid chart selection.");
+
+  // Function to render dot based on symbol style
+  const renderCustomDot = (props, color) => {
+    const { cx, cy } = props;
+    const r = chartProperties.symbolScaleSize;
+
+    switch (chartProperties.symbolStyle) {
+      case "square":
+        return (
+          <rect
+            x={cx - r}
+            y={cy - r}
+            width={2 * r}
+            height={2 * r}
+            fill={color}
+          />
+        );
+      case "triangle":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`}
+            fill={color}
+          />
+        );
+      case "diamond":
+        return (
+          <polygon
+            points={`${cx},${cy - r} ${cx - r},${cy} ${cx},${cy + r} ${cx + r},${cy}`}
+            fill={color}
+          />
+        );
+      default:
+        return (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill={color}
+          />
+        );
+    }
+  };
+
+
+  // Function to export with image and data in single worksheet
+
+
+  // Add this function inside your component (after the other functions)
+  const exportToExcel = () => {
+    if (!selectedChart) {
+      alert("Please select a chart first.");
       return;
     }
 
-    // Prepare data for export
-    const exportData = [];
-
-    // Add header row with metadata
-    exportData.push(["CHART DATA EXPORT", "", ""]);
-    exportData.push(["Chart Name:", selectedChart.name]);
-    exportData.push(["Key Name:", keyName]);
-    exportData.push(["Export Date:", new Date().toLocaleString()]);
-    exportData.push([]);
-    exportData.push(["DATA POINTS", "", ""]);
-
-    // Add column headers
-    exportData.push(["Candidate ID", "PP ID", "X Axis Value", `${selectedChart.name} (Y Value)`]);
-
-    // Add all data points
-    tableData.forEach(row => {
-      if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-        exportData.push([
-          row.candidateId || "N/A",
-          row.ppId,
-          row.ppId, // X Axis value is same as PP ID
-          typeof row[keyName] === 'number' ? row[keyName].toFixed(3) : row[keyName]
-        ]);
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
       }
-    });
 
-    // Add summary section
-    exportData.push([]);
-    exportData.push(["SUMMARY STATISTICS", "", ""]);
-    
-    // Calculate statistics
-    const validData = tableData
-      .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-      .map(row => row[keyName]);
-    
-    if (validData.length > 0) {
-      const min = Math.min(...validData);
-      const max = Math.max(...validData);
-      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-      
-      exportData.push(["Total Data Points:", validData.length]);
-      exportData.push(["Minimum Value:", min.toFixed(3)]);
-      exportData.push(["Maximum Value:", max.toFixed(3)]);
-      exportData.push(["Average Value:", avg.toFixed(3)]);
-      exportData.push(["Standard Deviation:", stdDev.toFixed(3)]);
-    } else {
-      exportData.push(["No valid data points available", "", ""]);
-    }
+      // Prepare data for export
+      const exportData = [];
 
-    // Add threshold information if available
-    if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      // Add header row with metadata
+      exportData.push(["CHART DATA EXPORT", "", ""]);
+      exportData.push(["Chart Name:", selectedChart.name]);
+      exportData.push(["Key Name:", keyName]);
+      exportData.push(["Export Date:", new Date().toLocaleString()]);
       exportData.push([]);
-      exportData.push(["THRESHOLD INFORMATION", "", ""]);
-      exportData.push(["Threshold Value:", thresholdValue[keyName]]);
-      exportData.push(["Threshold Enabled:", filters?.thresholdEnabled ? "Yes" : "No"]);
+      exportData.push(["DATA POINTS", "", ""]);
+
+      // Add column headers
+      exportData.push(["Candidate ID", "PP ID", "X Axis Value", `${selectedChart.name} (Y Value)`]);
+
+      // Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          exportData.push([
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId, // X Axis value is same as PP ID
+            typeof row[keyName] === 'number' ? row[keyName].toFixed(3) : row[keyName]
+          ]);
+        }
+      });
+
+      // Add summary section
+      exportData.push([]);
+      exportData.push(["SUMMARY STATISTICS", "", ""]);
+
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+
+        exportData.push(["Total Data Points:", validData.length]);
+        exportData.push(["Minimum Value:", min.toFixed(3)]);
+        exportData.push(["Maximum Value:", max.toFixed(3)]);
+        exportData.push(["Average Value:", avg.toFixed(3)]);
+        exportData.push(["Standard Deviation:", stdDev.toFixed(3)]);
+      } else {
+        exportData.push(["No valid data points available", "", ""]);
+      }
+
+      // Add threshold information if available
+      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+        exportData.push([]);
+        exportData.push(["THRESHOLD INFORMATION", "", ""]);
+        exportData.push(["Threshold Value:", thresholdValue[keyName]]);
+        exportData.push(["Threshold Enabled:", filters?.thresholdEnabled ? "Yes" : "No"]);
+      }
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+
+      // Convert data to worksheet
+      const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+      // Apply some styling (merge cells for headers)
+      const merges = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, // Merge first header row
+        { s: { r: 5, c: 0 }, e: { r: 5, c: 3 } }, // Merge "DATA POINTS" header
+      ];
+
+      // Add summary merge if summary exists
+      const summaryStartRow = exportData.findIndex(row => row[0] === "SUMMARY STATISTICS");
+      if (summaryStartRow > -1) {
+        merges.push({ s: { r: summaryStartRow, c: 0 }, e: { r: summaryStartRow, c: 3 } });
+      }
+
+      // Add threshold merge if threshold exists
+      const thresholdStartRow = exportData.findIndex(row => row[0] === "THRESHOLD INFORMATION");
+      if (thresholdStartRow > -1) {
+        merges.push({ s: { r: thresholdStartRow, c: 0 }, e: { r: thresholdStartRow, c: 3 } });
+      }
+
+      ws["!merges"] = merges;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Chart Data");
+
+      // Generate filename
+      const fileName = `chart_data_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      // Write and download
+      XLSX.writeFile(wb, fileName);
+
+      console.log("✅ Excel file exported successfully:", fileName);
+
+    } catch (error) {
+      console.error("❌ Failed to export Excel:", error);
+      alert("Failed to export Excel file. Please try again.");
     }
+  };
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Convert data to worksheet
-    const ws = XLSX.utils.aoa_to_sheet(exportData);
-    
-    // Apply some styling (merge cells for headers)
-    const merges = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }, // Merge first header row
-      { s: { r: 5, c: 0 }, e: { r: 5, c: 3 } }, // Merge "DATA POINTS" header
-    ];
-    
-    // Add summary merge if summary exists
-    const summaryStartRow = exportData.findIndex(row => row[0] === "SUMMARY STATISTICS");
-    if (summaryStartRow > -1) {
-      merges.push({ s: { r: summaryStartRow, c: 0 }, e: { r: summaryStartRow, c: 3 } });
-    }
-    
-    // Add threshold merge if threshold exists
-    const thresholdStartRow = exportData.findIndex(row => row[0] === "THRESHOLD INFORMATION");
-    if (thresholdStartRow > -1) {
-      merges.push({ s: { r: thresholdStartRow, c: 0 }, e: { r: thresholdStartRow, c: 3 } });
-    }
-    
-    ws["!merges"] = merges;
+  // Alternative version with image capture (if you want to include the chart image)
+  // Replace your exportToExcelWithImage function with this:
 
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Chart Data");
-
-    // Generate filename
-    const fileName = `chart_data_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
-    // Write and download
-    XLSX.writeFile(wb, fileName);
-
-    console.log("✅ Excel file exported successfully:", fileName);
-    
-  } catch (error) {
-    console.error("❌ Failed to export Excel:", error);
-    alert("Failed to export Excel file. Please try again.");
-  }
-};
-
-// Alternative version with image capture (if you want to include the chart image)
-// Replace your exportToExcelWithImage function with this:
-
-const exportToExcelWithImage = async () => {
-  if (!selectedChart || !chartContainerRef.current) {
-    alert("Please select a chart first.");
-    return;
-  }
-
-  try {
-    // Extract key name from chart selection
-    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-    if (!keyName) {
-      alert("Invalid chart selection.");
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
       return;
     }
 
-    // 1. Capture chart as image
-    const chartContainer = chartContainerRef.current;
-    const canvas = await html2canvas(chartContainer, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    });
-
-    // Convert canvas to buffer
-    const chartImageBuffer = await new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result));
-        reader.readAsArrayBuffer(blob);
-      }, 'image/png');
-    });
-
-    // 2. Create workbook with ExcelJS
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Chart Report');
-
-    // Set column widths
-    worksheet.columns = [
-      { width: 15 }, // Column A
-      { width: 15 }, // Column B
-      { width: 15 }, // Column C
-      { width: 15 }, // Column D
-    ];
-
-    // 3. Add header section
-    const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
-    headerRow.font = { size: 14, bold: true };
-    headerRow.height = 30;
-    worksheet.mergeCells('A1:D1');
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
-
-    worksheet.addRow(['Chart Name:', selectedChart.name]);
-    worksheet.addRow(['Key Name:', keyName]);
-    worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-    worksheet.addRow([]); // Empty row
-
-    // 4. Add the chart image
-    // Skip some rows for the image
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-
-    const imageId = workbook.addImage({
-      buffer: chartImageBuffer,
-      extension: 'png',
-    });
-
-    // Insert image at specific position
-    worksheet.addImage(imageId, {
-      tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-      br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
-    });
-
-    // Move down past the image
-    let currentRow = 27;
-
-    // 5. Add data points header
-    worksheet.getRow(currentRow).values = ['DATA POINTS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
-
-    const dataHeaderRow = worksheet.getRow(currentRow);
-    dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-    dataHeaderRow.font = { bold: true };
-    dataHeaderRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFE8F4FF' } // Light blue background
-    };
-    currentRow++;
-
-    // 6. Add all data points
-    tableData.forEach(row => {
-      if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-        const dataRow = worksheet.getRow(currentRow);
-        dataRow.values = [
-          row.candidateId || "N/A",
-          row.ppId,
-          row.ppId,
-          typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
-        ];
-        currentRow++;
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
       }
-    });
 
-    // 7. Add summary section
-    currentRow++;
-    worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
 
-    // Calculate statistics
-    const validData = tableData
-      .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-      .map(row => row[keyName]);
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
 
-    if (validData.length > 0) {
-      const min = Math.min(...validData);
-      const max = Math.max(...validData);
-      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
 
-      worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-      worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-    } else {
-      worksheet.getRow(currentRow++).values = ['No valid data points available'];
-      worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
-    }
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
 
-    // 8. Add threshold information if available
-    if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-      currentRow++;
-      worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+
+      // Move down past the image
+      let currentRow = 27;
+
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
       worksheet.getRow(currentRow).font = { bold: true };
       worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
       currentRow++;
 
-      worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-      worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-    }
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
 
-    // 9. Add some formatting
-    // Format numeric cells
-    for (let i = 27; i < currentRow; i++) {
-      const cell = worksheet.getCell(`D${i}`);
-      if (cell.value && typeof cell.value === 'number') {
-        cell.numFmt = '0.000';
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow - 1}:D${currentRow - 1}`);
       }
+
+      // 8. Add threshold information if available
+      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+        currentRow++;
+        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+        worksheet.getRow(currentRow).font = { bold: true };
+        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+        currentRow++;
+
+        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      }
+
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      // Download the file
+      saveAs(blob, fileName);
+
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
+    }
+  };
+
+  // Update your export button to ONLY use this function (remove the simple version)
+  const handleExportGraph = () => {
+    exportToExcelWithImage();
+  };
+
+  // Update your export button to use the function
+
+
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length > 0) {
+      const point = payload[0].payload;
+
+      // Y-axis label (example: XRR, XEP, XLR)
+      const yAxisCode = selectedChart?.name?.match(/\((.*?)\)/)?.[1] ?? "";
+      const yAxisLabel = selectedChart?.name ?? "Value";
+
+      return (
+        <div className="bg-white p-2 border rounded shadow text-xs">
+          <div><strong>PP ID (X):</strong> {point.ppId}</div>
+          <div>
+            <strong>{yAxisLabel} (Y):</strong> {Number(point.value).toFixed(3)}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (!selectedSort) return;
+
+    const source =
+      selectedSort === "activateCandidateLevel"
+        ? activateCandidateLevel
+        : activateUnitLevel;
+
+    // Try to keep same metric (by id), but update type
+    if (selectedChart) {
+      const match = source.find(item => item.id === selectedChart.id);
+      setSelectedChart(match || source[0]);
+    } else {
+      setSelectedChart(source[0]);
+    }
+  }, [selectedSort]);
+
+  const exportAsJPG = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
     }
 
-    // 10. Save the workbook
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
-    
-    // Generate filename
-    const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    
-    // Download the file
-    saveAs(blob, fileName);
+    try {
+      const chartEl = chartContainerRef.current;
 
-    console.log("✅ Excel file with chart image exported successfully:", fileName);
+      // Save original styles
+      const originalHeight = chartEl.style.height;
+      const originalOverflow = chartEl.style.overflow;
 
-  } catch (error) {
-    console.error("❌ Failed to export Excel with image:", error);
-    alert("Failed to export Excel file. Please try again. Error: " + error.message);
-  }
-};
+      // Expand container to full content height
+      chartEl.style.height = `${chartEl.scrollHeight}px`;
+      chartEl.style.overflow = 'visible';
 
-// Update your export button to ONLY use this function (remove the simple version)
-const handleExportGraph = () => {
-  exportToExcelWithImage();
-};
+      const canvas = await html2canvas(chartEl, {
+        scale: 2,              // increase resolution
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollY: -window.scrollY, // prevent viewport scroll offset
+      });
 
-// Update your export button to use the function
+      canvas.toBlob((blob) => {
+        saveAs(blob, `Plot Extraction.jpg`);
+      }, 'image/jpeg', 0.95);
 
+      // Restore original styles
+      chartEl.style.height = originalHeight;
+      chartEl.style.overflow = originalOverflow;
 
+    } catch (error) {
+      console.error('JPG Export failed:', error);
+      alert('Failed to export as JPG: ' + error.message);
+    }
+  };
 
-const CustomTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length > 0) {
-    const point = payload[0].payload;
+  const exportAsPDF = async () => {
+    if (!chartContainerRef.current) {
+      alert("No chart available to export");
+      return;
+    }
 
-    // Y-axis label (example: XRR, XEP, XLR)
-    const yAxisCode = selectedChart?.name?.match(/\((.*?)\)/)?.[1] ?? "";
-    const yAxisLabel = selectedChart?.name ?? "Value";
+    try {
+      const chartEl = chartContainerRef.current;
 
-    return (
-      <div className="bg-white p-2 border rounded shadow text-xs">
-        <div><strong>PP ID (X):</strong> {point.ppId}</div>
-        <div>
-          <strong>{yAxisLabel} (Y):</strong> {Number(point.value).toFixed(3)}
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
+      // Save original styles
+      const originalHeight = chartEl.style.height;
+      const originalOverflow = chartEl.style.overflow;
 
-useEffect(() => {
-  if (!selectedSort) return;
+      // Expand container to full content height
+      chartEl.style.height = `${chartEl.scrollHeight}px`;
+      chartEl.style.overflow = 'visible';
 
-  const source =
-    selectedSort === "activateCandidateLevel"
-      ? activateCandidateLevel
-      : activateUnitLevel;
+      const canvas = await html2canvas(chartEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollY: -window.scrollY,
+      });
 
-  // Try to keep same metric (by id), but update type
-  if (selectedChart) {
-    const match = source.find(item => item.id === selectedChart.id);
-    setSelectedChart(match || source[0]);
-  } else {
-    setSelectedChart(source[0]);
-  }
-}, [selectedSort]);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
 
-const exportAsJPG = async () => {
-  if (!chartContainerRef.current) {
-    alert("No chart available to export");
-    return;
-  }
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
 
-  try {
-    const chartEl = chartContainerRef.current;
+      // Restore original styles
+      chartEl.style.height = originalHeight;
+      chartEl.style.overflow = originalOverflow;
 
-    // Save original styles
-    const originalHeight = chartEl.style.height;
-    const originalOverflow = chartEl.style.overflow;
-
-    // Expand container to full content height
-    chartEl.style.height = `${chartEl.scrollHeight}px`;
-    chartEl.style.overflow = 'visible';
-
-    const canvas = await html2canvas(chartEl, {
-      scale: 2,              // increase resolution
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      scrollY: -window.scrollY, // prevent viewport scroll offset
-    });
-
-    canvas.toBlob((blob) => {
-      saveAs(blob, `Plot Extraction.jpg`);
-    }, 'image/jpeg', 0.95);
-
-    // Restore original styles
-    chartEl.style.height = originalHeight;
-    chartEl.style.overflow = originalOverflow;
-
-  } catch (error) {
-    console.error('JPG Export failed:', error);
-    alert('Failed to export as JPG: ' + error.message);
-  }
-};
-
-const exportAsPDF = async () => {
-  if (!chartContainerRef.current) {
-    alert("No chart available to export");
-    return;
-  }
-
-  try {
-    const chartEl = chartContainerRef.current;
-
-    // Save original styles
-    const originalHeight = chartEl.style.height;
-    const originalOverflow = chartEl.style.overflow;
-
-    // Expand container to full content height
-    chartEl.style.height = `${chartEl.scrollHeight}px`;
-    chartEl.style.overflow = 'visible';
-
-    const canvas = await html2canvas(chartEl, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      scrollY: -window.scrollY,
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-      unit: 'px',
-      format: [canvas.width, canvas.height]
-    });
-
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
-
-    // Restore original styles
-    chartEl.style.height = originalHeight;
-    chartEl.style.overflow = originalOverflow;
-
-  } catch (error) {
-    console.error('PDF Export failed:', error);
-    alert('Failed to export as PDF: ' + error.message);
-  }
-};
+    } catch (error) {
+      console.error('PDF Export failed:', error);
+      alert('Failed to export as PDF: ' + error.message);
+    }
+  };
 
   if (!visible) return null;
 
@@ -793,17 +793,17 @@ const exportAsPDF = async () => {
         <span className="pl-2 text-md">Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
-      <div className="flex h-full w-full my-1 mx-1">
+      <div className="flex flex-1 min-h-100 w-full my-2">
         <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1'>
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
               <button onClick={() => {
-                  if (typeof onResetFilters === "function") {
-                    onResetFilters(); // ✅ reset filters in parent
-                  }
-                  // setScoreAdd(true); 
-                }}
+                if (typeof onResetFilters === "function") {
+                  onResetFilters(); // ✅ reset filters in parent
+                }
+                // setScoreAdd(true); 
+              }}
                 title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
@@ -849,11 +849,11 @@ const exportAsPDF = async () => {
               <div className="flex-1 overflow-auto">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                  
+
                   <div className="col-span-9 px-1 py-1 text-left">Entities</div>
                   <div className="col-span-3  py-1 text-left">ID</div>
                 </div>
-                
+
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' && (
@@ -861,7 +861,7 @@ const exportAsPDF = async () => {
                       // Common charts for all
                       const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
                       if (commonCharts.includes(chart.name)) return true;
-              
+
                       // Unit-specific charts
                       if (unitType === "Communicative I/O") {
                         return unitTypeCharts.communicativeIO.includes(chart.name);
@@ -872,7 +872,7 @@ const exportAsPDF = async () => {
                       if (unitType === "Third Parameter") {
                         return unitTypeCharts.thirdParameter.includes(chart.name);
                       }
-              
+
                       return false;
                     }).map((chart, index) => (
                       <div
@@ -893,7 +893,7 @@ const exportAsPDF = async () => {
                       // Common charts for all
                       const commonCharts = ["Equivalent Proficiency (XEP)", "Unilateral Proficiency (XBP)", "Composite Proficiency (XCP)", "Band Proficiency (XBP)", "Butler Interaction Proficiency (MSIP)", "Stability in Proficiency (STA-P)"];
                       if (commonCharts.includes(chart.name)) return true;
-              
+
                       // Unit-specific charts
                       if (unitType === "Communicative I/O") {
                         return unitTypeCharts.communicativeIO.includes(chart.name);
@@ -904,7 +904,7 @@ const exportAsPDF = async () => {
                       if (unitType === "Third Parameter") {
                         return unitTypeCharts.thirdParameter.includes(chart.name);
                       }
-              
+
                       return false;
                     }).map((chart, index) => (
                       <div
@@ -912,7 +912,7 @@ const exportAsPDF = async () => {
                         className={`grid grid-cols-12 items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 cursor-pointer 
                           ${selectedChart?.name === chart.name ? "bg-gray-100" : "hover:bg-gray-200"}`}
                         onClick={() => {
-                          setSelectedChart(chart); 
+                          setSelectedChart(chart);
                         }}
                       >
                         <div className="col-span-9 text-xs text-gray-700 truncate">{chart.icon} {chart.name}</div>
@@ -929,7 +929,7 @@ const exportAsPDF = async () => {
               <div className="flex space-x-2 border-b p-2">
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Property editor"
-                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Property editor")}
@@ -938,7 +938,7 @@ const exportAsPDF = async () => {
                 </button>
                 <button
                   className={`px-3 py-1 text-sm  cursor-pointer ${activeAdjustPropertieTab === "Table"
-                      ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
+                    ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"
                     }`}
                   onClick={() => setActiveAdjustPropertieTab("Table")}
@@ -977,11 +977,11 @@ const exportAsPDF = async () => {
                           );
                         }
 
-                          return (
-                            <div className="text-center text-gray-400 py-4 italic">
-                              NOT AVAILABLE AT UNIT LEVEL
-                            </div>
-                          );
+                        return (
+                          <div className="text-center text-gray-400 py-4 italic">
+                            NOT AVAILABLE AT UNIT LEVEL
+                          </div>
+                        );
                       })()
                     ) : (
                       // CANDIDATE LEVEL
@@ -1120,7 +1120,7 @@ const exportAsPDF = async () => {
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col h-full bg-white">
-          <div className="h-full overflow-auto flex flex-col">
+          <div className="h-full overflow-hidden flex flex-col">
 
             {/* DYNAMIC CHART SECTION */}
             <div className="flex-1 flex flex-col">
@@ -1150,38 +1150,41 @@ const exportAsPDF = async () => {
                     //     </div>
                     //   );
                     // }
-                  
+
                     // Determine stroke style based on lineStyle
                     const strokeDasharray =
                       chartProperties.lineStyle === "dashed"
                         ? "6 4"
                         : chartProperties.lineStyle === "dotted"
-                        ? "2 4"
-                        : "0";
-                    
-                  
+                          ? "2 4"
+                          : "0";
+
+
                     return (
-                      <div ref={chartContainerRef} className="flex flex-col h-full p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full min-h-0" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="flex-1 flex items-center">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart margin={{ top: 20, right: 30, left:30, bottom: 50 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis
-                                type="number"
-                                dataKey="ppId"
-                                domain={["auto", "auto"]}
-                              >
-                                {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label value={`PP ID`}  position="insideBottom"
-                                  offset={-10}
-                                  textAnchor="middle" 
-                                />
-                              )}
-                              </XAxis>
-                              <YAxis domain={[
+                        <div className="h-full flex-1 min-h-0">
+                          <div
+                            className="w-full h-[72vh] flex-1 overflow-auto min-h-0"
+                          >
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis
+                                  type="number"
+                                  dataKey="ppId"
+                                  domain={["auto", "auto"]}
+                                >
+                                  {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                    <Label value={`PP ID`} position="insideBottom"
+                                      offset={-10}
+                                      textAnchor="middle"
+                                    />
+                                  )}
+                                </XAxis>
+                                <YAxis domain={[
                                   (dataMin) => {
                                     const threshold = thresholdValue?.[keyName];
                                     if (threshold == null) return dataMin;
@@ -1193,124 +1196,129 @@ const exportAsPDF = async () => {
                                     return Math.max(dataMax, threshold);
                                   }
                                 ]}
-                                tickFormatter={(value) => Number(value).toFixed(3)}
+                                  tickFormatter={(value) => Number(value).toFixed(3)}
                                 // label={{
                                 //   value: selectedChart.name,
                                 //   angle: -90,
                                 //   position: "insideLeft",
                                 // }}
-                              >
-                                {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
-                                  <Label
-                                    value={`${selectedChart.name}`}
-                                    angle={-90}
-                                    position="insideLeft"
-                                    textAnchor="middle"
-                                    offset={-10}
+                                >
+                                  {(chartProperties.showLabel || chartProperties.labelType !== "Y Type") && (
+                                    <Label
+                                      value={`${selectedChart.name}`}
+                                      angle={-90}
+                                      position="insideLeft"
+                                      textAnchor="middle"
+                                      offset={-10}
                                     // dy={80}
+                                    />
+                                  )}
+                                </YAxis>
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend
+                                  verticalAlign="bottom"
+                                  align="center"
+                                  wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
+
+                                />
+
+                                {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
+                                  <ReferenceLine
+                                    y={thresholdValue[keyName]}
+                                    stroke="#000000"        // Amber (you can change this)
+                                    strokeWidth={2}
+                                    strokeDasharray="7 4 1 4"
+                                    label={{
+                                      // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
+                                      position: "right",
+                                      fill: "#f59e0b",
+                                      fontSize: 12,
+                                    }}
                                   />
                                 )}
-                              </YAxis>
-                              <Tooltip content={<CustomTooltip />} />
-                              <Legend
-                                verticalAlign="bottom"
-                                align="center"
-                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                                
-                              />
 
-                              {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
-                                <ReferenceLine
-                                  y={thresholdValue[keyName]}
-                                  stroke="#000000"        // Amber (you can change this)
-                                  strokeWidth={2}
-                                  strokeDasharray="7 4 1 4"
-                                  label={{
-                                    // value: `Threshold (${keyName}: ${thresholdValue[keyName]})`,
-                                    position: "right",
-                                    fill: "#f59e0b",
-                                    fontSize: 12,
-                                  }}
-                                />
-                              )}
-                    
-                              {/* 🔴 Negative PP IDs */}
-                              {chartProperties.negativeVisibility && (
-                                <Line
-                                  name="Negative PP IDs"
-                                  type="linear"
-                                  dataKey="value"
-                                  data={negativeData}
-                                  stroke={chartProperties.negativeLineColor}
-                                  strokeDasharray={
-                                    chartProperties.negativeLineStyle === "dashed"
-                                      ? "6 4"
-                                      : chartProperties.negativeLineStyle === "dotted"
-                                      ? "2 4"
-                                      : chartProperties.negativeLineStyle === "dashdot"
-                                      ? "8 4 2 4"
-                                      : "0"
-                                  }
-                                  strokeWidth={chartProperties.negativeLineThickness}
-                                  dot={(props) => {
-                                    const { index } = props;
-                                    if (index % chartProperties.symbolFrequency !== 0) return null;
-                                    return renderCustomDot(props, chartProperties.symbolColor);
-                                  }}
+                                {/* 🔴 Negative PP IDs */}
+                                {chartProperties.negativeVisibility && (
+                                  <Line
+                                    name="Negative PP IDs"
+                                    type="linear"
+                                    dataKey="value"
+                                    data={negativeData}
+                                    stroke={chartProperties.negativeLineColor}
+                                    strokeDasharray={
+                                      chartProperties.negativeLineStyle === "dashed"
+                                        ? "6 4"
+                                        : chartProperties.negativeLineStyle === "dotted"
+                                          ? "2 4"
+                                          : chartProperties.negativeLineStyle === "dashdot"
+                                            ? "8 4 2 4"
+                                            : "0"
+                                    }
+                                    strokeWidth={chartProperties.negativeLineThickness}
+                                    dot={(props) => {
+                                      const { index } = props;
+                                      if (index % chartProperties.symbolFrequency !== 0) return null;
+                                      return renderCustomDot(props, chartProperties.symbolColor);
+                                    }}
                                   // activeDot={getSymbolShape(chartProperties.symbolStyle)}
                                   // shape={getSymbolShape(chartProperties.symbolStyle)} 
-                                />
-                              )}
+                                  />
+                                )}
 
-                              {/* 🔵 Positive PP IDs */}
-                              {chartProperties.positiveVisibility && (
-                                <Line
-                                  name="Positive PP IDs"
-                                  type="linear"
-                                  dataKey="value"
-                                  data={positiveData}
-                                  stroke={chartProperties.positiveLineColor}
-                                  strokeDasharray={
-                                    chartProperties.positiveLineStyle === "dashed"
-                                      ? "6 4"
-                                      : chartProperties.positiveLineStyle === "dotted"
-                                      ? "2 4"
-                                      : chartProperties.positiveLineStyle === "dashdot"
-                                      ? "8 4 2 4"
-                                      : "0"
-                                  }
-                                  strokeWidth={chartProperties.positiveLineThickness}
-                                  dot={(props) => {
-                                    const { index } = props;
-                                    if (index % chartProperties.symbolFrequency !== 0) return null;
-                                    return renderCustomDot(props, chartProperties.symbolColor);
-                                  }}
+                                {/* 🔵 Positive PP IDs */}
+                                {chartProperties.positiveVisibility && (
+                                  <Line
+                                    name="Positive PP IDs"
+                                    type="linear"
+                                    dataKey="value"
+                                    data={positiveData}
+                                    stroke={chartProperties.positiveLineColor}
+                                    strokeDasharray={
+                                      chartProperties.positiveLineStyle === "dashed"
+                                        ? "6 4"
+                                        : chartProperties.positiveLineStyle === "dotted"
+                                          ? "2 4"
+                                          : chartProperties.positiveLineStyle === "dashdot"
+                                            ? "8 4 2 4"
+                                            : "0"
+                                    }
+                                    strokeWidth={chartProperties.positiveLineThickness}
+                                    dot={(props) => {
+                                      const { index } = props;
+                                      if (index % chartProperties.symbolFrequency !== 0) return null;
+                                      return renderCustomDot(props, chartProperties.symbolColor);
+                                    }}
                                   // activeDot={getSymbolShape(chartProperties.symbolStyle)}
                                   // shape={getSymbolShape(chartProperties.symbolStyle)} 
-                                />
-                              )}
-                            </LineChart>
-                          </ResponsiveContainer>
+                                  />
+                                )}
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
+
                       </div>
                     );
                   }
-                  
+
 
                   if (selectedChart.type === "scatter") {
                     return (
-                      <div ref={chartContainerRef} className="flex flex-col h-full p-6 bg-white mb-4" style={{ backgroundColor: chartProperties.shadeArea }}>
+                      <div ref={chartContainerRef} className="flex flex-col h-full min-h-0" style={{ backgroundColor: chartProperties.shadeArea }}>
                         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-                        <div className="flex-1 flex items-center">
+                         <div className="h-full flex-1 min-h-0">
+                          <div
+                            className="w-full h-[72vh] flex-1 overflow-auto min-h-0"
+                          >
                           <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 20, right: 30, left:30, bottom: 50 }}>
+                            <ScatterChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" dataKey="ppId" name="PP ID" >
                                 {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
                                   <Label value={`PP ID`} offset={-10} position="insideBottom" />
                                 )}
                               </XAxis>
-                              <YAxis type="number" dataKey="value" name={selectedChart.name} 
+                              <YAxis type="number" dataKey="value" name={selectedChart.name}
                                 domain={[
                                   (dataMin) => {
                                     const threshold = thresholdValue?.[keyName];
@@ -1358,7 +1366,7 @@ const exportAsPDF = async () => {
                                   }}
                                 />
                               )}
-                              
+
                               <Scatter
                                 name="Negative PP IDs"
                                 data={negativeData}
@@ -1376,45 +1384,47 @@ const exportAsPDF = async () => {
                             </ScatterChart>
                           </ResponsiveContainer>
                         </div>
+                        </div>
+
                       </div>
                     );
                   }
 
                   if (selectedChart.type === "pie" && selectedChart.name.includes("Stability")) {
-                    
+
                     const stable = stabilitySummary.stable || 0;
                     const unstable = stabilitySummary.unstable || 0;
                     const total = stable + unstable;
-  
+
                     // Calculate percentages with 3 decimal places
                     const stablePercentage = total > 0 ? Number((stable / total).toFixed(3)) : 0;
                     const unstablePercentage = total > 0 ? Number((unstable / total).toFixed(3)) : 0;
 
                     // Create data from stabilitySummary state
                     const pieData = [
-                      { 
-                        name: "STABLE", 
+                      {
+                        name: "STABLE",
                         count: stable,
                         value: stablePercentage,
                       },
-                      { 
-                        name: "UNSTABLE", 
+                      {
+                        name: "UNSTABLE",
                         count: unstable,
                         value: unstablePercentage,
-                        
+
                       },
                     ];
-                  
-                    
+
+
                     return (
                       <div ref={chartContainerRef}
-                      className="flex flex-col h-full p-4 bg-white overflow-hidden">
+                        className="flex flex-col h-full p-4 bg-white overflow-hidden">
                         <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="flex-1 min-h-0">  
+                        <div className="flex-1 min-h-0">
                           <ResponsiveContainer width="100%" height="100%">
-                            <PieChart margin={{ top: 0, right: 30, left:30, bottom: 70 }}>
+                            <PieChart margin={{ top: 0, right: 30, left: 30, bottom: 70 }}>
                               <Tooltip
                                 formatter={(value, name, props) => {
                                   const percentage = `${(value).toFixed(3)}`;
@@ -1435,7 +1445,7 @@ const exportAsPDF = async () => {
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius="80%" 
+                                outerRadius="80%"
                                 label={({ name, value, count }) => {
                                   const percentage = (value).toFixed(3);
                                   return `${percentage}`;

@@ -392,16 +392,20 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 className="w-20 border rounded px-2 py-1"
               />
 
-              <label className="block font-semibold mb-1 mt-3">Shade Area</label>
-              <input
-                type="color"
-                value={shadeArea}
-                onChange={(e) => {
-                  setShadeArea(e.target.value);
-                  updateParent({ shadeArea: e.target.value });
-                }}
-                className="w-16 h-8 p-0 border rounded cursor-pointer"
-              />
+              {selectedChart?.type !== "scatter-3d" && (
+                <>
+                  <label className="block font-semibold mb-1 mt-3">Shade Area</label>
+                  <input
+                    type="color"
+                    value={shadeArea}
+                    onChange={(e) => {
+                      setShadeArea(e.target.value);
+                      updateParent({ shadeArea: e.target.value });
+                    }}
+                    className="w-16 h-8 p-0 border rounded cursor-pointer"
+                  />
+                </>
+              )}
             </div>
           {/* )} */}
         </div>

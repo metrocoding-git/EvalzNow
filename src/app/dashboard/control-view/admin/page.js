@@ -98,7 +98,8 @@ export default function AdminControl() {
   
         // ✅ Do NOT overwrite the active client
         // We just need to ensure one is stored
-        if (!storedId) {
+
+        if (!storedId || storedId === "undefined" || storedId === "null") {
           sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(clientsArray[0].id));
         }
   
