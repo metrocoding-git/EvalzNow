@@ -395,6 +395,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   };
   
+  console.log("Slected Chart:", selectedChart)
   useEffect(() => {
     console.log( "filters in plot selection: ", filters);
   }, [filters]);
@@ -834,6 +835,12 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       return null;
     }
     
+    console.log("ICCURVE DATA CHECK:", {
+      signatureProfile,
+      icLevel,
+      caseKey,
+      availableKeys: Object.keys(ICCurveData || {})
+    });
     return ICCurveData[caseKey][icLevel];
   };
 
@@ -848,11 +855,23 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       return null;
     }
   
+    console.log("IC CURVE CHECK:", {
+      signatureProfile,
+      unitType,
+      chartType
+    });
+
     const icLevels = ["IC1", "IC2", "IC3", "IC4", "IC5"];
     const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57"];
     
     return icLevels.map((icLevel, index) => {
       const curveData = getICCurveData(signatureProfile, icLevel);
+
+      console.log("CURVE LOOKUP:", {
+        signatureProfile,
+        icLevel,
+        curveData
+      });
       if (!curveData) return null;
   
       if (chartType === "scatter") {
@@ -966,6 +985,20 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     );
   };
 
+  const getPlotlySymbol = (symbolStyle) => {
+    const map = {
+      circle: "circle",
+      square: "square",
+      diamond: "diamond",
+      triangle: "triangle",
+      cross: "cross",
+      plus: "cross",
+      x: "x",
+      star: "star",
+    };
+  
+    return map[symbolStyle] || "circle";
+  };
   // Same resize-stability idea as ScatterSquare, but keeps the natural
   // rectangle shape of the parent instead of forcing a square. Used for
   // the IC vs PP ID chart so it matches the Line chart's full-rectangle
@@ -1432,7 +1465,8 @@ const showAverages =
         
         marker: {
           size: chartProperties.symbolScaleSize,
-          color: chartProperties.positiveLineColor // green
+          color: chartProperties.positiveLineColor, // green
+          symbol: getPlotlySymbol(chartProperties.symbolStyle)
         },
         name: "Positive PP IDs",
         showlegend: true,
@@ -1451,7 +1485,8 @@ const showAverages =
         mode: "markers",
         marker: {
           size: chartProperties.symbolScaleSize,
-          color: chartProperties.negativeLineColor // red
+          color: chartProperties.negativeLineColor, // red
+          symbol: getPlotlySymbol(chartProperties.symbolStyle)
         },
         name: "Negative PP IDs",
         showlegend: true,
@@ -1518,7 +1553,7 @@ const showAverages =
   
     
     // Add average points if enabled
-    if (showAverages) {
+    if (showAverages && chartProperties.averageVisibility) {
       plotData.push({
         x: averageData.map(avg => toFixed3(avg.RRN)),
         y: averageData.map(avg => toFixed3(avg.PRN)),
@@ -1526,9 +1561,9 @@ const showAverages =
         type: "scatter3d",
         mode: "markers",
         marker: { 
-          size: 6,
-          color: '#ff6b6b',
-          symbol: 'diamond'
+          size: chartProperties.averageSymbolScaleSize,
+          color: chartProperties.averageColor,
+          symbol: getPlotlySymbol(chartProperties.averageSymbolStyle)        
         },
         name: "Average Points",
         showlegend: true,
@@ -2655,29 +2690,90 @@ const showAverages =
                       filters?.unitMode === "averages" &&
                       averageData.length > 0 &&
                       (Array.isArray(candidateId) ? candidateId.length > 0 : !!candidateId) &&
-                      !(selectedChart?.id === "1" && selectedSort === "activateUnitLevel") // 👈
+                      !(selectedChart?.id === "1" && selectedSort === "activateUnitLevel") 
                     }  
+                    
                   />
                 )}
 
                 {activeAdjustPropertieTab === "Table" && (() => {
 
+                  const cols = getTableColumns();
+
                   if (selectedSort === "activateUnitLevel") {
                     return (
-                      <div className="text-center text-gray-400 py-4 italic">
-                        NOT AVAILABLE AT UNIT LEVEL
+                      <div className="text-center text-gray-400 py-4 italic overflow-hidden">
+                        <p>NOT AVAILABLE AT UNIT LEVEL</p>
+
+                        <div className='text-white bg-white'>
+                          <table className="text-xs border border-white mb-6" style={{ width: 'max-content', minWidth: '100%' }}>
+                            <thead className="bg-white">
+                              <tr>
+                                {cols.columns.map(col => (
+                                  <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                                    {col.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {sortedData
+                                .filter(row => row.ppId > 0)
+                                .map((row, idx) => (
+                                  <tr key={idx} className="">
+                                    {cols.columns.map(col => (
+                                      <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                                        {row[col.key]}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+
+                          {/*  Negative PP IDs */}
+                          <h3 className="text-white font-semibold mb-2 ml-2">
+                            Negative PP IDs
+                          </h3>
+
+                          <table className="text-xs border border-white" style={{ width: 'max-content', minWidth: '100%' }}>
+                            <thead className="">
+                              <tr>
+                                {cols.columns.map(col => (
+                                  <th key={col.key} className="border px-3 py-1 whitespace-nowrap">
+                                    {col.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {sortedData
+                                .filter(row => row.ppId < 0)
+                                .map((row, idx) => (
+                                  <tr key={idx} className="">
+                                    {cols.columns.map(col => (
+                                      <td key={col.key} className="border px-3 py-1 text-center whitespace-nowrap">
+                                        {row[col.key]}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                          </div>
                       </div>
                     );
                   }
 
-                  const cols = getTableColumns();
                   if (!cols) return <div className=' flex justify-center uppercase mt-2 text-gray-500'>Select a chart</div>;
                   
                   return (
                     <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10 pb-1">
                       {sortedData.length === 0 ? (
                         <div className="flex justify-center items-center py-6 text-gray-500 uppercase">
-                          No Data Available
+                          <p>No Data Available</p>
                         </div>
                       ) : (
                         <>
