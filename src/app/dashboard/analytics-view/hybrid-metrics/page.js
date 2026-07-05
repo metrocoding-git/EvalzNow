@@ -181,6 +181,7 @@ export default function HybridMetrics() {
     }
   });
 
+  console.log("Signature Profile:", unitData?.signatureProfile);
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1  ">

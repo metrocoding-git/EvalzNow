@@ -141,6 +141,7 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
     }
   };
 
+  console.log("Slected Chart:", selectedChart);
   return (
     <div className="w-full space-y-6 text-gray-700 text-xs p-1 pt-1 pb-2 border border-gray-300 bg-white mb-8 rounded-lg">
       
@@ -335,11 +336,16 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 }}
                 className="w-full border rounded px-2 py-1"
               >
-                {symbolStyles.map((style) => (
-                  <option key={style.value} value={style.value}>
-                    {style.label}
-                  </option>
-                ))}
+                {symbolStyles
+                  .filter(
+                    (style) =>
+                      !(Number(selectedChart?.id) === 5 && style.value === "triangle")
+                  )
+                  .map((style) => (
+                    <option key={style.value} value={style.value}>
+                      {style.label}
+                    </option>
+                  ))}
               </select>
 
               { selectedChart?.type === "line" && (
@@ -442,11 +448,16 @@ export default function PropertyEditor({ properties, onChange, selectedChart, sh
                 }}
                 className="w-full border rounded px-2 py-1"
               >
-                {symbolStyles.map((style) => (
-                  <option key={style.value} value={style.value}>
-                    {style.label}
-                  </option>
-                ))}
+                {symbolStyles
+  .filter(
+    (style) =>
+      !(Number(selectedChart?.id) && style.value === "triangle")
+  )
+  .map((style) => (
+    <option key={style.value} value={style.value}>
+      {style.label}
+    </option>
+  ))}
               </select>
 
               {/* Color */}
