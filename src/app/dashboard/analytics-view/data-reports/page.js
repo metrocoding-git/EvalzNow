@@ -21,6 +21,7 @@ import { downloadEZFile } from "./downloadEZ";
 import { buildGlobalEZReport } from "./GlobalEZReport";
 import { getEffortBu } from "@/services/auxiliaryService";
 import { buildUnitEZReport } from "./ActiveUnitEZReport";
+import { downloadEZFilesAsZip } from "./helper/downloadEZFilesAsZip";
 
 export default function DataReports() {
   const tabs = [
@@ -284,6 +285,9 @@ export default function DataReports() {
           return;
         }
         
+        
+        const filesToZip = [];
+
         // ✅ Loop per candidate
         for (const candidate of extracted.candidates) {
           const candidateId = candidate.id;
@@ -327,10 +331,15 @@ export default function DataReports() {
               effortResults,
             });
             
-            downloadEZFile(
-              ezText,
-              `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
-            );
+            // downloadEZFile(
+            //   ezText,
+            //   `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
+            // );
+
+            filesToZip.push({
+              filename: `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`,
+              content: ezText,
+            });
             
           } catch (e) {
             console.error(`Failed to fetch data for candidate ${candidateId}`, e);
@@ -338,6 +347,9 @@ export default function DataReports() {
             continue;
           }
         }
+        
+        await downloadEZFilesAsZip(filesToZip, `All_Candidate_Reports_Unit_${selectedUnitId}.zip`);
+
       } catch (err) {
         console.error("Failed to extract all candidate reports:", err);
       }
@@ -372,6 +384,8 @@ export default function DataReports() {
             console.warn("No units found for this client");
             return;
           }
+
+          const filesToZip = [];
       
           // ✅ LOOP ALL UNITS
           for (const unit of response.units) {
@@ -381,11 +395,18 @@ export default function DataReports() {
               unit
             });
       
-            downloadEZFile(
-              ezText,
-              `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
-            );
+            // downloadEZFile(
+            //   ezText,
+            //   `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
+            // );
+
+            filesToZip.push({
+              filename: `Unit_Report_${unit.unitName}_${unit.unitId}.ez`,
+              content: ezText,
+            });
           }
+
+          await downloadEZFilesAsZip(filesToZip, `All_Unit_Reports_${activeClientId}.zip`);
       
         } catch (err) {
           console.error("Failed to generate unit reports:", err);
