@@ -2864,7 +2864,7 @@ const showAverages =
 
             <div className="h-full flex-1 min-h-0">
               <div
-                className="w-full h-[75vh] flex-1 overflow-auto min-h-0"
+                className="w-full h-[70vh] flex-1 overflow-auto min-h-0"
               >
                 {renderSelectedChart()}
               </div>
