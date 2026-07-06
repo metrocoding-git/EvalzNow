@@ -1367,7 +1367,7 @@ const showAverages =
               fill={chartProperties.averageColor}
               isAnimationActive={false}
               hide={!chartProperties.averageVisibility}  // 
-              name="Average PPID"
+              name="Average PP IDs"
               shape={(props) =>
                 applyChartStyling.symbolShape(
                   chartProperties.averageSymbolStyle,   // 
@@ -1565,7 +1565,7 @@ const showAverages =
           color: chartProperties.averageColor,
           symbol: getPlotlySymbol(chartProperties.averageSymbolStyle)        
         },
-        name: "Average PPID",
+        name: "Average PP IDs",
         showlegend: true,
         legendrank: 3,
         hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 
