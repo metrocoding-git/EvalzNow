@@ -445,14 +445,14 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                     </div>
                     <label className="block text-gray-700 font-medium text-xs">{k}:</label>
                     <input
-                      type="number"
-                      step="0.001"
-                      value={typeof v === "number" ? v.toFixed(3) : ""}
+                      type="text"
+                      // step="0.001"
+                      value={v ?? ""}
                       disabled={k === "IC"}
                       onChange={(e) =>
                         handleChange("passThresholds", {
                           ...form.passThresholds,
-                          [k]: parseFloat(e.target.value),
+                          [k]: e.target.value,
                         })
                       }
                       className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${

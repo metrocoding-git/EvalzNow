@@ -118,7 +118,7 @@ const getLoadG = (neuro, ppId, lobe) =>
       "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
     ],
     "Communicative I/O": [
-      "XRR","XLR","XSR","XWR"
+      "XLR","XRR","XSR","XWR"
     ],
     "Theory & Practice": [
       "XTR","XPR"
@@ -132,7 +132,7 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
   const { unit, candidates } = extractionData;
 
   const headers = [
-    "Last Name","First Name","Candidate ID","Candidate Start Date","Nationality","Gender","Ethnicity","Income","Religion","Marital Status","Job Type","Date of Birth","Special ID No.","Unit Name","Unit ID","Unit Start Date","Unit End Date","Signature Profile","Unit Type","Environment","PP ID","Short Description","Period Type","Delivery","Critical Reference Date","Day Count (Days)","Productivity_CSD","Productivity_USD","RRN","PRN","ARN","XRR","XLR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR","XEP","XCP","XBP","MSIP","STA/P","IC","ΔRRN","ΔPRN","ΔARN","GEQ","STA/G","RRGT1","PRGT1","ARGT1","RRGT2","PRGT2","ARGT2","RRGT3","PRGT3","ARGT3","RRGT4","PRGT4","ARGT4","RRGT5","PRGT5","ARGT5","Linked BIDs","RMS/P Frontal/L","RMS/P Occipital/L","RMS/P Parietal/L","RMS/P Temporal/L","RMS/P Frontal/R","RMS/P Occipital/R","RMS/P Parietal/R","RMS/P Temporal/R","Load/P Frontal/L","Load/P Occipital/L","Load/P Parietal/L","Load/P Temporal/L","Load/P Frontal/R","Load/P Occipital/R","Load/P Parietal/R","Load/P Temporal/R","RMS/G Frontal/L","RMS/G Occipital/L","RMS/G Parietal/L","RMS/G Temporal/L","RMS/G Frontal/R","RMS/G Occipital/R","RMS/G Parietal/R","RMS/G Temporal/R","Load/G Frontal/L","Load/G Occipital/L","Load/G Parietal/L","Load/G Temporal/L","Load/G Frontal/R","Load/G Occipital/R","Load/G Parietal/R","Load/G Temporal/R","Observations & Goals","Action Status"
+    "Last Name","First Name","Candidate ID","Candidate Start Date","Nationality","Gender","Ethnicity","Income","Religion","Marital Status","Job Type","Date of Birth","Special ID No.","Unit Name","Unit ID","Unit Start Date","Unit End Date","Signature Profile","Unit Type","Environment","PP ID","Short Description","Period Type","Delivery","Critical Reference Date","Day Count (Days)","Productivity_CSD","Productivity_USD","RRN","PRN","ARN","XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR","XEP","XCP","XBP","MSIP","STA/P","IC","ΔRRN","ΔPRN","ΔARN","GEQ","STA/G","RRGT1","PRGT1","ARGT1","RRGT2","PRGT2","ARGT2","RRGT3","PRGT3","ARGT3","RRGT4","PRGT4","ARGT4","RRGT5","PRGT5","ARGT5","Linked BIDs","RMS/P Frontal/L","RMS/P Occipital/L","RMS/P Parietal/L","RMS/P Temporal/L","RMS/P Frontal/R","RMS/P Occipital/R","RMS/P Parietal/R","RMS/P Temporal/R","Load/P Frontal/L","Load/P Occipital/L","Load/P Parietal/L","Load/P Temporal/L","Load/P Frontal/R","Load/P Occipital/R","Load/P Parietal/R","Load/P Temporal/R","RMS/G Frontal/L","RMS/G Occipital/L","RMS/G Parietal/L","RMS/G Temporal/L","RMS/G Frontal/R","RMS/G Occipital/R","RMS/G Parietal/R","RMS/G Temporal/R","Load/G Frontal/L","Load/G Occipital/L","Load/G Parietal/L","Load/G Temporal/L","Load/G Frontal/R","Load/G Occipital/R","Load/G Parietal/R","Load/G Temporal/R","Observations & Goals","Action Status"
   ];
 
   const resolveMetric = (unitType, competency, field) => {
@@ -187,8 +187,8 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
         safe(competency.RRN, "number"),
         safe(competency.PRN, "number"),
         safe(resolveMetric(unit.unitType, competency, "ARN"), "number"),
-        safe(resolveMetric(unit.unitType, competency, "XRR"), "number"),
         safe(resolveMetric(unit.unitType, competency, "XLR"), "number"),
+        safe(resolveMetric(unit.unitType, competency, "XRR"), "number"),
         safe(resolveMetric(unit.unitType, competency, "XSR"), "number"),
         safe(resolveMetric(unit.unitType, competency, "XWR"), "number"),
 

@@ -1,5 +1,20 @@
 export function buildGlobalEZReport({ client, totalCandidates,  analytics, thresholds }) {
   const today = new Date().toDateString();
+
+  const totalAttendance =
+  (Number(analytics.attendance?.present) || 0) +
+  (Number(analytics.attendance?.excusedAbsences) || 0) +
+  (Number(analytics.attendance?.unexcusedAbsences) || 0) +
+  (Number(analytics.attendance?.excusedTardies) || 0) +
+  (Number(analytics.attendance?.unexcusedTardies) || 0);
+
+  const fraction = (value, total) => {
+    const v = Number(value) || 0;
+    const t = Number(total) || 0;
+  
+    return t > 0 ? (v / t).toFixed(3) : "0.000";
+  };
+
     const pct = (v, total) =>
       total ? (v / total).toFixed(3) : "0.000";
   
@@ -84,7 +99,7 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   Global Percentage of Case 1 Profiles      :     ${pct(analytics.signatureProfiles["Case 1: Solid Balanced"], analytics.totalUnits)}
   Global Percentage of Case 2 Profiles      :     ${pct(analytics.signatureProfiles["Case 2: Rigorous Balanced"], analytics.totalUnits)}
   Global Percentage of Case 3a Profiles     :     ${pct(analytics.signatureProfiles["Case 3a: Productive-Weighted"], analytics.totalUnits)}
-  Global Percentage of Case 3b Profiles     :     ${pct(analytics.signatureProfiles["Case 3b: Receptive-Weighed"], analytics.totalUnits)}
+  Global Percentage of Case 3b Profiles     :     ${pct(analytics.signatureProfiles["Case 3b: Receptive-Weighted"], analytics.totalUnits)}
   
   ---------------------------------------
   UNIT TYPE SELECTIONS:
@@ -106,11 +121,11 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Assessment Blocks, 8 < AB ≤ 20          :     ${pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks)}
   % Assessment Blocks, AB > 20              :     ${pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks)}
 
-  % Attendance - Present                    :     ${fmtFraction(analytics.attendance.present)}
-  % Attendance - Excused Absences           :     ${fmtFraction(analytics.attendance.excusedAbsences)}
-  % Attendance - Unexcused Absences         :     ${fmtFraction(analytics.attendance.unexcusedAbsences)}
-  % Attendance - Excused Tardies            :     ${fmtFraction(analytics.attendance.excusedTardies)}
-  % Attendance - Unexcused Tardies          :     ${fmtFraction(analytics.attendance.unexcusedTardies)}
+  % Attendance - Present                    :     ${fraction(analytics.attendance.present, totalAttendance)}
+  % Attendance - Excused Absences           :     ${fraction(analytics.attendance.excusedAbsences, totalAttendance)}
+  % Attendance - Unexcused Absences         :     ${fraction(analytics.attendance.unexcusedAbsences, totalAttendance)}
+  % Attendance - Excused Tardies            :     ${fraction(analytics.attendance.excusedTardies, totalAttendance)}
+  % Attendance - Unexcused Tardies          :     ${fraction(analytics.attendance.unexcusedTardies, totalAttendance)}
 
   % Action Status - Open                    :     ${fmtFraction(analytics.needAssessments.open)}
   % Positive Candidate Marks                :     ${fmtFraction(analytics.candidateMarks.impactScore)}
