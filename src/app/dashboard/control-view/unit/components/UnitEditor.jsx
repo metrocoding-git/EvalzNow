@@ -285,7 +285,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       ...prev,
       passThresholds: {
         ...prev.passThresholds,
-        [key]: parseFloat(value)
+        [key]: value
       }
     }));
   };
@@ -637,9 +637,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                         {k}:
                       </label>
                       <input
-                        type="number"
-                        step="0.001"
-                        value={typeof v === "number" ? v.toFixed(3) : ""}
+                        type="text"
+                        // step="0.001"
+                        value={v ?? ""}
                         disabled={k === "IC"}
                         onFocus={() => setFormStatus("Editing...")}
                         onBlur={() => setFormStatus("Ready...")}

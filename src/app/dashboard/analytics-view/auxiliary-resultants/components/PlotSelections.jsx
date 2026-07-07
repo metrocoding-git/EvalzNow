@@ -2055,18 +2055,20 @@ const handleDeleteChain = async (chainId) => {
           );
         }
         return (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={csdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
-              <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} dx={-15} textAnchor='middle' />
-              <Tooltip />
-              <Legend verticalAlign="bottom"  align="center"
-                              wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
-              <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
-              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="w-full h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={csdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="ppId" label={{ value: "PP ID", position: "insideBottom", offset: -10 }} textAnchor='middle' />
+                <YAxis label={{ value: "Days", angle: -90, position: "insideLeft", dy: 5 }} dx={-15} textAnchor='middle' />
+                <Tooltip />
+                <Legend verticalAlign="bottom"  align="center"
+                                wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+                <Line type="linear" dataKey="csdTenureDays" name="CSD Tenure Days" stroke="#3b82f6" dot />
+                <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#10b981" dot />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         );
       }
     
@@ -2080,6 +2082,7 @@ const handleDeleteChain = async (chainId) => {
           );
         }
         return (
+          <div className="w-full h-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={usdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -2088,10 +2091,11 @@ const handleDeleteChain = async (chainId) => {
               <Tooltip />
               <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
-              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#10b981" dot />
-              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#ef4444" dot />
+              <Line type="linear" dataKey="usdTenureDays" name="USD Tenure Days" stroke="#10b981" dot isAnimationActive={false} />
+              <Line type="linear" dataKey="duration" name="Cumulative Duration" stroke="#ef4444" dot isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         );
       }
 
@@ -2104,6 +2108,7 @@ const handleDeleteChain = async (chainId) => {
           );
         }
         return (
+          <div className="w-full h-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={BpCsdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -2118,9 +2123,11 @@ const handleDeleteChain = async (chainId) => {
                 name="Productivity CSD" 
                 stroke="#10b981"
                 dot 
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         );
       }
       
@@ -2134,6 +2141,8 @@ const handleDeleteChain = async (chainId) => {
           );
         }
         return (
+          <div className="w-full h-full">
+
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={BpUsdChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -2149,9 +2158,11 @@ const handleDeleteChain = async (chainId) => {
                 name="Productivity USD" 
                 stroke="#10b981"
                 dot 
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         );
       }
 
@@ -2469,9 +2480,9 @@ const handleDeleteChain = async (chainId) => {
             <Tooltip />
             <Legend verticalAlign="bottom"  align="center"
                               wrapperStyle={{ paddingTop: 10, paddingLeft: 50 }} />
-            <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot />
-            <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot />
-            <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot />
+            <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot isAnimationActive={false} />
+            <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot isAnimationActive={false} />
+            <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       );
@@ -2779,7 +2790,7 @@ const handleDeleteChain = async (chainId) => {
             </div>
          
 
-            <div className="h-[60%] flex flex-col border border-gray-200">
+            <div className="h-[60%] flex flex-col border border-gray-200 ">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -2804,7 +2815,7 @@ const handleDeleteChain = async (chainId) => {
               </div>
 
               {/* Tab Content */}
-              <div className="flex-1 overflow-auto p-2 h-full">
+              <div className="flex-1 overflow-auto p-2 min-h-0">
                 {activeAdjustPropertieTab === "Property editor" && (
                   <>
                     {selectedChart && (selectedChart.type === "line" || selectedChart.type === "scatter-2d") ? (
@@ -2866,7 +2877,6 @@ const handleDeleteChain = async (chainId) => {
                     </div>
                   );
                 })()}
-
               </div>
             </div>
           </div>
@@ -2885,8 +2895,14 @@ const handleDeleteChain = async (chainId) => {
           )}
 
           {/* ✅ flex-1 min-h-0 so it fills remaining height without overflow */}
-          <div className={`flex-1 min-h-0 p-3 ${isChart ? "flex items-center justify-center" : "overflow-y-auto overflow-x-auto"}`}>
-            <div className={`${isChart ? "w-full h-full" : "min-w-max"}`}>
+          <div
+            className={`flex-1 min-h-0 p-3 overflow-hidden ${
+              isChart
+                ? "flex items-center justify-center"
+                : "overflow-y-auto overflow-x-auto"
+            }`}
+          >
+            <div className="w-full h-full">
               {renderChartContent()}
             </div>
           </div>
