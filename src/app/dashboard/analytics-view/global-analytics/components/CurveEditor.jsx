@@ -218,7 +218,7 @@ export default function CurveEditor() {
   
     return Object.entries(icDistributionData.icDistribution).map(([icClass, value]) => ({
       name: `IC ${icClass}`,
-      value: Number((value ).toFixed(2)), // Pie expects 0-100%
+      value: Number((value ).toFixed(3)), // Pie expects 0-100%
       count: icCounts?.[icClass] || 0,
     }));
   };
@@ -317,8 +317,8 @@ export default function CurveEditor() {
     if (total === 0) return [];
   
     return [
-      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
-      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(3)) }, // Convert to percentage
+      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(3)) }, // Convert to percentage
     ];
   };
   
@@ -331,8 +331,8 @@ export default function CurveEditor() {
     if (total === 0) return [];
   
     return [
-      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(2)) }, // Convert to percentage
-      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(2)) }, // Convert to percentage
+      { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(3)) }, // Convert to percentage
+      { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(3)) }, // Convert to percentage
     ];
   };
   
@@ -342,18 +342,18 @@ export default function CurveEditor() {
     return [
       {
         name: "UR < 0.300",
-        count: Number((ProductivityData.counts.low).toFixed(2)),
-        value: Number((ProductivityData.distribution.low).toFixed(2)),
+        count: Number((ProductivityData.counts.low).toFixed(3)),
+        value: Number((ProductivityData.distribution.low).toFixed(3)),
       },
       {
         name: "0.300 ≤ UR ≤ 0.600",
-        count: Number((ProductivityData.counts.mid).toFixed(2)),
-        value: Number((ProductivityData.distribution.mid).toFixed(2)),
+        count: Number((ProductivityData.counts.mid).toFixed(3)),
+        value: Number((ProductivityData.distribution.mid).toFixed(3)),
       },
       {
         name: "UR > 0.600",
-        count: Number((ProductivityData.counts.high).toFixed(2)),
-        value: Number((ProductivityData.distribution.high).toFixed(2)),
+        count: Number((ProductivityData.counts.high).toFixed(3)),
+        value: Number((ProductivityData.distribution.high).toFixed(3)),
       },
     ];
   };
@@ -415,7 +415,7 @@ export default function CurveEditor() {
             name, 
             count: Number(value),
             value: total > 0 ? Number((Number(value) / total).toFixed(2)) : 0 
-  }));
+      }));
   
       case 2:
         const unitTypes = globalAnalytics.unitTypes || {};
@@ -427,32 +427,32 @@ export default function CurveEditor() {
         .map(([name, value]) => ({ 
           name, 
           count: Number(value),
-          value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(2)) : 0 
+          value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(3)) : 0 
         }));
   
       case 3:
         return buildCandidateStaffRatioPie();
           
-        case 4: {
-          const bc = globalAnalytics.benchmarkCounts || {};
-        
-          const ORDER = [
-            "BC ≤ 10",
-            "10 < BC ≤ 25",
-            "BC > 25",
-          ];
-        
-          const total = Object.values(bc).reduce((sum, val) => sum + (Number(val) || 0), 0);
+      case 4: {
+        const bc = globalAnalytics.benchmarkCounts || {};
+      
+        const ORDER = [
+          "BC ≤ 10",
+          "10 < BC ≤ 25",
+          "BC > 25",
+        ];
+      
+        const total = Object.values(bc).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
-          // Return percentages (as decimals 0-1)
-          return ORDER
-            .filter(key => bc[key] !== undefined)
-            .map(key => ({
-              name: key,
-              count: Number(bc[key]),
-              value: total > 0 ? Number((Number(bc[key]) / total).toFixed(2)) : 0.00,
-            }));
-        }
+        // Return percentages (as decimals 0-1)
+        return ORDER
+          .filter(key => bc[key] !== undefined)
+          .map(key => ({
+            name: key,
+            count: Number(bc[key]),
+            value: total > 0 ? Number((Number(bc[key]) / total).toFixed(3)) : 0.00,
+          }));
+      }
   
       case 5:
         const assessmentBlocks = globalAnalytics.assessmentBlocks || {};
@@ -464,7 +464,7 @@ export default function CurveEditor() {
           .map(([name, value]) => ({ 
             name, 
             count: Number(value),
-            value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(2)) : 0.00 
+            value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(3)) : 0.00 
           }));
   
       case 6:
@@ -476,7 +476,7 @@ export default function CurveEditor() {
         return Object.entries(attendance).map(([key, value]) => ({
           name: humanizeKey(key),
           count: Number(value),
-          value: totalAttendance > 0 ? Number((Number(value) / totalAttendance).toFixed(2)) : 0.00,
+          value: totalAttendance > 0 ? Number((Number(value) / totalAttendance).toFixed(3)) : 0.00,
         }));
       
       case 7: {
@@ -488,31 +488,31 @@ export default function CurveEditor() {
 
         // Return percentages as decimals (0-1)
         return [
-          { name: "Open", count: open, value: total > 0 ? Number((open / total).toFixed(2)) : 0.00 },
-          { name: "Pending", count: pending, value: total > 0 ? Number((pending / total).toFixed(2)) : 0.00 },
-          { name: "Closed", count: closed, value: total > 0 ? Number((closed / total).toFixed(2)) : 0.00 },
+          { name: "Open", count: open, value: total > 0 ? Number((open / total).toFixed(3)) : 0.00 },
+          { name: "Pending", count: pending, value: total > 0 ? Number((pending / total).toFixed(3)) : 0.00 },
+          { name: "Closed", count: closed, value: total > 0 ? Number((closed / total).toFixed(3)) : 0.00 },
         ];
       }    
       
-      case 8: { 
+      case 8: {
         const data = globalAnalytics.candidateMarks;
       
         if (!data || data.totalMarks === 0) return [];
       
-        const success = data.impactScore * data.totalMarks;
-        const fail = data.totalMarks - success;
+        const positive = Number(data.impactScore.toFixed(3));
+        const negative = Number((1 - data.impactScore).toFixed(3));
       
         return [
           {
             name: "Positive",
-            count: success,
-            value: data.impactScore
+            count: data.positiveMarks,
+            value: positive,
           },
           {
             name: "Negative",
-            count: fail,
-            value: Number((1 - data.impactScore).toFixed(3))
-          }
+            count: data.totalMarks - data.positiveMarks,
+            value: negative,
+          },
         ];
       }
       
@@ -548,7 +548,7 @@ export default function CurveEditor() {
           .map(([name, value]) => ({ 
             name, 
             count: Number(value),
-            value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(2)) : 0.00 
+            value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(3)) : 0.00 
           }));
   
       // ================= REGULAR METRICS - PROFICIENCY (Pass/Fail) =================

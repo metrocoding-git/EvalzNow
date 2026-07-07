@@ -655,7 +655,8 @@ function extractStaffAssignments(staffAssignments = []) {
     Unilateral Proficiency                     :     PASS → -`;
     }
 
-    return `                                                    
+    return `                                        
+                                                     *******************************************************************************            
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
