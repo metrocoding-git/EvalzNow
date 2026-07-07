@@ -1070,9 +1070,10 @@ ${assignmentRows2}
 
 ${rmsProficiencyTables}
 
+${rmsGrowthTables}
+
 ${cognitiveLoadBlock}
 
-${rmsGrowthTables}
 
 
 *******************************************************                                  SECTION 09                               *******************************************************
