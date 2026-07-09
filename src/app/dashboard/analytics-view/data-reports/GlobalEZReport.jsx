@@ -30,6 +30,7 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
     const totalUnitOutcomes = Object.values(analytics.unitOutcomes || {})
     .reduce((sum, v) => sum + (Number(v) || 0), 0);
     return `
+                                                     *******************************************************************************
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **

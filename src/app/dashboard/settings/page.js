@@ -12,14 +12,14 @@ const SecurePdfViewer = dynamic(() => import("@/components/PdfViewers"), {
 });
 
 const helpDocs = [
-  "1.0 Introduction.pdf",
+  "1.0 INTRODUCTION.pdf",
   "2.0 Brain Function and Causality.pdf",
-  "3.0 Evalznow Fundamentals.pdf",
+  "3.0 EVALZNOW FUNDAMENTALS.pdf",
   "4.0 General Use - Education.pdf",
   "5.0 General Use - Industry.pdf",
   "6.0 Psychometrics and ML.pdf",
   "7.0 Issues - Pre-existing Models.pdf",
-  "8.0 Policy & Legal.pdf"
+  "8.0 POLICY & LEGAL.pdf"
 ];
 
 export default function SettingsPage() {

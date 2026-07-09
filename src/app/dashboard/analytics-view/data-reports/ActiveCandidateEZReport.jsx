@@ -73,10 +73,10 @@ function extractStaffAssignments(staffAssignments = []) {
   
     return candidateMarks
       .sort((a, b) => a.entryNumber - b.entryNumber)
-      .map(mark => {
+      .map((mark, index) => {
         return (
           "         " +
-          String(mark.entryNumber ?? "-").padEnd(colWidths.entryNumber) +
+          String(index + 1 ?? "-").padEnd(colWidths.entryNumber) +
           String(mark.impactType ?? "-").padEnd(colWidths.impactType) +
           String(mark.concernIdentified ?? "-").padEnd(colWidths.concernIdentified) +
           String(mark.identityDate ?? "-").padEnd(colWidths.identityDate) +
@@ -791,7 +791,8 @@ export function buildCandidateEZReport({
       growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ΔARN |||     ||| ∆GEQ |||     ||| STA/G |||";
     }
 
-    return `                                                                                                               
+    return `                                          
+                                                     *******************************************************************************                                                                     
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
                                                      **                                                                           **
@@ -1069,9 +1070,10 @@ ${assignmentRows2}
 
 ${rmsProficiencyTables}
 
+${rmsGrowthTables}
+
 ${cognitiveLoadBlock}
 
-${rmsGrowthTables}
 
 
 *******************************************************                                  SECTION 09                               *******************************************************
