@@ -238,7 +238,7 @@ export default function StaffControl() {
       if (
         !isContextMenuClick &&
         !isStaffClick &&
-        !isControlClick
+        !isControlClick &&  !isFormClick 
       ) {
         setSelectedStaff(null);
         setShowEdit(false);
@@ -439,12 +439,24 @@ export default function StaffControl() {
             showForm={showEdit}
             onClose={() => setShowEdit(false)}
             onSave={(updatedStaff) => {
-              setDataList((prev) =>
-                prev.map((item) =>
+              setDataList((prev) => {
+                const updatedList = prev.map((item) =>
                   item.id === updatedStaff.id ? updatedStaff : item
-                )
-              );
-              setSelectedStaff(updatedStaff);
+                );
+            
+                // Keep the list sorted the same way as your staff list
+                const sortedList = [...updatedList].sort(
+                  (a, b) => Number(a.id) - Number(b.id)
+                );
+            
+                if (sortedList.length > 0) {
+                  setSelectedStaff(sortedList[0]); // Select first staff
+                  setShowEdit(true);               // Keep editor open
+                }
+            
+                return sortedList;
+              });
+            
               setFormStatus("Staff Updated");
             }}
           />
