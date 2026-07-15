@@ -668,6 +668,60 @@ ${growthLines.join("\n")}`;
       .join("\n");
   }
   
+  const getICValue = (unitType, signatureProfile, icString) => {
+    if (!icString) return 0;
+  
+    // ---------- CASE 1 / CASE 2 ----------
+    if (
+      unitType === "Communicative I/O" ||
+      unitType === "Theory & Practice"
+    ) {
+      if (
+        signatureProfile === "Case 1: Solid Balanced" ||
+        signatureProfile === "Case 2: Rigorous Balanced"
+      ) {
+        const map = {
+          "0R0P": 0, "1R1P": 1, "2R2P": 2,
+          "3R3P": 3, "4R4P": 4, "5R5P": 5
+        };
+        return map[icString] ?? 0;
+      }
+  
+      // ---------- CASE 3a: PRODUCTIVE ----------
+      if (signatureProfile === "Case 3a: Productive-Weighted") {
+        const map = {
+          "0R0P": 0,   "0R1P": 0.5, "0R2P": 1,
+          "1R2P": 1.5, "2R2P": 2,   "2R3P": 2.5,
+          "3R3P": 3,   "3R4P": 3.5, "4R4P": 4,
+          "5R5P": 5
+        };
+        return map[icString] ?? 0;
+      }
+  
+      // ---------- CASE 3b: RECEPTIVE ----------
+      if (signatureProfile === "Case 3b: Receptive-Weighted") {
+        const map = {
+          "0R0P": 0, "1R0P": 0.5, "2R0P": 1,
+          "2R1P": 1.5, "2R2P": 2, "3R2P": 2.5,
+          "3R3P": 3, "4R3P": 3.5, "4R4P": 4,
+          "5R5P": 5
+        };
+        return map[icString] ?? 0;
+      }
+    }
+  
+    // ---------- TPRM ----------
+    if (unitType === "Third Parameter") {
+      const map = {
+        "0R0P": 0, "1R1P": 1, "2R2P": 2,
+        "3R3P": 3, "4R4P": 4, "5R5P": 5
+      };
+      return map[icString] ?? 0;
+    }
+  
+    return 0;
+  };
+  
 export function buildCandidateEZReport({
     unitMeta,
     candidate,
@@ -977,7 +1031,7 @@ ${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitTyp
 ${hybridRows}
 
      Average MSIP                             :     ${competencyAverages.MSIP ?? "-"}
-     Average Interaction Class - IC           :     ${competencyAverages.IC ?? "-"}
+     Average Interaction Class - IC           :     ${getICValue(unitMeta.unitType, unitMeta.signatureProfile, competencyAverages.IC)}
 
 
 *******************************************************                                  SECTION 05                               *******************************************************
