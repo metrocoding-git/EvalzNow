@@ -45,33 +45,40 @@ const csvEscape = (value) => {
 };
 
 const downloadCSV = (headers, rows, filename) => {
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
+  return new Promise((resolve) => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+    const metaLines = [
+      "EvalzNow – A Novel Human Capital Assessment Method",
+      "Competency Accounting for Education and Industry",
+      "Hybrid Proficiency & Growth Monitoring",
+      `Data Extraction Date: ${formattedDate}`,
+      " ",
+      " ", // blank line before table
+    ];
+
+    const csv = metaLines.join("\n") + headers.map(csvEscape).join(",") + "\n" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
+
+    const blob = new Blob(
+      ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
+      { type: "text/csv;charset=utf-8;" }
+    );
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+
+    setTimeout(() => {
+      resolve();
+    }, 1500);
+
   });
-
-  const metaLines = [
-    "EvalzNow – A Novel Human Capital Assessment Method",
-    "Competency Accounting for Education and Industry",
-    "Hybrid Proficiency & Growth Monitoring",
-    `Data Extraction Date: ${formattedDate}`,
-    " ",
-    " ", // blank line before table
-  ];
-
-  const csv = metaLines.join("\n") + headers.map(csvEscape).join(",") + "\n" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
-
-  const blob = new Blob(
-    ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
-    { type: "text/csv;charset=utf-8;" }
-  );
-
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
 };
 
 
@@ -126,8 +133,10 @@ const getLoadG = (neuro, ppId, lobe) =>
   };
   
 
-export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
-  if (!extractionData?.candidates?.length || !extractionData?.unit) return;
+export const extractActiveUnitCandidatesCSV = async ({ extractionData }) => {
+  if (!extractionData?.candidates?.length || !extractionData?.unit) {
+    return Promise.resolve();
+  }
 
   const { unit, candidates } = extractionData;
 
@@ -274,5 +283,5 @@ export const extractActiveUnitCandidatesCSV = ({ extractionData }) => {
     });
   });
 
-  downloadCSV(headers, rows, `Data Extraction.csv`);
+  await downloadCSV(headers, rows, `Data Extraction.csv`);
 };

@@ -1,6 +1,7 @@
 
 
 const downloadCSV = (headers, rows, filename) => {
+  return new Promise((resolve) => {
     const today = new Date();
     const formattedDate = today.toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -44,6 +45,12 @@ const downloadCSV = (headers, rows, filename) => {
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
+
+    setTimeout(() => {
+      resolve();
+    }, 1500);
+
+  });
   };  
   
 
@@ -140,9 +147,10 @@ const HEADERS = [
  * OPTION 3
  * Client-level extraction
  */
-export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
-    if (!extractionData?.units?.length) return;
-  
+export const extractClientCandidatesCSV = async ({ extractionData, clientId }) => {
+    if (!extractionData?.units?.length) {
+      return Promise.resolve();
+    }
     const rows = [];
   
     extractionData.units.forEach(({ unit, candidates }) => {
@@ -284,6 +292,6 @@ export const extractClientCandidatesCSV = ({ extractionData, clientId }) => {
       });
     });
   
-    downloadCSV( HEADERS, rows, `Data Extraction.csv`);
+    await downloadCSV( HEADERS, rows, `Data Extraction.csv`);
   };
   

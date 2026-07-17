@@ -18,6 +18,7 @@ import { getDataExtractionByCandidateId, getDataExtractionByClientId, getDataExt
 import { extractActiveUnitCandidatesCSV } from "./components/CandidateExtraction";
 import { extractClientCandidatesCSV } from "./components/CandidateExtractionByClientId";
 import { extractCandidateUnitsCSV } from "./components/CandidateExtractionByCandidateId";
+import DownloadLoader from "@/components/DownloadLoader";
 
 export default function DataExtractions() {
   const tabs = [
@@ -33,6 +34,7 @@ export default function DataExtractions() {
   const [showEdit, setShowEdit] = useState(false);
   const [showSecondary, setShowSecondary] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
   const [selectedUnitId, setSelectedUnitId] = useState(null);
   // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
@@ -210,6 +212,8 @@ export default function DataExtractions() {
     const handleExtract = async () => {
       if (!selectedExtractOption || !extractionData) return;
     
+      setIsDownloading(true);
+
       try {
         setExtractLoading(true);
     
@@ -238,7 +242,8 @@ export default function DataExtractions() {
         console.error("Extraction failed:", err);
       } finally {
         setExtractLoading(false);
-      }
+        setIsDownloading(false);
+      } 
     };
   
   
@@ -468,6 +473,8 @@ export default function DataExtractions() {
           </div>
         </div>
       </div>
+      
+      {isDownloading && <DownloadLoader />}
     </div>
   );
 }
