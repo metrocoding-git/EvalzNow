@@ -1,5 +1,76 @@
-export function buildGlobalEZReport({ client, totalCandidates,  analytics, thresholds }) {
+
+const assignedWeights = [
+  0.500, 1.000, 0.250, 0.250,
+  0.500, 0.500, 1.000, 1.000,
+  0.500, 0.000, 0.000, 0.500,
+  1.000, 0.000, 0.500, 1.000,
+  1.000, 0.000, 0.000, 0.500,
+  0.500, 1.000, 1.000, 1.000,
+  1.000, 0.000, 0.500,
+  1.000, 1.000, 1.000, 1.000,
+  0.000, 0.000, 0.000, 0.250,
+  0.500, 0.750, 1.000,
+  1.000, 1.000, 1.000, 1.000,
+  1.000, 1.000, 1.000, 1.000,
+  0.000, 0.500, 1.000
+];
+
+function mainFunction(F6, assignedWeights) {
+  let totalAssignedWeight = 0;
+  let totalMetricWeight = 0;
+  const arrayData = [];
+
+  const length = Math.min(F6.length, assignedWeights.length);
+
+  for (let i = 0; i < length; i++) {
+    const metricValue = Number(F6[i]) || 0;
+    const assignedWeight = Number(assignedWeights[i]) || 0;
+    const metricWeight = metricValue * assignedWeight;
+
+    arrayData.push({
+      f6: metricValue.toFixed(3),
+      g6: assignedWeight.toFixed(3),
+      h6: metricWeight.toFixed(3),
+    });
+
+    totalAssignedWeight += assignedWeight;
+    totalMetricWeight += metricWeight;
+  }
+
+  const weightedIndex =
+    totalAssignedWeight > 0
+      ? totalMetricWeight / totalAssignedWeight
+      : 0;
+
+  let rating = "Unknown value";
+
+  if (weightedIndex < 0.0903) rating = "Negligent";
+  else if (weightedIndex < 0.1075) rating = "Underperforming";
+  else if (weightedIndex < 0.1246) rating = "Below Average";
+  else if (weightedIndex < 0.6734) rating = "Average";
+  else if (weightedIndex < 0.6906) rating = "Above Average";
+  else rating = "Overperforming";
+
+  return [
+    rating,
+    weightedIndex,
+    { H6: arrayData },
+    Number(totalAssignedWeight.toFixed(3)),
+    Number(totalMetricWeight.toFixed(3)),
+  ];
+}
+
+
+
+export function buildGlobalEZReport({ client, totalCandidates,  analytics, thresholds, icValue, stableValue, productivityValue }) {
   const today = new Date().toDateString();
+
+  const candidateStaffRatioPct = (value, total) => {
+    const v = Number(value) || 0;
+    const t = Number(total) || 0;
+  
+    return t > 0 ? (v / t).toFixed(3) : "0.000";
+  };
 
   const totalAttendance =
   (Number(analytics.attendance?.present) || 0) +
@@ -8,12 +79,23 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   (Number(analytics.attendance?.excusedTardies) || 0) +
   (Number(analytics.attendance?.unexcusedTardies) || 0);
 
+  const totalSTAP =
+  (Number(stableValue?.STAP?.STABLE) || 0) +
+  (Number(stableValue?.STAP?.UNSTABLE) || 0);
+
+  const totalSTAG =
+    (Number(stableValue?.STAG?.STABLE) || 0) +
+    (Number(stableValue?.STAG?.UNSTABLE) || 0);
+
   const fraction = (value, total) => {
     const v = Number(value) || 0;
     const t = Number(total) || 0;
   
     return t > 0 ? (v / t).toFixed(3) : "0.000";
   };
+
+  const stapStability = fraction(stableValue?.STAP?.STABLE, totalSTAP);
+  const stagStability = fraction(stableValue?.STAG?.STABLE, totalSTAG);
 
     const pct = (v, total) =>
       total ? (v / total).toFixed(3) : "0.000";
@@ -29,6 +111,84 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
 
     const totalUnitOutcomes = Object.values(analytics.unitOutcomes || {})
     .reduce((sum, v) => sum + (Number(v) || 0), 0);
+
+  const F6 = [
+    // Signature Profiles (4)
+    pct(analytics.signatureProfiles["Case 1: Solid Balanced"], analytics.totalUnits),
+    pct(analytics.signatureProfiles["Case 2: Rigorous Balanced"], analytics.totalUnits),
+    pct(analytics.signatureProfiles["Case 3a: Productive-Weighted"], analytics.totalUnits),
+    pct(analytics.signatureProfiles["Case 3b: Receptive-Weighted"], analytics.totalUnits),
+  
+    // Unit Types (3)
+    pct(analytics.unitTypes["Communicative I/O"], analytics.totalUnits),
+    pct(analytics.unitTypes["Theory & Practice"], analytics.totalUnits),
+    pct(analytics.unitTypes["Third Parameter"], analytics.totalUnits),
+  
+    // Effectivity (20)
+    candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 20"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["20–30"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits),
+  
+    pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits),
+    pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits),
+    pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits),
+  
+    pct(analytics.assessmentBlocks["AB ≤ 8"], totalAssessmentBlocks),
+    pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks),
+    pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks),
+  
+    fraction(analytics.attendance.present, totalAttendance),
+    fraction(analytics.attendance.excusedAbsences, totalAttendance),
+    fraction(analytics.attendance.unexcusedAbsences, totalAttendance),
+    fraction(analytics.attendance.excusedTardies, totalAttendance),
+    fraction(analytics.attendance.unexcusedTardies, totalAttendance),
+  
+    fmtFraction(analytics.needAssessments.open),
+    fmtFraction(analytics.candidateMarks.impactScore),
+    fmtFraction(analytics.leaderMarks.impactScore),
+  
+    pct(analytics.unitOutcomes.Pass, totalUnitOutcomes),
+    pct(analytics.unitOutcomes.Fail, totalUnitOutcomes),
+    pct(analytics.unitOutcomes.Ongoing, totalUnitOutcomes),
+  
+    // Remaining proficiency metrics (4)
+    fmt(thresholds.regularMetrics.XEP.successRate),
+    fmt(thresholds.regularMetrics.XCP.successRate),
+    fmt(thresholds.regularMetrics.XBP.successRate),
+    stapStability,
+  
+    // Hybrid (7)
+    fmt(thresholds.regularMetrics.MSIP.successRate),
+    fmt(icValue[0]),
+    fmt(icValue[1]),
+    fmt(icValue[2]),
+    fmt(icValue[3]),
+    fmt(icValue[4]),
+    fmt(icValue[5]),
+  
+    // Growth (8)
+    fmt(thresholds.averageDeltaMetrics.avgDeltaRRN.successRate),
+    fmt(thresholds.averageDeltaMetrics.avgDeltaPRN.successRate),
+    fmt(thresholds.averageDeltaMetrics.avgDeltaARN.successRate),
+  
+    fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaRRN.successRate),
+    fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaPRN.successRate),
+    fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaARN.successRate),
+  
+    fmt(thresholds.regularMetrics.GEQ.successRate),
+    stagStability,
+  
+    // Utilization (3)
+    fmt(productivityValue.low),
+    fmt(productivityValue.mid),
+    fmt(productivityValue.high),
+  ].map(Number);
+
+  const indexResult = mainFunction(F6, assignedWeights);
+
+  const indexRating = indexResult[0];
+  const weightedIndex = indexResult[1];
+
     return `
                                                      *******************************************************************************
                                                      **                                                                           **
@@ -113,7 +273,10 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   ---------------------------------------
   EFFECTIVITY OF UNITS:
   ---------------------------------------
-  
+  % Units Cand-to-Lead, CTL ≤ 20            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 20"], analytics.totalUnits)}
+  % Units Cand-to-Lead, 20 < CTL ≤ 30       :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["20–30"], analytics.totalUnits)}
+  % Units Cand-to-Lead, CTL > 30            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits)}
+
   % Benchmark Counts, BC ≤ 10               :     ${pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits)}
   % Benchmark Counts, 10 < BC ≤ 25          :     ${pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits)}
   % Benchmark Counts, BC > 25               :     ${pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits)}
@@ -159,7 +322,21 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Passed Average Equivalent Prof - XEP    :     ${fmt(thresholds.regularMetrics.XEP.successRate)}
   % Passed Average Composite Prof - XCP     :     ${fmt(thresholds.regularMetrics.XCP.successRate)}
   % Passed Average Band Prof - XBP          :     ${fmt(thresholds.regularMetrics.XBP.successRate)}
+  % Passed Stability Proficiency - STA/P    :     ${stapStability}
   
+  ---------------------------------------
+  HYBRID OUTCOMES OF ALL UNITS:
+  ---------------------------------------
+
+     % Passed Average Butler Int - MSIP        :     ${fmt(thresholds.regularMetrics.MSIP.successRate)}
+	 
+     % Units Interaction Class 0               :     ${fmt(icValue[0])}
+     % Units Interaction Class 1               :     ${fmt(icValue[1])}
+     % Units Interaction Class 2               :     ${fmt(icValue[2])}
+     % Units Interaction Class 3               :     ${fmt(icValue[3])}
+     % Units Interaction Class 4               :     ${fmt(icValue[4])}
+     % Units Interaction Class 5               :     ${fmt(icValue[5])}
+
   ---------------------------------------
   GROWTH OUTCOMES OF ALL UNITS:
   ---------------------------------------
@@ -172,6 +349,24 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Passed Cumulative Growth - ∆PR          :     ${fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaPRN.successRate)}
   % Passed Cumulative Growth - ∆AR          :     ${fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaARN.successRate)}
   
+  % Passed Avg Equivalent Growth - ∆GEQ    :      ${fmt(thresholds.regularMetrics.GEQ.successRate)}
+  % Passed Stability Proficiency - STA/G   :      ${stagStability}
+
+  ---------------------------------------
+  UTILIZATION OUTCOMES:
+  ---------------------------------------
+
+  Productivity, UR < 0.300           :     ${fmt(productivityValue.low)}
+  Productivity, 0.300 ≤ UR ≤ 0.600   :     ${fmt(productivityValue.mid)}
+  Productivity, UR > 0.600           :     ${fmt(productivityValue.high)}
+
+  ---------------------------------------
+  CONCLUSIONS:
+  ---------------------------------------
+
+  Index Rating                       :     ${indexRating}
+  Weighted Index                     :     ${fmt(weightedIndex)}
+
   ---------------------------------------
  NOMENCLATURE:
 ---------------------------------------
