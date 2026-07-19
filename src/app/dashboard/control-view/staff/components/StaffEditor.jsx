@@ -86,7 +86,7 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
         <div className="flex-1 flex items-center justify-center p-4 text-gray-500 text-sm">
 
         </div>
-      ) : showForm ? (
+      ) : (
         <form
           className="p-2 text-xs grid grid-cols-5 gap-1 overflow-y-auto"
           onSubmit={(e) => e.preventDefault()}
@@ -165,8 +165,6 @@ const StaffEditor = ({ onClose, onSave, showForm, staff }) => {
             
           </div>
         </form>
-      ) : (
-        <div className="p-4 text-gray-500 text-sm">No form to display.</div>
       )}
     </div>
   );

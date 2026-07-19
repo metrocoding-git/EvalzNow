@@ -23,6 +23,7 @@ import { getEffortBu } from "@/services/auxiliaryService";
 import { buildUnitEZReport } from "./ActiveUnitEZReport";
 import { downloadEZFilesAsZip } from "./helper/downloadEZFilesAsZip";
 import DownloadLoader from "@/components/DownloadLoader";
+import { getICValue, getProductivityValue, getSTAPAndSTAGStableCount } from "@/services/globalAnalyticsService";
 
 export default function DataReports() {
   const tabs = [
@@ -422,6 +423,9 @@ export default function DataReports() {
       else if (selectedReport === "global-data") {
         try {
           const response = await getGlobalDataReportByClient(activeClientId);
+          const icResponse  = await getICValue(activeClientId);
+          const stableResponse = await getSTAPAndSTAGStableCount(activeClientId);
+          const urResponse = await getProductivityValue(activeClientId);
 
           const totalCandidates = response.totalUniqueCandidates || 0;
           const analytics = response.summary?.[0]?.globalAnalytics;
@@ -437,6 +441,10 @@ export default function DataReports() {
             totalCandidates,
             analytics,
             thresholds,
+            icValue: icResponse?.icDistribution,
+            stableValue: stableResponse,
+            productivityValue: urResponse?.distribution,
+
           });
       
           await downloadEZFile(

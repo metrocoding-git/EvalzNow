@@ -639,75 +639,104 @@ function extractStaffAssignments(staffAssignments = []) {
       );
     }           
 
+    growthLines.push(``);
+
     growthLines.push(
       `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
       `     Pass % Stability in Growth                :     ${fmt(competencyStability?.stagStableFraction) ?? "-"}`
     );
 
+    const firstCandidate = candidates[0];
 
-    const leaderMarksRows = candidates.flatMap(candidate => {
-      return (candidate.leaderMarks || []).map(mark => {
-        return (
-          `     ${String(mark.entryNumber ?? "—").padEnd(10)}` +
-          `     ${String(mark.impactType ?? "—").padEnd(16)}` +
-          `     ${String(mark.concernIdentified ?? "—").padEnd(28)}` +
-          `     ${String(mark.identityDate ?? "—").padEnd(18)}` +
-          `     ${String(mark.concernResolved ?? "—").padEnd(18)}` +
-          `     ${String(mark.resolutionDate ?? "—").padEnd(18)}`
-        );
-      });
-    }).join("\n     ") || "     —";
+    const leaderMarks = firstCandidate?.leaderMarks || [];
     
+    const uniqueLeaderMarks = leaderMarks.filter(
+      (item, index, self) =>
+        index ===
+        self.findIndex(
+          x =>
+            x.entryNumber === item.entryNumber &&
+            x.impactType === item.impactType &&
+            x.concernIdentified === item.concernIdentified &&
+            x.identityDate === item.identityDate &&
+            x.concernResolved === item.concernResolved &&
+            x.resolutionDate === item.resolutionDate
+        )
+    );
     
-    const unitImprovementRows = candidates.flatMap(candidate => {
-      return (candidate.unitImprovement || []).map((ui, index) => {
-    
-        const parseIds = (value) => {
-          if (Array.isArray(value)) return value;
-          if (typeof value === "string") {
-            try {
-              const parsed = JSON.parse(value);
-              return Array.isArray(parsed) ? parsed : [];
-            } catch {
-              return [];
+    const leaderMarksRows =
+      uniqueLeaderMarks
+        .map(mark => {
+          return (
+            `     ${String(mark.entryNumber ?? "—").padEnd(10)}` +
+            `     ${String(mark.impactType ?? "—").padEnd(16)}` +
+            `     ${String(mark.concernIdentified ?? "—").padEnd(28)}` +
+            `     ${String(mark.identityDate ?? "—").padEnd(18)}` +
+            `     ${String(mark.concernResolved ?? "—").padEnd(18)}` +
+            `     ${String(mark.resolutionDate ?? "—").padEnd(18)}`
+          );
+        })
+        .join("\n     ") || "     —";
+
+    const improvements = firstCandidate?.unitImprovement || [];
+
+    const uniqueImprovements = improvements.filter(
+      (item, index, self) =>
+        index ===
+        self.findIndex(
+          x =>
+            x.lesson === item.lesson &&
+            JSON.stringify(x.bIds) === JSON.stringify(item.bIds) &&
+            JSON.stringify(x.benchmarkIds) === JSON.stringify(item.benchmarkIds)
+        )
+    );
+
+    const unitImprovementRows =
+      uniqueImprovements
+        .map((ui, index) => {
+          const parseIds = (value) => {
+            if (Array.isArray(value)) return value;
+            if (typeof value === "string") {
+              try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
             }
-          }
-          return [];
-        };
-    
-        const bIdsArr = parseIds(ui.bIds);
-        const benchmarkIdsArr = parseIds(ui.benchmarkIds);
-    
-        const bids = bIdsArr.length ? bIdsArr.join(", ") : "—";
-        const benchmarkIds = benchmarkIdsArr.length ? benchmarkIdsArr.join(", ") : "—";
-    
-        return (
-          `     ${String(index + 1).padEnd(10)}` +
-          `     ${bids.padEnd(15)}` +
-          `     ${String(ui.lesson ?? "—").padEnd(40)}` +
-          `     ${benchmarkIds.padEnd(20)}`
-        );
-      });
-    }).join("\n     ") || "    —";
+            return [];
+          };
+
+          const bids = parseIds(ui.bIds).join(", ") || "—";
+          const benchmarkIds = parseIds(ui.benchmarkIds).join(", ") || "—";
+
+          return (
+            `     ${String(index + 1).padEnd(10)}` +
+            `     ${bids.padEnd(15)}` +
+            `     ${String(ui.lesson ?? "—").padEnd(40)}` +
+            `     ${benchmarkIds.padEnd(20)}`
+          );
+        })
+        .join("\n     ") || "    —";
     
 
     let unilateralProficiencySection = "";
 
     if (unitType === "Communicative I/O") {
       unilateralProficiencySection = `
-     Unilateral Proficiency in Reading          :     PASS → ≥ ${XRR ?? "-"}  
-     Unilateral Proficiency in Listening        :     PASS → ≥ ${XLR ?? "-"}  
-     Unilateral Proficiency in Speaking         :     PASS → ≥ ${XSR ?? "-"}  
-     Unilateral Proficiency in Writing          :     PASS → ≥ ${XWR ?? "-"}  `;
+     Unilateral Proficiency in Reading          :     PASS → ≥ XRR ${XRR ?? "-"}  
+     Unilateral Proficiency in Listening        :     PASS → ≥ XLR ${XLR ?? "-"}  
+     Unilateral Proficiency in Speaking         :     PASS → ≥ XSR ${XSR ?? "-"}  
+     Unilateral Proficiency in Writing          :     PASS → ≥ XWR ${XWR ?? "-"}  `;
     } else if (unitType === "Theory & Practice") {
       unilateralProficiencySection = `
-     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ ${XTR ?? "-"}   
-     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ ${XPR ?? "-"}    `;
+     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ XTR ${XTR ?? "-"}   
+     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ XPR ${XPR ?? "-"}    `;
     } else if (unitType === "Third Parameter") {
       unilateralProficiencySection = `
-     Unilateral Proficiency - Receptive         :     PASS → ≥ ${XRVSR ?? "-"}   
-     Unilateral Proficiency - Productive        :     PASS → ≥ ${XPVSR ?? "-"} 
-     Unilateral Proficiency - Acuity            :     PASS → ≥ ${XAVSR ?? "-"} `;
+     Unilateral Proficiency - Receptive         :     PASS → ≥ XRVSR ${XRVSR ?? "-"}   
+     Unilateral Proficiency - Productive        :     PASS → ≥ XPVSR ${XPVSR ?? "-"} 
+     Unilateral Proficiency - Acuity            :     PASS → ≥ XAVSR ${XAVSR ?? "-"} `;
     } else {
       // fallback in case unitType is missing or unknown
       unilateralProficiencySection = `
@@ -801,19 +830,16 @@ function extractStaffAssignments(staffAssignments = []) {
 
      Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth 
      thresholds of all courses are as follow:
-
      ${unilateralProficiencySection}
-     Equivalent Proficiency                     :     PASS → ≥ ${XEP ?? "-"}  
-     Composite Proficiency                      :     PASS → ≥ ${XCP ?? "-"}  
-     Band Proficiency                           :     PASS → ≥ ${XBP ?? "-"}  
+     Equivalent Proficiency                     :     PASS → ≥ XEP ${XEP ?? "-"}  
+     Composite Proficiency                      :     PASS → ≥ XCP ${XCP ?? "-"}  
+     Band Proficiency                           :     PASS → ≥ XBP ${XBP ?? "-"}  
 
-     Receptive Growth Differential              :     PASS → ≥ ${deltaRRN ?? "-"} 
-     Productive Growth Differential             :     PASS → ≥ ${deltaPRN ?? "-"} 
+     Receptive Growth Differential              :     PASS → ≥ ΔRRN ${deltaRRN ?? "-"} 
+     Productive Growth Differential             :     PASS → ≥ ΔPRN ${deltaPRN ?? "-"} 
      ${unitType === "Third Parameter"
-      ? `Acuity Growth Differential                 :     PASS → ≥ ${deltaARN ?? "-"}`
-      : ""
-    }
-
+      ? `Acuity Growth Differential                 :     PASS → ≥ ΔARN ${deltaARN ?? "-"}` : ""
+      }
      Equivalent Growth                          :     PASS → ≥ ${deltaGEQ ?? "-"} 
 
      Butler Interaction Proficiency             :     PASS → ≤ ${MSIP ?? "-"}  
@@ -882,7 +908,7 @@ function extractStaffAssignments(staffAssignments = []) {
      Pass percentages below are based on the average values of each corresponding metric: 
 
      Pass % Avg Butler Int Proficiency - MSIP :     ${fmt(getAvg("MSIP") ?? "-")}
-     Pass % Avg Interaction Class - IC        :     ${interactionClass}
+     Pass % Avg Interaction Class - IC        :     ${fmt(interactionClass)}
 
 *******************************************************                                  SECTION 05                               *******************************************************
 

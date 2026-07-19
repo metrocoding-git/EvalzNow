@@ -2418,6 +2418,7 @@ const handleDeleteChain = async (chainId) => {
         const uniquePpIds = [...new Set(sortedData.map(item => item.ppId))];
         
         return (
+          <div className="w-full h-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 20, left: 30, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -2458,10 +2459,11 @@ const handleDeleteChain = async (chainId) => {
                 data={sortedData} 
                 fill={lineColor}
                 dataKey={dataKey}
-                
+                isAnimationActive={false}
               />
             </ScatterChart>
           </ResponsiveContainer>
+          </div>
         );
       }      
       
@@ -2647,7 +2649,7 @@ const handleDeleteChain = async (chainId) => {
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
       <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200  p-1'>
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 min-h-0 h-full border-gray-200 p-1'>
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -2790,7 +2792,7 @@ const handleDeleteChain = async (chainId) => {
             </div>
          
 
-            <div className="h-[60%] flex flex-col border border-gray-200 ">
+            <div className="h-[60%] min-h-0 flex flex-col border border-gray-200 ">
               {/* Tab Buttons */}
               <div className="flex space-x-2 border-b p-2">
                 <button
@@ -2836,7 +2838,38 @@ const handleDeleteChain = async (chainId) => {
                   if (!tableConfig) return null;
 
                   if (selectedSort === 'activateUnitLevel') return (
-                    <div className='text-center text-sm text-gray-400 py-4 italic'>NOT AVAILABLE AT UNIT LEVEL</div>
+                    <div className='text-center text-sm text-gray-400 py-4 italic overflow-hidden'>
+                      <p>NOT AVAILABLE AT UNIT LEVEL</p>
+
+                      <table className="table-auto w-full text-xs border border-white text-white">
+                        <thead className="whitespace-nowrap text-center border border-white px-2 py-1 group relative">
+                          <tr>
+                            {tableConfig.columns.map(col => (
+                              <th
+                                key={col}
+                                className="whitespace-nowrap text-center border border-white px-2 py-1 "
+                              >
+                                {col}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableConfig.rows.map((row, idx) => (
+                            <tr key={idx} className="">
+                              {Object.values(row).map((cell, i) => (
+                                <td
+                                  key={i}
+                                  className="whitespace-nowrap text-center border border-white px-2 py-1 "
+                                >
+                                  {cell ?? "—"}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   );
 
                   if (selectedChart.type === "pie") return (
@@ -2882,7 +2915,7 @@ const handleDeleteChain = async (chainId) => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-8/12 flex flex-col border-2 h-full border-gray-200 bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
+        <div ref={chartContainerRef} className="w-6/12 lg:w-8/12 flex flex-col min-h-0 h-full border-2 border-gray-200 bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
           {selectedChart ? (
             <h2 className="text-lg text-center font-semibold text-gray-700 my-3 flex-shrink-0">

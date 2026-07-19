@@ -251,7 +251,7 @@ function extractStaffAssignments(staffAssignments = []) {
           `          ${String(r.ppId).padEnd(10)}  ` +
           `     ${fmt2(r.totalDuration).padEnd(13)}  ` +
           `     ${fmt(r.MSIP).padEnd(11)}  ` +
-          `     ${(r.IC ?? "-").padEnd(8)}  `
+          `     ${Number(getICValue(r.unitType, r.signatureProfile, r.IC)).toFixed(2).padEnd(8)}  `
         );
       })
       .join("\n");
@@ -648,7 +648,7 @@ ${growthLines.join("\n")}`;
         return (
         `     ${String(r.ppId).padEnd(10)}` +
         `     ${date.padEnd(30)}` +
-        `     ${String(r.totalDuration ?? "-").padEnd(12)}` + 
+        `     ${String(Number(r.totalDuration).toFixed(2) ?? "-").padEnd(12)}` + 
         `     ${String(r.Productivity_CSD ?? "-").padEnd(28)}` +
         `     ${String(r.Productivity_USD ?? "-")}`
         );
@@ -798,19 +798,19 @@ export function buildCandidateEZReport({
 
     if (unitMeta.unitType === "Communicative I/O") {
       unilateralProficiencySection = `
-     Unilateral Proficiency in Reading          :     PASS → ≥ ${unitMeta.XRR ?? "-"}  
-     Unilateral Proficiency in Listening        :     PASS → ≥ ${unitMeta.XLR ?? "-"}  
-     Unilateral Proficiency in Speaking         :     PASS → ≥ ${unitMeta.XSR ?? "-"}  
-     Unilateral Proficiency in Writing          :     PASS → ≥ ${unitMeta.XWR ?? "-"}  `;
+     Unilateral Proficiency in Reading          :     PASS → ≥ XRR ${unitMeta.XRR ?? "-"}  
+     Unilateral Proficiency in Listening        :     PASS → ≥ XLR ${unitMeta.XLR ?? "-"}  
+     Unilateral Proficiency in Speaking         :     PASS → ≥ XSR ${unitMeta.XSR ?? "-"}  
+     Unilateral Proficiency in Writing          :     PASS → ≥ XWR ${unitMeta.XWR ?? "-"}  `;
     } else if (unitMeta.unitType === "Theory & Practice") {
       unilateralProficiencySection = `
-     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ ${unitMeta.XTR ?? "-"}   
-     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ ${unitMeta.XPR ?? "-"}    `;
+     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ XTR ${unitMeta.XTR ?? "-"}   
+     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ XPR ${unitMeta.XPR ?? "-"}    `;
     } else if (unitMeta.unitType === "Third Parameter") {
       unilateralProficiencySection = `
-     Unilateral Proficiency - Receptive         :     PASS → ≥ ${unitMeta.XRVSR ?? "-"}   
-     Unilateral Proficiency - Productive        :     PASS → ≥ ${unitMeta.XPVSR ?? "-"} 
-     Unilateral Proficiency - Acuity            :     PASS → ≥ ${unitMeta.XAVSR ?? "-"} `;
+     Unilateral Proficiency - Receptive         :     PASS → ≥ XRVSR ${unitMeta.XRVSR ?? "-"}   
+     Unilateral Proficiency - Productive        :     PASS → ≥ XPVSR ${unitMeta.XPVSR ?? "-"} 
+     Unilateral Proficiency - Acuity            :     PASS → ≥ XAVSR ${unitMeta.XAVSR ?? "-"} `;
     } else {
       // fallback in case unitType is missing or unknown
       unilateralProficiencySection = `
@@ -954,18 +954,17 @@ ${assessmentBlocks}
 
      Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth 
      thresholds of all courses are as follow:
-
      ${unilateralProficiencySection}
-     Equivalent Proficiency                     :     PASS → ≥ ${unitMeta.XEP ?? "-"}  
-     Composite Proficiency                      :     PASS → ≥ ${unitMeta.XCP ?? "-"}  
-     Band Proficiency                           :     PASS → ≥ ${unitMeta.XBP ?? "-"}  
+     Equivalent Proficiency                     :     PASS → ≥ XEP ${unitMeta.XEP ?? "-"}  
+     Composite Proficiency                      :     PASS → ≥ XCP ${unitMeta.XCP ?? "-"}  
+     Band Proficiency                           :     PASS → ≥ XBP ${unitMeta.XBP ?? "-"}  
 
-     Receptive Growth Differential              :     PASS → ≥ ${unitMeta["ΔRRN"] ?? "-"} 
-     Productive Growth Differential             :     PASS → ≥ ${unitMeta["ΔPRN"] ?? "-"} 
-     Equivalent Growth                          :     PASS → ≥ ${unitMeta["ΔGEQ"] ?? "-"} 
+     Receptive Growth Differential              :     PASS → ≥ ΔRRN ${unitMeta["ΔRRN"] ?? "-"} 
+     Productive Growth Differential             :     PASS → ≥ ΔPRN ${unitMeta["ΔPRN"] ?? "-"} 
+     Equivalent Growth                          :     PASS → ≥ ΔARN ${unitMeta["ΔGEQ"] ?? "-"} 
 
-     Butler Interaction Proficiency             :     PASS → ≤ ${unitMeta.MSIP ?? "-"}  
-     Interaction Class                          :     PASS → ≥ ${unitMeta.IC ?? "-"} 
+     Butler Interaction Proficiency             :     PASS → ≤ MSIP ${unitMeta.MSIP ?? "-"}  
+     Interaction Class                          :     PASS → ≥ IC ${unitMeta.IC ?? "-"} 
 
      Interaction Class 0: Failing
      Interaction Class 1: At-Risk
@@ -1031,7 +1030,7 @@ ${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitTyp
 ${hybridRows}
 
      Average MSIP                             :     ${competencyAverages.MSIP ?? "-"}
-     Average Interaction Class - IC           :     ${getICValue(unitMeta.unitType, unitMeta.signatureProfile, competencyAverages.IC)}
+     Average Interaction Class - IC           :     ${Number(getICValue(unitMeta.unitType, unitMeta.signatureProfile, competencyAverages.IC)).toFixed(2)}
 
 
 *******************************************************                                  SECTION 05                               *******************************************************
@@ -1051,11 +1050,11 @@ ${productivityRows}
  ATTENDANCE TRACKING:
 ---------------------------------------
 
-     Attendance % - Present                    :     ${roster.percentages.present ?? "-"}
-     Attendance % - Excused Absences           :     ${roster.percentages.excusedAbsences ?? "-"}
-     Attendance % - Unexcused Absences         :     ${roster.percentages.unexcusedAbsences ?? "-"}
-     Attendance % - Excused Tardies            :     ${roster.percentages.excusedTardies ?? "-"}
-     Attendance % - Unexcused Tardies          :     ${roster.percentages.unexcusedTardies ?? "-"}
+     Attendance % - Present                    :     ${Number(roster.percentages.present).toFixed(3) ?? "-"}
+     Attendance % - Excused Absences           :     ${Number(roster.percentages.excusedAbsences).toFixed(3) ?? "-"}
+     Attendance % - Unexcused Absences         :     ${Number(roster.percentages.unexcusedAbsences).toFixed(3) ?? "-"}
+     Attendance % - Excused Tardies            :     ${Number(roster.percentages.excusedTardies).toFixed(3) ?? "-"}
+     Attendance % - Unexcused Tardies          :     ${Number(roster.percentages.unexcusedTardies).toFixed(3) ?? "-"}
 
 ---------------------------------------
  ENGAGEMENT TRACKING:
