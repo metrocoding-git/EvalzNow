@@ -31,17 +31,17 @@ export default function LoginForm() {
     try {
       const res = await login(formData);
 
-    // ✅ Show success toast
-    toast.success("Login successful!");
+      // ✅ Show success toast
+      toast.success("Login successful!");
 
-    // Save JWT in localStorage
-    localStorage.setItem("token", res.token);
-    sessionStorage.setItem('activeClientId', res.user.clientId);
+      // Save JWT in localStorage
+      localStorage.setItem("token", res.token);
+      sessionStorage.setItem('activeClientId', res.user.clientId);
 
       // Save logged-in user data in localStorage
-    localStorage.setItem("user", JSON.stringify(res.user));
+      localStorage.setItem("user", JSON.stringify(res.user));
 
-    router.push("/welcome");
+      router.push("/welcome");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Login failed");
       setError(err.response?.data?.message || err.message || "Login failed");
@@ -49,19 +49,19 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex-1 relative flex items-center justify-center p-12 bg-white">
+    <div className="flex-1 relative flex items-center justify-center p-6 sm:p-8 md:p-12 bg-white min-h-[600px] md:min-h-0">
       {/* Top left "Return Home" */}
-      <div className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors">
+      <a href="/" className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors">
         &lt;&lt; RETURN HOME
-      </div>
-  
+      </a>
+
       {/* Login Form */}
       <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
         <h2 className="text-2xl text-black font-bold text-center">EVALZNOW</h2>
         <p className="text-center text-xs">
           PLEASE ENTER YOUR USERNAME AND PASSWORD TO LOGIN
         </p>
-  
+
         <input
           type="text"
           name="username"
@@ -70,7 +70,7 @@ export default function LoginForm() {
           onChange={handleChange}
           value={formData.username}
         />
-  
+
         <input
           type="password"
           name="password"
@@ -79,13 +79,13 @@ export default function LoginForm() {
           onChange={handleChange}
           value={formData.password}
         />
-  
+
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
-  
+
         <div className="text-center text-xs cursor-pointer" onClick={() => router.push("/accountRecovery")}>
           RECOVER PASSWORD
         </div>
-  
+
         <button
           type="submit"
           className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium"
@@ -93,13 +93,13 @@ export default function LoginForm() {
           LOGIN
         </button>
       </form>
-  
+
       {/* Bottom-right copyright */}
       <div className="absolute bottom-4 right-4 text-xs font-bold">
         © EvalzNow. All Rights Reserved.
       </div>
-  
+
     </div>
   );
-  
+
 }

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import EvalzNowLanding from ".";
 
 export default function Home() {
-  redirect('/login');
+  // redirect('/login');
+  return <EvalzNowLanding />;
 }

@@ -5,7 +5,7 @@ import TextSection from "@/components/TechSection";
 
 export default function Login() {
   return (
-    <main className="md:flex block h-screen">
+    <main className="flex flex-col md:flex-row min-h-screen">
       <TextSection />
       <LoginForm />
     </main>
