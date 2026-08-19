@@ -51,9 +51,18 @@ export default function LoginForm() {
   return (
     <div className="flex-1 relative flex items-center justify-center p-6 sm:p-8 md:p-12 bg-white min-h-[600px] md:min-h-0">
       {/* Top left "Return Home" */}
-      <a href="/" className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors">
-        &lt;&lt; RETURN HOME
+      <a
+        href="/"
+        aria-label="Return home"
+        title="Return home"
+        className="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:scale-105 hover:shadow-lg"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 text-[#7a1229]">
+          <path d="M3 11.5 12 4l9 7.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </a>
+
 
       {/* Login Form */}
       <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">

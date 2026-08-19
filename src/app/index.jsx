@@ -6,9 +6,9 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSp
 
 const LOGO = "/Assets/images/logo.png"
 
-const BANNER_OVERVIEW = "/Assets/images/bannerTwoResp.jpg"
+const BANNER_OVERVIEW = "/Assets/images/bannerTwoRespNew.png"
 const BANNER_INSIGHTS = "/Assets/images/bannerThreeResp.jpg";
-const BANNER_REGISTRATION = "/Assets/images/bannerOneResp.jpg";
+const BANNER_REGISTRATION = "/Assets/images/bannerOneRespNew.png";
 const ARROW_ICON = "/Assets/images/arrowIcon.png";
 const STAR_ICON = "/Assets/images/starIcon.png";
 const EMAIL_ICON = "/Assets/images/emailIcon.png";
@@ -127,6 +127,12 @@ const IconGauge = (p) => (
     </svg>
 );
 
+const IconArrow = (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" {...p}>
+        <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
 const CORE_PILLARS = [
     { icon: IconTarget, title: 'Competency Accounting', desc: 'Measuring, processing, and communicating quantitative and qualitative performance data.' },
     { icon: IconActivity, title: 'Performance Monitoring', desc: 'Live tracking of knowledge capacity across people, programs, and institutions.' },
@@ -156,15 +162,18 @@ const wordUp = {
 const NAV_LINKS = [
     { label: 'Overview', href: '#overview' },
     { label: 'Insights', href: '#insights' },
-    { label: 'FAQ', href: '#faq' },
-    { label: 'Pricing', href: '#pricing' },
 ];
 
-const FAQS = [
-    { q: "Question #1?", a: "Answer: One particular challenge for schools and educators is the changing nature of student learning constructs over time." },
-    { q: "Question #2?", a: "Answer: One particular challenge for schools and educators is the changing nature of student learning constructs over time." },
-    { q: "Question #3?", a: "Answer: One particular challenge for schools and educators is the changing nature of student learning constructs over time." },
-    { q: "Question #4?", a: "Answer: One particular challenge for schools and educators is the changing nature of student learning constructs over time." },
+const PONTS = [
+    { p: "Training (Virtual/Onsite)" },
+    { p: "24/7 Technical Support" },
+    { p: "Competency Support" },
+    { p: "Rubric Generation" },
+    { p: "Dedicated Assistance" },
+    { p: "Oversight Assistance" },
+    { p: "Data Auditing" },
+    { p: "Indexing & Ranking" },
+
 ];
 
 const STYLES = `
@@ -183,10 +192,9 @@ const STYLES = `
     font-family:var(--font);
     color:#1a1a1a;
     -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
+}
   .evz-root img{max-width:100%;display:block;}
-  .evz-root .wrap{max-width:1200px;margin:0 auto;padding:0 20px;}
+  .evz-root .wrap{max-width:1500px;margin:0 auto;padding:0 20px;}
 
   /* ---------- NAV ---------- */
   .evz-root .navbar{
@@ -195,11 +203,24 @@ const STYLES = `
     background:linear-gradient(to right, #ffffff 0%, #ffffff 12%, var(--navy-dark) 12%, var(--navy-dark) 55%, var(--maroon) 55%, var(--maroon) 100%);
     box-shadow:0 2px 10px rgba(0,0,0,.25);
   }
-  .evz-root .brand{
+.evz-root .brand{
+    position:relative;
     display:flex;align-items:center;justify-content:center;
-    padding:8px 100px 8px 50px;background:#fff;flex:0 0 auto;
-  }
-  .evz-root .brand img{height:44px;width:auto;}
+    padding:2px 40px 2px 20px;background:#fff;flex:0 0 auto;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%);
+}
+.evz-root .brand img{height:65px;width:auto;}
+
+.evz-root .brand::after{
+    content:"";
+    position:absolute;
+    top:0;
+    right:-34px;
+    width:14px;
+    height:100%;
+    background:#fff;
+    transform:skewX(-20deg);
+}
   .evz-root .links{
     flex:1 1 auto;
     display:flex;align-items:center;justify-content:flex-end;
@@ -230,7 +251,9 @@ const STYLES = `
   }
 
   /* ---------- GENERIC ---------- */
-  .evz-root .section{padding:60px 0 10px;}
+  .evz-root .section{padding:20px 0 20px;}
+
+  .insightsSection{margin:50px 0 50px;}
   .evz-root .title-lg{
     color:var(--navy);font-weight:800;text-align:center;
     font-size:clamp(20px,3.2vw,32px);letter-spacing:.5px;margin:0 0 22px;
@@ -244,9 +267,14 @@ const STYLES = `
     height:2px;background:#111;opacity:.75;margin:26px auto;border:none;
   }
   .evz-root .lead{
-    max-width:1000px;margin:0 auto;text-align:center;
+    margin:0 auto;text-align:justify;
     font-weight:700;font-size:clamp(14px,1.6vw,19px);line-height:1.6;color:#161616;
   }
+    .leadMain {
+        padding: 30px;
+        background-color: #f7f7f7;
+        // border-radius: 25px;
+    }
   .evz-root .card{
     background:var(--card);border-radius:16px;padding:26px;
     font-weight:700;text-align:center;font-size:clamp(14px,1.5vw,18px);line-height:1.6;
@@ -266,7 +294,7 @@ const STYLES = `
   .evz-root .feature-item img{width:30px;height:auto;flex:0 0 auto;}
   .evz-root .feature-item span{color:var(--navy);font-weight:800;font-size:clamp(16px,2.4vw,26px);letter-spacing:.5px;}
 
-  .evz-root .two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:1100px;margin:0 auto;align-items:start;}
+  .evz-root .two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:1100px;margin:40px auto 0;align-items:start;}
   .evz-root .two-col h3{color:var(--maroon);text-align:center;font-weight:800;font-size:clamp(18px,2.4vw,26px);margin:0 0 18px;}
   .evz-root .point-stack{display:flex;flex-direction:column;gap:14px;}
   @media (max-width:760px){ .evz-root .two-col{grid-template-columns:1fr;gap:44px;} }
@@ -279,14 +307,14 @@ const STYLES = `
   .evz-root .two-card{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;margin:0 auto;}
   @media (max-width:760px){ .evz-root .two-card{grid-template-columns:1fr;} }
 
-  .evz-root .faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;max-width:1100px;margin:30px auto 0;}
-  @media (max-width:700px){ .evz-root .faq-grid{grid-template-columns:1fr;} }
-  .evz-root .faq-item{display:flex;gap:14px;align-items:flex-start;}
-  .evz-root .faq-item img{width:32px;margin-top:4px;flex:0 0 auto;}
-  .evz-root .faq-item h4{margin:0 0 6px;color:var(--maroon-dark);font-weight:800;font-size:clamp(18px,2.2vw,24px);}
-  .evz-root .faq-item p{margin:0;font-size:14px;line-height:1.5;color:#333;}
+  .evz-root .pint-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:800px;margin:50px auto 50px;}
+//   @media (max-width:700px){ .evz-root .pint-grid{grid-template-columns:1fr;} }
+  .evz-root .point-item{display:flex;gap:14px;align-items:flex-start;}
+  .evz-root .point-item img{width:32px;margin-top:4px;flex:0 0 auto;}
+  .evz-root .point-item h4{margin:0 0 6px;color:var(--maroon-dark);font-weight:800;font-size:clamp(18px,2.2vw,24px);}
+  .evz-root .point-item p{margin:0;font-size:14px;line-height:1.5;color:#333;}
 
-  .evz-root .sector-box{background:#f7f7f7;border-radius:20px;padding:26px;max-width:1150px;margin:30px auto 0;}
+  .evz-root .sector-box{background:#f7f7f7;border-radius:20px;padding:26px;max-width:1500px;margin:30px auto 0;}
   .evz-root .sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 18px;}
   @media (max-width:900px){ .evz-root .sector-grid{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:520px){ .evz-root .sector-grid{grid-template-columns:1fr;} }
@@ -307,8 +335,48 @@ const STYLES = `
   .evz-root .captcha-fake input{width:18px;height:18px;}
   .evz-root .form-submit-row{display:flex;justify-content:flex-end;margin-top:18px;}
 
-  .evz-root footer{background:var(--navy);color:#fff;padding:40px 20px 26px;margin-top:60px;}
-  .evz-root .footer-inner{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:30px;text-align:center;}
+//   .evz-root footer{background:var(--navy);color:#fff;padding:40px 20px 26px;}
+  .evz-root footer{color:#fff;padding:30px 20px 30px;}
+    .evz-root .footer-inner{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:30px;text-align:center;}
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-brand img {
+    width: clamp(60px, 12vw, 150px);
+    height: auto;
+    object-fit: contain;
+        border-radius: 20px;
+    background-color: #ffffff;
+    object-fit: contain;
+  }
+
+  .footer-brand span {
+    font-size: clamp(28px, 8vw, 100px);
+    font-weight: 1000;
+    color: #ffffff;
+    margin-left: 10px;
+    line-height: 1;
+  }
+
+  .evz-root .footer-text p{margin:4px 0;font-weight:700;font-size:16px;}
+  .evz-root .footer-copy{margin-top:10px;font-size:12px;opacity:.85;font-weight:400;}
+  .evz-root .footer-socials{display:flex;gap:16px;}
+  .evz-root .footer-socials img{width:44px;height:44px;cursor:pointer;}
+
+  @media (max-width:600px){
+    .evz-root .footer-inner{flex-direction:column;gap:16px;}
+    .footer-brand span{font-size:32px;}
+    .footer-brand img{width:56px;}
+  }
+
+
   .evz-root .footer-text p{margin:4px 0;font-weight:700;font-size:16px;}
   .evz-root .footer-copy{margin-top:10px;font-size:12px;opacity:.85;font-weight:400;}
   .evz-root .footer-socials{display:flex;gap:16px;}
@@ -346,7 +414,19 @@ export default function EvalzNowPage() {
     useEffect(() => {
         const sectionIds = NAV_LINKS.map((l) => l.href.slice(1));
         const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
-        if (!sections.length) return;
+
+
+        const handleTopScroll = () => {
+            if (window.scrollY < 150) {
+                setActiveSection('overview');
+            }
+        };
+        window.addEventListener('scroll', handleTopScroll, { passive: true });
+        handleTopScroll();
+
+        if (!sections.length) {
+            return () => window.removeEventListener('scroll', handleTopScroll);
+        }
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -358,7 +438,20 @@ export default function EvalzNowPage() {
         );
 
         sections.forEach((section) => observer.observe(section));
-        return () => observer.disconnect();
+        return () => {
+            window.removeEventListener('scroll', handleTopScroll);
+            observer.disconnect();
+        };
+    }, []);
+
+    // Drives the "back to top" button's entrance/exit animation.
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowTop(window.scrollY > 500);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const closeNav = () => setNavOpen(false);
@@ -409,47 +502,63 @@ export default function EvalzNowPage() {
             </AnimatePresence>
 
             {/* ================= NAV ================= */}
-            <header className="sticky top-0 z-50 border-b border-black/5 bg-gradient backdrop-blur-xl">
-                <div className="h-1 w-full brand-gradient" />
+            <motion.header
+                initial={{ y: -90, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="sticky top-0 z-50 border-b border-black/5 bg-gradient backdrop-blur-xl"
+            >
+                <div className="h-1 w-full brand-gradient"> </div>
                 <div className="mx-auto flex items-center justify-between pr-6 ">
-                    <a href="#overview" className="flex brand items-center gap-2 tracking-tight " onClick={closeNav}>
+                    <motion.a
+                        href="/"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="flex brand items-center gap-2 tracking-tight "
+                        onClick={closeNav}
+                    >
                         {/* <span className="brand-text-gradient">EVZ</span> */}
                         <img src={LOGO} alt="EVZ logo" />
 
-                    </a>
-                    <nav className="hidden items-center gap-7 lg:flex">
-                        {NAV_LINKS.map((l) => {
-                            const isActive = activeSection === l.href.slice(1);
-                            return (
-                                <a
-                                    key={l.href}
-                                    href={l.href}
-                                    aria-current={isActive ? 'true' : undefined}
-                                    className={`group relative text-lg font-bold transition ${isActive ? 'text-[#e9d9d9]' : 'text-[#ffffff] hover:text-[#e9d9d9]'
-                                        }`}
-                                >
-                                    {l.label}
-                                    <span
-                                        className={`absolute -bottom-1 left-0 h-0.5 w-full origin-left rounded-full brand-light-gradient transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                    </motion.a>
+                    <div className="lg:flex items-center gap-4 hidden">
+                        <nav className="hidden items-center gap-7 lg:flex">
+                            {NAV_LINKS.map((l) => {
+                                const isActive = activeSection === l.href.slice(1);
+                                return (
+                                    <a
+                                        key={l.href}
+                                        href={l.href}
+                                        aria-current={isActive ? 'true' : undefined}
+                                        className={`group relative text-lg font-bold transition ${isActive ? 'text-[#e9d9d9]' : 'text-[#ffffff] hover:text-[#e9d9d9]'
                                             }`}
-                                    />
-                                </a>
-                            );
-                        })}
+                                    >
+                                        {l.label}
+                                        <span
+                                            className={`absolute -bottom-1 left-0 h-0.5 w-full origin-left rounded-full brand-light-gradient transition-transform duration-300 ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                                                }`}
+                                        />
+                                    </a>
+                                );
+                            })}
 
 
-                    </nav>
+                        </nav>
 
-                    <div className="hidden items-center gap-3 lg:flex">
-                        <div className="flex items-center gap-2">
-                            <a href="#" aria-label="Medium" className="flex h-8 w-8 items-center justify-center rounded-full border bg-white text-xs font-bold text-[#1b1f2e] transition hover:border-[#7a1229]/40 hover:text-[#7a1229]">M</a>
-                            <a href="#" aria-label="LinkedIn" className="flex h-8 w-8 items-center justify-center rounded-full border bg-white text-xs font-bold text-[#1b1f2e] transition hover:border-[#7a1229]/40 hover:text-[#7a1229]">in</a>
+                        <div className="hidden items-center gap-3 lg:flex">
+
+                            <motion.a
+                                href="/login"
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.96 }}
+                                className="rounded-full brand-gradient px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:opacity-90"
+                            >
+                                Login
+                            </motion.a>
+
                         </div>
-                        <a href="/login" className="rounded-full brand-gradient px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:opacity-90">
-                            Login
-                        </a>
-
                     </div>
+
 
 
 
@@ -492,15 +601,22 @@ export default function EvalzNowPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </header>
-            {/* ================= OVERVIEW ================= */}
-            <section id="overview" className="section">
-                <div className="wrap">
-                    <p className="title-lg">THE NOVEL SOLUTION TO HUMAN CAPITAL ASSESSMENT</p>
-                    <hr className="divider" />
+            </motion.header>
 
-                    <h2 className="title-md">Why Choose EvalzNow?</h2>
-                    <p className="lead">
+            {/* ================= OVERVIEW ================= */}
+            <motion.div
+                className="wrap section"
+                initial="hidden"
+                animate="visible"
+                custom={0}
+                variants={fadeUp}
+            >
+                <motion.p variants={fadeUp} custom={0} className="title-lg">THE NOVEL SOLUTION TO HUMAN CAPITAL ASSESSMENT</motion.p>
+                <hr className="divider" />
+
+                <motion.h2 variants={fadeUp} custom={1} className="title-md">Why Choose EvalzNow?</motion.h2>
+                <motion.div variants={fadeUp} custom={2} className="leadMain">
+                    <p className="lead text-justify">
                         EvalzNow provides detailed, human capital assessments using a new innovative approach known as
                         Competency Accounting. As the approach suggests, Competency Accounting is the measurement, the
                         processing, and the communication of quantitative information and qualitative information regarding
@@ -508,76 +624,125 @@ export default function EvalzNowPage() {
                         businesses, defense agencies, and so forth. The foundation of the Competency Accounting approach
                         centers on grouping measurable variables into a large matrix to track knowledge capacity.
                     </p>
-                    <hr className="divider" />
-                        <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-4 md:grid-cols-4">
-                                        {CORE_PILLARS.map((f, i) => (
-                                            <motion.div
-                                                key={f.title}
-                                                initial="hidden"
-                                                whileInView="visible"
-                                                viewport={{ once: true, amount: 0.4 }}
-                                                variants={fadeUp}
-                                                custom={i}
-                                                whileHover={{ y: -5 }}
-                                                className="rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm shadow-black/5"
-                                            >
-                                                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#7a1229]/10 to-[#1c2652]/10 text-[#7a1229]">
-                                                    <f.icon className="h-5 w-5" />
-                                                </div>
-                                                <h3 className="mt-3 text-sm font-semibold">{f.title}</h3>
-                                                <p className="mt-1.5 text-xs leading-relaxed text-[#1b1f2e]/55">{f.desc}</p>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                </div>
+                </motion.div>
 
+                <hr className="divider" />
+            </motion.div>
+
+
+            <motion.img
+                className="banner-img"
+                src={BANNER_OVERVIEW}
+                alt="Work and Education competency accounting graphic"
+                initial={{ opacity: 0, scale: 1.03 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            />
+
+
+            <div className="wrap">
+                <hr className="divider" />
+            </div>
+
+            <section id="overview" >
                 <div className="wrap">
-
-
-
-                    <h2 className="title-md pt-10">How Can Anyone Deny EvalzNow?</h2>
-                    <p className="lead">
+                    <motion.h2
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.4 }}
+                        variants={fadeUp}
+                        className="title-md"
+                    >
+                        How Can Anyone Deny EvalzNow?
+                    </motion.h2>
+                    <motion.p
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.3 }}
+                        variants={fadeUp}
+                        custom={1}
+                        className="lead"
+                    >
                         For decades, educational experts and governmental representatives have intensely debated whether
                         proficiency or growth should be the driver for evaluating student learning, ranking schools, funding
                         schools, and so forth. For even longer, corporates have struggled to find systems that comprehensively
                         assess and track the knowledge competencies of their workforces, leading to the adoption of
                         personality tests, appraisal systems, and annual employee performance reviews &ndash; a lot of
                         unnecessary paperwork and useless efforts!
-                    </p>
+                    </motion.p>
+
+
+
                     <hr className="divider" />
 
+
+
                     <div className="two-col">
-                        <div>
+                        <motion.div
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                            variants={fadeUp}
+                        >
                             <h3>EvalzNow Building Blocks</h3>
                             <div className="point-stack">
-                                <img src={POINT_ONE} alt="01 Educational Psychology" />
-                                <img src={POINT_TWO} alt="02 Competency Accounting" />
-                                <img src={POINT_THREE} alt="03 Complex Mathematical Modeling" />
+                                {[POINT_ONE, POINT_TWO, POINT_THREE].map((src, i) => (
+                                    <motion.img
+                                        key={src}
+                                        src={src}
+                                        alt={["01 Educational Psychology", "02 Competency Accounting", "03 Complex Mathematical Modeling"][i]}
+                                        initial="hidden"
+                                        whileInView="visible"
+                                        viewport={{ once: true, amount: 0.5 }}
+                                        variants={fadeUp}
+                                        custom={i}
+                                    />
+                                ))}
                             </div>
-                        </div>
-                        <div>
+                        </motion.div>
+                        <motion.div
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                            variants={fadeUp}
+                            custom={1}
+                        >
                             <h3>EvalzNow Solution Process</h3>
                             <div className="point-stack">
-                                <img src={POINT_FOUR} alt="01 Pre-Processing of Data" />
-                                <img src={POINT_FIVE} alt="02 Submission for Analysis" />
-                                <img src={POINT_SIX} alt="03 Post-Processing of Data" />
+                                {[POINT_FOUR, POINT_FIVE, POINT_SIX].map((src, i) => (
+                                    <motion.img
+                                        key={src}
+                                        src={src}
+                                        alt={["01 Pre-Processing of Data", "02 Submission for Analysis", "03 Post-Processing of Data"][i]}
+                                        initial="hidden"
+                                        whileInView="visible"
+                                        viewport={{ once: true, amount: 0.5 }}
+                                        variants={fadeUp}
+                                        custom={i}
+                                    />
+                                ))}
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
-
-
-
-
                 </div>
 
-                <img className="banner-img" src={BANNER_OVERVIEW} alt="Work and Education competency accounting graphic" />
+                <motion.img
+                    className="banner-img mt-10"
+                    src={BANNER_REGISTRATION}
+                    alt="EvalzNow training and support graphic"
+                    initial={{ opacity: 0, scale: 1.03 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.1 }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                />
+
 
             </section>
 
-            {/* ---------------------------------------------------------------- */}
-            {/* Unlimited Portfolios banner                                      */}
-            {/* ---------------------------------------------------------------- */}
-            <section className="overflow-hidden border-y border-black/5 brand-gradient py-6">
+
+
+            <section className="overflow-hidden border-y border-black/5 brand-gradient py-6 insightsSection">
                 <div className="flex whitespace-nowrap">
                     <div className="animate-marquee flex shrink-0 items-center gap-10 pr-10">
                         {Array.from({ length: 8 }).map((_, i) => (
@@ -596,38 +761,49 @@ export default function EvalzNowPage() {
                 </div>
             </section>
 
+
+
+
             {/* ================= INSIGHTS ================= */}
-            <section id="insights" className="section">
+            <section id="insights" >
                 <div className="wrap">
-                    <p className="title-lg">MANAGING KNOWLEDGE CAPACITY IN EDUCATION AND INDUSTRY</p>
+                    <motion.p
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.4 }}
+                        variants={fadeUp}
+                        className="title-lg"
+                    >
+                        MANAGING KNOWLEDGE CAPACITY IN EDUCATION AND INDUSTRY
+                    </motion.p>
                     <hr className="divider" />
-                    <h2 className="title-md">How Can EvalzNow Solve Your Problems?</h2>
+                    <motion.h2
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.4 }}
+                        variants={fadeUp}
+                        custom={1}
+                        className="title-md"
+                    >
+                        How Can EvalzNow Solve Your Problems?
+                    </motion.h2>
 
                     <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp} custom={0} className="text-lg1 leading-relaxed text-[#1b1f2e]/65">
-                            One particular challenge for schools and educators is the changing nature of student
-                            learning constructs over time. Research has shown that students can neither be evaluated
-                            with imprecise longitudinal models nor fixed proficiency criteria, because students adapt
-                            holistically to new academic challenges — assuming that students learn the same is
-                            categorically false. After working with a disruptive software solution like EvalzNow,
-                            which can absorb all assessments from any teaching methodology, educators will discover
-                            that there are several ways to utilize the results to reach their objectives!
-                        </motion.p>
-                        <motion.p initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp} custom={1} className="text-lg1 leading-relaxed text-[#1b1f2e]/65">
-                            Corporate and defense companies are constantly searching for innovative, resource
-                            management tools to assess and to track human competency. Such tools are responsible not
-                            only for sustaining a work-related eco-system that encourages top-of-the-line leadership,
-                            increased revenue, and success, but also for developing a resilient educational base,
-                            preparing for local/global markets, and channeling lifelong career opportunities for
-                            employees. In essence, these companies want either to find globally competitive
-                            individuals or to groom their employees into them. This is where EvalzNow becomes handy!
-                        </motion.p>
+
+
                     </div>
 
                     {/* Tabs */}
-                    <div className="mx-auto mt-14 flex w-fit rounded-full border border-black/10 bg-white p-1 shadow-sm">
+                    <motion.div
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.6 }}
+                        variants={fadeUp}
+                        custom={2}
+                        className="mx-auto flex w-fit rounded-full border border-black/10 bg-white p-1 shadow-sm"
+                    >
                         {[
-                            { id: 'corporate', label: 'For Business' },
+                            { id: 'corporate', label: 'For Industry' },
                             { id: 'education', label: 'For Education' },
                         ].map((t) => (
                             <button
@@ -642,8 +818,51 @@ export default function EvalzNowPage() {
                                 <span className="relative">{t.label}</span>
                             </button>
                         ))}
-                    </div>
+                    </motion.div>
                     <AnimatePresence mode="wait">
+                        <div className="mt-10 grid grid-cols-1 gap-8 lead">
+
+                            {activeTab === 'corporate' ? (
+                                <motion.p
+                                    initial="hidden"
+                                    whileInView="visible"
+                                    viewport={{ once: true, amount: 0.3 }}
+                                    variants={fadeUp}
+                                    custom={1}
+                                    className="text-lg leading-relaxed mt-10"
+                                >
+                                    Corporate and defense companies are constantly searching for innovative
+                                    resource management tools to assess and to track human competency. Such
+                                    tools are responsible not only for sustaining a work-related eco-system
+                                    that encourages top-of-the-line leadership, increased revenue, and success,
+                                    but also for developing a resilient educational base, preparing for
+                                    local/global markets, and channeling lifelong career opportunities for
+                                    employees. In essence, these companies want either to find globally
+                                    competitive individuals or to groom their employees into them. This is where
+                                    EvalzNow becomes handy!
+                                </motion.p>
+                            ) : (
+                                <motion.p
+                                    initial="hidden"
+                                    whileInView="visible"
+                                    viewport={{ once: true, amount: 0.3 }}
+                                    variants={fadeUp}
+                                    custom={0}
+                                    className="text-lg leading-relaxed mt-10"
+                                >
+                                    One particular challenge for schools and educators is the changing nature
+                                    of student learning constructs over time. Research has shown that students
+                                    can neither be evaluated with imprecise longitudinal models nor fixed
+                                    proficiency criteria, because students adapt holistically to new academic
+                                    challenges — assuming that students learn the same is categorically false.
+                                    After working with a disruptive software solution like EvalzNow, which can
+                                    absorb all assessments from any teaching methodology, educators will
+                                    discover that there are several ways to utilize the results to reach their
+                                    objectives!
+                                </motion.p>
+                            )}
+
+                        </div>
                         <motion.div
                             key={activeTab}
                             initial={{ opacity: 0, y: 12 }}
@@ -652,76 +871,140 @@ export default function EvalzNowPage() {
                             transition={{ duration: 0.3 }}
                             className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2"
                         >
-                            {(activeTab === 'corporate' ? CORPORATE_BENEFITS : EDUCATION_BENEFITS).map((item) => (
-                                <div key={item} className="flex items-start gap-2.5 rounded-lg bg-white/60 p-2.5 text-sm text-[#1b1f2e]/70">
+
+
+                            {(activeTab === 'corporate'
+                                ? CORPORATE_BENEFITS
+                                : EDUCATION_BENEFITS
+                            ).map((item, i) => (
+                                <motion.div
+                                    key={item}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.35, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
+                                    className="flex items-start gap-2.5 rounded-lg bg-white/60 p-2.5 text-md font-bold text-[#1b1f2e]/70"
+                                >
                                     <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#7a1229]" />
                                     {item}
-                                </div>
+                                </motion.div>
                             ))}
                         </motion.div>
                     </AnimatePresence>
 
                     <hr className="divider" />
 
-                </div>
-
-                <img className="banner-img" src={BANNER_INSIGHTS} alt="EvalzNow work and education capability graphic" />
-            </section>
-
-            {/* ================= FAQ ================= */}
-            <section id="faq" className="section">
-                <div className="wrap">
-                    <h2 className="title-md">Frequently Asked Questions</h2>
-                    <div className="faq-grid">
-                        {FAQS.map((item, i) => (
-                            <div className="faq-item" key={i}>
-                                <img src={STAR_ICON} alt="" />
-                                <div>
-                                    <h4>{item.q}</h4>
-                                    <p>{item.a}</p>
+                    <div className="mx-auto mt-16 grid max-w-6xl grid-cols-2 gap-4 md:grid-cols-4">
+                        {CORE_PILLARS.map((f, i) => (
+                            <motion.div
+                                key={f.title}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.4 }}
+                                variants={fadeUp}
+                                custom={i}
+                                whileHover={{ y: -5 }}
+                                className="rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm shadow-black/5"
+                            >
+                                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#7a1229]/10 to-[#1c2652]/10 text-[#7a1229]">
+                                    <f.icon className="h-5 w-5" />
                                 </div>
-                            </div>
+                                <h3 className="mt-3 text-sm font-semibold">{f.title}</h3>
+                            </motion.div>
                         ))}
                     </div>
 
 
                 </div>
-            </section>
+
+                <section>
+                    <div className="wrap b-2">
+                        <motion.p
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.4 }}
+                            variants={fadeUp}
+                            className="title-lg"
+                        >
+                            REACH OUT TO US ANYTIME
+                        </motion.p>
+                        <hr className="divider" />
+                        <motion.p
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                            variants={fadeUp}
+                            custom={1}
+                            className="lead"
+                        >
+                            Our assessment power is limitless and we offer what others simply cannot deliver. Not to mention,
+                            we cater to more sectors than anyone on the global market including - but not limited to:
+                        </motion.p>
+
+                        <motion.div
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.15 }}
+                            variants={fadeUp}
+                            custom={2}
+                            className="sector-box"
+                        >
+                            <div className="sector-grid">
+                                {SECTORS.map((col, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, y: 14 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true, amount: 0.2 }}
+                                        transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                                    >
+                                        {col.map((s, j) => (
+                                            <p key={j}>&sect; {s}</p>
+                                        ))}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
 
 
 
-            {/* ================= REGISTRATION ================= */}
-            <section id="registration" className="section">
-                <div className="wrap b-2">
-                    <p className="title-lg">SCHEDULE A DEMO SESSION &amp; REGISTER TODAY</p>
-                    <hr className="divider" />
-                    <p className="lead">
-                        Our assessment power is limitless and we offer what others simply cannot deliver. Not to mention,
-                        we cater to more sectors than anyone on the global market including - but not limited to:
-                    </p>
 
-                    <div className="sector-box">
-                        <div className="sector-grid">
-                            {SECTORS.map((col, i) => (
-                                <div key={i}>
-                                    {col.map((s, j) => (
-                                        <p key={j}>&sect; {s}</p>
-                                    ))}
-                                </div>
+                    </div>
+
+                    <div className="wrap mb-10">
+                        <div className="pint-grid">
+                            {PONTS.map((item, i) => (
+                                <motion.div
+                                    className="point-item"
+                                    key={i}
+                                    initial="hidden"
+                                    whileInView="visible"
+                                    viewport={{ once: true, amount: 0.5 }}
+                                    variants={fadeUp}
+                                    custom={i}
+                                >
+                                    <img src={STAR_ICON} alt="" />
+                                    <div>
+                                        <h4>{item.p}</h4>
+                                    </div>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
 
 
-                </div>
-
-                <img className="banner-img" src={BANNER_REGISTRATION} alt="EvalzNow training and support graphic" />
 
 
+
+                </section>
+
+                {/* <img className="banner-img" src={BANNER_INSIGHTS} alt="EvalzNow work and education capability graphic" /> */}
             </section>
 
+            {/* ================= REGISTRATION ================= */}
+
+
             {/* ================= PRICING ================= */}
-            <section id="pricing" className="section">
+            {/* <section id="pricing" className="section">
                 <div className="wrap">
                     <h2 className="title-md">Monthly Tier Pricing Per Candidate</h2>
                     <div className="price-grid">
@@ -747,23 +1030,30 @@ export default function EvalzNowPage() {
                         <button className="btn">Contact Sales</button>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* ================= FOOTER ================= */}
-            <footer>
+            <motion.footer
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-gradient"
+            >
                 <div className="footer-inner">
                     <div className="footer-text">
-                        <p>The Rick Butler Education EST</p>
-                        <p>United Arab Emirates</p>
-                        <p>evalznow@trbei.com</p>
-                        <p className="footer-copy">COPYRIGHT &copy; 2023 EVALZNOW | ALL RIGHTS RESERVED</p>
+                        <div className="footer-brand">
+                            <img src="/Assets/images/logoIcon.png" alt="EvalzNow Logo" />
+                            <span>EVALZNOW</span>
+                        </div>
+                        <p className="footer-copy">COPYRIGHT &copy; {new Date().getFullYear()} EVALZNOW | ALL RIGHTS RESERVED</p>
                     </div>
-                    <div className="footer-socials">
+                    {/* <div className="footer-socials">
                         <a href="mailto:evalznow@trbei.com"><img src={EMAIL_ICON} alt="Email" /></a>
                         <a href="#"><img src={LINKEDIN_ICON} alt="LinkedIn" /></a>
-                    </div>
+                    </div> */}
                 </div>
-            </footer>
+            </motion.footer>
         </div>
     );
 }
