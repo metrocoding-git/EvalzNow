@@ -923,7 +923,7 @@ export default function EvalzNowPage() {
                             whileInView="visible"
                             viewport={{ once: true, amount: 0.4 }}
                             variants={fadeUp}
-                            className="title-lg"
+                            className="title-lg pt-10"
                         >
                             REACH OUT TO US ANYTIME
                         </motion.p>
