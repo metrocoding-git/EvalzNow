@@ -161,7 +161,7 @@ const wordUp = {
 
 const NAV_LINKS = [
     { label: 'OVERVIEW', href: '#overview' },
-    { label: 'INSIGHTS', href: '#insights' },
+    { label: 'INSIGHT', href: '#insights' },
     { label: 'LOGIN', href: '/login' },
 
 ];
