@@ -598,9 +598,9 @@ export default function EvalzNowPage() {
                                         </a>
                                     );
                                 })}
-                                <a href="/login" onClick={() => setMenuOpen(false)} className="mt-2 rounded-full brand-gradient px-4 py-2.5 text-center text-sm font-medium text-white">
+                                {/* <a href="/login" onClick={() => setMenuOpen(false)} className="mt-2 rounded-full brand-gradient px-4 py-2.5 text-center text-sm font-medium text-white">
                                     Login
-                                </a>
+                                </a> */}
                             </div>
                         </motion.div>
                     )}
