@@ -160,9 +160,9 @@ const wordUp = {
 
 
 const NAV_LINKS = [
-    { label: 'Overview', href: '#overview' },
-    { label: 'Insights', href: '#insights' },
-        { label: 'Login', href: '/login' },
+    { label: 'OVERVIEW', href: '#overview' },
+    { label: 'INSIGHTS', href: '#insights' },
+    { label: 'LOGIN', href: '/login' },
 
 ];
 
@@ -210,7 +210,7 @@ const STYLES = `
     position:relative;
     display:flex;align-items:center;justify-content:center;
     padding:2px 80px 2px 20px;background:#fff;flex:0 0 auto;
-    clip-path: polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 45px) 100%, 0 100%);
 }
 .evz-root .brand img{height:85px;width:auto;}
 
@@ -275,7 +275,7 @@ const STYLES = `
   }
     .leadMain {
         padding: 15px;
-        background-color: #f7f7f7;
+        background-color: #ffffff;
         // border-radius: 25px;
     }
   .evz-root .card{
@@ -311,16 +311,32 @@ const STYLES = `
   @media (max-width:760px){ .evz-root .two-card{grid-template-columns:1fr;} }
 
   .evz-root .pint-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:800px;margin:50px auto 50px;}
-//   @media (max-width:700px){ .evz-root .pint-grid{grid-template-columns:1fr;} }
+@media (max-width:700px){ .evz-root .pint-grid{grid-template-columns:repeat(2, minmax(200px, max-content));} }
   .evz-root .point-item{display:flex;gap:14px;align-items:flex-start;}
   .evz-root .point-item img{width:32px;margin-top:4px;flex:0 0 auto;}
   .evz-root .point-item h4{margin:0 0 6px;color:var(--maroon-dark);font-weight:800;font-size:clamp(18px,2.2vw,24px);}
   .evz-root .point-item p{margin:0;font-size:14px;line-height:1.5;color:#333;}
 
   .evz-root .sector-box{background:#f7f7f7;border-radius:20px;padding:26px;max-width:1500px;margin:30px auto 0;}
-  .evz-root .sector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 18px;}
-  @media (max-width:900px){ .evz-root .sector-grid{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:520px){ .evz-root .sector-grid{grid-template-columns:1fr;} }
+  .evz-root .sector-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(200px, max-content));
+    justify-content:center;
+    gap:6px 40px;
+  }
+  @media (max-width:900px){
+    .evz-root .sector-grid{grid-template-columns:repeat(2, minmax(200px, max-content));}
+  }
+//   @media (max-width:520px){
+//     .evz-root .sector-grid{grid-template-columns:1fr;justify-content:stretch;}
+//   }
+
+  @media (max-width: 520px) {
+    .evz-root .sector-grid {
+        grid-template-columns: repeat(1, minmax(200px, max-content));
+    }
+}
+
   .evz-root .sector-grid p{margin:6px 0;font-weight:700;font-size:15px;}
 
   .evz-root .form-box{max-width:520px;margin:20px auto 0;background:#f0f0f0;border-radius:20px;padding:28px;}
@@ -472,7 +488,7 @@ export default function EvalzNowPage() {
         .brand-gradient { background: linear-gradient(120deg, #7a1229, #131a3d); }
                 .brand-light-gradient { background: linear-gradient(120deg, #fff4f6, #4457b65c); }
         .brand-text-gradient { background: linear-gradient(120deg, #9c1a35, #1c2652); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .bg-gradient { background: linear-gradient(120deg, #9c1a35, #1c2652);  }
+        .bg-gradient {     background: linear-gradient(273deg, #621101, #15163d); }
 
       `}</style>
 
@@ -506,7 +522,7 @@ export default function EvalzNowPage() {
                 initial={{ y: -90, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="sticky top-0 z-50 border-b border-black/5 bg-gradient backdrop-blur-xl"
+                className="sticky top-0 z-50 border-black/5 bg-gradient backdrop-blur-xl"
             >
                 {/* <div className="h-1 w-full brand-gradient"> </div> */}
                 <div className="mx-auto flex items-center justify-between pr-6 ">
@@ -622,7 +638,7 @@ export default function EvalzNowPage() {
                 className="banner-img"
                 src={BANNER_OVERVIEW}
                 alt="Work and Education competency accounting graphic"
-                initial={{ opacity: 0, scale: 1.03 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -662,7 +678,7 @@ export default function EvalzNowPage() {
                     className="banner-img mt-10"
                     src={BANNER_REGISTRATION}
                     alt="EvalzNow training and support graphic"
-                    initial={{ opacity: 0, scale: 1.03 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, amount: 0.1 }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -967,7 +983,7 @@ export default function EvalzNowPage() {
                             <div>
                                 <span>EVALZNOW</span>
                                 <p className="footer-copy">COPYRIGHT &copy; {new Date().getFullYear()} EVALZNOW | ALL RIGHTS RESERVED</p>
-                                <p className="footer-copy">Develop by <a href="https://www.metrocoding.com/" target="_blank" rel="noopener noreferrer">Metrocoding</a></p>
+                                <p className="footer-copy">DEVELOPED BY <a href="https://www.metrocoding.com/" target="_blank" rel="noopener noreferrer">METROCODING</a></p>
 
                             </div>
                         </div>
