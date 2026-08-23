@@ -1486,7 +1486,7 @@ const handleDeleteChain = async (chainId) => {
     
           <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-20">
             <table className="table-auto w-full border border-gray-300 mb-20">
-              <thead className="whitespace-nowrap bg-gray-50">
+              <thead className="whitespace-nowrap bg-gray-50 mb-20">
                 <tr>
                   <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">PP ID</th>
                   <th className="border border-gray-300 px-2 py-1 text-center bg-gray-100">Critical Reference Date</th>
