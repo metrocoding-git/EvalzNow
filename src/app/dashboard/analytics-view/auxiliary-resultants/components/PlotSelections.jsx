@@ -1583,7 +1583,7 @@ const handleDeleteChain = async (chainId) => {
       return (
         <>
           <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2">
-            <table className="table-auto w-full border border-gray-300">
+            <table className="table-auto w-full border border-gray-300 mb-20">
               <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
                   <th className="border border-gray-300 px-2 py-1  text-center">Entry</th>
@@ -1661,7 +1661,7 @@ const handleDeleteChain = async (chainId) => {
           )}
 
           <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto pr-2 rounded-md bg-white shadow-sm pb-20">
-            <table className="table-auto w-full border border-gray-300">
+            <table className="table-auto w-full border border-gray-300 mb-20">
               <thead className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-50">
                 <tr>
                   <th className="border border-gray-300 px-2 py-1  text-center">Entry</th>
