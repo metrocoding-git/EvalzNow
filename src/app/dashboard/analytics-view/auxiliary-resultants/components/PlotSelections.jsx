@@ -1484,7 +1484,7 @@ const handleDeleteChain = async (chainId) => {
             />
           )}
     
-          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-16">
+          <div className="text-xs text-gray-700 mt-2 w-full overflow-x-auto rounded-md bg-white mb-20">
             <table className="table-auto w-full border border-gray-300">
               <thead className="whitespace-nowrap bg-gray-50">
                 <tr>
