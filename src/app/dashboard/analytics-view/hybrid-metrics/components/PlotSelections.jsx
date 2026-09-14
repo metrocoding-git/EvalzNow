@@ -862,7 +862,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     });
 
     const icLevels = ["IC1", "IC2", "IC3", "IC4", "IC5"];
-    const colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57"];
+    const colors = ["#000000", "#000000", "#000000", "#000000", "#000000"];
     
     return icLevels.map((icLevel, index) => {
       const curveData = getICCurveData(signatureProfile, icLevel);

@@ -11,7 +11,7 @@ import * as XLSX from "xlsx";
 import ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 
-export default function ViewerSelections({candidate, unitId, unitStartDate}) {
+export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
   const [openCandidate, setOpenCandidate] = useState({});
   const [isExpanded, setIsExpanded] = useState(false);
   const toggleGroup = (index) => {
@@ -73,11 +73,11 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
   ];
 
   const [tableData, setTableData] = useState([
-    
-    ]);
+
+  ]);
 
 
-    // Move this above your return
+  // Move this above your return
   const headers = {
     'PP ID': '',
     'Critical Reference Date': '',
@@ -124,132 +124,134 @@ export default function ViewerSelections({candidate, unitId, unitStartDate}) {
     'ARGT5': 'Acuity Ratio Component for Growth Target 5',
   };
 
-console.log("tabulation table unit id:", unitId);
-console.log("tabulation table candidate key: ", candidate.id);
+  console.log("tabulation table unit id:", unitId);
+  console.log("tabulation table candidate key: ", candidate.id);
 
-useEffect(() => {
-  const fetchTabulationData = async () => {
-    if (!unitId || !candidate?.id) {
-      setTableData([]); // clear previous table data
-      return;
-    }
+  useEffect(() => {
+    const fetchTabulationData = async () => {
+      if (!unitId || !candidate?.id) {
+        setTableData([]); // clear previous table data
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getUnitAndCandidateSummary({unitId: unitId, candidate_id: candidate.id, 
-        ppIdFrom: undefined,    
-        ppIdTo: undefined,
-        criticalRefDateFrom: undefined,
-        criticalRefDateTo: undefined});
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getUnitAndCandidateSummary({
+          unitId: unitId, candidate_id: candidate.id,
+          ppIdFrom: undefined,
+          ppIdTo: undefined,
+          criticalRefDateFrom: undefined,
+          criticalRefDateTo: undefined
+        });
 
-      const { results, average, stdDev, stdErr } = data;  
+        const { results, average, stdDev, stdErr } = data;
 
-      const formattedData = results.map(item => ({
-        "PP ID": item.ppId,
-        "Critical Reference Date": item.criticalRefDate ? new Date(item.criticalRefDate).toLocaleDateString("en-CA") : "-",
-        "unitType": item.unitType,
-        "Day Count (Days)": item.cumulativeDuration,
-        "Productivity_CSD": item.Productivity_CSD,
-        "Productivity_USD": item.Productivity_USD,
-        "RRN": item.RRN,
-        "PRN": item.PRN,
-        "ARN": item.ARN,
-        "XLR": item.XLR,
-        "XRR": item.XRR,
-        "XSR": item.XSR,
-        "XWR": item.XWR,
-        "XTR": item.XTR,
-        "XPR": item.XPR,
-        "XRVSR": item.XRVSR,
-        "XPVSR": item.XPVSR,
-        "XAVSR": item.XAVSR,
-        "XEP": item.XEP,
-        "XCP": item.XCP,
-        "XBP": item.XBP,
-        "MSIP": Number(item.MSIP). toFixed(3),
-        "STA/P": item.STAP,
-        "IC": item.IC,
-        "ΔRRN": item.deltaRRN,
-        "ΔPRN": item.deltaPRN,
-        "ΔARN": item.deltaARN,
-        "ΔGEQ": item.GEQ,
-        "STA/G": item.STAG,
-        "RRGT1": item.RRGT1,
-        "PRGT1": item.PRGT1,
-        "ARGT1": item.ARGT1,
-        "RRGT2": item.RRGT2,
-        "PRGT2": item.PRGT2,
-        "ARGT2": item.ARGT2,
-        "RRGT3": item.RRGT3,
-        "PRGT3": item.PRGT3,
-        "ARGT3": item.ARGT3,
-        "RRGT4": item.RRGT4,
-        "PRGT4": item.PRGT4,
-        "ARGT4": item.ARGT4,
-        "RRGT5": item.RRGT5,
-        "PRGT5": item.PRGT5,
-        "ARGT5": item.ARGT5,
-      }));
-      
-      // Append summary rows at the bottom
-      const summaryRows = [
-        { label: "Average", key: "averages" },
-        { label: "Std Dev", key: "stdDevs" },
-        { label: "Std Error", key: "stdErrs" },
-      ].map(({ label, key }) => {      
-        const summaryData = data[key]?.[0] || {};
-        const fixedData = {
-          ...summaryData,
-          "STA/P": summaryData.STAP ?? summaryData["STA/P"],
-          "STA/G": summaryData.STAG ?? summaryData["STA/G"],
-        };
-      
-        return {
-          "PP ID": label,
-          ...fixedData,
+        const formattedData = results.map(item => ({
+          "PP ID": item.ppId,
+          "Critical Reference Date": item.criticalRefDate ? new Date(item.criticalRefDate).toLocaleDateString("en-CA") : "-",
+          "unitType": item.unitType,
+          "Day Count (Days)": item.cumulativeDuration,
+          "Productivity_CSD": item.Productivity_CSD,
+          "Productivity_USD": item.Productivity_USD,
+          "RRN": item.RRN,
+          "PRN": item.PRN,
+          "ARN": item.ARN,
+          "XLR": item.XLR,
+          "XRR": item.XRR,
+          "XSR": item.XSR,
+          "XWR": item.XWR,
+          "XTR": item.XTR,
+          "XPR": item.XPR,
+          "XRVSR": item.XRVSR,
+          "XPVSR": item.XPVSR,
+          "XAVSR": item.XAVSR,
+          "XEP": item.XEP,
+          "XCP": item.XCP,
+          "XBP": item.XBP,
+          "MSIP": Number(item.MSIP).toFixed(3),
+          "STA/P": item.STAP,
+          "IC": item.IC,
+          "ΔRRN": item.deltaRRN,
+          "ΔPRN": item.deltaPRN,
+          "ΔARN": item.deltaARN,
+          "ΔGEQ": item.GEQ,
+          "STA/G": item.STAG,
+          "RRGT1": item.RRGT1,
+          "PRGT1": item.PRGT1,
+          "ARGT1": item.ARGT1,
+          "RRGT2": item.RRGT2,
+          "PRGT2": item.PRGT2,
+          "ARGT2": item.ARGT2,
+          "RRGT3": item.RRGT3,
+          "PRGT3": item.PRGT3,
+          "ARGT3": item.ARGT3,
+          "RRGT4": item.RRGT4,
+          "PRGT4": item.PRGT4,
+          "ARGT4": item.ARGT4,
+          "RRGT5": item.RRGT5,
+          "PRGT5": item.PRGT5,
+          "ARGT5": item.ARGT5,
+        }));
 
-          "ΔRRN": summaryData.deltaRRN,
-          "ΔPRN": summaryData.deltaPRN,
-          "ΔARN": summaryData.deltaARN,
-          "ΔGEQ": summaryData.GEQ,
-        };
-      });
-      
+        // Append summary rows at the bottom
+        const summaryRows = [
+          { label: "Average", key: "averages" },
+          { label: "Std Dev", key: "stdDevs" },
+          { label: "Std Error", key: "stdErrs" },
+        ].map(({ label, key }) => {
+          const summaryData = data[key]?.[0] || {};
+          const fixedData = {
+            ...summaryData,
+            "STA/P": summaryData.STAP ?? summaryData["STA/P"],
+            "STA/G": summaryData.STAG ?? summaryData["STA/G"],
+          };
 
-      const sortedFormattedData = [...formattedData].sort((a, b) => {
-        const ppA = a["PP ID"];
-        const ppB = b["PP ID"];
-      
-        // Handle non-numeric rows like Average / StdDev / StdErr
-        if (isNaN(ppA)) return 1;
-        if (isNaN(ppB)) return -1;
-      
-        // Both numeric: negatives first (descending), then positives ascending
-        if (ppA < 0 && ppB < 0) return ppB - ppA;   // both negative → descending
-        if (ppA > 0 && ppB > 0) return ppA - ppB;   // both positive → ascending
-        if (ppA < 0 && ppB > 0) return -1;          // negatives before positives
-        if (ppA > 0 && ppB < 0) return 1;
-        return 0;
-      });
+          return {
+            "PP ID": label,
+            ...fixedData,
 
-      setTableData([...sortedFormattedData, ...summaryRows]);
-      // setTableData(formattedData);
-    } catch (err) {
-      console.error("Failed to fetch tabulation data:", err);
-      setError("Failed to load table data.");
-      setTableData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+            "ΔRRN": summaryData.deltaRRN,
+            "ΔPRN": summaryData.deltaPRN,
+            "ΔARN": summaryData.deltaARN,
+            "ΔGEQ": summaryData.GEQ,
+          };
+        });
 
-  fetchTabulationData();
-}, [unitId, candidate?.id]);
 
-console.log("unit type check", tableData);
+        const sortedFormattedData = [...formattedData].sort((a, b) => {
+          const ppA = a["PP ID"];
+          const ppB = b["PP ID"];
 
-   // Determine which performance columns to show based on unitType
+          // Handle non-numeric rows like Average / StdDev / StdErr
+          if (isNaN(ppA)) return 1;
+          if (isNaN(ppB)) return -1;
+
+          // Both numeric: negatives first (descending), then positives ascending
+          if (ppA < 0 && ppB < 0) return ppB - ppA;   // both negative → descending
+          if (ppA > 0 && ppB > 0) return ppA - ppB;   // both positive → ascending
+          if (ppA < 0 && ppB > 0) return -1;          // negatives before positives
+          if (ppA > 0 && ppB < 0) return 1;
+          return 0;
+        });
+
+        setTableData([...sortedFormattedData, ...summaryRows]);
+        // setTableData(formattedData);
+      } catch (err) {
+        console.error("Failed to fetch tabulation data:", err);
+        setError("Failed to load table data.");
+        setTableData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTabulationData();
+  }, [unitId, candidate?.id]);
+
+  console.log("unit type check", tableData);
+
+  // Determine which performance columns to show based on unitType
   const getVisibleColumns = (unitType) => {
     const allColumns = Object.keys(headers);
 
@@ -266,7 +268,7 @@ console.log("unit type check", tableData);
     // Keep all non-ratio columns + selected ratios
     return allColumns.filter(
       (col) =>
-        !["XLR","XRR","XSR","XWR","XTR","XPR","XRVSR","XPVSR","XAVSR", "ARN", "ΔARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"].includes(col) ||
+        !["XLR", "XRR", "XSR", "XWR", "XTR", "XPR", "XRVSR", "XPVSR", "XAVSR", "ARN", "ΔARN", "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"].includes(col) ||
         selectedRatios.includes(col)
     );
   };
@@ -283,27 +285,27 @@ console.log("unit type check", tableData);
       alert("No table data available to export");
       return;
     }
-  
+
     try {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Candidate Table");
-  
+
       // ===== TITLE =====
       worksheet.addRow(["CANDIDATE PERFORMANCE TABLE"]);
       worksheet.mergeCells("A1:" + String.fromCharCode(64 + visibleHeaders.length) + "1");
       worksheet.getCell("A1").font = { bold: true, size: 14 };
       worksheet.getCell("A1").alignment = { horizontal: "center" };
-  
+
       worksheet.addRow([]);
       worksheet.addRow([
         `Candidate: ${candidate?.firstName ?? ""} ${candidate?.lastName ?? ""}`,
       ]);
       worksheet.addRow([`Exported: ${new Date().toLocaleString()}`]);
       worksheet.addRow([]);
-  
+
       // ===== HEADER ROW =====
       const headerRow = worksheet.addRow(visibleHeaders);
-  
+
       headerRow.eachCell((cell, colNumber) => {
         cell.font = { bold: true };
         cell.alignment = { horizontal: "center" };
@@ -318,24 +320,24 @@ console.log("unit type check", tableData);
           pattern: "solid",
           fgColor: { argb: "FFEFEFEF" },
         };
-  
+
         // Tooltip → Excel comment
         const header = visibleHeaders[colNumber - 1];
         if (headers[header]) {
           cell.note = headers[header];
         }
       });
-  
+
       // ===== DATA ROWS =====
       tableData.forEach((row) => {
         const excelRow = worksheet.addRow(
           visibleHeaders.map((header) => {
             const value = row[header];
-  
+
             const skipFormatting = [
               "PP ID",
               "Critical Reference Date",
-             
+
               "unitType",
               "IC",
               "STA/P",
@@ -344,23 +346,23 @@ console.log("unit type check", tableData);
               "ΔARN",
               "ΔGEQ",
             ];
-  
+
             if (skipFormatting.includes(header)) {
               return value ?? "";
             }
-  
+
             const num = parseFloat(value);
             if (!isNaN(num) && value?.toString().includes(".")) {
               return Number(num.toFixed(3));
             }
-            
-  
+
+
             return value ?? "";
           })
         );
-  
+
         const isSummaryRow = ["Average", "StdDev", "StdErr"].includes(row["PP ID"]);
-  
+
         excelRow.eachCell((cell) => {
           cell.border = {
             top: { style: "thin" },
@@ -368,7 +370,7 @@ console.log("unit type check", tableData);
             bottom: { style: "thin" },
             right: { style: "thin" },
           };
-  
+
           if (isSummaryRow) {
             cell.font = { bold: true };
             cell.fill = {
@@ -379,7 +381,7 @@ console.log("unit type check", tableData);
           }
         });
       });
-  
+
       // ===== AUTO COLUMN WIDTH =====
       worksheet.columns.forEach((column) => {
         let maxLength = 10;
@@ -389,13 +391,13 @@ console.log("unit type check", tableData);
         });
         column.width = Math.min(maxLength + 2, 40);
       });
-  
+
       // ===== SAVE FILE =====
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-  
+
       saveAs(
         blob,
         `candidate-table-${candidate?.id ?? "export"}-${Date.now()}.xlsx`
@@ -405,14 +407,14 @@ console.log("unit type check", tableData);
       alert("Failed to export table");
     }
   };
-  
+
 
   const exportAsCSV = () => {
     if (!tableData || tableData.length === 0) {
       alert("No table data available to export");
       return;
     }
-  
+
     try {
       // Helper to escape CSV values safely
       const escapeCSV = (value) => {
@@ -423,20 +425,20 @@ console.log("unit type check", tableData);
         }
         return str;
       };
-  
+
       // Build CSV rows
       const rows = [];
-  
+
       // Header row
       rows.push(
         visibleHeaders.map(escapeCSV).join(",")
       );
-  
+
       // Data rows
       tableData.forEach((row) => {
         const csvRow = visibleHeaders.map((header) => {
           const value = row[header];
-  
+
           const skipFormatting = [
             "PP ID",
             "Critical Reference Date",
@@ -449,22 +451,22 @@ console.log("unit type check", tableData);
             "ΔARN",
             "ΔGEQ",
           ];
-  
+
           if (skipFormatting.includes(header)) {
             return escapeCSV(value ?? "");
           }
-  
+
           const num = parseFloat(value);
           if (!isNaN(num) && value?.toString().includes(".")) {
             return escapeCSV(num.toFixed(3));
           }
-  
+
           return escapeCSV(value ?? "");
         });
-  
+
         rows.push(csvRow.join(","));
       });
-  
+
       // Create CSV blob
       const csvContent = rows.join("\n");
       const BOM = "\uFEFF"; // UTF-8 BOM
@@ -473,7 +475,7 @@ console.log("unit type check", tableData);
         type: "text/csv;charset=utf-8;",
       });
 
-  
+
       saveAs(
         blob,
         `candidate-table-${candidate?.id ?? "export"}-${Date.now()}.csv`
@@ -483,33 +485,33 @@ console.log("unit type check", tableData);
       alert("Failed to export as CSV");
     }
   };
-  
+
 
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No table available to export");
       return;
     }
-  
+
     try {
       // Find the scrollable container (the one with overflow-auto)
       const scrollContainer = chartContainerRef.current;
-      
+
       // Store original styles
       const originalOverflow = scrollContainer.style.overflow;
       const originalMaxHeight = scrollContainer.style.maxHeight;
       const originalHeight = scrollContainer.style.height;
       const originalWidth = scrollContainer.style.width;
-      
+
       // Temporarily remove scroll and constraints to capture full content
       scrollContainer.style.overflow = 'visible';
       scrollContainer.style.maxHeight = 'none';
       scrollContainer.style.height = 'auto';
       scrollContainer.style.width = 'max-content';
-      
+
       // Wait for layout to settle
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(scrollContainer, {
         scale: 2,
         useCORS: true,
@@ -521,21 +523,21 @@ console.log("unit type check", tableData);
         windowWidth: scrollContainer.scrollWidth,
         windowHeight: scrollContainer.scrollHeight
       });
-  
+
       // Restore original styles
       scrollContainer.style.overflow = originalOverflow;
       scrollContainer.style.maxHeight = originalMaxHeight;
       scrollContainer.style.height = originalHeight;
       scrollContainer.style.width = originalWidth;
-  
+
       canvas.toBlob((blob) => {
         saveAs(blob, `candidate-table-${candidate?.id ?? 'export'}-${new Date().getTime()}.jpg`);
       }, 'image/jpeg', 0.95);
-  
+
     } catch (error) {
       console.error('JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
-      
+
       // Ensure styles are restored even if there's an error
       if (chartContainerRef.current) {
         chartContainerRef.current.style.overflow = '';
@@ -545,33 +547,33 @@ console.log("unit type check", tableData);
       }
     }
   };
-  
+
   // Function to export as PDF - FIXED to capture entire table
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
       alert("No table available to export");
       return;
     }
-  
+
     try {
       // Find the scrollable container
       const scrollContainer = chartContainerRef.current;
-      
+
       // Store original styles
       const originalOverflow = scrollContainer.style.overflow;
       const originalMaxHeight = scrollContainer.style.maxHeight;
       const originalHeight = scrollContainer.style.height;
       const originalWidth = scrollContainer.style.width;
-      
+
       // Temporarily remove scroll and constraints to capture full content
       scrollContainer.style.overflow = 'visible';
       scrollContainer.style.maxHeight = 'none';
       scrollContainer.style.height = 'auto';
       scrollContainer.style.width = 'max-content';
-      
+
       // Wait for layout to settle
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(scrollContainer, {
         scale: 2,
         useCORS: true,
@@ -583,39 +585,39 @@ console.log("unit type check", tableData);
         windowWidth: scrollContainer.scrollWidth,
         windowHeight: scrollContainer.scrollHeight
       });
-  
+
       // Restore original styles
       scrollContainer.style.overflow = originalOverflow;
       scrollContainer.style.maxHeight = originalMaxHeight;
       scrollContainer.style.height = originalHeight;
       scrollContainer.style.width = originalWidth;
-  
+
       const imgData = canvas.toDataURL('image/png');
-      
+
       // Calculate PDF dimensions
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      
+
       // Use mm as unit for better control
       const pdfWidth = imgWidth * 0.264583; // Convert px to mm
       const pdfHeight = imgHeight * 0.264583;
-      
+
       // Create PDF with appropriate orientation
       const pdf = new jsPDF({
         orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
         unit: 'mm',
         format: [pdfWidth, pdfHeight]
       });
-  
+
       // Add image to fill the entire PDF page
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
+
       pdf.save(`candidate-table-${candidate?.id ?? 'export'}-${new Date().getTime()}.pdf`);
-  
+
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
-      
+
       // Ensure styles are restored even if there's an error
       if (chartContainerRef.current) {
         chartContainerRef.current.style.overflow = '';
@@ -627,8 +629,8 @@ console.log("unit type check", tableData);
   };
 
 
-   // Update your existing handleDeleteCurve function or create a new one
-   const handleExportGraph = () => {
+  // Update your existing handleDeleteCurve function or create a new one
+  const handleExportGraph = () => {
     exportToExcel();
   };
 
@@ -720,45 +722,105 @@ console.log("unit type check", tableData);
             {/* candidate table */}
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
               <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
-              
+
               <div className="flex-1 mx-1 overflow-x-auto">
                 <div ref={chartContainerRef}
                   className="h-full max-h-[calc(100vh-320px)] overflow-y-auto" >
-                <table className="w-full text-left text-xs border-separate border-spacing-0">
-                  <thead className="bg-gray-200 sticky top-0 z-10 border-b border-black">
-                    <tr>
-                      {visibleHeaders.map((header) => (
-                        <th
-                          key={header}
-                          className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-200"
-                          style={{ borderColor: "black" }}
-                        >
-                          {header}
+                  <table className="w-full text-left text-xs border-separate border-spacing-0">
+                    <thead className="bg-gray-200 sticky top-0 z-10 border-b border-black">
+                      <tr>
+                        {visibleHeaders.map((header) => (
+                          <th
+                            key={header}
+                            className="whitespace-nowrap text-center border border-black px-2 py-1 group relative bg-gray-200"
+                            style={{ borderColor: "black" }}
+                          >
+                            {header}
 
-                          {/* Tooltip */}
-                          {!noTooltipHeaders.includes(header) && headers[header] && (
-                            <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
-                              {headers[header]}
-                            </div>
-                          )}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
+                            {/* Tooltip */}
+                            {!noTooltipHeaders.includes(header) && headers[header] && (
+                              <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
+                                {headers[header]}
+                              </div>
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
 
-                  <tbody>
-                    {tableData.length > 0 ? (
-                      tableData
-                        .filter((row) => !["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
+                    <tbody>
+                      {tableData.length > 0 ? (
+                        tableData
+                          .filter((row) => !["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
+                          .map((row, rowIndex) => (
+                            <tr
+                              key={rowIndex}
+                              className="cursor-pointer hover:bg-gray-100"
+                            >
+                              {visibleHeaders.map((header) => (
+                                <td
+                                  key={header}
+                                  className="border text-center border-black px-2 py-1 whitespace-nowrap"
+                                  style={{ borderColor: "black" }}
+                                >
+                                  {(() => {
+                                    const value = row[header];
+
+                                    const skipFormatting = [
+                                      "PP ID",
+                                      "Critical Reference Date",
+
+                                      "unitType",
+                                      "IC",
+                                      "STA/P",
+                                      "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
+                                    ];
+
+                                    if (header === "ΔRRN" || header === "ΔPRN" || header === "ΔARN" || header === "ΔGEQ") {
+                                      const num = parseFloat(value);
+                                      return !isNaN(num) ? num.toFixed(3) : "-";
+                                    }
+
+                                    if (skipFormatting.includes(header)) {
+                                      return value ?? '-';
+                                    }
+
+                                    if (header === "Day Count (Days)") {
+                                      const num = parseFloat(value);
+                                      return !isNaN(num) ? num.toFixed(2) : "-";
+                                    }
+
+                                    const num = parseFloat(value);
+                                    if (value !== null && value !== undefined && value !== '' && !isNaN(num)) {
+                                      return num.toFixed(3);
+                                    }
+                                    return value ?? '-';
+                                  })()}
+                                </td>
+                              ))}
+                            </tr>
+                          ))
+                      ) : (
+                        <tr>
+                          <td colSpan={visibleHeaders.length} className="text-center py-4">
+                            No data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+
+                    <tfoot className="sticky bottom-0 z-30 bg-gray-200">
+                      {tableData
+                        .filter((row) => ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
                         .map((row, rowIndex) => (
                           <tr
-                            key={rowIndex}
-                            className="cursor-pointer hover:bg-gray-100"
+                            key={`summary-${rowIndex}`}
+                            className="bg-gray-200 font-semibold relative z-20"
                           >
                             {visibleHeaders.map((header) => (
                               <td
                                 key={header}
-                                className="border text-center border-black px-2 py-1 whitespace-nowrap"
+                                className="border border-black text-center px-2 py-1 whitespace-nowrap bg-gray-200 relative z-20"
                                 style={{ borderColor: "black" }}
                               >
                                 {(() => {
@@ -767,7 +829,7 @@ console.log("unit type check", tableData);
                                   const skipFormatting = [
                                     "PP ID",
                                     "Critical Reference Date",
-                                    
+                                    "Day Count (Days)",
                                     "unitType",
                                     "IC",
                                     "STA/P",
@@ -783,85 +845,19 @@ console.log("unit type check", tableData);
                                     return value ?? '-';
                                   }
 
-                                  if (header === "Day Count (Days)") {
-                                    const num = parseFloat(value);
-                                    return !isNaN(num) ? num.toFixed(2) : "-";
-                                  }
-
                                   const num = parseFloat(value);
-                                  const isFloat = !isNaN(num) && value.toString().includes('.');
-
-                                  if (isFloat) {
+                                  if (value !== null && value !== undefined && value !== '' && !isNaN(num)) {
                                     return num.toFixed(3);
                                   }
-
                                   return value ?? '-';
                                 })()}
                               </td>
                             ))}
                           </tr>
-                        ))
-                    ) : (
-                      <tr>
-                        <td colSpan={visibleHeaders.length} className="text-center py-4">
-                          No data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+                        ))}
+                    </tfoot>
 
-                  <tfoot className="sticky bottom-0 z-30 bg-gray-200">
-                    {tableData
-                      .filter((row) => ["Average", "Std Dev", "Std Error"].includes(row["PP ID"]))
-                      .map((row, rowIndex) => (
-                        <tr
-                          key={`summary-${rowIndex}`}
-                          className="bg-gray-200 font-semibold relative z-20"
-                        >
-                          {visibleHeaders.map((header) => (
-                            <td
-                              key={header}
-                              className="border border-black text-center px-2 py-1 whitespace-nowrap bg-gray-200 relative z-20"
-                              style={{ borderColor: "black" }}
-                            >
-                              {(() => {
-                                const value = row[header];
-
-                                const skipFormatting = [
-                                  "PP ID",
-                                  "Critical Reference Date",
-                                  "Day Count (Days)",
-                                  "unitType",
-                                  "IC",
-                                  "STA/P",
-                                  "ΔRRN", "ΔPRN", "ΔARN", "ΔGEQ"
-                                ];
-
-                                if (header === "ΔRRN" || header === "ΔPRN" || header === "ΔARN" || header === "ΔGEQ") {
-                                  const num = parseFloat(value);
-                                  return !isNaN(num) ? num.toFixed(3) : "-";
-                                }
-
-                                if (skipFormatting.includes(header)) {
-                                  return value ?? '-';
-                                }
-
-                                const num = parseFloat(value);
-                                const isFloat = !isNaN(num) && value?.toString().includes('.');
-
-                                if (isFloat) {
-                                  return num.toFixed(3);
-                                }
-
-                                return value ?? '-';
-                              })()}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                  </tfoot>
-
-                </table>
+                  </table>
                 </div>
               </div>
             </div>
