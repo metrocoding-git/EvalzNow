@@ -2648,8 +2648,8 @@ const handleDeleteChain = async (chainId) => {
         <span className='pl-2 text-md'>Plot Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
       </h2>
-      <div className="flex h-full w-full my-2">
-        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 min-h-0 h-full border-gray-200 p-1'>
+      <div className="flex h-full w-full my-2 min-h-0">
+        <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full min-h-0 border-gray-200 p-1'>
             <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
               <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -2915,7 +2915,7 @@ const handleDeleteChain = async (chainId) => {
           </div>
         </div>
 
-        <div ref={chartContainerRef} className="w-6/12 lg:w-8/12 flex flex-col min-h-0 h-full border-2 border-gray-200 bg-gray-100 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
+        <div ref={chartContainerRef} className="w-6/12 lg:w-9/12 flex flex-col h-full min-h-0 bg-white border-2 border-gray-200 ml-1" style={{ backgroundColor: chartProperties.shadeArea }}>
 
           {selectedChart ? (
             <h2 className="text-lg text-center font-semibold text-gray-700 my-3 flex-shrink-0">

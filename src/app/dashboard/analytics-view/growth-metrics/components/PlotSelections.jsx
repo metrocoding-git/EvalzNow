@@ -100,9 +100,9 @@ export function calculateProjectionValues(
 
     // blue.push({ l1 });
     // red.push({ s1 });
- 
+
     curves.push({ l1, s1, i });
-   
+
   }
 
   // Curves for Segment #2
@@ -116,7 +116,7 @@ export function calculateProjectionValues(
     /// blue.push({ l2 });
     /// red.push({ s2 });
 
- 
+
     curves.push({ l2, s2, j });
 
   }
@@ -164,19 +164,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     visibility: true,
     layer: 1,
     reference: false,
-  
+
     // Curve Label
     showLabel: true,
     labelType: "X Type",
-    
-  
+
+
     // Line Attribute
     lineStyle: "solid",
     linearLineStyle: "solid",
     projectionLineStyle: "solid",
     lineColor: "#3b82f6",
     lineThickness: 2,
-  
+
     // Symbol Attribute
     symbolStyle: "circle",
     symbolColor: "#3b82f6",
@@ -184,7 +184,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     negativeSymbolColor: "#ef4444",
     symbolFrequency: 1,
     symbolScaleSize: 3,
-  
+
     // Shade area
     shadeArea: "#ffffff",
     positiveLineColor: "#10b981", // Green for positive
@@ -215,11 +215,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     { id: "acl-2", name: "Receptive Growth Differentials (ΔRR)", key: "ΔRR", icon: "🔵", type: "line" },
     { id: "acl-3", name: "Productive Growth Differentials (ΔPR)", key: "ΔPR", icon: "🔵", type: "line" },
     { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", icon: "🔵", type: "line" },
-  
+
     { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", icon: "🔵", type: "line" },
     { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", icon: "🔵", type: "line" },
     { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", icon: "🔵", type: "line" },
-  
+
     { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie", icon: "🔵" },
     { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "🔵", type: "line" },
     { id: "acl-9-2", name: "Growth Target 1 Trends - PR", key: "PRGT1", icon: "🔵", type: "line" },
@@ -251,21 +251,21 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
   ];
 
   const activateUnitLevel = [
-      { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "🔵", type: "scatter" },
-      { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "🔵", type: "scatter" },
-      { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "🔵", type: "scatter" },
-      { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "🔵", type: "scatter" },
-      { id: "aul-5", name: "Performance Ratio (RR)", icon: "🔵", type: "scatter" },
-      { id: "aul-6", name: "Performance Ratios (PR)", icon: "🔵", type: "scatter" },
-      { id: "aul-7", name: "Performance Ratios (AR)", icon: "🔵", type: "scatter" },
-      { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🔵", type: "pie" },
+    { id: "aul-1", name: "Equivalent Growth Differentials (ΔGEQ)", icon: "🔵", type: "scatter" },
+    { id: "aul-2", name: "Receptive Growth Differentials (ΔRR)", icon: "🔵", type: "scatter" },
+    { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "🔵", type: "scatter" },
+    { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "🔵", type: "scatter" },
+    { id: "aul-5", name: "Performance Ratio (RR)", icon: "🔵", type: "scatter" },
+    { id: "aul-6", name: "Performance Ratios (PR)", icon: "🔵", type: "scatter" },
+    { id: "aul-7", name: "Performance Ratios (AR)", icon: "🔵", type: "scatter" },
+    { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🔵", type: "pie" },
   ];
 
   const fetchProjectionData = async () => {
     try {
       setLoading(true);
       const response = await getProjection(unitId, candidateId);
-  
+
       if (response && response.length > 0) {
         const latestSession = response[0];
         if (latestSession.points) {
@@ -278,29 +278,29 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (unitId && candidateId) {
       fetchProjectionData();
     }
   }, [unitId, candidateId]);
-  
+
 
   const extractPPIds = (points) => {
     const growthMetricData = [];
 
     points.forEach(point => {
-      if (point.callout === "First PP Selection" || 
-          point.callout === "Second PP Selection" || 
-          point.callout === "Third PP Selection") {
-            growthMetricData.push({
-              ppId: point.ppId,
-              dayCount: point.dayCount,
-              deltaRRN: point.deltaRRN,
-              deltaPRN: point.deltaPRN,
-              deltaARN: point.deltaARN,
-              callout: point.callout
-            });
+      if (point.callout === "First PP Selection" ||
+        point.callout === "Second PP Selection" ||
+        point.callout === "Third PP Selection") {
+        growthMetricData.push({
+          ppId: point.ppId,
+          dayCount: point.dayCount,
+          deltaRRN: point.deltaRRN,
+          deltaPRN: point.deltaPRN,
+          deltaARN: point.deltaARN,
+          callout: point.callout
+        });
       }
     });
 
@@ -319,7 +319,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     );
     return third ? Number(third.dayCount) : null;
   }, [growthMetric]);
-  
+
 
   console.log("pp id extract : ", growthMetric);
 
@@ -352,7 +352,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           // Get the linear and spline values from whichever segment property exists
           const linearValue = item.l1 || item.l2 || item.l3 || 0;
           const splineValue = item.s1 || item.s2 || item.s3 || 0;
-          
+
           return {
             dayCount: Number(xValue.toFixed(3)), // Sequential day count starting from 1
             originalX: xValue,   // Keep original x for reference
@@ -374,7 +374,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
       console.log("📈 Normalized ∆RR Projections curves->:", curves);
     }
   }, [growthMetric]);
-  
+
 
   const hasRRProjection = curves?.rr?.length > 0;
   const hasPRProjection = curves?.pr?.length > 0;
@@ -388,7 +388,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         setStabilitySummary({ stable: 0, unstable: 0 });
         return;
       }
-  
+
       console.log("logging data::-> ", filters);
       setLoading(true);
       setError(null);
@@ -396,14 +396,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         const data = await getUnitAndMultipleCandidateSummary({
           unitId: unitId,
           candidate_id: candidateId,       // make sure filters contains candidate_id
-          ppIdFrom: filters?.ppIdFrom ?? undefined,    
+          ppIdFrom: filters?.ppIdFrom ?? undefined,
           ppIdTo: filters?.ppIdTo ?? undefined,
           criticalRefDateFrom: filters?.criticalDateFrom ?? undefined,
           criticalRefDateTo: filters?.criticalDateTo ?? undefined
         });
-  
-        const { results, cumulativeSums, average, stdDev, stdErr } = data;  
-  
+
+        const { results, cumulativeSums, average, stdDev, stdErr } = data;
+
         const formattedData = results.map(row => ({
           ppId: row.ppId,
           dayCount: row.cumulativeDuration,
@@ -416,33 +416,33 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           AR: row.ARN || 0,
           STAG: row.STAG || 0,
           IC: row.IC || 0,
-          RRGT1: row.RRGT1 || 0, 
+          RRGT1: row.RRGT1 || 0,
           PRGT1: row.PRGT1 || 0,
-          ARGT1: row.ARGT1 || 0, 
-          RRGT2: row.RRGT2 || 0, 
+          ARGT1: row.ARGT1 || 0,
+          RRGT2: row.RRGT2 || 0,
           PRGT2: row.PRGT2 || 0,
-          ARGT2: row.ARGT2 || 0, 
-          RRGT3: row.RRGT3 || 0, 
+          ARGT2: row.ARGT2 || 0,
+          RRGT3: row.RRGT3 || 0,
           PRGT3: row.PRGT3 || 0,
-          ARGT3: row.ARGT3 || 0, 
-          RRGT4: row.RRGT4 || 0, 
+          ARGT3: row.ARGT3 || 0,
+          RRGT4: row.RRGT4 || 0,
           PRGT4: row.PRGT4 || 0,
-          ARGT4: row.ARGT4 || 0, 
-          RRGT5: row.RRGT5 || 0, 
+          ARGT4: row.ARGT4 || 0,
+          RRGT5: row.RRGT5 || 0,
           PRGT5: row.PRGT5 || 0,
           ARGT5: row.ARGT5 || 0,
         }));
-        
+
         setTableData(formattedData);
-  
+
         // ✅ Calculate stability counts
         const stableCount = results.filter(r => r.STAG === "STABLE").length;
         const unstableCount = results.filter(r => r.STAG === "UNSTABLE").length;
-  
+
         setStabilitySummary({ stable: stableCount, unstable: unstableCount });
-  
+
         console.log("✅ Stability Summary:", formattedData);
-        
+
       } catch (err) {
         console.error("Failed to fetch tabulation data:", err);
         setError("Failed to load table data.");
@@ -452,7 +452,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         setLoading(false);
       }
     };
-  
+
     fetchTabulationData();
   }, [unitId, candidateId, filters]);
 
@@ -465,13 +465,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         setSignatureProfile(null);
         return;
       }
-  
+
       try {
         const data = await getUnitById(unitId);
-  
+
         // Safely extract only threshold ratio fields
         const extractedThresholds = {
-          
+
           ΔGEQ: parseFloat(data?.ΔGEQ) ?? null,
           ΔRR: parseFloat(data?.ΔRRN) ?? null,
           ΔPR: parseFloat(data?.ΔPRN) ?? null,
@@ -480,18 +480,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
           PR: parseFloat(0.7).toFixed(3) ?? null, // Assuming fixed threshold for RR
           AR: parseFloat(0.7).toFixed(3) ?? null, // Assuming fixed threshold for RR
         };
-  
+
         setThresholdValue(extractedThresholds);
         setUnitType(data?.unitType || null);
         setSignatureProfile(data?.signatureProfile || null);
-  
+
         console.log("✅ Extracted Signature Profile:", data);
       } catch (error) {
         console.error("❌ Failed to fetch threshold values:", error);
         setThresholdValue(null);
       }
     };
-  
+
     fetchThreshold();
   }, [unitId]);
 
@@ -515,7 +515,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     setCurves({ rr: [], pr: [], ar: [] });
     setGrowthMetric([]);
   }, [candidateId, unitId]);
-  
+
   // Function to render dot based on symbol style
   const renderCustomDot = (props, color) => {
     const { cx, cy } = props;
@@ -573,7 +573,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
         return true;
       });
       setSelectedChart(firstVisible ?? null);
-  
+
     } else if (selectedSort === 'activateUnitLevel') {
       const firstVisible = activateUnitLevel.find(chart => {
         if (chart.name.includes("(ΔAR)") || chart.name.includes("(AR)")) {
@@ -584,241 +584,241 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
       setSelectedChart(firstVisible ?? null);
     }
   }, [selectedSort]);
-const exportToExcelWithImage = async () => {
-  if (!selectedChart) {
-    alert("Please select a chart first.");
-    return;
-  }
-  
-  if (selectedChart.type !== "pie" && !chartContainerRef.current) {
-    alert("Chart is not ready for export yet.");
-    return;
-  }
-  
-  const isProjectionChart = selectedChart.isProjection === true;
-
-  if (selectedChart.type === "pie") {
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Stability Summary");
-  
-    sheet.addRow(["Stability Type", "Count"]);
-    sheet.addRow(["STABLE", stabilitySummary.stable]);
-    sheet.addRow(["UNSTABLE", stabilitySummary.unstable]);
-  
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(
-      new Blob([buffer]),
-      `stability_summary_${new Date().toISOString().slice(0,10)}.xlsx`
-    );
-    return;
-  }
-  
-
-  try {
-    // Extract key name from chart selection
-    const keyName = selectedChart.key ?? selectedChart.name.match(/\((.*?)\)/)?.[1];
-
-    if (!keyName) {
-      alert("Invalid chart selection.");
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart) {
+      alert("Please select a chart first.");
       return;
     }
 
-    // 1. Capture chart as image
-    const chartContainer = chartContainerRef.current;
-    const canvas = await html2canvas(chartContainer, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    });
+    if (selectedChart.type !== "pie" && !chartContainerRef.current) {
+      alert("Chart is not ready for export yet.");
+      return;
+    }
 
-    // Convert canvas to buffer
-    const chartImageBuffer = await new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result));
-        reader.readAsArrayBuffer(blob);
-      }, 'image/png');
-    });
+    const isProjectionChart = selectedChart.isProjection === true;
 
-    // 2. Create workbook with ExcelJS
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Chart Report');
+    if (selectedChart.type === "pie") {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("Stability Summary");
 
-    // Set column widths
-    worksheet.columns = [
-      { width: 15 }, // Column A
-      { width: 15 }, // Column B
-      { width: 15 }, // Column C
-      { width: 15 }, // Column D
-    ];
+      sheet.addRow(["Stability Type", "Count"]);
+      sheet.addRow(["STABLE", stabilitySummary.stable]);
+      sheet.addRow(["UNSTABLE", stabilitySummary.unstable]);
 
-    // 3. Add header section
-    const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
-    headerRow.font = { size: 14, bold: true };
-    headerRow.height = 30;
-    worksheet.mergeCells('A1:D1');
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
-
-    worksheet.addRow(['Chart Name:', selectedChart.name]);
-    worksheet.addRow(['Key Name:', keyName]);
-    worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-    worksheet.addRow([]); // Empty row
-
-    // 4. Add the chart image
-    // Skip some rows for the image
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-
-    const imageId = workbook.addImage({
-      buffer: chartImageBuffer,
-      extension: 'png',
-    });
-
-    // Insert image at specific position
-    worksheet.addImage(imageId, {
-      tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-      br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
-    });
-
-    // Move down past the image
-    let currentRow = 27;
-
-    // 5. Add data points header
-    worksheet.getRow(currentRow).values = ['DATA POINTS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
-
-    const dataHeaderRow = worksheet.getRow(currentRow);
-    dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-    dataHeaderRow.font = { bold: true };
-    dataHeaderRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFE8F4FF' } // Light blue background
-    };
-    currentRow++;
-
-    const isProjectionChart = selectedChart.name.startsWith("Growth Projections");
-
-    let exportData = [];
-
-    if (isProjectionChart) {
-      if (selectedChart.name.includes("∆RR")) exportData = curves.rr;
-      if (selectedChart.name.includes("∆PR")) exportData = curves.pr;
-      if (selectedChart.name.includes("∆AR")) exportData = curves.ar;
-
-      exportData.forEach(point => {
-        worksheet.addRow([
-          candidateId,
-          "Projection",
-          point.dayCount,
-          point.s.toFixed(3)
-        ]);
-      });
-    } else {
-      tableData.forEach(row => {
-        if (row[keyName] !== undefined && !isNaN(row[keyName])) {
-          worksheet.addRow([
-            row.candidateId || "N/A",
-            row.ppId,
-            row.ppId,
-            parseFloat(row[keyName].toFixed(3))
-          ]);
-        }
-      });
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(
+        new Blob([buffer]),
+        `stability_summary_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+      return;
     }
 
 
-    // 6. Add all data points
-    tableData.forEach(row => {
-      if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
-        const dataRow = worksheet.getRow(currentRow);
-        dataRow.values = [
-          row.candidateId || "N/A",
-          row.ppId,
-          row.ppId,
-          typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
-        ];
-        currentRow++;
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.key ?? selectedChart.name.match(/\((.*?)\)/)?.[1];
+
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
       }
-    });
 
-    // 7. Add summary section
-    currentRow++;
-    worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
 
-    // Calculate statistics
-    const validData = tableData
-      .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
-      .map(row => row[keyName]);
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
 
-    if (validData.length > 0) {
-      const min = Math.min(...validData);
-      const max = Math.max(...validData);
-      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
 
-      worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-      worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-    } else {
-      worksheet.getRow(currentRow++).values = ['No valid data points available'];
-      worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
-    }
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
 
-    // 8. Add threshold information if available
-    if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-      currentRow++;
-      worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+
+      // Move down past the image
+      let currentRow = 27;
+
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
       worksheet.getRow(currentRow).font = { bold: true };
       worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
       currentRow++;
 
-      worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-      worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-    }
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
 
-    // 9. Add some formatting
-    // Format numeric cells
-    for (let i = 27; i < currentRow; i++) {
-      const cell = worksheet.getCell(`D${i}`);
-      if (cell.value && typeof cell.value === 'number') {
-        cell.numFmt = '0.000';
+      const isProjectionChart = selectedChart.name.startsWith("Growth Projections");
+
+      let exportData = [];
+
+      if (isProjectionChart) {
+        if (selectedChart.name.includes("∆RR")) exportData = curves.rr;
+        if (selectedChart.name.includes("∆PR")) exportData = curves.pr;
+        if (selectedChart.name.includes("∆AR")) exportData = curves.ar;
+
+        exportData.forEach(point => {
+          worksheet.addRow([
+            candidateId,
+            "Projection",
+            point.dayCount,
+            point.s.toFixed(3)
+          ]);
+        });
+      } else {
+        tableData.forEach(row => {
+          if (row[keyName] !== undefined && !isNaN(row[keyName])) {
+            worksheet.addRow([
+              row.candidateId || "N/A",
+              row.ppId,
+              row.ppId,
+              parseFloat(row[keyName].toFixed(3))
+            ]);
+          }
+        });
       }
+
+
+      // 6. Add all data points
+      tableData.forEach(row => {
+        if (row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName])) {
+          const dataRow = worksheet.getRow(currentRow);
+          dataRow.values = [
+            row.candidateId || "N/A",
+            row.ppId,
+            row.ppId,
+            typeof row[keyName] === 'number' ? parseFloat(row[keyName].toFixed(3)) : row[keyName]
+          ];
+          currentRow++;
+        }
+      });
+
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+
+      // Calculate statistics
+      const validData = tableData
+        .filter(row => row[keyName] !== undefined && row[keyName] !== null && !isNaN(row[keyName]))
+        .map(row => row[keyName]);
+
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow - 1}:D${currentRow - 1}`);
+      }
+
+      // 8. Add threshold information if available
+      if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+        currentRow++;
+        worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+        worksheet.getRow(currentRow).font = { bold: true };
+        worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+        currentRow++;
+
+        worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+        worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      }
+
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      // Download the file
+      saveAs(blob, fileName);
+
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
     }
+  };
 
-    // 10. Save the workbook
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
-    
-    // Generate filename
-    const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    
-    // Download the file
-    saveAs(blob, fileName);
-
-    console.log("✅ Excel file with chart image exported successfully:", fileName);
-
-  } catch (error) {
-    console.error("❌ Failed to export Excel with image:", error);
-    alert("Failed to export Excel file. Please try again. Error: " + error.message);
-  }
-};
-
-// Update your export button to ONLY use this function (remove the simple version)
-const handleExportGraph = () => {
-  exportToExcelWithImage();
-};
+  // Update your export button to ONLY use this function (remove the simple version)
+  const handleExportGraph = () => {
+    exportToExcelWithImage();
+  };
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -834,21 +834,21 @@ const handleExportGraph = () => {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length > 0) {
       const point = payload[0].payload;
-  
+
       const yAxisLabel = selectedChart?.name ?? "Value";
-  
+
       // 🔥 Check if it's a Growth Target Trend
       const isGrowthTarget = selectedChart?.key?.includes("GT");
-  
+
       return (
         <div className="bg-white p-2 border rounded shadow text-sm">
           <div>
             <strong>{isGrowthTarget ? "PP ID" : "Days"}:</strong>{" "}
             {isGrowthTarget
-              ? parseInt(point.ppId || point.x || 0)   
-              : Number(point.dayCount).toFixed(2)}    
+              ? parseInt(point.ppId || point.x || 0)
+              : Number(point.dayCount).toFixed(2)}
           </div>
-  
+
           <div>
             <strong>{yAxisLabel}:</strong>{" "}
             {Number(point.value).toFixed(3)}
@@ -864,7 +864,7 @@ const handleExportGraph = () => {
       alert("No chart available to export");
       return;
     }
-  
+
     try {
       const canvas = await html2canvas(chartContainerRef.current, {
         scale: 2,
@@ -873,24 +873,24 @@ const handleExportGraph = () => {
         backgroundColor: '#ffffff',
         logging: false
       });
-  
+
       canvas.toBlob((blob) => {
         saveAs(blob, `Plot Extraction.jpg`);
       }, 'image/jpeg', 0.95);
-  
+
     } catch (error) {
       console.error('JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
     }
   };
-  
+
   // Function to export as PDF
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
       return;
     }
-  
+
     try {
       const canvas = await html2canvas(chartContainerRef.current, {
         scale: 2,
@@ -899,17 +899,17 @@ const handleExportGraph = () => {
         backgroundColor: '#ffffff',
         logging: false
       });
-  
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
         unit: 'px',
         format: [canvas.width, canvas.height]
       });
-  
+
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
-  
+
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
@@ -926,11 +926,11 @@ const handleExportGraph = () => {
       </h2>
       <div className="flex h-full w-full min-h-0">
         <div className='w-6/12 lg:w-4/12 flex flex-col border-2 h-full min-h-0 border-gray-200 p-1'>
-            <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
-              <h2 className="text-sm font-semibold">Plots</h2>
+          <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
+            <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button onClick={() => {}} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600" 
+              <button onClick={() => { }} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600"
                   onClick={() => {
                     if (typeof onResetFilters === "function") {
                       onResetFilters(); // ✅ reset filters in parent
@@ -978,11 +978,11 @@ const handleExportGraph = () => {
             <div className="h-[40%] flex flex-col border border-gray-200">
               <div className="flex-1 overflow-auto p-1">
                 {/* Fixed Header */}
-                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200"> 
+                <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
                   <div className="col-span-9 pl-2 py-1 text-left">Entities</div>
                   <div className="col-span-3 pl-1  py-1 text-left">ID</div>
                 </div>
-                
+
                 {/* Scrollable Content */}
                 <div className="overflow-y-auto max-h-[calc(100%-40px)]">
                   {selectedSort === 'activateCandidateLevel' && (
@@ -1073,10 +1073,10 @@ const handleExportGraph = () => {
                     ? "text-black bg-white  border-t-2 border-blue-400 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 border-t border border-b-transparent border-gray-300 hover:bg-white"
                     }`}
-                    onClick={() => {
-                      setActiveAdjustPropertieTab('projections');
-                      setShowProjectionTable(true); // Show modal
-                    }}
+                  onClick={() => {
+                    setActiveAdjustPropertieTab('projections');
+                    setShowProjectionTable(true); // Show modal
+                  }}
                 >
                   Projections
                 </button>
@@ -1174,8 +1174,8 @@ const handleExportGraph = () => {
                                       <td className="border border-gray-300 px-2 py-1 text-center">
                                         {row.value.toFixed(3)}
                                       </td>
-                                      
-                                      
+
+
                                     </tr>
                                   ))}
                                 </tbody>
@@ -1191,7 +1191,7 @@ const handleExportGraph = () => {
                     }
                   </>
                 )}
-  
+
               </div>
             </div>
           </div>
@@ -1199,8 +1199,8 @@ const handleExportGraph = () => {
 
         <div className="w-6/12 lg:w-9/12 flex flex-col h-full min-h-0 bg-white">
 
-        <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0">
               {selectedChart ? (
                 (() => {
                   const projectionCharts = [
@@ -1210,12 +1210,12 @@ const handleExportGraph = () => {
                   ];
 
                   const gtKeys = [
-                    "RRGT1","RRGT2","RRGT3","RRGT4","RRGT5",
-                    "PRGT1","PRGT2","PRGT3","PRGT4","PRGT5",
-                    "ARGT1","ARGT2","ARGT3","ARGT4","ARGT5"
+                    "RRGT1", "RRGT2", "RRGT3", "RRGT4", "RRGT5",
+                    "PRGT1", "PRGT2", "PRGT3", "PRGT4", "PRGT5",
+                    "ARGT1", "ARGT2", "ARGT3", "ARGT4", "ARGT5"
                   ];
-                  
-                  const zeroStartKeys = ["ΔGEQ", "ΔRR", "ΔPR", "ΔAR", "RR", "PR", "AR"]; 
+
+                  const zeroStartKeys = ["ΔGEQ", "ΔRR", "ΔPR", "ΔAR", "RR", "PR", "AR"];
 
                   const isProjectionChart = projectionCharts.includes(selectedChart.name);
 
@@ -1295,8 +1295,8 @@ const handleExportGraph = () => {
                       chartProperties.lineStyle === "dashed"
                         ? "6 4"
                         : chartProperties.lineStyle === "dotted"
-                        ? "2 4"
-                        : "0";
+                          ? "2 4"
+                          : "0";
 
                     return (
                       <div ref={chartContainerRef} className="flex flex-col h-full p-2 bg-white " style={{ backgroundColor: chartProperties.shadeArea }}>
@@ -1305,30 +1305,30 @@ const handleExportGraph = () => {
                         </h2>
                         <div className="flex-1 min-h-0">
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart 
+                            <LineChart
                               data={positiveData}
                               margin={{ top: 30, right: 20, left: 20, bottom: 5 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
-                              type="number"
-                              dataKey={isGTchart ? "ppId" : "dayCount"}
-                              domain={[0, "auto"]}
-                              tickFormatter={(value) =>
-                                isGTchart
-                                  ? parseInt(value, 10) //  whole number for ppId
-                                  : Number(value).toFixed(2) //  decimal for days
-                              }
-                              allowDataOverflow={true}
+                                type="number"
+                                dataKey={isGTchart ? "ppId" : "dayCount"}
+                                domain={[0, "auto"]}
+                                tickFormatter={(value) =>
+                                  isGTchart
+                                    ? parseInt(value, 10) //  whole number for ppId
+                                    : Number(value).toFixed(2) //  decimal for days
+                                }
+                                allowDataOverflow={true}
                               >
-                              {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
-                                <Label 
-                                  value={isGTchart ? "PP ID" : "Days"} 
-                                  offset={-10} 
-                                  position="insideBottom" 
-                                  textAnchor="middle"
-                                />
-                              )}
+                                {(chartProperties.showLabel || chartProperties.labelType !== "X Type") && (
+                                  <Label
+                                    value={isGTchart ? "PP ID" : "Days"}
+                                    offset={-10}
+                                    position="insideBottom"
+                                    textAnchor="middle"
+                                  />
+                                )}
                               </XAxis>
 
                               <YAxis
@@ -1363,7 +1363,7 @@ const handleExportGraph = () => {
                               <Legend verticalAlign="bottom"
                                 align="center"
                                 wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                                />
+                              />
 
                               {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                                 <ReferenceLine
@@ -1384,7 +1384,7 @@ const handleExportGraph = () => {
                                 <Line
                                   type="linear"
                                   dataKey="value"
-                                  name={selectedChart.name} 
+                                  name={selectedChart.name}
                                   stroke={chartProperties.positiveLineColor}
                                   strokeWidth={chartProperties.lineThickness}
                                   strokeDasharray={strokeDasharray}
@@ -1409,7 +1409,7 @@ const handleExportGraph = () => {
                         <div className="flex flex-col h-full p-2 bg-white" style={{ backgroundColor: chartProperties.shadeArea }}>
                           <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
                           <div className="flex-1 flex  justify-center text-gray-400 uppercase">
-                            Select a candidate to view 
+                            Select a candidate to view
                           </div>
                         </div>
                       );
@@ -1426,7 +1426,7 @@ const handleExportGraph = () => {
                                   <Label value={`Days`} offset={-10} position="insideBottom" />
                                 )}
                               </XAxis>
-                              <YAxis type="number" dataKey="value" name={selectedChart.name} 
+                              <YAxis type="number" dataKey="value" name={selectedChart.name}
                                 domain={[
                                   (dataMin) => {
                                     const threshold = thresholdValue?.[keyName];
@@ -1454,7 +1454,7 @@ const handleExportGraph = () => {
                               <Legend verticalAlign="bottom"
                                 align="center"
                                 wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }}
-                                />
+                              />
 
                               {thresholdValue && keyName && filters?.thresholdEnabled === true && thresholdValue[keyName] !== null && (
                                 <ReferenceLine
@@ -1489,23 +1489,23 @@ const handleExportGraph = () => {
                     const stable = stabilitySummary.stable || 0;
                     const unstable = stabilitySummary.unstable || 0;
                     const total = stable + unstable;
-  
+
                     // Calculate percentages with 3 decimal places
                     const stablePercentage = total > 0 ? Number((stable / total).toFixed(3)) : 0;
                     const unstablePercentage = total > 0 ? Number((unstable / total).toFixed(3)) : 0;
 
                     // Create data from stabilitySummary state
                     const pieData = [
-                      { 
-                        name: "STABLE", 
+                      {
+                        name: "STABLE",
                         count: stable,
                         value: stablePercentage,
                       },
-                      { 
-                        name: "UNSTABLE", 
+                      {
+                        name: "UNSTABLE",
                         count: unstable,
                         value: unstablePercentage,
-                        
+
                       },
                     ];
                     // const total = pieData.reduce((sum, entry) => sum + entry.value, 0);
@@ -1514,10 +1514,10 @@ const handleExportGraph = () => {
                         <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">
                           {selectedChart.icon} {selectedChart.name}
                         </h2>
-                        <div className="flex-1 min-h-0">  
+                        <div className="flex-1 min-h-0">
                           <ResponsiveContainer width="100%" height="100%">
-                            <PieChart margin={{ }}>
-                              <Tooltip 
+                            <PieChart margin={{}}>
+                              <Tooltip
                                 formatter={(value, name, props) => {
                                   const percentage = `${(value).toFixed(3)}`;
                                   const count = props?.payload?.count;
@@ -1570,15 +1570,16 @@ const handleExportGraph = () => {
 
       <ProjectionTable
         visible={showProjectionTable}
-        unitId= {unitId}
-        candidateId= {candidateId}
+        unitId={unitId}
+        candidateId={candidateId}
         projectionData={tableData}
         unitType={unitType}
         signatureProfile={signatureProfile}
         onRefreshProjections={fetchProjectionData}
         onClose={() => {
-          setShowProjectionTable(false) 
-          setActiveAdjustPropertieTab('Table') }}
+          setShowProjectionTable(false)
+          setActiveAdjustPropertieTab('Table')
+        }}
       />
 
     </>

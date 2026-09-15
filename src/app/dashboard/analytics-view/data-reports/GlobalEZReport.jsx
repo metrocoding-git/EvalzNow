@@ -62,26 +62,26 @@ function mainFunction(F6, assignedWeights) {
 
 
 
-export function buildGlobalEZReport({ client, totalCandidates,  analytics, thresholds, icValue, stableValue, productivityValue }) {
+export function buildGlobalEZReport({ client, totalCandidates, analytics, thresholds, icValue, stableValue, productivityValue }) {
   const today = new Date().toDateString();
 
   const candidateStaffRatioPct = (value, total) => {
     const v = Number(value) || 0;
     const t = Number(total) || 0;
-  
+
     return t > 0 ? (v / t).toFixed(3) : "0.000";
   };
 
   const totalAttendance =
-  (Number(analytics.attendance?.present) || 0) +
-  (Number(analytics.attendance?.excusedAbsences) || 0) +
-  (Number(analytics.attendance?.unexcusedAbsences) || 0) +
-  (Number(analytics.attendance?.excusedTardies) || 0) +
-  (Number(analytics.attendance?.unexcusedTardies) || 0);
+    (Number(analytics.attendance?.present) || 0) +
+    (Number(analytics.attendance?.excusedAbsences) || 0) +
+    (Number(analytics.attendance?.unexcusedAbsences) || 0) +
+    (Number(analytics.attendance?.excusedTardies) || 0) +
+    (Number(analytics.attendance?.unexcusedTardies) || 0);
 
   const totalSTAP =
-  (Number(stableValue?.STAP?.STABLE) || 0) +
-  (Number(stableValue?.STAP?.UNSTABLE) || 0);
+    (Number(stableValue?.STAP?.STABLE) || 0) +
+    (Number(stableValue?.STAP?.UNSTABLE) || 0);
 
   const totalSTAG =
     (Number(stableValue?.STAG?.STABLE) || 0) +
@@ -90,26 +90,26 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   const fraction = (value, total) => {
     const v = Number(value) || 0;
     const t = Number(total) || 0;
-  
+
     return t > 0 ? (v / t).toFixed(3) : "0.000";
   };
 
   const stapStability = fraction(stableValue?.STAP?.STABLE, totalSTAP);
   const stagStability = fraction(stableValue?.STAG?.STABLE, totalSTAG);
 
-    const pct = (v, total) =>
-      total ? (v / total).toFixed(3) : "0.000";
-  
-    const fmt = (v) =>
-      v === null || v === undefined ? "0.000" : Number(v).toFixed(3);
-  
-    const fmtFraction = (v) =>
-      v === null || v === undefined ? "0.000" : (Number(v) / 100).toFixed(3);
-    
-    const totalAssessmentBlocks = Object.values(analytics.assessmentBlocks || {})
-  .reduce((sum, v) => sum + (Number(v) || 0), 0);
+  const pct = (v, total) =>
+    total ? (v / total).toFixed(3) : "0.000";
 
-    const totalUnitOutcomes = Object.values(analytics.unitOutcomes || {})
+  const fmt = (v) =>
+    v === null || v === undefined ? "0.000" : Number(v).toFixed(3);
+
+  const fmtFraction = (v) =>
+    v === null || v === undefined ? "0.000" : (Number(v) / 100).toFixed(3);
+
+  const totalAssessmentBlocks = Object.values(analytics.assessmentBlocks || {})
+    .reduce((sum, v) => sum + (Number(v) || 0), 0);
+
+  const totalUnitOutcomes = Object.values(analytics.unitOutcomes || {})
     .reduce((sum, v) => sum + (Number(v) || 0), 0);
 
   const F6 = [
@@ -118,45 +118,46 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
     pct(analytics.signatureProfiles["Case 2: Rigorous Balanced"], analytics.totalUnits),
     pct(analytics.signatureProfiles["Case 3a: Productive-Weighted"], analytics.totalUnits),
     pct(analytics.signatureProfiles["Case 3b: Receptive-Weighted"], analytics.totalUnits),
-  
+
     // Unit Types (3)
     pct(analytics.unitTypes["Communicative I/O"], analytics.totalUnits),
     pct(analytics.unitTypes["Theory & Practice"], analytics.totalUnits),
     pct(analytics.unitTypes["Third Parameter"], analytics.totalUnits),
-  
+
     // Effectivity (20)
     candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 20"], analytics.totalUnits),
     candidateStaffRatioPct(analytics.candidateStaffRatio["20–30"], analytics.totalUnits),
     candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits),
-  
+
     pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits),
     pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits),
     pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits),
-  
+
     pct(analytics.assessmentBlocks["AB ≤ 8"], totalAssessmentBlocks),
     pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks),
     pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks),
-  
+
     fraction(analytics.attendance.present, totalAttendance),
     fraction(analytics.attendance.excusedAbsences, totalAttendance),
     fraction(analytics.attendance.unexcusedAbsences, totalAttendance),
     fraction(analytics.attendance.excusedTardies, totalAttendance),
     fraction(analytics.attendance.unexcusedTardies, totalAttendance),
-  
-    fmtFraction(analytics.needAssessments.open),
-    fmtFraction(analytics.candidateMarks.impactScore),
-    fmtFraction(analytics.leaderMarks.impactScore),
-  
+
+    pct(analytics.needAssessments.Open, analytics.needAssessments.Total),
+    fmt(analytics.candidateMarks.impactScore),
+    fmt(analytics.leaderMarks.impactScore),
+
+
     pct(analytics.unitOutcomes.Pass, totalUnitOutcomes),
     pct(analytics.unitOutcomes.Fail, totalUnitOutcomes),
     pct(analytics.unitOutcomes.Ongoing, totalUnitOutcomes),
-  
+
     // Remaining proficiency metrics (4)
     fmt(thresholds.regularMetrics.XEP.successRate),
     fmt(thresholds.regularMetrics.XCP.successRate),
     fmt(thresholds.regularMetrics.XBP.successRate),
     stapStability,
-  
+
     // Hybrid (7)
     fmt(thresholds.regularMetrics.MSIP.successRate),
     fmt(icValue[0]),
@@ -165,19 +166,19 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
     fmt(icValue[3]),
     fmt(icValue[4]),
     fmt(icValue[5]),
-  
+
     // Growth (8)
     fmt(thresholds.averageDeltaMetrics.avgDeltaRRN.successRate),
     fmt(thresholds.averageDeltaMetrics.avgDeltaPRN.successRate),
     fmt(thresholds.averageDeltaMetrics.avgDeltaARN.successRate),
-  
+
     fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaRRN.successRate),
     fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaPRN.successRate),
     fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaARN.successRate),
-  
+
     fmt(thresholds.regularMetrics.GEQ.successRate),
     stagStability,
-  
+
     // Utilization (3)
     fmt(productivityValue.low),
     fmt(productivityValue.mid),
@@ -189,7 +190,7 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   const indexRating = indexResult[0];
   const weightedIndex = indexResult[1];
 
-    return `
+  return `
                                                      *******************************************************************************
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
@@ -291,9 +292,9 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
   % Attendance - Excused Tardies            :     ${fraction(analytics.attendance.excusedTardies, totalAttendance)}
   % Attendance - Unexcused Tardies          :     ${fraction(analytics.attendance.unexcusedTardies, totalAttendance)}
 
-  % Action Status - Open                    :     ${fmtFraction(analytics.needAssessments.open)}
-  % Positive Candidate Marks                :     ${fmtFraction(analytics.candidateMarks.impactScore)}
-  % Positive Leader Marks                   :     ${fmtFraction(analytics.leaderMarks.impactScore)}
+  % Action Status - Open                    :     ${pct(analytics.needAssessments.Open, analytics.needAssessments.Total)}
+  % Positive Candidate Marks                :     ${fmt(analytics.candidateMarks.impactScore)}
+  % Positive Leader Marks                   :     ${fmt(analytics.leaderMarks.impactScore)}
 
   % Passing Candidates                      :     ${pct(analytics.unitOutcomes.Pass, totalUnitOutcomes)}
   % Failed Candidates                       :     ${pct(analytics.unitOutcomes.Fail, totalUnitOutcomes)}
@@ -462,5 +463,4 @@ export function buildGlobalEZReport({ client, totalCandidates,  analytics, thres
                                                      *******************************************************************************
                                                      **                               End of Report                               **
                                                      *******************************************************************************`;
-  }
-  
+}

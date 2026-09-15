@@ -2,514 +2,525 @@ import { getEffortBu } from "@/services/auxiliaryService";
 import { useEffect } from "react";
 
 function extractStaffAssignments(staffAssignments = []) {
-    const leaders = staffAssignments
-      .filter(s => s.roleType === "Leader")
-      .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
-  
-    const assessors = staffAssignments
-      .filter(s => s.roleType === "Assessor")
-      .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
-  
-    const pad = (arr, size = 3) =>
-      Array.from({ length: size }, (_, i) => arr[i] ?? "-");
-  
-    return {
-      leaders: pad(leaders),
-      assessors: pad(assessors)
-    };
-  }
-  
+  const leaders = staffAssignments
+    .filter(s => s.roleType === "Leader")
+    .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
 
-  function renderBenchmarkRows(benchmarks = []) {
-    if (!benchmarks.length) {
-      return "     -";
-    }
-  
-    return benchmarks
-      .map(b => {
-        return (
-          `     ${String(b.benchmarkId).padEnd(12)}` +
-          `     ${b.benchmarkType.padEnd(22)}` +
-          `     ${b.benchmarkRef.padEnd(22)}` +
-          `     ${b.benchmarkDescription.padEnd(5)}     `
-        );
-      })
-      .join("\n     ");
-  }
-  
+  const assessors = staffAssignments
+    .filter(s => s.roleType === "Assessor")
+    .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
 
-  
-  
-  function renderCandidateMarksRows(candidateMarks = []) {
-    if (!candidateMarks.length) {
-      return "     -";
-    }
-  
-    return candidateMarks
-      .sort((a, b) => a.entryNumber - b.entryNumber)
-      .map(mark => `
+  const pad = (arr, size = 3) =>
+    Array.from({ length: size }, (_, i) => arr[i] ?? "-");
+
+  return {
+    leaders: pad(leaders),
+    assessors: pad(assessors)
+  };
+}
+
+
+function renderBenchmarkRows(benchmarks = []) {
+  if (!benchmarks.length) {
+    return "     -";
+  }
+
+  return benchmarks
+    .map(b => {
+      return (
+        `     ${String(b.benchmarkId).padEnd(12)}` +
+        `     ${b.benchmarkType.padEnd(22)}` +
+        `     ${b.benchmarkRef.padEnd(22)}` +
+        `     ${b.benchmarkDescription.padEnd(5)}     `
+      );
+    })
+    .join("\n     ");
+}
+
+
+
+
+function renderCandidateMarksRows(candidateMarks = []) {
+  if (!candidateMarks.length) {
+    return "     -";
+  }
+
+  return candidateMarks
+    .sort((a, b) => a.entryNumber - b.entryNumber)
+    .map(mark => `
        ${mark.entryNumber ?? "-"}          ${mark.impactType ?? "-"}           ${mark.concernIdentified ?? "-"}           ${mark.identityDate ?? "-"}           ${mark.concernResolved ?? "-"}           ${mark.resolutionDate ?? "-"}
       `.trimEnd())
-      .join("\n");
-  }
-  
+    .join("\n");
+}
 
-  const UNIT_TYPE_RULES = {
-    ALL: {
-      proficiency: ["RRN", "PRN"],
-      growth: ["deltaRRN", "deltaPRN"],
-    },
-  
-    "Communicative I/O": {
-      proficiency: ["XRR", "XLR", "XSR", "XWR"],
-      averages: ["XRR", "XLR", "XSR", "XWR"],
-    },
-  
-    "Theory & Practice": {
-      proficiency: ["XTR", "XPR"],
-      averages: ["XTR", "XPR"],
-    },
-  
-    "Third Parameter": {
-      proficiency: ["XRVSR", "XPVSR", "XAVSR"],
-      averages: ["ARN"],          // ⬅ special average
-      growth: ["deltaARN"],            // ⬅ ARN applies only here
-    },
+
+const UNIT_TYPE_RULES = {
+  ALL: {
+    proficiency: ["RRN", "PRN"],
+    growth: ["deltaRRN", "deltaPRN"],
+  },
+
+  "Communicative I/O": {
+    proficiency: ["XRR", "XLR", "XSR", "XWR"],
+    averages: ["XRR", "XLR", "XSR", "XWR"],
+  },
+
+  "Theory & Practice": {
+    proficiency: ["XTR", "XPR"],
+    averages: ["XTR", "XPR"],
+  },
+
+  "Third Parameter": {
+    proficiency: ["XRVSR", "XPVSR", "XAVSR"],
+    averages: ["ARN"],          // ⬅ special average
+    growth: ["deltaARN"],            // ⬅ ARN applies only here
+  },
+};
+
+const METRIC_LABELS = {
+  RRN: "RRN",
+  PRN: "PRN",
+  ARN: "ARN",
+
+  XRR: "XRR",
+  XLR: "XLR",
+  XSR: "XSR",
+  XWR: "XWR",
+  XTR: "XTR",
+  XPR: "XPR",
+  XRVSR: "XRVSR",
+  XPVSR: "XPVSR",
+  XAVSR: "XAVSR",
+
+  deltaRRN: "ΔRRN",
+  deltaPRN: "ΔPRN",
+  deltaARN: "ΔARN",
+  GEQ: "∆GEQ",
+};
+
+function renderProficiencyHeader(unitType) {
+  const metrics = [
+    ...UNIT_TYPE_RULES.ALL.proficiency,
+    ...(UNIT_TYPE_RULES[unitType]?.proficiency ?? []),
+  ];
+
+  let header = "     ||| PP ID |||";
+
+  metrics.forEach(m => {
+    header += `     ||| ${METRIC_LABELS[m]} |||`;
+  });
+
+  header += "     ||| STA/P |||";
+  return header;
+}
+
+function renderGrowthHeader(unitType) {
+  const metrics = [
+    ...UNIT_TYPE_RULES.ALL.growth,
+    ...(UNIT_TYPE_RULES[unitType]?.growth ?? []),
+    "GEQ",
+  ].filter(Boolean);
+
+  let header = "||| PP ID |||     ||| DAYCOUNT |||";
+
+  metrics.forEach(m => {
+    header += `     ||| ${METRIC_LABELS[m]} |||`;
+  });
+
+  header += "     ||| STA/G |||";
+  return header;
+}
+
+// const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "-";
+  const fmt = (v) => {
+    const num = typeof v === "number" ? v : parseFloat(v);
+    return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(3) : "-";
   };
 
-  const METRIC_LABELS = {
-    RRN: "RRN",
-    PRN: "PRN",
-    ARN: "ARN",
-  
-    XRR: "XRR",
-    XLR: "XLR",
-    XSR: "XSR",
-    XWR: "XWR",
-    XTR: "XTR",
-    XPR: "XPR",
-    XRVSR: "XRVSR",
-    XPVSR: "XPVSR",
-    XAVSR: "XAVSR",
-  
-    deltaRRN: "ΔRRN",
-    deltaPRN: "ΔPRN",
-    deltaARN: "ΔARN",
-    GEQ: "∆GEQ",
+  const fmtDays = (v) => {
+    const num = typeof v === "number" ? v : parseFloat(v);
+    return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(2) : "-";
   };
-  
-  function renderProficiencyHeader(unitType) {
-    const metrics = [
-      ...UNIT_TYPE_RULES.ALL.proficiency,
-      ...(UNIT_TYPE_RULES[unitType]?.proficiency ?? []),
-    ];
-  
-    let header = "     ||| PP ID |||";
-  
-    metrics.forEach(m => {
-      header += `     ||| ${METRIC_LABELS[m]} |||`;
-    });
-  
-    header += "     ||| STA/P |||";
-    return header;
+
+
+const hasMetric = (unitType, metric) =>
+  UNIT_TYPE_RULES.ALL?.proficiency?.includes(metric) ||
+  UNIT_TYPE_RULES.ALL?.growth?.includes(metric) ||
+  UNIT_TYPE_RULES[unitType]?.proficiency?.includes(metric) ||
+  UNIT_TYPE_RULES[unitType]?.growth?.includes(metric) ||
+  UNIT_TYPE_RULES[unitType]?.averages?.includes(metric);
+
+function renderCompetencyProficiencyRows(results = [], unitType) {
+  if (!results.length) return "     -";
+
+  const cols = [
+    ["RRN", 8],
+    ["PRN", 8],
+    ["XRR", 8],
+    ["XLR", 8],
+    ["XSR", 8],
+    ["XWR", 8],
+    ["XTR", 8],
+    ["XPR", 8],
+    ["XRVSR", 8],
+    ["XPVSR", 8],
+    ["XAVSR", 8],
+  ].filter(([key]) => hasMetric(unitType, key));
+
+  return results
+    .sort((a, b) => a.ppId - b.ppId)
+    .map(r => {
+      let row =
+        `     ${String(r.ppId).padEnd(10)}  `;
+
+      cols.forEach(([key, w]) => {
+        row += `     ${fmt(r[key]).padEnd(w)}  `;
+      });
+
+      row += `     ${(r.STAP ?? "-").padEnd(8)}  `;
+      return row;
+    })
+    .join("\n");
+}
+
+
+
+function renderCompetencyGrowthRows(results = [], scores = [], unitType) {
+  if (!results.length) return "     -";
+
+  const cols = [
+    ["deltaRRN", 8],
+    ["deltaPRN", 8],
+    ["GEQ", 8],
+    ["ARN", 8],
+  ].filter(([key]) => hasMetric(unitType, key));
+
+  return results
+    .sort((a, b) => a.ppId - b.ppId)
+    .map(r => {
+      // const score = scores.find(s => s.ppId === r.ppId);
+      // const dayCount = score?.durationHrs ?? "-";
+
+      let row =
+        `     ${String(r.ppId).padEnd(10)}  ` +
+        `     ${fmt(r.totalDuration).padEnd(10)}  `;
+
+      cols.forEach(([key, w]) => {
+        row += `     ${fmt(r[key]).padEnd(w)}  `;
+      });
+
+      row += `     ${(r.STAG ?? "-").padEnd(8)}  `;
+      return row;
+    })
+    .join("\n");
+}
+
+
+
+function renderCompetencyHybridRows(results = [], scores = []) {
+  if (!results.length) return "     -";
+
+  return results
+    .sort((a, b) => a.ppId - b.ppId)
+    .map(r => {
+      // const score = scores.find(s => s.ppId === r.ppId);
+      // const dayCount = score?.dayCount ?? "-";
+
+      return (
+        `     ${String(r.ppId).padEnd(10)}  ` +
+        `     ${fmt(r.totalDuration).padEnd(10)}  ` +
+        `     ${fmt(r.MSIP).padEnd(8)}  ` +
+        `     ${(r.IC ?? "-").padEnd(8)}  `
+      );
+    })
+    .join("\n");
+}
+
+function renderAverages(averages = {}, unitType) {
+  const lines = [];
+
+  if (hasMetric(unitType, "RRN"))
+    lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
+
+  if (hasMetric(unitType, "PRN"))
+    lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
+
+  if (unitType === "Third Parameter")
+    lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
+
+  return lines.join("\n");
+}
+
+function resolveActionStatus(bIds = []) {
+  if (!Array.isArray(bIds) || bIds.length === 0) return "OPEN";
+  if (bIds.length < 5) return "PENDING";
+  return "CLOSED";
+}
+
+function renderNeedsAssessmentRows(needAssessments = [], competencyRows = []) {
+  if (!needAssessments.length) return "     -";
+
+  return needAssessments
+    .map(na => {
+      const competencyRow = competencyRows.find(c => c.ppId === na.ppId);
+
+      const dayCount = competencyRow?.totalDuration ?? "-";
+      const criticalRefDate = competencyRow?.criticalRefDate
+        ? new Date(competencyRow.criticalRefDate).toISOString().split("T")[0]
+        : "-";
+
+      const actionStatus = resolveActionStatus(na.bIds);
+      const observation = na.observation?.trim() || "-";
+
+      return (
+        `     ${String(na.ppId).padEnd(10)}` +
+        `     ${String(criticalRefDate).padEnd(22)}` +
+        `     ${String(dayCount).padEnd(12)}` +
+        `     ${actionStatus.padEnd(10)}` +
+        `     ${observation}`
+      );
+    })
+    .join("\n");
+}
+
+function renderRecordOfAssignments(scores = []) {
+  if (!Array.isArray(scores) || scores.length === 0) {
+    return {
+      table1: "     -",
+      table2: "     -"
+    };
   }
 
-  function renderGrowthHeader(unitType) {
-    const metrics = [
-      ...UNIT_TYPE_RULES.ALL.growth,
-      ...(UNIT_TYPE_RULES[unitType]?.growth ?? []),
-      "GEQ",
-    ].filter(Boolean);
-  
-    let header = "||| PP ID |||     ||| DAYCOUNT |||";
-  
-    metrics.forEach(m => {
-      header += `     ||| ${METRIC_LABELS[m]} |||`;
-    });
-  
-    header += "     ||| STA/G |||";
-    return header;
-  }
-  
-  const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "-";
-  
-  const hasMetric = (unitType, metric) =>
-    UNIT_TYPE_RULES.ALL?.proficiency?.includes(metric) ||
-    UNIT_TYPE_RULES.ALL?.growth?.includes(metric) ||
-    UNIT_TYPE_RULES[unitType]?.proficiency?.includes(metric) ||
-    UNIT_TYPE_RULES[unitType]?.growth?.includes(metric) ||
-    UNIT_TYPE_RULES[unitType]?.averages?.includes(metric);
+  const table1 = scores
+    .map(s =>
+      `     ${String(s.ppId).padEnd(10)}` +
+      `     ${String(s.durationHrs ?? "-").padEnd(12)}` +
+      `     ${String(s.remarks ?? "-").padEnd(28)}` +
+      `     ${String(s.attainedScore ?? "-").padEnd(18)}` +
+      `     ${String(s.maxScore ?? "-")}`
+    )
+    .join("\n");
 
-    function renderCompetencyProficiencyRows(results = [], unitType) {
-      if (!results.length) return "     -";
-    
-      const cols = [
-        ["RRN", 8],
-        ["PRN", 8],
-        ["XRR", 8],
-        ["XLR", 8],
-        ["XSR", 8],
-        ["XWR", 8],
-        ["XTR", 8],
-        ["XPR", 8],
-        ["XRVSR", 8],
-        ["XPVSR", 8],
-        ["XAVSR", 8],
-      ].filter(([key]) => hasMetric(unitType, key));
-    
-      return results
-        .sort((a, b) => a.ppId - b.ppId)
-        .map(r => {
-          let row =
-            `     ${String(r.ppId).padEnd(10)}  `;
-    
-          cols.forEach(([key, w]) => {
-            row += `     ${fmt(r[key]).padEnd(w)}  `;
-          });
-    
-          row += `     ${(r.STAP ?? "-").padEnd(8)}  `;
-          return row;
-        })
-        .join("\n");
-    }
-    
+  const table2 = scores
+    .map(s =>
+      `     ${String(s.ppId).padEnd(10)}` +
+      `     ${String(s.durationHrs ?? "-").padEnd(12)}` +
+      `     ${String(s.workflowStage ?? "-").padEnd(20)}` +
+      `     ${String(s.assessmentType ?? "-").padEnd(20)}` +
+      `     ${String(s.scheduleImpact ?? "-")}`
+    )
+    .join("\n");
 
-  
-    function renderCompetencyGrowthRows(results = [], scores = [], unitType) {
-      if (!results.length) return "     -";
-    
-      const cols = [
-        ["deltaRRN", 8],
-        ["deltaPRN", 8],
-        ["GEQ", 8],
-        ["ARN", 8],
-      ].filter(([key]) => hasMetric(unitType, key));
-    
-      return results
-        .sort((a, b) => a.ppId - b.ppId)
-        .map(r => {
-          // const score = scores.find(s => s.ppId === r.ppId);
-          // const dayCount = score?.durationHrs ?? "-";
-    
-          let row =
-            `     ${String(r.ppId).padEnd(10)}  ` +
-            `     ${fmt(r.totalDuration).padEnd(10)}  `;
-    
-          cols.forEach(([key, w]) => {
-            row += `     ${fmt(r[key]).padEnd(w)}  `;
-          });
-    
-          row += `     ${(r.STAG ?? "-").padEnd(8)}  `;
-          return row;
-        })
-        .join("\n");
-    }
-    
+  return { table1, table2 };
+}
 
-  
-  function renderCompetencyHybridRows(results = [], scores = []) {
-    if (!results.length) return "     -";
-  
-    return results
-      .sort((a, b) => a.ppId - b.ppId)
-      .map(r => {
-        // const score = scores.find(s => s.ppId === r.ppId);
-        // const dayCount = score?.dayCount ?? "-";
-  
-        return (
-          `     ${String(r.ppId).padEnd(10)}  ` +
-          `     ${fmt(r.totalDuration).padEnd(10)}  ` +
-          `     ${fmt(r.MSIP).padEnd(8)}  ` +
-          `     ${(r.IC ?? "-").padEnd(8)}  `
-        );
-      })
-      .join("\n");
-  }
-  
-  function renderAverages(averages = {}, unitType) {
-    const lines = [];
-  
-    if (hasMetric(unitType, "RRN"))
-      lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
-  
-    if (hasMetric(unitType, "PRN"))
-      lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
-  
-    if (unitType === "Third Parameter")
-      lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
-  
-    return lines.join("\n");
-  }
-  
-  function resolveActionStatus(bIds = []) {
-    if (!Array.isArray(bIds) || bIds.length === 0) return "OPEN";
-    if (bIds.length < 5) return "PENDING";
-    return "CLOSED";
-  }
+function hasSelectionData(sel) {
+  return (
+    sel.RRN != null ||
+    sel.PRN != null ||
+    sel.ARN != null ||
+    (Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length > 0) ||
+    sel.actionStatus
+  );
+}
 
-  function renderNeedsAssessmentRows(needAssessments = [], competencyRows = []) {
-    if (!needAssessments.length) return "     -";
-  
-    return needAssessments
-      .map(na => {
-        const competencyRow = competencyRows.find(c => c.ppId === na.ppId);
-  
-        const dayCount = competencyRow?.totalDuration ?? "-";
-        const criticalRefDate = competencyRow?.criticalRefDate
-          ? new Date(competencyRow.criticalRefDate).toISOString().split("T")[0]
+function renderSingleChain(chain) {
+  const validSelections = (chain.selections || []).filter(hasSelectionData);
+
+  if (!validSelections.length) return null;
+
+  return validSelections
+    .map(sel => {
+      const ic = `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
+      const bids =
+        Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length
+          ? sel.benchmarkIds.join(", ")
           : "-";
-  
-        const actionStatus = resolveActionStatus(na.bIds);
-        const observation = na.observation?.trim() || "-";
-  
-        return (
-          `     ${String(na.ppId).padEnd(10)}` +
-          `     ${String(criticalRefDate).padEnd(22)}` +
-          `     ${String(dayCount).padEnd(12)}` +
-          `     ${actionStatus.padEnd(10)}` +
-          `     ${observation}`
-        );
-      })
-      .join("\n");
-  }
-  
-  function renderRecordOfAssignments(scores = []) {
-    if (!Array.isArray(scores) || scores.length === 0) {
-      return {
-        table1: "     -",
-        table2: "     -"
-      };
+
+      const crd = sel.criticalRefDate
+        ? new Date(sel.criticalRefDate).toISOString().split("T")[0]
+        : "-";
+
+      return (
+        ` Performance Point ID ${sel.ppId ?? "-"}\n` +
+        ` IC #: ${ic}\n` +
+        ` Benchmark IDs: ${bids}\n` +
+        ` Action Status: ${sel.actionStatus ?? "-"}\n` +
+        ` Critical Reference Date: ${crd}\n`
+      );
+    })
+    .join("\n");
+}
+
+function buildDayCountByPpMap(competencyResults = []) {
+  const map = new Map();
+
+  competencyResults.forEach(r => {
+    if (r?.ppId && r?.totalDuration != null) {
+      map.set(r.ppId, r.totalDuration);
     }
-  
-    const table1 = scores
-      .map(s =>
-        `     ${String(s.ppId).padEnd(10)}` +
-        `     ${String(s.durationHrs ?? "-").padEnd(12)}` +
-        `     ${String(s.remarks ?? "-").padEnd(28)}` +
-        `     ${String(s.attainedScore ?? "-").padEnd(18)}` +
-        `     ${String(s.maxScore ?? "-")}`
-      )
-      .join("\n");
-  
-    const table2 = scores
-      .map(s =>
-        `     ${String(s.ppId).padEnd(10)}` +
-        `     ${String(s.durationHrs ?? "-").padEnd(12)}` +
-        `     ${String(s.workflowStage ?? "-").padEnd(20)}` +
-        `     ${String(s.assessmentType ?? "-").padEnd(20)}` +
-        `     ${String(s.scheduleImpact ?? "-")}`
-      )
-      .join("\n");
-  
-    return { table1, table2 };
+  });
+
+  return map;
+}
+
+
+function renderAverageBlock(averages = {}, unitType) {
+  const lines = [];
+
+  if (hasMetric(unitType, "RRN"))
+    lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
+
+  if (hasMetric(unitType, "PRN"))
+    lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
+
+  if (unitType === "Third Parameter")
+    lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
+
+  lines.push(` `);
+  lines.push(`     Average Equivalent Proficiency - XEP      :     ${fmt(averages.XEP)}`);
+
+
+  lines.push(`     Average Composite Proficiency - XCP       :     ${fmt(averages.XCP)}`);
+
+
+  lines.push(`     Average Band Proficiency - XBP            :     ${fmt(averages.XBP)}`);
+
+  return lines.join("\n");
+}
+
+function renderGrowthSummary(cumulative = {}, averages = {}, unitType) {
+  const lines = [];
+
+  if (hasMetric(unitType, "deltaRRN")) {
+
+    lines.push(`     Average Growth - ΔRRN                     :     ${fmt(averages.deltaRRN)}`);
   }
 
-  function hasSelectionData(sel) {
-    return (
-      sel.RRN != null ||
-      sel.PRN != null ||
-      sel.ARN != null ||
-      (Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length > 0) ||
-      sel.actionStatus
-    );
-  }
-  
-  function renderSingleChain(chain) {
-    const validSelections = (chain.selections || []).filter(hasSelectionData);
-  
-    if (!validSelections.length) return null;
-  
-    return validSelections
-      .map(sel => {
-        const ic = `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
-        const bids =
-          Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length
-            ? sel.benchmarkIds.join(", ")
-            : "-";
-  
-        const crd = sel.criticalRefDate
-          ? new Date(sel.criticalRefDate).toISOString().split("T")[0]
-          : "-";
-  
-        return (
-          ` Performance Point ID ${sel.ppId ?? "-"}\n` +
-          ` IC #: ${ic}\n` +
-          ` Benchmark IDs: ${bids}\n` +
-          ` Action Status: ${sel.actionStatus ?? "-"}\n` +
-          ` Critical Reference Date: ${crd}\n`
-        );
-      })
-      .join("\n");
+  if (hasMetric(unitType, "deltaPRN")) {
+
+    lines.push(`     Average Growth - ΔPRN                     :     ${fmt(averages.deltaPRN)}`);
   }
 
-  function buildDayCountByPpMap(competencyResults = []) {
-    const map = new Map();
-  
-    competencyResults.forEach(r => {
-      if (r?.ppId && r?.totalDuration != null) {
-        map.set(r.ppId, r.totalDuration);
-      }
-    });
-  
-    return map;
+  if (unitType === "Third Parameter") {
+    lines.push(`     Average Growth - ΔARN                     :     ${fmt(averages.deltaARN)}`);
   }
-  
 
-  function renderAverageBlock(averages = {}, unitType) {
-    const lines = [];
-  
-    if (hasMetric(unitType, "RRN"))
-      lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
-  
-    if (hasMetric(unitType, "PRN"))
-      lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
-  
-    if (unitType === "Third Parameter")
-      lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
-  
-      lines.push(` `);
-      lines.push(`     Average Equivalent Proficiency - XEP      :     ${fmt(averages.XEP)}`);
-  
-    
-      lines.push(`     Average Composite Proficiency - XCP       :     ${fmt(averages.XCP)}`);
-  
-   
-      lines.push(`     Average Band Proficiency - XBP            :     ${fmt(averages.XBP)}`);
-  
-    return lines.join("\n");
+  lines.push(`     Average Equivalent Growth - ∆GEQ          :     ${fmt(averages.GEQ)}`);
+
+  return lines.join("\n");
+}
+
+function renderButlerProductivityRows(productivity = []) {
+  if (!Array.isArray(productivity) || productivity.length === 0) {
+    return "     -";
   }
-  
-  function renderGrowthSummary(cumulative = {}, averages = {}, unitType) {
-    const lines = [];
-  
-    if (hasMetric(unitType, "deltaRRN")) {
-      
-      lines.push(`     Average Growth - ΔRRN                     :     ${fmt(averages.deltaRRN)}`);
-    }
-  
-    if (hasMetric(unitType, "deltaPRN")) {
-      
-      lines.push(`     Average Growth - ΔPRN                     :     ${fmt(averages.deltaPRN)}`);
-    }
-  
-    if (unitType === "Third Parameter") {
-      lines.push(`     Average Growth - ΔARN                     :     ${fmt(averages.deltaARN)}`);
-    }
-  
-    lines.push(`     Average Equivalent Growth - ∆GEQ          :     ${fmt(averages.GEQ)}`);
-  
-    return lines.join("\n");
-  }
-  
-  function renderButlerProductivityRows(productivity = []) {
-    if (!Array.isArray(productivity) || productivity.length === 0) {
-      return "     -";
-    }
-  
-    return productivity
-      .map(r => {
-        const date = r.criticalRefDate
-          ? new Date(r.criticalRefDate).toISOString().split("T")[0]
-          : "-";
-  
-        return (
+
+  return productivity
+    .map(r => {
+      const date = r.criticalRefDate
+        ? new Date(r.criticalRefDate).toISOString().split("T")[0]
+        : "-";
+
+      return (
         `     ${String(r.ppId).padEnd(10)}` +
         `     ${date.padEnd(30)}` +
-        `     ${String(r.totalDuration ?? "-").padEnd(12)}` + 
+        `     ${String(r.totalDuration ?? "-").padEnd(12)}` +
         `     ${String(r.Productivity_CSD ?? "-").padEnd(28)}` +
         `     ${String(r.Productivity_USD ?? "-")}`
-        );
-      })
-      .join("\n    ");
-  }
-  
-  
-  
-  
-  export async function buildUnitEZReport({ unit }) {
-    const today = new Date().toDateString();
-  
-    const {
-      unitName,
-      unitId,
-      unitStartDate,
-      unitEndDate,
-      unitType,
-      XRR, XLR, XSR, XWR, XPR, XTR, XRVSR, XPVSR, XAVSR, XEP, XCP, XBP, 
-      "ΔRRN": deltaRRN,
-      "ΔPRN": deltaPRN,
-      "ΔARN": deltaARN,
-      "ΔGEQ": deltaGEQ,
-      MSIP,
-      IC,
-      signatureProfile,
-      rosterStats = {},
-      staffAssignments = [],
-      benchmarks = [],
-      candidates = [],
-      engageLevelStats,
-      rosterPercentages,
-      tabulationAverages,
-      assessmentSummary,
-      competencyStability
-    } = unit;
-  
-    const { leaders, assessors } =
-      extractStaffAssignments(staffAssignments);
-
-      // Fetch effort data for all candidates in the unit
-    const effortData = {};
-    if (unitId && candidates.length) {
-      await Promise.all(
-        candidates.map(async (candidate) => {
-          try {
-            // Use the same getEffortBu function that works for single candidate
-            const response = await getEffortBu(unitId, candidate.candidateId);
-
-            console.log(`Effort response for candidate ${candidate.candidateId}:`, response);
-             
-            // Extract CSD and USD from the response
-            // Based on your console.log of effortResults, adjust the path as needed
-            effortData[candidate.candidateId] = {
-              CSD: response?.data?.CSD ?? response?.CSD ?? "-",
-              USD: response?.data?.USD ?? response?.USD ?? "-"
-            };
-            
-          } catch (err) {
-            console.error(`Failed to fetch effort for candidate ${candidate.candidateId}`, err);
-            effortData[candidate.candidateId] = { CSD: "-", USD: "-" };
-          }
-        })
       );
-    }
+    })
+    .join("\n    ");
+}
 
-      const LEFT_PAD = 5;
 
-      const rosterRows = candidates.map(c => {
-        const rosterRow =
-          Array.isArray(c.roster) && c.roster.length > 0 ? c.roster[0] : null;
-      
-        const unitOutcome = rosterRow?.unitOutcome ?? "-";
-        const nationality = c.nationality ?? "-";
-        const candidateStartDate = c.candidateStartDate ?? c.startDate ?? "-";
-      
-        return (
-          `${" ".repeat(LEFT_PAD)}` +
-          `${(c.lastName ?? "-").padEnd(15)}` +
-          `${(c.firstName ?? "-").padEnd(19)}` +
-          `${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
-          `${String(candidateStartDate).padEnd(28)}` +
-          `${nationality.padEnd(19)}` +
-          `${unitOutcome.padEnd(15)}`
-        );
-      }).join("\n     ");
-      
-   
-   const engagementPercentages = engageLevelStats?.percentages ?? {};
 
-   const getICValue = (unitType, signatureProfile, icString) => {
+
+export async function buildUnitEZReport({ unit }) {
+  const today = new Date().toDateString();
+
+  const {
+    unitName,
+    unitId,
+    unitStartDate,
+    unitEndDate,
+    unitType,
+    environment,
+    XRR, XLR, XSR, XWR, XPR, XTR, XRVSR, XPVSR, XAVSR, XEP, XCP, XBP,
+    "ΔRRN": deltaRRN,
+    "ΔPRN": deltaPRN,
+    "ΔARN": deltaARN,
+    "ΔGEQ": deltaGEQ,
+    MSIP,
+    IC,
+    signatureProfile,
+    rosterStats = {},
+    staffAssignments = [],
+    benchmarks = [],
+    candidates = [],
+    engageLevelStats,
+    rosterPercentages,
+    tabulationAverages,
+    assessmentSummary,
+    competencyStability
+  } = unit;
+
+  const { leaders, assessors } =
+    extractStaffAssignments(staffAssignments);
+
+  // Fetch effort data for all candidates in the unit
+  const effortData = {};
+  if (unitId && candidates.length) {
+    await Promise.all(
+      candidates.map(async (candidate) => {
+        try {
+          // Use the same getEffortBu function that works for single candidate
+          const response = await getEffortBu(unitId, candidate.candidateId);
+
+          console.log(`Effort response for candidate ${candidate.candidateId}:`, response);
+
+          // Extract CSD and USD from the response
+          // Based on your console.log of effortResults, adjust the path as needed
+          effortData[candidate.candidateId] = {
+            CSD: response?.data?.CSD ?? response?.CSD ?? "-",
+            USD: response?.data?.USD ?? response?.USD ?? "-"
+          };
+
+        } catch (err) {
+          console.error(`Failed to fetch effort for candidate ${candidate.candidateId}`, err);
+          effortData[candidate.candidateId] = { CSD: "-", USD: "-" };
+        }
+      })
+    );
+  }
+
+  const LEFT_PAD = 5;
+
+  const rosterRows = candidates.map(c => {
+    const rosterRow =
+      Array.isArray(c.roster) && c.roster.length > 0 ? c.roster[0] : null;
+
+    const unitOutcome = rosterRow?.unitOutcome ?? "-";
+    const nationality = c.nationality ?? "-";
+    const candidateStartDate = c.candidateStartDate ?? c.startDate ?? "-";
+
+    return (
+      `${" ".repeat(LEFT_PAD)}` +
+      `${(c.lastName ?? "-").padEnd(15)}` +
+      `${(c.firstName ?? "-").padEnd(19)}` +
+      `${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
+      `${String(candidateStartDate).padEnd(28)}` +
+      `${nationality.padEnd(19)}` +
+      `${unitOutcome.padEnd(15)}`
+    );
+  }).join("\n     ");
+
+
+  const engagementPercentages = engageLevelStats?.percentages ?? {};
+
+  const getICValue = (unitType, signatureProfile, icString) => {
     if (!icString) return 0;
-  
+
     // ---------- CASE 1 / CASE 2 ----------
     if (
       unitType === "Communicative I/O" ||
@@ -525,18 +536,18 @@ function extractStaffAssignments(staffAssignments = []) {
         };
         return map[icString] ?? 0;
       }
-  
+
       // ---------- CASE 3a: PRODUCTIVE ----------
       if (signatureProfile === "Case 3a: Productive-Weighted") {
         const map = {
-          "0R0P": 0,   "0R1P": 0.5, "0R2P": 1,
-          "1R2P": 1.5, "2R2P": 2,   "2R3P": 2.5,
-          "3R3P": 3,   "3R4P": 3.5, "4R4P": 4,
+          "0R0P": 0, "0R1P": 0.5, "0R2P": 1,
+          "1R2P": 1.5, "2R2P": 2, "2R3P": 2.5,
+          "3R3P": 3, "3R4P": 3.5, "4R4P": 4,
           "5R5P": 5
         };
         return map[icString] ?? 0;
       }
-  
+
       // ---------- CASE 3b: RECEPTIVE ----------
       if (signatureProfile === "Case 3b: Receptive-Weighted") {
         const map = {
@@ -548,7 +559,7 @@ function extractStaffAssignments(staffAssignments = []) {
         return map[icString] ?? 0;
       }
     }
-  
+
     // ---------- TPRM ----------
     if (unitType === "Third Parameter") {
       const map = {
@@ -557,11 +568,11 @@ function extractStaffAssignments(staffAssignments = []) {
       };
       return map[icString] ?? 0;
     }
-  
+
     return 0;
   };
-  
-   //  getAvg function 
+
+  //  getAvg function 
   const getAvg = key => {
     // Handle tabulationAverages as array
     if (Array.isArray(tabulationAverages)) {
@@ -573,14 +584,14 @@ function extractStaffAssignments(staffAssignments = []) {
         if (key === "STAG" && t.STAG !== undefined) return true;
         return false;
       });
-      
+
       if (found) {
         // Return based on what's available
         if (found.value !== undefined) return found.value;
         if (found[key] !== undefined) return found[key];
       }
     }
-    
+
     // Handle tabulationAverages as object
     if (tabulationAverages && typeof tabulationAverages === 'object') {
       if (tabulationAverages[key] !== undefined) return tabulationAverages[key];
@@ -588,162 +599,197 @@ function extractStaffAssignments(staffAssignments = []) {
       if (key === "STAP" && tabulationAverages.STAP !== undefined) return tabulationAverages.STAP;
       if (key === "STAG" && tabulationAverages.STAG !== undefined) return tabulationAverages.STAG;
     }
-    
+
     return "-";
   };
-  
+
   const interactionClass = getICValue(
     unitType,
     signatureProfile,
     getAvg("IC")
   );
-   const benchmarkRows = renderBenchmarkRows(benchmarks);
+  const benchmarkRows = renderBenchmarkRows(benchmarks);
 
-   const proficiencyUnilateralLines = [];
+  const proficiencyUnilateralLines = [];
 
-    if (unitType === "Third Parameter") {
-      proficiencyUnilateralLines.push(
-        `Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XPVSR             :     ${fmt(getAvg("XPVSR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XAVSR             :     ${fmt(getAvg("XAVSR") ?? "-")}`
-      );
-    }
+  if (unitType === "Third Parameter") {
+    proficiencyUnilateralLines.push(
+      `Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XPVSR             :     ${fmt(getAvg("XPVSR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XAVSR             :     ${fmt(getAvg("XAVSR") ?? "-")}`
+    );
+  }
 
-    if (unitType === "Communicative I/O") {
-      proficiencyUnilateralLines.push(
-        `Pass % Avg Unilateral - XRR               :     ${fmt(getAvg("XRR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XLR               :     ${fmt(getAvg("XLR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XSR               :     ${fmt(getAvg("XSR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XWR               :     ${fmt(getAvg("XWR") ?? "-")}`
-      );
-    }
+  if (unitType === "Communicative I/O") {
+    proficiencyUnilateralLines.push(
+      `Pass % Avg Unilateral - XRR               :     ${fmt(getAvg("XRR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XLR               :     ${fmt(getAvg("XLR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XSR               :     ${fmt(getAvg("XSR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XWR               :     ${fmt(getAvg("XWR") ?? "-")}`
+    );
+  }
 
-    if (unitType === "Theory & Practice") {
-      proficiencyUnilateralLines.push(
-        `Pass % Avg Unilateral - XTR               :     ${fmt(getAvg("XTR") ?? "-")}`,
-        `     Pass % Avg Unilateral - XPR               :     ${fmt(getAvg("XPR") ?? "-")}`
-      );
-    }
+  if (unitType === "Theory & Practice") {
+    proficiencyUnilateralLines.push(
+      `Pass % Avg Unilateral - XTR               :     ${fmt(getAvg("XTR") ?? "-")}`,
+      `     Pass % Avg Unilateral - XPR               :     ${fmt(getAvg("XPR") ?? "-")}`
+    );
+  }
 
 
-    const growthLines = [];
+  const growthLines = [];
 
+  growthLines.push(
+    `Pass % Average Growth - ΔRRN              :     ${fmt(getAvg("deltaRRN") ?? "-")}`,
+    `     Pass % Average Growth - ΔPRN              :     ${fmt(getAvg("deltaPRN") ?? "-")}`
+  );
+
+  if (unitType === "Third Parameter") {
     growthLines.push(
-      `Pass % Average Growth - ΔRRN              :     ${fmt(getAvg("deltaRRN") ?? "-")}`,
-      `     Pass % Average Growth - ΔPRN              :     ${fmt(getAvg("deltaPRN") ?? "-")}`
+      `     Pass % Average Growth - ΔARN              :     ${fmt(getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "-")}`
     );
+  }
 
-    if (unitType === "Third Parameter") {
-      growthLines.push(
-        `     Pass % Average Growth - ΔARN              :     ${fmt(getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "-")}`
-      );
-    }           
+  growthLines.push(``);
 
-    growthLines.push(``);
+  growthLines.push(
+    `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
+    `     Pass % Stability in Growth                :     ${fmt(competencyStability?.stagStableFraction) ?? "-"}`
+  );
 
-    growthLines.push(
-      `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
-      `     Pass % Stability in Growth                :     ${fmt(competencyStability?.stagStableFraction) ?? "-"}`
-    );
+  const firstCandidate = candidates[0];
 
-    const firstCandidate = candidates[0];
+  const leaderMarks = firstCandidate?.leaderMarks || [];
 
-    const leaderMarks = firstCandidate?.leaderMarks || [];
-    
-    const uniqueLeaderMarks = leaderMarks.filter(
-      (item, index, self) =>
-        index ===
-        self.findIndex(
-          x =>
-            x.entryNumber === item.entryNumber &&
-            x.impactType === item.impactType &&
-            x.concernIdentified === item.concernIdentified &&
-            x.identityDate === item.identityDate &&
-            x.concernResolved === item.concernResolved &&
-            x.resolutionDate === item.resolutionDate
-        )
-    );
-    
-    const leaderMarksRows =
-      uniqueLeaderMarks
-        .map(mark => {
-          return (
-            `     ${String(mark.entryNumber ?? "—").padEnd(10)}` +
-            `     ${String(mark.impactType ?? "—").padEnd(16)}` +
-            `     ${String(mark.concernIdentified ?? "—").padEnd(28)}` +
-            `     ${String(mark.identityDate ?? "—").padEnd(18)}` +
-            `     ${String(mark.concernResolved ?? "—").padEnd(18)}` +
-            `     ${String(mark.resolutionDate ?? "—").padEnd(18)}`
-          );
-        })
-        .join("\n     ") || "     —";
+  const uniqueLeaderMarks = leaderMarks.filter(
+    (item, index, self) =>
+      index ===
+      self.findIndex(
+        x =>
+          x.entryNumber === item.entryNumber &&
+          x.impactType === item.impactType &&
+          x.concernIdentified === item.concernIdentified &&
+          x.identityDate === item.identityDate &&
+          x.concernResolved === item.concernResolved &&
+          x.resolutionDate === item.resolutionDate
+      )
+  );
 
-    const improvements = firstCandidate?.unitImprovement || [];
+  const leaderMarksRows =
+    uniqueLeaderMarks
+      .map(mark => {
+        return (
+          `     ${String(mark.entryNumber ?? "—").padEnd(10)}` +
+          `     ${String(mark.impactType ?? "—").padEnd(16)}` +
+          `     ${String(mark.concernIdentified ?? "—").padEnd(28)}` +
+          `     ${String(mark.identityDate ?? "—").padEnd(18)}` +
+          `     ${String(mark.concernResolved ?? "—").padEnd(18)}` +
+          `     ${String(mark.resolutionDate ?? "—").padEnd(18)}`
+        );
+      })
+      .join("\n     ") || "     —";
 
-    const uniqueImprovements = improvements.filter(
-      (item, index, self) =>
-        index ===
-        self.findIndex(
-          x =>
-            x.lesson === item.lesson &&
-            JSON.stringify(x.bIds) === JSON.stringify(item.bIds) &&
-            JSON.stringify(x.benchmarkIds) === JSON.stringify(item.benchmarkIds)
-        )
-    );
+  const improvements = firstCandidate?.unitImprovement || [];
 
-    const unitImprovementRows =
-      uniqueImprovements
-        .map((ui, index) => {
-          const parseIds = (value) => {
-            if (Array.isArray(value)) return value;
-            if (typeof value === "string") {
-              try {
-                const parsed = JSON.parse(value);
-                return Array.isArray(parsed) ? parsed : [];
-              } catch {
-                return [];
-              }
+  const uniqueImprovements = improvements.filter(
+    (item, index, self) =>
+      index ===
+      self.findIndex(
+        x =>
+          x.lesson === item.lesson &&
+          JSON.stringify(x.bIds) === JSON.stringify(item.bIds) &&
+          JSON.stringify(x.benchmarkIds) === JSON.stringify(item.benchmarkIds)
+      )
+  );
+
+  const unitImprovementRows =
+    uniqueImprovements
+      .map((ui, index) => {
+        const parseIds = (value) => {
+          if (Array.isArray(value)) return value;
+          if (typeof value === "string") {
+            try {
+              const parsed = JSON.parse(value);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
             }
-            return [];
-          };
+          }
+          return [];
+        };
 
-          const bids = parseIds(ui.bIds).join(", ") || "—";
-          const benchmarkIds = parseIds(ui.benchmarkIds).join(", ") || "—";
+        const bids = parseIds(ui.bIds).join(", ") || "—";
+        const benchmarkIds = parseIds(ui.benchmarkIds).join(", ") || "—";
 
-          return (
-            `     ${String(index + 1).padEnd(10)}` +
-            `     ${bids.padEnd(15)}` +
-            `     ${String(ui.lesson ?? "—").padEnd(40)}` +
-            `     ${benchmarkIds.padEnd(20)}`
-          );
-        })
-        .join("\n     ") || "    —";
-    
+        return (
+          `     ${String(index + 1).padEnd(10)}` +
+          `     ${bids.padEnd(15)}` +
+          `     ${String(ui.lesson ?? "—").padEnd(40)}` +
+          `     ${benchmarkIds.padEnd(20)}`
+        );
+      })
+      .join("\n     ") || "    —";
 
-    let unilateralProficiencySection = "";
+  function calculatePassFraction(candidates, getValue, passTest) {
+    if (!Array.isArray(candidates) || !candidates.length) return 0;
+    let total = 0;
+    let passed = 0;
 
-    if (unitType === "Communicative I/O") {
-      unilateralProficiencySection = `
+    candidates.forEach(c => {
+      const avg = c.competencyAverages?.[0];
+      if (!avg) return;
+      const value = getValue(avg);
+      if (value === null || value === undefined || Number.isNaN(value)) return;
+      total++;
+      if (passTest(value)) passed++;
+    });
+
+    return total ? passed / total : 0;
+  }
+
+  const msipPassFraction = MSIP != null
+    ? calculatePassFraction(
+      candidates,
+      avg => (typeof avg.MSIP === "number" ? avg.MSIP : parseFloat(avg.MSIP)),
+      value => value <= MSIP
+    )
+    : 0;
+
+  const icPassFraction = IC != null
+    ? calculatePassFraction(
+      candidates,
+      avg => getICValue(unitType, signatureProfile, avg.IC),
+      value => value >= IC
+    )
+    : 0;
+
+  let unilateralProficiencySection = "";
+
+
+
+
+  if (unitType === "Communicative I/O") {
+    unilateralProficiencySection = `
      Unilateral Proficiency in Reading          :     PASS → ≥ XRR ${XRR ?? "-"}  
      Unilateral Proficiency in Listening        :     PASS → ≥ XLR ${XLR ?? "-"}  
      Unilateral Proficiency in Speaking         :     PASS → ≥ XSR ${XSR ?? "-"}  
      Unilateral Proficiency in Writing          :     PASS → ≥ XWR ${XWR ?? "-"}  `;
-    } else if (unitType === "Theory & Practice") {
-      unilateralProficiencySection = `
+  } else if (unitType === "Theory & Practice") {
+    unilateralProficiencySection = `
      Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ XTR ${XTR ?? "-"}   
      Unilateral Proficiency - Practical Knowl   :     PASS → ≥ XPR ${XPR ?? "-"}    `;
-    } else if (unitType === "Third Parameter") {
-      unilateralProficiencySection = `
+  } else if (unitType === "Third Parameter") {
+    unilateralProficiencySection = `
      Unilateral Proficiency - Receptive         :     PASS → ≥ XRVSR ${XRVSR ?? "-"}   
      Unilateral Proficiency - Productive        :     PASS → ≥ XPVSR ${XPVSR ?? "-"} 
      Unilateral Proficiency - Acuity            :     PASS → ≥ XAVSR ${XAVSR ?? "-"} `;
-    } else {
-      // fallback in case unitType is missing or unknown
-      unilateralProficiencySection = `
+  } else {
+    // fallback in case unitType is missing or unknown
+    unilateralProficiencySection = `
     Unilateral Proficiency                     :     PASS → -`;
-    }
+  }
 
-    return `                                        
+  return `                                        
                                                      *******************************************************************************            
                                                      **                                                                           **
                                                      **                          EvalzNow Latest Edition                          **
@@ -801,6 +847,7 @@ function extractStaffAssignments(staffAssignments = []) {
   Unit End Date                        :     ${unitEndDate ?? "-"}
   Signature Profile                    :     ${signatureProfile ?? "-"}
   Unit Type                            :     ${unitType ?? "-"}
+  Environment                          :     ${environment ?? "-"}
   Unit Roster Count                    :     ${rosterStats.totalCount ?? "-"}
   
   Assigned Leader #1                   :     ${leaders[0]}
@@ -838,12 +885,11 @@ function extractStaffAssignments(staffAssignments = []) {
      Receptive Growth Differential              :     PASS → ≥ ΔRRN ${deltaRRN ?? "-"} 
      Productive Growth Differential             :     PASS → ≥ ΔPRN ${deltaPRN ?? "-"} 
      ${unitType === "Third Parameter"
-      ? `Acuity Growth Differential                 :     PASS → ≥ ΔARN ${deltaARN ?? "-"}` : ""
-      }
+      ? `Acuity Growth Differential                 :     PASS → ≥ ΔARN ${deltaARN ?? "-"}` : ""}
      Equivalent Growth                          :     PASS → ≥ ${deltaGEQ ?? "-"} 
 
-     Butler Interaction Proficiency             :     PASS → ≤ ${MSIP ?? "-"}  
-     Interaction Class                          :     PASS → ≥ ${IC ?? "-"} 
+     Butler Interaction Proficiency             :     PASS → MSIP ≤ ${MSIP ?? "-"}  
+     Interaction Class                          :     PASS → IC ≥ ${IC ?? "-"} 
 
      Interaction Class 0: Failing
      Interaction Class 1: At-Risk
@@ -873,7 +919,6 @@ function extractStaffAssignments(staffAssignments = []) {
      Pass % Avg Receptive Ratio - RRN          :     ${fmt(getAvg("RRN") ?? "-")}
      Pass % Avg Productive Ratio - PRN         :     ${fmt(getAvg("PRN") ?? "-")}
      ${unitType === "Third Parameter" ? `Pass % Avg Productive Ratio - ARN         :     ${fmt(getAvg("ARN") ?? "-")}` : ""}
-	 
      Pass % Avg Equivalent Proficiency - XEP   :     ${fmt(getAvg("XEP") ?? "-")}
      Pass % Avg Composite Proficiency - XCP    :     ${fmt(getAvg("XCP") ?? "-")}
      Pass % Avg Band Proficiency - XBP         :     ${fmt(getAvg("XBP") ?? "-")}
@@ -907,8 +952,8 @@ function extractStaffAssignments(staffAssignments = []) {
 
      Pass percentages below are based on the average values of each corresponding metric: 
 
-     Pass % Avg Butler Int Proficiency - MSIP :     ${fmt(getAvg("MSIP") ?? "-")}
-     Pass % Avg Interaction Class - IC        :     ${fmt(interactionClass)}
+     Pass % Avg Butler Int Proficiency - MSIP :     ${fmt(msipPassFraction)}
+     Pass % Avg Interaction Class - IC        :     ${fmt(icPassFraction)}
 
 *******************************************************                                  SECTION 05                               *******************************************************
 
@@ -924,49 +969,49 @@ function extractStaffAssignments(staffAssignments = []) {
      ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| EFFORT - CSD |||     ||| EFFORT - USD |||
 
      ${candidates.map(c => {
-      const lastName = c.lastName ?? "-";
-      const firstName = c.firstName ?? "-";
-      const candidateId = c.candidateId ?? c.id ?? "-";
-    
-      const CSD = c.effortBu?.data?.CSD ?? "-";
-      const USD = c.effortBu?.data?.USD ?? "-";
-    
-      return (
-        `   ${lastName.padEnd(15)}` +
-        `   ${firstName.padEnd(15)}` +
-        `   ${String(candidateId).padEnd(20)}` +
-        `   ${String(CSD).padEnd(18)}` +
-        `   ${String(USD).padEnd(18)}`
-      );
-    }).join("\n     ") || "     No effort data available"}
+        const lastName = c.lastName ?? "-";
+        const firstName = c.firstName ?? "-";
+        const candidateId = c.candidateId ?? c.id ?? "-";
+
+        const CSD = c.effortBu?.data?.CSD;
+        const USD = c.effortBu?.data?.USD;
+
+        return (
+          `   ${lastName.padEnd(15)}` +
+          `   ${firstName.padEnd(15)}` +
+          `   ${String(candidateId).padEnd(20)}` +
+          `   ${fmt(CSD).padEnd(18)}` +
+          `   ${fmt(USD)}`
+        );
+      }).join("\n     ") || "     No effort data available"}
     
 
 ---------------------------------------
  ATTENDANCE TRACKING:
 ---------------------------------------
 
-     Attendance % - Present                    :     ${rosterPercentages?.present ?? "-"}
-     Attendance % - Excused Absences           :     ${rosterPercentages?.excusedAbsences ?? "-"}
-     Attendance % - Unexcused Absences         :     ${rosterPercentages?.unexcusedAbsences ?? "-"}
-     Attendance % - Excused Tardies            :     ${rosterPercentages?.excusedTardies ?? "-"}
-     Attendance % - Unexcused Tardies          :     ${rosterPercentages?.unexcusedTardies ?? "-"}
+     Attendance % - Present                    :     ${fmt(rosterPercentages?.present) ?? "-"}
+     Attendance % - Excused Absences           :     ${fmt(rosterPercentages?.excusedAbsences) ?? "-"}
+     Attendance % - Unexcused Absences         :     ${fmt(rosterPercentages?.unexcusedAbsences) ?? "-"}
+     Attendance % - Excused Tardies            :     ${fmt(rosterPercentages?.excusedTardies) ?? "-"}
+     Attendance % - Unexcused Tardies          :     ${fmt(rosterPercentages?.unexcusedTardies) ?? "-"}
 
 ---------------------------------------
  ENGAGEMENT TRACKING:
 ---------------------------------------
 
-     Engagement Level % - High                :     ${engagementPercentages.High ?? "-"}
-     Engagement Level % - Medium              :     ${engagementPercentages.Medium ?? "-"}
-     Engagement Level % - Low                 :     ${engagementPercentages.Low ?? "-"}
-     Engagement Level % - Not Applicable      :     ${engagementPercentages["N/A"] ?? "-"}
+     Engagement Level % - High                :     ${fmt(engagementPercentages.High) ?? "-"}
+     Engagement Level % - Medium              :     ${fmt(engagementPercentages.Medium) ?? "-"}
+     Engagement Level % - Low                 :     ${fmt(engagementPercentages.Low) ?? "-"}
+     Engagement Level % - Not Applicable      :     ${fmt(engagementPercentages["N/A"]) ?? "-"}
 
 ---------------------------------------
  NEEDS ASSESSMENT TRACKING:
 ---------------------------------------
 
-     Action Status % - Open                   :     ${Number(assessmentSummary?.statusPercentages?.Open).toFixed(2) ?? 0}
-     Action Status % - Closed                 :     ${Number(assessmentSummary?.statusPercentages?.Pending).toFixed(2) ?? 0}
-     Action Status % - Pending                :     ${Number(assessmentSummary?.statusPercentages?.Closed).toFixed(2) ?? 0}
+     Action Status % - Open                   :     ${fmt(assessmentSummary?.statusPercentages?.Open) ?? 0}
+     Action Status % - Closed                 :     ${fmt(assessmentSummary?.statusPercentages?.Pending) ?? 0}
+     Action Status % - Pending                :     ${fmt(assessmentSummary?.statusPercentages?.Closed) ?? 0}
 
 *******************************************************                                  SECTION 06                               *******************************************************
 
@@ -1091,5 +1136,4 @@ function extractStaffAssignments(staffAssignments = []) {
                                                      **                               End of Report                               **
                                                      *******************************************************************************
                                                      `
-  };
-  
+};

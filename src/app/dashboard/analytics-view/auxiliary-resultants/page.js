@@ -379,6 +379,7 @@ export default function AuxiliaryResultants() {
                     </div>
                   </div>
                 </div>
+                
                 {ScoresOpen && <PlotSelections filters={secondaryValues} selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData?.unitType}
                  refresh={refreshMarks} refreshUnitImprovement={refreshUnitImprovement} 
                  refreshLeaderMarks={refreshLeaderMarks} refreshChainData={refreshChainData} 
