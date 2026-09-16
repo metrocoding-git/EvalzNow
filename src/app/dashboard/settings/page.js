@@ -19,7 +19,7 @@ const helpDocs = [
   "5.0 General Use - Industry.pdf",
   "6.0 Psychometrics and ML.pdf",
   "7.0 Issues - Pre-existing Models.pdf",
-  "8.0 Policy - Legal.pdf"
+  "8.0 Policy-Legal.pdf"
 ];
 
 export default function SettingsPage() {
