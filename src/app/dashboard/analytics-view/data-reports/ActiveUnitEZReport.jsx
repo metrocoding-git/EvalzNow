@@ -770,19 +770,19 @@ export async function buildUnitEZReport({ unit }) {
 
   if (unitType === "Communicative I/O") {
     unilateralProficiencySection = `
-     Unilateral Proficiency in Reading          :     PASS → ≥ XRR ${XRR ?? "-"}  
-     Unilateral Proficiency in Listening        :     PASS → ≥ XLR ${XLR ?? "-"}  
-     Unilateral Proficiency in Speaking         :     PASS → ≥ XSR ${XSR ?? "-"}  
-     Unilateral Proficiency in Writing          :     PASS → ≥ XWR ${XWR ?? "-"}  `;
+     Unilateral Proficiency in Reading          :     PASS → XRR ≥ ${XRR ?? "-"}  
+     Unilateral Proficiency in Listening        :     PASS → XLR ≥ ${XLR ?? "-"}  
+     Unilateral Proficiency in Speaking         :     PASS → XSR ≥ ${XSR ?? "-"}  
+     Unilateral Proficiency in Writing          :     PASS → XWR ≥ ${XWR ?? "-"}  `;
   } else if (unitType === "Theory & Practice") {
     unilateralProficiencySection = `
-     Unilateral Proficiency - Theoretical Knowl :     PASS → ≥ XTR ${XTR ?? "-"}   
-     Unilateral Proficiency - Practical Knowl   :     PASS → ≥ XPR ${XPR ?? "-"}    `;
+     Unilateral Proficiency - Theoretical Knowl :     PASS → XTR ≥ ${XTR ?? "-"}   
+     Unilateral Proficiency - Practical Knowl   :     PASS → XPR ≥ ${XPR ?? "-"}    `;
   } else if (unitType === "Third Parameter") {
     unilateralProficiencySection = `
-     Unilateral Proficiency - Receptive         :     PASS → ≥ XRVSR ${XRVSR ?? "-"}   
-     Unilateral Proficiency - Productive        :     PASS → ≥ XPVSR ${XPVSR ?? "-"} 
-     Unilateral Proficiency - Acuity            :     PASS → ≥ XAVSR ${XAVSR ?? "-"} `;
+     Unilateral Proficiency - Receptive         :     PASS → XRVSR ≥ ${XRVSR ?? "-"}   
+     Unilateral Proficiency - Productive        :     PASS → XPVSR ≥ ${XPVSR ?? "-"} 
+     Unilateral Proficiency - Acuity            :     PASS → XAVSR ≥ ${XAVSR ?? "-"} `;
   } else {
     // fallback in case unitType is missing or unknown
     unilateralProficiencySection = `
@@ -878,15 +878,15 @@ export async function buildUnitEZReport({ unit }) {
      Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth 
      thresholds of all courses are as follow:
      ${unilateralProficiencySection}
-     Equivalent Proficiency                     :     PASS → ≥ XEP ${XEP ?? "-"}  
-     Composite Proficiency                      :     PASS → ≥ XCP ${XCP ?? "-"}  
-     Band Proficiency                           :     PASS → ≥ XBP ${XBP ?? "-"}  
+     Equivalent Proficiency                     :     PASS → XEP ≥ ${XEP ?? "-"}  
+     Composite Proficiency                      :     PASS → XCP ≥ ${XCP ?? "-"}  
+     Band Proficiency                           :     PASS → XBP ≥ ${XBP ?? "-"}  
 
-     Receptive Growth Differential              :     PASS → ≥ ΔRRN ${deltaRRN ?? "-"} 
-     Productive Growth Differential             :     PASS → ≥ ΔPRN ${deltaPRN ?? "-"} 
+     Receptive Growth Differential              :     PASS → ΔRRN ≥ ${deltaRRN ?? "-"} 
+     Productive Growth Differential             :     PASS → ΔPRN ≥ ${deltaPRN ?? "-"} 
      ${unitType === "Third Parameter"
-      ? `Acuity Growth Differential                 :     PASS → ≥ ΔARN ${deltaARN ?? "-"}` : ""}
-     Equivalent Growth                          :     PASS → ≥ ${deltaGEQ ?? "-"} 
+      ? `Acuity Growth Differential                 :     PASS → ΔARN ≥ ${deltaARN ?? "-"}` : ""}
+     Equivalent Growth                          :     PASS → ΔGEQ ≥ ${deltaGEQ ?? "-"} 
 
      Butler Interaction Proficiency             :     PASS → MSIP ≤ ${MSIP ?? "-"}  
      Interaction Class                          :     PASS → IC ≥ ${IC ?? "-"} 

@@ -575,27 +575,24 @@ function renderCognitiveLoad(neuro) {
   const cognitiveLoad = neuro?.cognitiveLoad;
   if (!cognitiveLoad) return "";
 
-  const sums = sumCognitiveLoad(cognitiveLoad);
-
   const profLines = [];
   const growthLines = [];
 
-  Object.entries(sums).forEach(([lobe, values]) => {
+  // Debugging line
+
+  Object.entries(cognitiveLoad).forEach(([lobe, values]) => {
     const side = lobeSide(lobe);
     const short = lobeShortName(lobe);
 
     profLines.push(
-      `    P/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.proficiency)}`
+      `    P/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.proficiencyFinal)}`
     );
-
     growthLines.push(
-      `    G/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.growth)}`
+      `    G/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.growthFinal)}`
     );
   });
 
-  return `${profLines.join("\n")}
-
-${growthLines.join("\n")}`;
+  return `${profLines.join("\n")}\n\n${growthLines.join("\n")}`;
 }
 
 
@@ -972,7 +969,9 @@ ${assessmentBlocks}
 
      Receptive Growth Differential              :     PASS → ΔRRN ≥ ${unitMeta["ΔRRN"] ?? "-"} 
      Productive Growth Differential             :     PASS → ΔPRN ≥ ${unitMeta["ΔPRN"] ?? "-"} 
-     Equivalent Growth                          :     PASS → ΔARN ≥ ${unitMeta["ΔGEQ"] ?? "-"} 
+     ${unitMeta.unitType === "Third Parameter"
+      ? `Acuity Growth Differential                 :     PASS → ΔARN ≥ ${unitMeta["ΔARN"] ?? "-"}` : ""}
+     Equivalent Growth                          :     PASS → ∆GEQ ≥ ${unitMeta["ΔGEQ"] ?? "-"} 
 
      Butler Interaction Proficiency             :     PASS → MSIP ≤ ${unitMeta.MSIP ?? "-"}  
      Interaction Class                          :     PASS → IC ≥ ${unitMeta.IC ?? "-"} 
