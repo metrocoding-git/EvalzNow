@@ -718,12 +718,12 @@ export async function buildUnitEZReport({ unit }) {
           return [];
         };
 
-        const bids = parseIds(ui.bIds).join(", ") || "—";
+        // const bids = parseIds(ui.bIds).join(", ") || "—";
         const benchmarkIds = parseIds(ui.benchmarkIds).join(", ") || "—";
 
         return (
           `     ${String(index + 1).padEnd(10)}` +
-          `     ${bids.padEnd(15)}` +
+          // `     ${bids.padEnd(15)}` +
           `     ${String(ui.lesson ?? "—").padEnd(40)}` +
           `     ${benchmarkIds.padEnd(20)}`
         );
@@ -1034,7 +1034,7 @@ export async function buildUnitEZReport({ unit }) {
  IMPROVEMENTS & OPTIMIZATION:
 ---------------------------------------
 
-     ||| ENTRY # |||     ||| BIDs |||     ||| LESSONS LEARNED |||     ||| LINKED BENCHMARKS |||
+     ||| ENTRY # |||     ||| LESSONS LEARNED |||     ||| LINKED BENCHMARKS |||
 
      ${unitImprovementRows}
 

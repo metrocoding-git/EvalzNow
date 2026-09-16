@@ -149,7 +149,7 @@ export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
 
         const formattedData = results.map(item => ({
           "PP ID": item.ppId,
-          "Critical Reference Date": item.criticalRefDate ? new Date(item.criticalRefDate).toLocaleDateString("en-CA") : "-",
+          "Critical Reference Date": item.criticalRefDate ? item.criticalRefDate.split("T")[0] : "-",
           "unitType": item.unitType,
           "Day Count (Days)": item.cumulativeDuration,
           "Productivity_CSD": item.Productivity_CSD,
