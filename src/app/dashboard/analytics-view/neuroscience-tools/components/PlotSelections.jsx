@@ -35,7 +35,7 @@ function cognitiveNS(xArray, yArray) {
     }
   }
 
-  return (parseFloat(areasub)/10).toFixed(3);
+  return (parseFloat(areasub)/100).toFixed(3);
 }
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
