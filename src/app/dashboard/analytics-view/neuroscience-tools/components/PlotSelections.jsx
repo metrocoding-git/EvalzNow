@@ -35,7 +35,7 @@ function cognitiveNS(xArray, yArray) {
     }
   }
 
-  return (parseFloat(areasub)/100).toFixed(3);
+  return (parseFloat(areasub) / 100).toFixed(3);
 }
 
 function computeRowCognitiveNS(indicatorsData, row, rmsKey) {
@@ -83,7 +83,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const refetchNeuroData = () => {
     setRefreshKey(prev => prev + 1);
   };
-  
+
   useEffect(() => {
     if (onNeuroRefresh) {
       onNeuroRefresh();
@@ -97,24 +97,24 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
 
   const syncScroll = (source) => {
     if (!tableRef.current || !bottomScrollRef.current) return;
-  
+
     const table = tableRef.current;
     const bottom = bottomScrollRef.current;
-  
+
     if (source === "table") {
       bottom.scrollLeft = table.scrollLeft;
     } else {
       table.scrollLeft = bottom.scrollLeft;
     }
   };
-  
+
 
   const syncScrollLoads = (source) => {
     if (!tableRefLoads.current || !bottomScrollRefLoads.current) return;
-  
+
     const table = tableRefLoads.current;
     const bottom = bottomScrollRefLoads.current;
-  
+
     if (source === "table") {
       bottom.scrollLeft = table.scrollLeft;
     } else {
@@ -133,26 +133,6 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
     { index: 7, ppId: 7, value: 'Yes' },
   ]
 
-  const chartConfig = {
-    2: { target: "Proficiency", rmsKey: "RMS1", lobe: "Frontal Lobe - Left" },
-    3: { target: "Proficiency", rmsKey: "RMS2", lobe: "Occipital Lobe - Left" },
-    4: { target: "Proficiency", rmsKey: "RMS3", lobe: "Parietal Lobe - Left" },
-    5: { target: "Proficiency", rmsKey: "RMS4", lobe: "Temporal Lobe - Left" },
-    6: { target: "Proficiency", rmsKey: "RMS5", lobe: "Frontal Lobe - Right" },
-    7: { target: "Proficiency", rmsKey: "RMS6", lobe: "Occipital Lobe - Right" },
-    8: { target: "Proficiency", rmsKey: "RMS7", lobe: "Parietal Lobe - Right" },
-    9: { target: "Proficiency", rmsKey: "RMS8", lobe: "Temporal Lobe - Right" },
-  
-    10: { target: "Growth", rmsKey: "RMS1", lobe: "Frontal Lobe - Left" },
-    11: { target: "Growth", rmsKey: "RMS2", lobe: "Occipital Lobe - Left" },
-    12: { target: "Growth", rmsKey: "RMS3", lobe: "Parietal Lobe - Left" },
-    13: { target: "Growth", rmsKey: "RMS4", lobe: "Temporal Lobe - Left" },
-    14: { target: "Growth", rmsKey: "RMS5", lobe: "Frontal Lobe - Right" },
-    15: { target: "Growth", rmsKey: "RMS6", lobe: "Occipital Lobe - Right" },
-    16: { target: "Growth", rmsKey: "RMS7", lobe: "Parietal Lobe - Right" },
-    17: { target: "Growth", rmsKey: "RMS8", lobe: "Temporal Lobe - Right" },
-  };
-  
 
 
   const loadsData = [
@@ -165,6 +145,54 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
     { ppId: 4, target: 'Proficiency', Cognitive1: '', Cognitive2: '', Cognitive3: '', Cognitive4: '', Cognitive5: '', Cognitive6: '', Cognitive7: '', Cognitive8: '' },
     { ppId: 4, target: 'Growth', Cognitive1: '', Cognitive2: '', Cognitive3: '', Cognitive4: '', Cognitive5: '', Cognitive6: '', Cognitive7: '', Cognitive8: '' },
   ]
+
+
+  const LOBE_DEFS = [
+    { lobe: "Frontal Lobe - Left", short: "Frontal Lobe", side: "L", rmsKey: "RMS1", loadKey: "Cognitive1" },
+    { lobe: "Occipital Lobe - Left", short: "Occipital Lobe", side: "L", rmsKey: "RMS2", loadKey: "Cognitive2" },
+    { lobe: "Parietal Lobe - Left", short: "Parietal Lobe", side: "L", rmsKey: "RMS3", loadKey: "Cognitive3" },
+    { lobe: "Temporal Lobe - Left", short: "Temporal Lobe", side: "L", rmsKey: "RMS4", loadKey: "Cognitive4" },
+    { lobe: "Frontal Lobe - Right", short: "Frontal Lobe", side: "R", rmsKey: "RMS5", loadKey: "Cognitive5" },
+    { lobe: "Occipital Lobe - Right", short: "Occipital Lobe", side: "R", rmsKey: "RMS6", loadKey: "Cognitive6" },
+    { lobe: "Parietal Lobe - Right", short: "Parietal Lobe", side: "R", rmsKey: "RMS7", loadKey: "Cognitive7" },
+    { lobe: "Temporal Lobe - Right", short: "Temporal Lobe", side: "R", rmsKey: "RMS8", loadKey: "Cognitive8" },
+  ];
+
+  const METRICS = [
+    { title: "Neuro-Indicator Trends for", label: "RMS", yLabel: "RMS Value", keyOf: (d) => d.rmsKey },
+    { title: "Neuro-Load Trends for", label: "Cognitive Load", yLabel: "Cognitive Load", keyOf: (d) => d.loadKey },
+  ];
+
+  const TARGETS = ["Proficiency", "Growth"];
+
+  function buildCharts() {
+    const entities = [{ name: "Neuro Tools Table", type: "table", id: "1" }];
+    const chartConfig = {};
+    let id = 2;
+
+    METRICS.forEach((m) =>
+      TARGETS.forEach((target) =>
+        LOBE_DEFS.forEach((d) => {
+          entities.push({
+            name: `${m.title} ${target} - ${m.label} (${d.side}) - ${d.short} vs. PP ID`,
+            type: "chart",
+            id: String(id),
+          });
+          chartConfig[id] = {
+            target,
+            valueKey: m.keyOf(d),
+            lobe: d.lobe,
+            metricLabel: m.label,
+            yLabel: m.yLabel,
+          };
+          id++;
+        })
+      )
+    );
+
+    return { entities, chartConfig };
+  }
+  const { entities, chartConfig } = buildCharts();
 
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -196,32 +224,32 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   });
 
   // Lobe data with image mappings
-const lobeData = [
-  { 
-    id: 1, 
-    name: "Frontal Lobe", 
-    image: Front_lobe,
-    
-  },
-  { 
-    id: 2, 
-    name: "Parietal Lobe", 
-    image: Parietal_Lobe,
-    
-  },
-  { 
-    id: 3, 
-    name: "Occipital Lobe", 
-    image: Occipital_Lobe,
-    
-  },
-  { 
-    id: 4, 
-    name: "Temporal Lobe", 
-    image: Temporal_Lobe,
-    
-  }
-];
+  const lobeData = [
+    {
+      id: 1,
+      name: "Frontal Lobe",
+      image: Front_lobe,
+
+    },
+    {
+      id: 2,
+      name: "Parietal Lobe",
+      image: Parietal_Lobe,
+
+    },
+    {
+      id: 3,
+      name: "Occipital Lobe",
+      image: Occipital_Lobe,
+
+    },
+    {
+      id: 4,
+      name: "Temporal Lobe",
+      image: Temporal_Lobe,
+
+    }
+  ];
 
   const [points, setPoints] = useState(
     Array.from({ length: 10 }, () => ({ x: '', y: '' }))
@@ -240,96 +268,20 @@ const lobeData = [
   ];
 
 
-  const entities = [
-    {
-      name: " Neuro Tools Table",
-      type: "table",
-      id: "1"
-    },
-    {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Frontal Lobe vs. PP ID ",
-      type: "chart",
-      id: "2"
-    },
-    {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Occipital Lobe vs. PP ID ",
-      type: "chart",
-      id: "3"
-    },
-    {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Parietal Lobe vs. PP ID ",
-      type: "chart",
-      id: "4"
-    },
-    {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (L) - Temporal Lobe vs. PP ID ",
-      type: "chart",
-      id: "5"
-    },
-    {
-      name: " Neuro-Indicator Trends for Proficiency - RMS (R) - Frontal Lobe vs. PP ID ",
-      type: "chart",
-      id: "6"
-    }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Occipital Lobe vs. PP ID ",
-      type: "chart",
-      id: "7"
-    }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Parietal Lobe vs. PP ID ",
-      type: "chart",
-      id: "8"
-    }, {
-      name: "Neuro-Indicator Trends for Proficiency - RMS (R) - Temporal Lobe vs. PP ID ",
-      type: "chart",
-      id: "9"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Frontal Lobe vs. PP ID ",
-      type: "chart",
-      id: "10"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Occipital Lobe vs. PP ID ",
-      type: "chart",
-      id: "11"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Parietal Lobe vs. PP ID ",
-      type: "chart",
-      id: "12"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (L) - Temporal Lobe vs. PP ID ",
-      type: "chart",
-      id: "13"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Frontal Lobe vs. PP ID ",
-      type: "chart",
-      id: "14"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Occipital Lobe vs. PP ID ",
-      type: "chart",
-      id: "15"
-    }, {
-      name: "Neuro-Indicator Trends for Growth - RMS (R) - Parietal Lobe vs. PP ID ",
-      type: "chart",
-      id: "16"
-    }, {
-      name: " Neuro-Indicator Trends for Growth - RMS (R) - Temporal Lobe vs. PP ID ",
-      type: "chart",
-      id: "17"
-    },
-  ];
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedChart, setSelectedChart] = useState(entities[0]);
   const [selectedNeuroTools, setSelectedNeuroTools] = useState(1);
   const [showNeuroObject, setShowNeuroObject] = useState(false);
-  
+
   const handlePlusClick = () => setShowNeuroObject(true);
   const handleCloseNeuroObject = () => setShowNeuroObject(false);
   const [selectedLobe, setSelectedLobe] = useState('');
-  
+
   // Get the selected lobe object
   const selectedLobeData = lobeData.find(l => l.id.toString() === selectedLobe);
-  
+
 
   const copyToClipboard = async () => {
     if (!canvasRef.current) return;
@@ -347,18 +299,18 @@ const lobeData = [
     if (!selectedLobe) return; // prevent opening without selection
     setShowLobeImage(prev => !prev);
   };
-  
+
   useEffect(() => {
     const fetchData = async () => {
       if (!unitId || !candidateId) return;
-  
+
       setLoading(true);
       try {
         const queryParams = {
           unitId,
           candidateId
         };
-        
+
         // Add filter parameters if they exist and are valid
         if (filters?.ppIdFrom !== null && filters?.ppIdFrom !== undefined) {
           queryParams.ppIdFrom = filters.ppIdFrom;
@@ -380,12 +332,12 @@ const lobeData = [
           setIndicatorsData([]);
           return;
         }
-  
+
         const rows = [];
-  
+
         apiResponse.data.forEach(pp => {
           const lobes = pp.lobes || {};
-  
+
           rows.push({
             ppId: pp.ppId,
             target: "Proficiency",
@@ -398,7 +350,7 @@ const lobeData = [
             RMS7: lobes["Parietal Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
             RMS8: lobes["Temporal Lobe - Right"]?.RMS?.toFixed(3) ?? "0.000",
           });
-  
+
           rows.push({
             ppId: pp.ppId,
             target: "Growth",
@@ -412,7 +364,7 @@ const lobeData = [
             RMS8: lobes["Temporal Lobe - Right"]?.deltaRMS?.toFixed(3) ?? "0.000",
           });
         });
-  
+
         setIndicatorsData(rows);
       } catch (e) {
         setError("Failed to load data");
@@ -420,14 +372,14 @@ const lobeData = [
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [unitId, candidateId, refreshKey, filters, neuroRefreshSignal]);
 
-  
+
   useEffect(() => {
     if (!indicatorsData.length) return;
-  
+
     const updated = indicatorsData.map(row => ({
       ...row,
       Cognitive1: computeRowCognitiveNS(indicatorsData, row, "RMS1"),
@@ -439,14 +391,14 @@ const lobeData = [
       Cognitive7: computeRowCognitiveNS(indicatorsData, row, "RMS7"),
       Cognitive8: computeRowCognitiveNS(indicatorsData, row, "RMS8"),
     }));
-  
+
     setIndicatorsData(updated);
   }, [indicatorsData.length]);
 
 
   const indicatorsWithLoads = useMemo(() => {
     if (!indicatorsData.length) return [];
-  
+
     return indicatorsData.map(row => ({
       ...row,
       Cognitive1: computeRowCognitiveNS(indicatorsData, row, "RMS1"),
@@ -461,19 +413,19 @@ const lobeData = [
   }, [indicatorsData]);
 
   const chartData = useMemo(() => {
-    if (!selectedChart || selectedChart.type !== "chart") return [];
-  
-    const config = chartConfig[selectedChart.id];
-    if (!config) return [];
-  
-    return indicatorsData
-      .filter(row => row.target === config.target)
-      .map(row => ({
-        ppId: row.ppId,
-        rmsValue: Number(row[config.rmsKey]) || 0,
-      }))
-      .sort((a, b) => a.ppId - b.ppId);
-  }, [selectedChart, indicatorsData]);
+  if (!selectedChart || selectedChart.type !== "chart") return [];
+
+  const config = chartConfig[selectedChart.id];
+  if (!config) return [];
+
+  return indicatorsWithLoads
+    .filter((row) => row.target === config.target)
+    .map((row) => ({
+      ppId: row.ppId,
+      rmsValue: Number(row[config.valueKey]) || 0,
+    }))
+    .sort((a, b) => a.ppId - b.ppId);
+}, [selectedChart, indicatorsWithLoads]);
 
   const lineDashMap = {
     solid: undefined,
@@ -482,17 +434,17 @@ const lobeData = [
     dashdot: "6 4 2 4",
   };
 
-  
+
   const renderDot = (props) => {
     const { cx, cy, index } = props;
     if (!chartProperties.visibility) return null;
-  
+
     // frequency control
     if (index % chartProperties.symbolFrequency !== 0) return null;
-  
+
     const size = 4 * chartProperties.symbolScaleSize;
     const fill = chartProperties.symbolColor;
-  
+
     switch (chartProperties.symbolStyle) {
       case "square":
         return (
@@ -522,184 +474,184 @@ const lobeData = [
         return <circle cx={cx} cy={cy} r={size} fill={fill} />;
     }
   };
-  
-    
-const exportToExcelWithImage = async () => {
-  if (!selectedChart || !chartContainerRef.current) {
-    alert("Please select a chart first.");
-    return;
-  }
 
-  try {
-    // Extract key name from chart selection
-    const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
-    if (!keyName) {
-      alert("Invalid chart selection.");
+
+  const exportToExcelWithImage = async () => {
+    if (!selectedChart || !chartContainerRef.current) {
+      alert("Please select a chart first.");
       return;
     }
 
-    // 1. Capture chart as image
-    const chartContainer = chartContainerRef.current;
-    const canvas = await html2canvas(chartContainer, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    });
-
-    // Convert canvas to buffer
-    const chartImageBuffer = await new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(new Uint8Array(reader.result));
-        reader.readAsArrayBuffer(blob);
-      }, 'image/png');
-    });
-
-    // 2. Create workbook with ExcelJS
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Chart Report');
-
-    // Set column widths
-    worksheet.columns = [
-      { width: 15 }, // Column A
-      { width: 15 }, // Column B
-      { width: 15 }, // Column C
-      { width: 15 }, // Column D
-    ];
-
-    // 3. Add header section
-    const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
-    headerRow.font = { size: 14, bold: true };
-    headerRow.height = 30;
-    worksheet.mergeCells('A1:D1');
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
-
-    worksheet.addRow(['Chart Name:', selectedChart.name]);
-    worksheet.addRow(['Key Name:', keyName]);
-    worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
-    worksheet.addRow([]); // Empty row
-
-    // 4. Add the chart image
-    // Skip some rows for the image
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-
-    const imageId = workbook.addImage({
-      buffer: chartImageBuffer,
-      extension: 'png',
-    });
-
-    // Insert image at specific position
-    worksheet.addImage(imageId, {
-      tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
-      br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
-    });
-
-    // Move down past the image
-    let currentRow = 27;
-
-    // 5. Add data points header
-    worksheet.getRow(currentRow).values = ['DATA POINTS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
-
-    const dataHeaderRow = worksheet.getRow(currentRow);
-    dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
-    dataHeaderRow.font = { bold: true };
-    dataHeaderRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFE8F4FF' } // Light blue background
-    };
-    currentRow++;
-
-    // 6. Add all data points
-    chartData.forEach(row => {
-      const dataRow = worksheet.getRow(currentRow);
-      dataRow.values = [
-        candidateId ?? "N/A",   // Candidate ID
-        row.ppId,               // PP ID
-        row.ppId,               // X-axis value
-        Number(row.rmsValue).toFixed(3) // Y-axis value
-      ];
-      currentRow++;
-    });
-    
-
-    // 7. Add summary section
-    currentRow++;
-    worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
-    worksheet.getRow(currentRow).font = { bold: true };
-    worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    currentRow++;
-
-    // Calculate statistics
-    const validData = chartData.map(row => row.rmsValue).filter(v => typeof v === "number" && !isNaN(v));
-
-    if (validData.length > 0) {
-      const min = Math.min(...validData);
-      const max = Math.max(...validData);
-      const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
-      const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
-
-      worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
-      worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
-      worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
-    } else {
-      worksheet.getRow(currentRow++).values = ['No valid data points available'];
-      worksheet.mergeCells(`A${currentRow-1}:D${currentRow-1}`);
-    }
-
-    // 8. Add threshold information if available
-    // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
-    //   currentRow++;
-    //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
-    //   worksheet.getRow(currentRow).font = { bold: true };
-    //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
-    //   currentRow++;
-
-    //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
-    //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
-    // }
-
-    // 9. Add some formatting
-    // Format numeric cells
-    for (let i = 27; i < currentRow; i++) {
-      const cell = worksheet.getCell(`D${i}`);
-      if (cell.value && typeof cell.value === 'number') {
-        cell.numFmt = '0.000';
+    try {
+      // Extract key name from chart selection
+      const keyName = selectedChart.name.match(/\((.*?)\)/)?.[1];
+      if (!keyName) {
+        alert("Invalid chart selection.");
+        return;
       }
+
+      // 1. Capture chart as image
+      const chartContainer = chartContainerRef.current;
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      // Convert canvas to buffer
+      const chartImageBuffer = await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result));
+          reader.readAsArrayBuffer(blob);
+        }, 'image/png');
+      });
+
+      // 2. Create workbook with ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Chart Report');
+
+      // Set column widths
+      worksheet.columns = [
+        { width: 15 }, // Column A
+        { width: 15 }, // Column B
+        { width: 15 }, // Column C
+        { width: 15 }, // Column D
+      ];
+
+      // 3. Add header section
+      const headerRow = worksheet.addRow(['CHART DATA EXPORT']);
+      headerRow.font = { size: 14, bold: true };
+      headerRow.height = 30;
+      worksheet.mergeCells('A1:D1');
+      worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+      worksheet.addRow(['Chart Name:', selectedChart.name]);
+      worksheet.addRow(['Key Name:', keyName]);
+      worksheet.addRow(['Export Date:', new Date().toLocaleString()]);
+      worksheet.addRow([]); // Empty row
+
+      // 4. Add the chart image
+      // Skip some rows for the image
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+
+      const imageId = workbook.addImage({
+        buffer: chartImageBuffer,
+        extension: 'png',
+      });
+
+      // Insert image at specific position
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 6 },  // Start at column A, row 7 (0-indexed)
+        br: { col: 4, row: 26 }, // Span 4 columns, 20 rows
+      });
+
+      // Move down past the image
+      let currentRow = 27;
+
+      // 5. Add data points header
+      worksheet.getRow(currentRow).values = ['DATA POINTS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+
+      const dataHeaderRow = worksheet.getRow(currentRow);
+      dataHeaderRow.values = ['Candidate ID', 'PP ID', 'X Axis Value', `${selectedChart.name} (Y Value)`];
+      dataHeaderRow.font = { bold: true };
+      dataHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F4FF' } // Light blue background
+      };
+      currentRow++;
+
+      // 6. Add all data points
+      chartData.forEach(row => {
+        const dataRow = worksheet.getRow(currentRow);
+        dataRow.values = [
+          candidateId ?? "N/A",   // Candidate ID
+          row.ppId,               // PP ID
+          row.ppId,               // X-axis value
+          Number(row.rmsValue).toFixed(3) // Y-axis value
+        ];
+        currentRow++;
+      });
+
+
+      // 7. Add summary section
+      currentRow++;
+      worksheet.getRow(currentRow).values = ['SUMMARY STATISTICS'];
+      worksheet.getRow(currentRow).font = { bold: true };
+      worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      currentRow++;
+
+      // Calculate statistics
+      const validData = chartData.map(row => row.rmsValue).filter(v => typeof v === "number" && !isNaN(v));
+
+      if (validData.length > 0) {
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        const avg = validData.reduce((a, b) => a + b, 0) / validData.length;
+        const stdDev = Math.sqrt(validData.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / validData.length);
+
+        worksheet.getRow(currentRow++).values = ['Total Data Points:', validData.length];
+        worksheet.getRow(currentRow++).values = ['Minimum Value:', min.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Maximum Value:', max.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Average Value:', avg.toFixed(3)];
+        worksheet.getRow(currentRow++).values = ['Standard Deviation:', stdDev.toFixed(3)];
+      } else {
+        worksheet.getRow(currentRow++).values = ['No valid data points available'];
+        worksheet.mergeCells(`A${currentRow - 1}:D${currentRow - 1}`);
+      }
+
+      // 8. Add threshold information if available
+      // if (thresholdValue && thresholdValue[keyName] !== null && thresholdValue[keyName] !== undefined) {
+      //   currentRow++;
+      //   worksheet.getRow(currentRow).values = ['THRESHOLD INFORMATION'];
+      //   worksheet.getRow(currentRow).font = { bold: true };
+      //   worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+      //   currentRow++;
+
+      //   worksheet.getRow(currentRow++).values = ['Threshold Value:', thresholdValue[keyName]];
+      //   worksheet.getRow(currentRow++).values = ['Threshold Enabled:', filters?.thresholdEnabled ? "Yes" : "No"];
+      // }
+
+      // 9. Add some formatting
+      // Format numeric cells
+      for (let i = 27; i < currentRow; i++) {
+        const cell = worksheet.getCell(`D${i}`);
+        if (cell.value && typeof cell.value === 'number') {
+          cell.numFmt = '0.000';
+        }
+      }
+
+      // 10. Save the workbook
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      // Generate filename
+      const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+      // Download the file
+      saveAs(blob, fileName);
+
+      console.log("✅ Excel file with chart image exported successfully:", fileName);
+
+    } catch (error) {
+      console.error("❌ Failed to export Excel with image:", error);
+      alert("Failed to export Excel file. Please try again. Error: " + error.message);
     }
+  };
 
-    // 10. Save the workbook
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
-    
-    // Generate filename
-    const fileName = `chart_report_${keyName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    
-    // Download the file
-    saveAs(blob, fileName);
-
-    console.log("✅ Excel file with chart image exported successfully:", fileName);
-
-  } catch (error) {
-    console.error("❌ Failed to export Excel with image:", error);
-    alert("Failed to export Excel file. Please try again. Error: " + error.message);
-  }
-};
-
-// Update your export button to ONLY use this function (remove the simple version)
-const handleExportGraph = () => {
-  exportToExcelWithImage();
-};
+  // Update your export button to ONLY use this function (remove the simple version)
+  const handleExportGraph = () => {
+    exportToExcelWithImage();
+  };
 
   const handleDeleteCurve = () => {
     const updated = curves.filter((c) => c.id !== selectedCurveId);
@@ -717,7 +669,7 @@ const handleExportGraph = () => {
       alert("No chart available to export");
       return;
     }
-  
+
     try {
       const canvas = await html2canvas(chartContainerRef.current, {
         scale: 2,
@@ -726,24 +678,24 @@ const handleExportGraph = () => {
         backgroundColor: '#ffffff',
         logging: false
       });
-  
+
       canvas.toBlob((blob) => {
         saveAs(blob, `chart-${selectedChart.key}-${new Date().getTime()}.jpg`);
       }, 'image/jpeg', 0.95);
-  
+
     } catch (error) {
       console.error('JPG Export failed:', error);
       alert('Failed to export as JPG: ' + error.message);
     }
   };
-  
+
   // Function to export as PDF
   const exportAsPDF = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
       return;
     }
-  
+
     try {
       const canvas = await html2canvas(chartContainerRef.current, {
         scale: 2,
@@ -752,17 +704,17 @@ const handleExportGraph = () => {
         backgroundColor: '#ffffff',
         logging: false
       });
-  
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
         unit: 'px',
         format: [canvas.width, canvas.height]
       });
-  
+
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save(`chart-${selectedChart.key}-${new Date().getTime()}.pdf`);
-  
+
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('Failed to export as PDF: ' + error.message);
@@ -772,7 +724,6 @@ const handleExportGraph = () => {
   const closeLobeModal = () => setShowLobeImage(false);
 
   if (!visible) return null;
-
   return (
     <>
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center relative">
@@ -794,12 +745,12 @@ const handleExportGraph = () => {
                 <Plus className="w-4 h-4 hover:text-blue-600" />
               </button>
               <button onClick={() => {
-                  if (typeof onResetFilters === "function") {
-                    onResetFilters(); // ✅ reset filters in parent
-                  }
-                  // setScoreAdd(true); 
-                }} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
-                <RefreshCw className="w-4 h-4 hover:text-green-600"  />
+                if (typeof onResetFilters === "function") {
+                  onResetFilters(); // ✅ reset filters in parent
+                }
+                // setScoreAdd(true); 
+              }} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+                <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
 
               <div className="relative">
@@ -823,7 +774,7 @@ const handleExportGraph = () => {
                     >
                       Export as JPG
                     </button>
-                    
+
                   </div>
                 )}
               </div>
@@ -966,7 +917,7 @@ const handleExportGraph = () => {
                         <tr>
                           <th className="border px-2 py-1 text-center">PP ID</th>
                           <th className="border px-2 py-1 text-center">
-                            {chartConfig[selectedChart.id]?.lobe}
+                            {chartConfig[selectedChart.id]?.metricLabel} - {chartConfig[selectedChart.id]?.lobe}
                           </th>
                           <th className="border px-2 py-1 text-center">Target</th>
                         </tr>
@@ -997,7 +948,7 @@ const handleExportGraph = () => {
 
                 {activeAdjustPropertieTab === 'Neuro Tools Table' && (
                   <div className="text-xs text-gray-600 mt-2 w-full overflow-auto">
-                    
+
                     {/* Lobe selector + Show Image button */}
                     <div className="mb-4 flex items-center gap-4">
                       <select
@@ -1082,7 +1033,7 @@ const handleExportGraph = () => {
                         ref={bottomScrollRef}
                         onScroll={() => syncScroll("bottom")}
                         className="min-w-max"
-                    >
+                      >
                         {/* fake width sync */}
                         <div className="h-3 min-w-full" />
                       </div>
@@ -1139,13 +1090,13 @@ const handleExportGraph = () => {
 
                     {/* FIXED BOTTOM HORIZONTAL SCROLLBAR */}
                     <div className="sticky bottom-0 z-20 bg-white border-t overflow-x-auto overflow-y-hidden">
-                    <div
-                      ref={bottomScrollRefLoads}
-                      onScroll={() => syncScrollLoads("bottom")}
-                      className="min-w-max"
-                    >
-                      {/* fake width sync */}
-                      <div className="h-3 min-w-full" />
+                      <div
+                        ref={bottomScrollRefLoads}
+                        onScroll={() => syncScrollLoads("bottom")}
+                        className="min-w-max"
+                      >
+                        {/* fake width sync */}
+                        <div className="h-3 min-w-full" />
 
                       </div>
                     </div>
@@ -1165,7 +1116,7 @@ const handleExportGraph = () => {
             </h2>
 
             <div className="h-full overflow-auto m-5">
-            <ResponsiveContainer width="100%" height="95%">
+              <ResponsiveContainer width="100%" height="95%">
                 <LineChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" />
 
@@ -1207,44 +1158,44 @@ const handleExportGraph = () => {
       </div>
 
       {/* Image pop Up */}
-    {showLobeImage && selectedLobeData && (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-        onClick={() => setShowLobeImage(false)} // clicking backdrop closes modal
-      >
+      {showLobeImage && selectedLobeData && (
         <div
-          className="relative bg-white rounded-xl shadow-2xl w-[96vw] h-[92vh] max-w-6xl p-4"
-          onClick={(e) => e.stopPropagation()} // prevent clicks inside modal from closing it
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setShowLobeImage(false)} // clicking backdrop closes modal
         >
-          {/* Close Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // ✅ Add this to prevent event bubbling
-              setShowLobeImage(false);
-            }}
-            className="absolute top-4 right-4 text-gray-600 hover:text-black z-10" // ✅ Added z-10
+          <div
+            className="relative bg-white rounded-xl shadow-2xl w-[96vw] h-[92vh] max-w-6xl p-4"
+            onClick={(e) => e.stopPropagation()} // prevent clicks inside modal from closing it
           >
-            <X className="w-6 h-6" />
-          </button>
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // ✅ Add this to prevent event bubbling
+                setShowLobeImage(false);
+              }}
+              className="absolute top-4 right-4 text-gray-600 hover:text-black z-10" // ✅ Added z-10
+            >
+              <X className="w-6 h-6" />
+            </button>
 
-          {/* Image container */}
-          <div className="relative w-full h-[80vh]">
-            <Image
-              src={selectedLobeData.image}
-              alt={selectedLobeData.name}
-              fill
-              className="object-contain"
-              priority
-            />
+            {/* Image container */}
+            <div className="relative w-full h-[80vh]">
+              <Image
+                src={selectedLobeData.image}
+                alt={selectedLobeData.name}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Label */}
+            <p className="text-center mt-3 text-lg font-semibold text-gray-700 uppercase">
+              {selectedLobeData.name}
+            </p>
           </div>
-
-          {/* Label */}
-          <p className="text-center mt-3 text-lg font-semibold text-gray-700 uppercase">
-            {selectedLobeData.name}
-          </p>
         </div>
-      </div>
-    )}
+      )}
 
     </>
   );

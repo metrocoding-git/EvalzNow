@@ -117,7 +117,7 @@ export default function CurveEditor() {
     "#FF4560", "#00BFFF", "#FF69B4", "#7FFF00", "#FFD700",
     "#40E0D0", "#FF8C00", "#8A2BE2", "#DC143C", "#00FA9A"
   ];
-  
+
 
   const chart = [
     { id: 35, name: "Shared Global Analytics Index Table", icon: "🟦", type: "table" },
@@ -155,9 +155,9 @@ export default function CurveEditor() {
     { id: 32, name: "Global Percentages of Cumulative Growth - ∆AR", icon: "🔵", type: "pie" },
     { id: 33, name: "Global Percentages of Stability in Growth - STA/G", icon: "🔵", type: "pie" },
     { id: 34, name: "Global Percentages of Utilization Rates", icon: "🔵", type: "pie" },
-   
+
   ];
-  
+
 
   const [selectedChart, setSelectedChart] = useState(chart[0]);
 
@@ -165,8 +165,8 @@ export default function CurveEditor() {
 
   const percent = (value, total) =>
     total ? Number((value / total).toFixed(4)) : null;
-  
-  
+
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -176,9 +176,9 @@ export default function CurveEditor() {
         setShowExportMenu(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
-  
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -195,7 +195,7 @@ export default function CurveEditor() {
 
   // useEffect(() => {
   //   if (!icDistributionData) return;
-  
+
   //   // Build table rows for IC classes 0-5
   //   const icRows = Object.entries(icDistributionData.icDistribution).map(
   //     ([icClass, value]) => ({
@@ -205,38 +205,38 @@ export default function CurveEditor() {
   //       metricWeight: ""
   //     })
   //   );
-  
+
   //   // Add IC rows to tableData
   //   setTableData(prev => [...prev, ...icRows]);
   // }, [icDistributionData]);
 
-  
+
   const buildICPieData = () => {
     if (!icDistributionData) return [];
 
     const { icDistribution, icCounts } = icDistributionData;
-  
+
     return Object.entries(icDistributionData.icDistribution).map(([icClass, value]) => ({
       name: `IC ${icClass}`,
-      value: Number((value ).toFixed(3)), // Pie expects 0-100%
+      value: Number((value).toFixed(3)), // Pie expects 0-100%
       count: icCounts?.[icClass] || 0,
     }));
   };
 
   useEffect(() => {
     if (!activeClientId) return;
-    
+
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
         const [globalRes, thresholdRes, stableData, icData, productivityData] = await Promise.all([
-          getAllGLobalAnalyticsData(activeClientId),        
+          getAllGLobalAnalyticsData(activeClientId),
           getUnitSuccessRatesByThreshold(activeClientId),
           getSTAPAndSTAGStableCount(activeClientId),
           getICValue(activeClientId),
           getProductivityValue(activeClientId)
         ]);
-        
+
         setGlobalAnalytics(globalRes);
         setThresholdAnalytics(thresholdRes);
         setStableData(stableData);
@@ -248,7 +248,7 @@ export default function CurveEditor() {
         setLoading(false);
       }
     };
-  
+
     fetchAnalytics();
   }, [activeClientId]);
 
@@ -260,7 +260,7 @@ export default function CurveEditor() {
     18, 19, 20, 21, 22, 24,
     26, 27, 28, 29, 30, 31, 32
   ]);
-  
+
   const shouldFormatTwoDecimals = (chartId) =>
     TWO_DECIMAL_CHART_IDS.has(chartId);
 
@@ -269,76 +269,76 @@ export default function CurveEditor() {
     if (!metricData || metricData.successRate === undefined || metricData.totalInstances === undefined) {
       return [];
     }
-  
+
     const rate = metricData.successRate;
     const totalInstances = metricData.totalInstances;
     const successCount = metricData.successCount;
     const failCount = totalInstances - successCount;
-  
+
     // Format to 3 decimal places
     const successRateValue = Number(rate.toFixed(3));
     const failRateValue = Number((1 - rate).toFixed(3));
-  
+
     if (isProficiencyMetric) {
       return [
-        { 
-          name: "Pass", 
+        {
+          name: "Pass",
           count: successCount,
-          value: successRateValue 
+          value: successRateValue
         },
-        { 
-          name: "Fail", 
+        {
+          name: "Fail",
           count: failCount,
-          value: failRateValue 
+          value: failRateValue
         }
       ];
     }
-  
+
     return [
-      { 
-        name: "Positive", 
+      {
+        name: "Positive",
         count: successCount,
-        value: successRateValue 
+        value: successRateValue
       },
-      { 
-        name: "Negative", 
+      {
+        name: "Negative",
         count: failCount,
-        value: failRateValue 
+        value: failRateValue
       }
     ];
   };
-  
+
   const buildSTAPPieData = () => {
     if (!StableData?.STAP) return [];
     const stable = Number(StableData.STAP.STABLE) || 0;
     const unstable = Number(StableData.STAP.UNSTABLE) || 0;
     const total = stable + unstable;
-    
+
     if (total === 0) return [];
-  
+
     return [
       { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(3)) }, // Convert to percentage
       { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(3)) }, // Convert to percentage
     ];
   };
-  
+
   const buildSTAGPieData = () => {
     if (!StableData?.STAG) return [];
     const stable = Number(StableData.STAG.STABLE) || 0;
     const unstable = Number(StableData.STAG.UNSTABLE) || 0;
     const total = stable + unstable;
-    
+
     if (total === 0) return [];
-  
+
     return [
       { name: "Stable", count: stable, value: Number(((stable / total)).toFixed(3)) }, // Convert to percentage
       { name: "Unstable", count: unstable, value: Number(((unstable / total)).toFixed(3)) }, // Convert to percentage
     ];
   };
-  
+
   const buildProductivityPieData = () => {
     if (!ProductivityData?.distribution) return [];
-  
+
     return [
       {
         name: "UR < 0.300",
@@ -357,22 +357,22 @@ export default function CurveEditor() {
       },
     ];
   };
-  
+
   const exportAsJPG = async () => {
     if (!chartContainerRef.current) {
       alert("No chart available to export");
       return;
     }
-  
+
     try {
       const container = chartContainerRef.current;
-  
+
       // Get actual visible size (NOT scroll size)
       const rect = container.getBoundingClientRect();
-  
+
       // Wait a bit to ensure charts fully render
       await new Promise((resolve) => setTimeout(resolve, 1000));
-  
+
       const canvas = await html2canvas(container, {
         scale: 3,
         useCORS: true,
@@ -381,27 +381,47 @@ export default function CurveEditor() {
         scrollX: 0,
         scrollY: 0,
       });
-  
+
       canvas.toBlob((blob) => {
         saveAs(
           blob,
           `Plot Extraction.jpg`
         );
       }, "image/jpeg", 0.95);
-  
+
     } catch (error) {
       console.error("JPG Export failed:", error);
       alert("Failed to export as JPG: " + error.message);
     }
   };
 
+  const escapeCSV = (value) => {
+    const str = String(value ?? "");
+    return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const exportAsCSV = () => {
+    const rows = [
+      ["Metric Descriptions", "Metric Values"],
+      ...tableData.map((row) => [row.metricDescription, row.metricValue]),
+      ["Index Rating", indexRating],
+      ["Weight Index (WI)", weightIndex !== null ? weightIndex.toFixed(4) : ""],
+    ];
+
+    const csv = rows.map((r) => r.map(escapeCSV).join(",")).join("\r\n");
+
+    // "\uFEFF" (BOM) keeps symbols like ≤, ∆ readable when opened in Excel
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "Shared Global Analytics Index Table.csv");
+  };
+
   const buildPieData = () => {
     if (!selectedChart || !globalAnalytics || !thresholdAnalytics) return [];
-  
+
     const regular = thresholdAnalytics?.summary?.regularMetrics;
     const avgDelta = thresholdAnalytics?.summary?.averageDeltaMetrics;
     const sumDelta = thresholdAnalytics?.summary?.cumulativeSumDeltaMetrics;
-  
+
     switch (selectedChart.id) {
       // ================= GLOBAL ANALYTICS =================
       case 1:
@@ -411,37 +431,37 @@ export default function CurveEditor() {
         const total = Object.values(signatureProfiles).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
         return Object.entries(signatureProfiles)
-          .map(([name, value]) => ({ 
-            name, 
+          .map(([name, value]) => ({
+            name,
             count: Number(value),
-            value: total > 0 ? Number((Number(value) / total).toFixed(2)) : 0 
-      }));
-  
+            value: total > 0 ? Number((Number(value) / total).toFixed(2)) : 0
+          }));
+
       case 2:
         const unitTypes = globalAnalytics.unitTypes || {};
 
-      // Calculate total
-      const totalUnit = Object.values(unitTypes).reduce((sum, val) => sum + (Number(val) || 0), 0);
+        // Calculate total
+        const totalUnit = Object.values(unitTypes).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
-      return Object.entries(unitTypes)
-        .map(([name, value]) => ({ 
-          name, 
-          count: Number(value),
-          value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(3)) : 0 
-        }));
-  
+        return Object.entries(unitTypes)
+          .map(([name, value]) => ({
+            name,
+            count: Number(value),
+            value: totalUnit > 0 ? Number((Number(value) / totalUnit).toFixed(3)) : 0
+          }));
+
       case 3:
         return buildCandidateStaffRatioPie();
-          
+
       case 4: {
         const bc = globalAnalytics.benchmarkCounts || {};
-      
+
         const ORDER = [
           "BC ≤ 10",
           "10 < BC ≤ 25",
           "BC > 25",
         ];
-      
+
         const total = Object.values(bc).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
         // Return percentages (as decimals 0-1)
@@ -453,7 +473,7 @@ export default function CurveEditor() {
             value: total > 0 ? Number((Number(bc[key]) / total).toFixed(3)) : 0.00,
           }));
       }
-  
+
       case 5:
         const assessmentBlocks = globalAnalytics.assessmentBlocks || {};
 
@@ -461,12 +481,12 @@ export default function CurveEditor() {
         const totalAssessmentBlocks = Object.values(assessmentBlocks).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
         return Object.entries(assessmentBlocks)
-          .map(([name, value]) => ({ 
-            name, 
+          .map(([name, value]) => ({
+            name,
             count: Number(value),
-            value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(3)) : 0.00 
+            value: totalAssessmentBlocks > 0 ? Number((Number(value) / totalAssessmentBlocks).toFixed(3)) : 0.00
           }));
-  
+
       case 6:
         const attendance = globalAnalytics.attendance || {};
 
@@ -478,12 +498,12 @@ export default function CurveEditor() {
           count: Number(value),
           value: totalAttendance > 0 ? Number((Number(value) / totalAttendance).toFixed(3)) : 0.00,
         }));
-      
+
       case 7: {
         const open = globalAnalytics.needAssessments?.Open ?? 0.00;
         const pending = globalAnalytics.needAssessments?.Pending ?? 0.00;
         const closed = globalAnalytics.needAssessments?.Closed ?? 0.00;
-    
+
         const total = open + pending + closed;
 
         // Return percentages as decimals (0-1)
@@ -492,16 +512,16 @@ export default function CurveEditor() {
           { name: "Pending", count: pending, value: total > 0 ? Number((pending / total).toFixed(3)) : 0.00 },
           { name: "Closed", count: closed, value: total > 0 ? Number((closed / total).toFixed(3)) : 0.00 },
         ];
-      }    
-      
+      }
+
       case 8: {
         const data = globalAnalytics.candidateMarks;
-      
+
         if (!data || data.totalMarks === 0) return [];
-      
+
         const positive = Number(data.impactScore.toFixed(3));
         const negative = Number((1 - data.impactScore).toFixed(3));
-      
+
         return [
           {
             name: "Positive",
@@ -515,15 +535,15 @@ export default function CurveEditor() {
           },
         ];
       }
-      
-      case 9: { 
+
+      case 9: {
         const data = globalAnalytics.leaderMarks;
-      
+
         if (!data || data.totalMarks === 0) return [];
-      
+
         const success = data.impactScore * data.totalMarks;
         const fail = data.totalMarks - success;
-      
+
         return [
           {
             name: "Positive",
@@ -537,7 +557,7 @@ export default function CurveEditor() {
           }
         ];
       }
-          
+
       case 10:
         const unitOutcomes = globalAnalytics.unitOutcomes || {};
 
@@ -545,12 +565,12 @@ export default function CurveEditor() {
         const totalUnitOutcomes = Object.values(unitOutcomes).reduce((sum, val) => sum + (Number(val) || 0), 0);
 
         return Object.entries(unitOutcomes)
-          .map(([name, value]) => ({ 
-            name, 
+          .map(([name, value]) => ({
+            name,
             count: Number(value),
-            value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(3)) : 0.00 
+            value: totalUnitOutcomes > 0 ? Number((Number(value) / totalUnitOutcomes).toFixed(3)) : 0.00
           }));
-  
+
       // ================= REGULAR METRICS - PROFICIENCY (Pass/Fail) =================
       case 11: return toPercentagePie(regular?.XEP, true);
       case 12: return toPercentagePie(regular?.XRR, true);
@@ -567,17 +587,17 @@ export default function CurveEditor() {
       case 24: return toPercentagePie(regular?.MSIP, true);
       case 25: return buildICPieData();
       case 26: return toPercentagePie(regular?.GEQ, true);
-  
+
       // ================= AVERAGE DELTA (Growth - Positive/Negative) =================
       case 27: return toPercentagePie(avgDelta?.avgDeltaRRN, true);
       case 28: return toPercentagePie(avgDelta?.avgDeltaPRN, true);
       case 29: return toPercentagePie(avgDelta?.avgDeltaARN, true);
-  
+
       // ================= CUMULATIVE DELTA (Growth - Positive/Negative) =================
       case 30: return toPercentagePie(sumDelta?.sumDeltaRRN, true);
       case 31: return toPercentagePie(sumDelta?.sumDeltaPRN, true);
       case 32: return toPercentagePie(sumDelta?.sumDeltaARN, true);
-  
+
       // ================= STABILITY =================
       case 23: // STA/P
         return buildSTAPPieData();
@@ -585,24 +605,24 @@ export default function CurveEditor() {
         return buildSTAGPieData();
       case 34:
         return buildProductivityPieData();
-  
+
       default:
         return [];
     }
   };
-  
 
-  
-  
+
+
+
   const totalStabilityOpportunities = () => {
     if (!StableData?.unitWiseData?.length) return null;
-  
+
     return StableData.unitWiseData.reduce(
       (sum, unit) => sum + (unit.candidates?.length ?? 0),
       0
     );
   };
-  
+
   const metricRows = [
     "Global Percentage of Case 1 Profiles",
     "Global Percentage of Case 2 Profiles",
@@ -611,8 +631,8 @@ export default function CurveEditor() {
     "Global Percentage of CI/CO",
     "Global Percentage of T&P",
     "Global Percentage of Third Parameter",
-    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 20",
-    "Global Percentage of Units with Candidate-to-Leader Ratio, 20 < CTL ≤ 30",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 10",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 30",
     "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30",
     "Global Percentage of Benchmark Counts, BC ≤ 10",
     "Global Percentage of Benchmark Counts, 10 < BC ≤ 25",
@@ -660,100 +680,100 @@ export default function CurveEditor() {
       .replace(/([a-z])([A-Z])/g, "$1 $2") // camelCase → camel Case
       .replace(/^./, (c) => c.toUpperCase()); // capitalize first letter
 
-      const stableSTAPRate = () => {
-        if (!StableData?.STAP) return null;
-      
-        const stable = StableData.STAP.STABLE ?? 0;
-        const unstable = StableData.STAP.UNSTABLE ?? 0;
-        const total = stable + unstable;
-      
-        if (!total) return null;
-      
-        return Number((stable / total).toFixed(4));
-      };
-      
-      const stableSTAGRate = () => {
-        if (!StableData?.STAG) return null;
-      
-        const stable = StableData.STAG.STABLE ?? 0;
-        const unstable = StableData.STAG.UNSTABLE ?? 0;
-        const total = stable + unstable;
-      
-        if (!total) return null;
-      
-        return Number((stable / total).toFixed(4));
-      };
-  
-  
+  const stableSTAPRate = () => {
+    if (!StableData?.STAP) return null;
+
+    const stable = StableData.STAP.STABLE ?? 0;
+    const unstable = StableData.STAP.UNSTABLE ?? 0;
+    const total = stable + unstable;
+
+    if (!total) return null;
+
+    return Number((stable / total).toFixed(4));
+  };
+
+  const stableSTAGRate = () => {
+    if (!StableData?.STAG) return null;
+
+    const stable = StableData.STAG.STABLE ?? 0;
+    const unstable = StableData.STAG.UNSTABLE ?? 0;
+    const total = stable + unstable;
+
+    if (!total) return null;
+
+    return Number((stable / total).toFixed(4));
+  };
+
+
   const buildCandidateStaffRatioPie = () => {
     if (!globalAnalytics?.candidateStaffRatio || !globalAnalytics?.totalUnits)
       return [];
-  
+
     const total = globalAnalytics.totalUnits;
-  
+
     const labelMap = {
-      "≤ 20": "CTL ≤ 20",
-      "20–30": "20 < CTL ≤ 30",
+      "≤ 10": "CTL ≤ 10",
+      "10–30": "10 < CTL ≤ 30",
       "≥ 30": "CTL > 30",
     };
-  
+
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
       ([key, count]) => ({
         name: labelMap[key] ?? key,
-        count: Number(count), 
+        count: Number(count),
         value: total > 0 ? Number((count / total).toFixed(3)) : 0, // 
       })
     );
   };
-  
+
   const totalOutcomeCount = (g) =>
     (g.unitOutcomes?.Pass ?? 0) +
     (g.unitOutcomes?.Fail ?? 0) +
     (g.unitOutcomes?.Ongoing ?? 0);
-    
-  
+
+
   const totalAttendanceCount = (g) =>
     (g.attendance?.present ?? 0) +
     (g.attendance?.excusedAbsences ?? 0) +
     (g.attendance?.unexcusedAbsences ?? 0) +
     (g.attendance?.excusedTardies ?? 0) +
     (g.attendance?.unexcusedTardies ?? 0);
-    
-    const totalAssessmentBlockCount = (g) =>
-      (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) +
-      (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) +
-      (g.assessmentBlocks?.["AB > 20"] ?? 0);
+
+  const totalAssessmentBlockCount = (g) =>
+    (g.assessmentBlocks?.["AB ≤ 8"] ?? 0) +
+    (g.assessmentBlocks?.["8 < AB ≤ 20"] ?? 0) +
+    (g.assessmentBlocks?.["AB > 20"] ?? 0);
 
   const metricValueResolvers = {
     // ===== Signature Profiles =====
     "Global Percentage of Case 1 Profiles": (g) =>
       percent(g.signatureProfiles?.["Case 1: Solid Balanced"], g.totalUnits),
-  
+
     "Global Percentage of Case 2 Profiles": (g) =>
       percent(g.signatureProfiles?.["Case 2: Rigorous Balanced"], g.totalUnits),
-  
+
     "Global Percentage of Case 3a Profiles": (g) =>
       percent(g.signatureProfiles?.["Case 3a: Productive-Weighted"], g.totalUnits),
-  
+
     "Global Percentage of Case 3b Profiles": (g) =>
       percent(g.signatureProfiles?.["Case 3b: Receptive-Weighted"], g.totalUnits),
-  
+
     // ===== Unit Types =====
     "Global Percentage of CI/CO": (g) =>
       percent(g.unitTypes?.["Communicative I/O"], g.totalUnits),
-  
+
     "Global Percentage of T&P": (g) =>
       percent(g.unitTypes?.["Theory & Practice"], g.totalUnits),
-  
+
     "Global Percentage of Third Parameter": (g) =>
       percent(g.unitTypes?.["Third Parameter"], g.totalUnits),
-  
-    // ===== Candidate-to-Leader Ratio =====
-    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 20": (g) =>
-      percent(g.candidateStaffRatio?.["≤ 20"], g.totalUnits),
 
-    "Global Percentage of Units with Candidate-to-Leader Ratio, 20 < CTL ≤ 30": (g) =>
-      percent(g.candidateStaffRatio?.["20–30"], g.totalUnits),
+    // ===== Candidate-to-Leader Ratio =====
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 10": (g) =>
+      percent(g.candidateStaffRatio?.["≤ 10"], g.totalUnits),
+
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 30": (g) =>
+      percent(g.candidateStaffRatio?.["10–30"], g.totalUnits),
 
     "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30": (g) =>
       percent(g.candidateStaffRatio?.["≥ 30"], g.totalUnits),
@@ -761,13 +781,13 @@ export default function CurveEditor() {
     // ===== Benchmark Counts =====
     "Global Percentage of Benchmark Counts, BC ≤ 10": (g) =>
       percent(g.benchmarkCounts?.["BC ≤ 10"], g.totalUnits),
-  
+
     "Global Percentage of Benchmark Counts, 10 < BC ≤ 25": (g) =>
       percent(g.benchmarkCounts?.["10 < BC ≤ 25"], g.totalUnits),
-  
+
     "Global Percentage of Benchmark Counts, BC > 25": (g) =>
       percent(g.benchmarkCounts?.["BC > 25"], g.totalUnits),
-  
+
     // ===== Assessment Blocks =====
     "Global Percentage of Assessment Blocks, AB ≤ 8": (g) => {
       const total = totalAssessmentBlockCount(g);
@@ -789,7 +809,7 @@ export default function CurveEditor() {
         ? (g.assessmentBlocks?.["AB > 20"] ?? 0) / total
         : null;
     },
-  
+
     // ===== Attendance =====
     "Global Percentage of Attendance - Present": (g) =>
       percent(g.attendance?.present, totalAttendanceCount(g)),
@@ -823,11 +843,11 @@ export default function CurveEditor() {
       const open = g.needAssessments?.Open ?? 0;
       const pending = g.needAssessments?.Pending ?? 0;
       const closed = g.needAssessments?.Closed ?? 0;
-    
+
       const total = open + pending + closed;
       return total ? open / total : null;
     },
-  
+
     // ===== Outcomes =====
     "Global Percentage of Passing Candidates": (g) =>
       percent(g.unitOutcomes?.Pass, totalOutcomeCount(g)),
@@ -837,17 +857,17 @@ export default function CurveEditor() {
 
     "Global Percentage of Ongoing Candidates": (g) =>
       percent(g.unitOutcomes?.Ongoing, totalOutcomeCount(g)),
-  
+
     // ===== Proficiency =====
     "Global Percentage of Average Passed Equivalent Proficiency - XEP": (_, t) =>
       t.summary?.regularMetrics?.XEP?.successRate,
-  
+
     "Global Percentage of Average Passed Composite Proficiency - XCP": (_, t) =>
       t.summary?.regularMetrics?.XCP?.successRate,
-  
+
     "Global Percentage of Average Passed Band Proficiency - XBP": (_, t) =>
       t.summary?.regularMetrics?.XBP?.successRate,
-  
+
     "Global Percentage of Average Passed Butler Interaction Proficiency - MSIP": (_, t) =>
       t.summary?.regularMetrics?.MSIP?.successRate,
 
@@ -863,33 +883,33 @@ export default function CurveEditor() {
       icDistributionData?.icDistribution?.[4] ?? null,
     "Global Percentage of Average Interaction Class 5": () =>
       icDistributionData?.icDistribution?.[5] ?? null,
-  
+
     // ===== Stability =====
     "Global Percentages of Stable Proficiency - STA/P": () =>
       stableSTAPRate(),
-  
+
     "Global Percentages of Stable Growth - STA/G": () =>
       stableSTAGRate(),
-  
+
     // ===== Growth =====
     "Global Percentage of Average Passed Equivalent Growth - ∆GEQ": (_, t) =>
       t.summary?.regularMetrics?.GEQ?.successRate,
-  
+
     "Global Percentage of Passed Average Growth - ∆RR": (_, t) =>
       t.summary?.averageDeltaMetrics?.avgDeltaRRN?.successRate,
-  
+
     "Global Percentage of Passed Average Growth - ∆PR": (_, t) =>
       t.summary?.averageDeltaMetrics?.avgDeltaPRN?.successRate,
-  
+
     "Global Percentage of Passed Average Growth - ∆AR": (_, t) =>
       t.summary?.averageDeltaMetrics?.avgDeltaARN?.successRate,
-  
+
     "Global Percentage of Passed Cumulative Growth - ∆RR": (_, t) =>
       t.summary?.cumulativeSumDeltaMetrics?.sumDeltaRRN?.successRate,
-  
+
     "Global Percentage of Passed Cumulative Growth - ∆PR": (_, t) =>
       t.summary?.cumulativeSumDeltaMetrics?.sumDeltaPRN?.successRate,
-  
+
     "Global Percentage of Passed Cumulative Growth - ∆AR": (_, t) =>
       t.summary?.cumulativeSumDeltaMetrics?.sumDeltaARN?.successRate,
 
@@ -904,7 +924,7 @@ export default function CurveEditor() {
       ProductivityData?.distribution?.high ?? null,
 
   };
-  
+
 
   // Initialize table state
   const [tableData, setTableData] = useState(
@@ -914,34 +934,34 @@ export default function CurveEditor() {
       assignedWeight: assignedWeights[index] ?? '',
       metricWeight: '',
     }))
-  );  
+  );
 
   useEffect(() => {
     if (!globalAnalytics || !thresholdAnalytics || !StableData) return;
-  
+
     setTableData((prev) =>
       prev.map((row) => {
         const resolver = metricValueResolvers[row.metricDescription];
-  
+
         const rawValue = resolver
           ? resolver(globalAnalytics, thresholdAnalytics)
           : null;
-  
+
         const metricValue =
           rawValue !== null && rawValue !== undefined && !isNaN(rawValue)
             ? Number(rawValue)
             : null;
-  
+
         const assignedWeight =
           row.assignedWeight !== null && row.assignedWeight !== undefined
             ? Number(row.assignedWeight)
             : null;
-  
+
         const metricWeight =
           metricValue !== null && assignedWeight !== null
             ? (metricValue * assignedWeight).toFixed(3)
             : "";
-  
+
         return {
           ...row,
           metricValue: metricValue !== null ? metricValue.toFixed(3) : "",
@@ -950,7 +970,7 @@ export default function CurveEditor() {
       })
     );
   }, [globalAnalytics, thresholdAnalytics, StableData]);
-  
+
   const F6 = tableData.map(row =>
     row.metricValue !== "" && !isNaN(row.metricValue)
       ? Number(row.metricValue)
@@ -961,9 +981,9 @@ export default function CurveEditor() {
     if (!F6.length) return null;
     return mainFunction(F6, assignedWeights);
   }, [F6]);
-  
 
-  
+
+
   const indexRating = indexResult?.[0] ?? "";
   const weightIndex = indexResult?.[1] ?? null;
   const totalAssignedWeight = indexResult?.[3] ?? null;
@@ -980,13 +1000,13 @@ export default function CurveEditor() {
     name,
   }) => {
     const RADIAN = Math.PI / 180;
-  
+
     // push labels further outside
     const radius = outerRadius + 28;
-  
+
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  
+
     return (
       <text
         x={x}
@@ -1053,22 +1073,22 @@ export default function CurveEditor() {
                 </tr>
               ))}
 
-              <tr  className="hover:bg-gray-50">
+              <tr className="hover:bg-gray-50">
                 <td className="border border-gray-300 px-2 py-1 text-right">
                   <strong>Index Rating</strong>
-                </td> 
+                </td>
                 <td className="border border-gray-300 px-2 py-1 text-center">
-                 {indexRating}
-                </td> 
+                  {indexRating}
+                </td>
                 {/* <td className="border border-gray-300 px-2 py-1 text-center">
                  {totalAssignedWeight?.toFixed(3)}
                 </td>
                 <td className="border border-gray-300 px-2 py-1 text-center">
                   {totalMetricWeight?.toFixed?.(3)}
                 </td>  */}
-             </tr>
+              </tr>
 
-             <tr className="hover:bg-gray-50">
+              <tr className="hover:bg-gray-50">
                 <td className="border border-gray-300 px-2 py-1 text-right">
                   <strong>Weight Index (WI)</strong>
                 </td>
@@ -1083,19 +1103,19 @@ export default function CurveEditor() {
           </table>
         </div>
       );
-    } 
-    
+    }
+
     const pieData = buildPieData();
 
-    if ( !pieData.length || pieData.reduce((sum, d) => sum + d.value, 0) === 0) {
-    
+    if (!pieData.length || pieData.reduce((sum, d) => sum + d.value, 0) === 0) {
+
       return (
         <div className="flex justify-center items-start w-full h-full  text-gray-400 uppercase">
           No data available
         </div>
       );
     }
-    
+
     return (
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
@@ -1114,24 +1134,26 @@ export default function CurveEditor() {
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             formatter={(value, name, props) => {
               const percentage = `${(value).toFixed(3)}`;
               const count = props?.payload?.count;
-              
+
               if (count !== undefined && count !== null) {
                 // Format count as integer without decimals
                 const formattedCount = Math.round(count);
                 return [`${percentage} Count: ${formattedCount}`, name];
               }
               return [percentage, name];
-            }} 
+            }}
           />
-          <Legend  verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 20 }} itemSorter={() => 0} />
+          <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingBottom: 20 }} itemSorter={() => 0} />
         </PieChart>
       </ResponsiveContainer>
     );
   }
+
+  const isTableChart = selectedChart?.type === "table";
 
   return (
     <>
@@ -1156,12 +1178,13 @@ export default function CurveEditor() {
                 <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[120px]">
                   <button
                     onClick={() => {
-                      exportAsJPG();
+                      if (isTableChart) exportAsCSV();
+                      else exportAsJPG();
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
                   >
-                    Export as JPG
+                    {isTableChart ? "Export as CSV" : "Export as JPG"}
                   </button>
                 </div>
               )}
@@ -1173,9 +1196,9 @@ export default function CurveEditor() {
               <div className="flex-1 overflow-auto p-1 mb-5">
                 {/* Fixed Header */}
                 <div className="grid grid-cols-12 bg-gray-100 text-gray-600 sticky top-0 z-10 text-sm border-b border-gray-200">
-                 
+
                   <div className="col-span-10 px-1 py-1 text-left">Entities</div>
-                 
+
                   <div className="col-span-2 py-1 text-left">ID</div>
                 </div>
 
@@ -1190,9 +1213,9 @@ export default function CurveEditor() {
                         setSelectedRow(item.id);
                       }}
                     >
-                     
+
                       <div className="col-span-10 text-xs text-gray-700 truncate">{item.icon} {item.name}</div>
-                    
+
                       <div className="col-span-2 pl-3 text-xs text-gray-400">{index + 1}</div>
                     </div>
                   ))}
@@ -1203,7 +1226,7 @@ export default function CurveEditor() {
         </div>
 
         <div className="w-6/12 lg:w-9/12 flex flex-col border-2 h-full border-gray-200 ml-1">
-          <div  ref={chartContainerRef} className="m-5 flex flex-col h-full">
+          <div ref={chartContainerRef} className="m-5 flex flex-col h-full">
             <h2 className="text-lg text-center font-semibold text-gray-700 mb-4">{selectedChart.icon} {selectedChart.name}</h2>
             <div className="flex-1 flex overflow-auto p-2">
               {renderChartContent()}

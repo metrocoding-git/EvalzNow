@@ -496,47 +496,60 @@ function renderRmsProficiencyTables(neuro, competencyResults) {
 }
 
 
-function renderRmsGrowthTables(neuro, competencyResults) {
-  if (!Array.isArray(neuro?.data)) return "";
+function fmt3(value) {
+  const n = typeof value === "number" ? value : parseFloat(value);
+  return Number.isFinite(n) ? n.toFixed(3) : "-";
+}
+
+const LOBE_NAMES = ["Frontal", "Occipital", "Parietal", "Temporal"];
+const CELL_PADS = [14, 18, 16, 0];
+
+function getNeuroCell(neuro, entry, kind, mode, lobeName) {
+  if (kind === "rms") {
+    const lobe = entry?.lobes?.[lobeName];
+    return fmt3(mode === "proficiency" ? lobe?.RMS : lobe?.deltaRMS);
+  }
+
+  // kind === "cl" (cognitive load) -> per-PP series from backend
+  const series = neuro?.cognitiveLoad?.[lobeName]?.[mode];
+  const point = series?.find((p) => p.ppId === entry.ppId);
+  return fmt3(point?.value);
+}
+
+// kind: "rms" | "cl"  ->  4 tables: P (L), P (R), G (L), G (R)
+function renderNeuroTables(neuro, competencyResults, kind) {
+  if (!Array.isArray(neuro?.data) || !neuro.data.length) return "     -";
 
   const dayCountMap = buildDayCountByPpMap(competencyResults);
+  const abbr = kind === "rms" ? "RMS" : "CL";
+  const blocks = [];
 
-  const leftRows = [];
-  const rightRows = [];
+  [["proficiency", "P"], ["growth", "G"]].forEach(([mode, p]) => {
+    [["Left", "L"], ["Right", "R"]].forEach(([sideName, s]) => {
+      const header =
+        `         ||| PP ID |||     ||| DAYCOUNT |||` +
+        LOBE_NAMES.map(
+          (l) => `     ||| ${p}/ ${abbr} (${s}) - ${l === "Occipital" ? "Occipital Lobe" : l} |||`
+        ).join("");
 
-  neuro.data.forEach(entry => {
-    const dayCount =
-      dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "-";
+      const rows = neuro.data.map((entry) => {
+        const raw = dayCountMap.get(entry.ppId) ?? entry.dayCount;
+        const dayCount = raw != null && Number.isFinite(Number(raw)) ? Number(raw).toFixed(2) : "-";
 
-    leftRows.push(
-      `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
-      `${getRms(entry, "growth", "Frontal Lobe - Left").padEnd(14)}` +
-      `${getRms(entry, "growth", "Occipital Lobe - Left").padEnd(18)}` +
-      `${getRms(entry, "growth", "Parietal Lobe - Left").padEnd(16)}` +
-      `${getRms(entry, "growth", "Temporal Lobe - Left")}`
-    );
+        const cells = LOBE_NAMES.map((l, i) =>
+          getNeuroCell(neuro, entry, kind, mode, `${l} Lobe - ${sideName}`).padEnd(CELL_PADS[i])
+        ).join("");
 
-    rightRows.push(
-      `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
-      `${getRms(entry, "growth", "Frontal Lobe - Right").padEnd(14)}` +
-      `${getRms(entry, "growth", "Occipital Lobe - Right").padEnd(18)}` +
-      `${getRms(entry, "growth", "Parietal Lobe - Right").padEnd(16)}` +
-      `${getRms(entry, "growth", "Temporal Lobe - Right")}`
-    );
+        return `       ${String(entry.ppId ?? "").padEnd(8)} ${dayCount.padEnd(10)} ${cells}`;
+      });
+
+      blocks.push(`${header}\n\n${rows.join("\n")}`);
+    });
   });
 
-  return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (L) - Frontal |||     ||| G/ RMS (L) - Occipital Lobe |||     ||| G/ RMS (L) - Parietal |||     ||| G/ RMS (L) - Temporal |||
-
-  ${leftRows.join("\n  ")}
-
-         ||| PP ID |||     ||| DAYCOUNT |||     ||| G/ RMS (R) - Frontal |||     ||| G/ RMS (R) - Occipital Lobe |||     ||| G/ RMS (R) - Parietal |||     ||| G/ RMS (R) - Temporal |||
-
-  ${rightRows.join("\n  ")}`;
+  return blocks.join("\n\n");
 }
 
-function fmt3(value) {
-  return Number.isFinite(value) ? value.toFixed(3) : "-";
-}
 
 function sumCognitiveLoad(cognitiveLoad = {}) {
   const result = {};
@@ -786,11 +799,8 @@ export function buildCandidateEZReport({
   const candidateMarksRows = renderCandidateMarksRows(candidateMarks);
 
 
-  const rmsProficiencyTables = renderRmsProficiencyTables(neuro, competency?.results ?? []);
-
-  const rmsGrowthTables = renderRmsGrowthTables(neuro, competency?.results ?? []);
-
-  const cognitiveLoadBlock = renderCognitiveLoad(neuro);
+  const rmsTables = renderNeuroTables(neuro, competency?.results ?? [], "rms");
+  const loadTables = renderNeuroTables(neuro, competency?.results ?? [], "cl");
 
 
   const productivityRows = renderButlerProductivityRows(competency?.results ?? []);
@@ -1130,12 +1140,13 @@ ${assignmentRows2}
  NEUROSCIENCE INDICATORS:
 ---------------------------------------
 
+The RMS value of each indicator is provided below.
 
-${rmsProficiencyTables}
+      ${rmsTables}
 
-${rmsGrowthTables}
+The cognitive load of each indicator is provided below.
 
-${cognitiveLoadBlock}
+      ${loadTables}
 
 
 

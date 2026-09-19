@@ -125,8 +125,8 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
     pct(analytics.unitTypes["Third Parameter"], analytics.totalUnits),
 
     // Effectivity (20)
-    candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 20"], analytics.totalUnits),
-    candidateStaffRatioPct(analytics.candidateStaffRatio["20–30"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["10–30"], analytics.totalUnits),
     candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits),
 
     pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits),
@@ -274,8 +274,8 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
   ---------------------------------------
   EFFECTIVITY OF UNITS:
   ---------------------------------------
-  % Units Cand-to-Lead, CTL ≤ 20            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 20"], analytics.totalUnits)}
-  % Units Cand-to-Lead, 20 < CTL ≤ 30       :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["20–30"], analytics.totalUnits)}
+  % Units Cand-to-Lead, CTL ≤ 10            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits)}
+  % Units Cand-to-Lead, 10 < CTL ≤ 30       :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["10–30"], analytics.totalUnits)}
   % Units Cand-to-Lead, CTL > 30            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits)}
 
   % Benchmark Counts, BC ≤ 10               :     ${pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits)}

@@ -132,15 +132,15 @@ function renderGrowthHeader(unitType) {
 }
 
 // const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "-";
-  const fmt = (v) => {
-    const num = typeof v === "number" ? v : parseFloat(v);
-    return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(3) : "-";
-  };
+const fmt = (v) => {
+  const num = typeof v === "number" ? v : parseFloat(v);
+  return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(3) : "-";
+};
 
-  const fmtDays = (v) => {
-    const num = typeof v === "number" ? v : parseFloat(v);
-    return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(2) : "-";
-  };
+const fmtDays = (v) => {
+  const num = typeof v === "number" ? v : parseFloat(v);
+  return v !== null && v !== undefined && v !== "" && !isNaN(num) ? num.toFixed(2) : "-";
+};
 
 
 const hasMetric = (unitType, metric) =>
@@ -462,7 +462,8 @@ export async function buildUnitEZReport({ unit }) {
     rosterPercentages,
     tabulationAverages,
     assessmentSummary,
-    competencyStability
+    competencyStability,
+    rosterCandidates = []
   } = unit;
 
   const { leaders, assessors } =
@@ -496,22 +497,23 @@ export async function buildUnitEZReport({ unit }) {
 
   const LEFT_PAD = 5;
 
-  const rosterRows = candidates.map(c => {
-    const rosterRow =
-      Array.isArray(c.roster) && c.roster.length > 0 ? c.roster[0] : null;
+  const rosterSource = rosterCandidates.length ? rosterCandidates : candidates;
 
-    const unitOutcome = rosterRow?.unitOutcome ?? "-";
-    const nationality = c.nationality ?? "-";
+  const rosterRows = rosterSource.map((c) => {
+    const unitOutcome =
+      c.unitOutcome ??
+      (Array.isArray(c.roster) && c.roster[0]?.unitOutcome) ??
+      "-";
     const candidateStartDate = c.candidateStartDate ?? c.startDate ?? "-";
 
     return (
       `${" ".repeat(LEFT_PAD)}` +
-      `${(c.lastName ?? "-").padEnd(15)}` +
-      `${(c.firstName ?? "-").padEnd(19)}` +
+      `${String(c.lastName ?? "-").padEnd(15)}` +
+      `${String(c.firstName ?? "-").padEnd(19)}` +
       `${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
       `${String(candidateStartDate).padEnd(28)}` +
-      `${nationality.padEnd(19)}` +
-      `${unitOutcome.padEnd(15)}`
+      `${String(c.nationality ?? "-").padEnd(19)}` +
+      `${String(unitOutcome).padEnd(15)}`
     );
   }).join("\n     ");
 
@@ -610,52 +612,50 @@ export async function buildUnitEZReport({ unit }) {
   );
   const benchmarkRows = renderBenchmarkRows(benchmarks);
 
-  const proficiencyUnilateralLines = [];
 
-  if (unitType === "Third Parameter") {
-    proficiencyUnilateralLines.push(
-      `Pass % Avg Unilateral - XRVSR             :     ${fmt(getAvg("XRVSR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XPVSR             :     ${fmt(getAvg("XPVSR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XAVSR             :     ${fmt(getAvg("XAVSR") ?? "-")}`
+  const passPct = (key, threshold, cmp = (v, t) => v >= t) => {
+    if (threshold === null || threshold === undefined || threshold === "") return null;
+    return calculatePassFraction(
+      candidates,
+      (avg) => parseFloat(avg[key]),
+      (v) => cmp(v, Number(threshold))
     );
-  }
+  };
 
-  if (unitType === "Communicative I/O") {
-    proficiencyUnilateralLines.push(
-      `Pass % Avg Unilateral - XRR               :     ${fmt(getAvg("XRR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XLR               :     ${fmt(getAvg("XLR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XSR               :     ${fmt(getAvg("XSR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XWR               :     ${fmt(getAvg("XWR") ?? "-")}`
-    );
-  }
+  const line = (label, value) => `${label.padEnd(42)}:     ${fmt(value)}`;
 
-  if (unitType === "Theory & Practice") {
-    proficiencyUnilateralLines.push(
-      `Pass % Avg Unilateral - XTR               :     ${fmt(getAvg("XTR") ?? "-")}`,
-      `     Pass % Avg Unilateral - XPR               :     ${fmt(getAvg("XPR") ?? "-")}`
-    );
-  }
+  // ---------- PROFICIENCY ----------
+  const unilateralByType = {
+    "Communicative I/O": [["XRR", XRR], ["XLR", XLR], ["XSR", XSR], ["XWR", XWR]],
+    "Theory & Practice": [["XTR", XTR], ["XPR", XPR]],
+    "Third Parameter": [["XRVSR", XRVSR], ["XPVSR", XPVSR], ["XAVSR", XAVSR]],
+  };
 
-
-  const growthLines = [];
-
-  growthLines.push(
-    `Pass % Average Growth - ΔRRN              :     ${fmt(getAvg("deltaRRN") ?? "-")}`,
-    `     Pass % Average Growth - ΔPRN              :     ${fmt(getAvg("deltaPRN") ?? "-")}`
+  const proficiencyUnilateralLines = (unilateralByType[unitType] ?? []).map(
+    ([key, threshold]) => line(`Pass % Avg Unilateral - ${key}`, passPct(key, threshold))
   );
 
-  if (unitType === "Third Parameter") {
-    growthLines.push(
-      `     Pass % Average Growth - ΔARN              :     ${fmt(getAvg("deltaARN") ?? getAvg("deltaPRN") ?? "-")}`
-    );
-  }
+  const RATIO_PASS = 0.5; // same 0.50 rule used in calculateSTAP for RRN/PRN/ARN
 
-  growthLines.push(``);
+  const ratioLines = [
+    line("Pass % Avg Receptive Ratio - RRN", passPct("RRN", RATIO_PASS)),
+    line("Pass % Avg Productive Ratio - PRN", passPct("PRN", RATIO_PASS)),
+    (unitType === "Third Parameter"          // <-- keep the ...
+      ? [line("Pass % Avg Acuity Ratio - ARN", passPct("ARN", RATIO_PASS))]
+      : []),
+  ];
 
-  growthLines.push(
-    `     Pass % Avg Equivalent Growth - ∆GEQ       :     ${fmt(getAvg("GEQ") ?? "-")}`,
-    `     Pass % Stability in Growth                :     ${fmt(competencyStability?.stagStableFraction) ?? "-"}`
-  );
+  const growthLines = [
+    line("Pass % Average Growth - ΔRRN", passPct("deltaRRN", deltaRRN)),
+    line("Pass % Average Growth - ΔPRN", passPct("deltaPRN", deltaPRN)),
+    (unitType === "Third Parameter"
+      ? [line("Pass % Average Growth - ΔARN", passPct("deltaARN", deltaARN))]
+      : []),
+    "",
+    line("Pass % Avg Equivalent Growth - ∆GEQ", passPct("GEQ", deltaGEQ)),
+    line("Pass % Stability in Growth", competencyStability?.stagStableFraction),
+  ];
+
 
   const firstCandidate = candidates[0];
 
@@ -735,8 +735,14 @@ export async function buildUnitEZReport({ unit }) {
     let total = 0;
     let passed = 0;
 
+    const getAvgRow = (c) =>
+      (c.competencyAverages ?? []).find((a) => a.ppId === "Average") ??
+      c.competencyAverages?.[0] ??
+      null;
+
+
     candidates.forEach(c => {
-      const avg = c.competencyAverages?.[0];
+      const avg = getAvgRow(c);
       if (!avg) return;
       const value = getValue(avg);
       if (value === null || value === undefined || Number.isNaN(value)) return;
@@ -765,6 +771,28 @@ export async function buildUnitEZReport({ unit }) {
 
   let unilateralProficiencySection = "";
 
+
+  const getCandidateProductivity = (c) => {
+    const avgRow =
+      (c.competencyAverages ?? []).find((a) => a.ppId === "Average") ??
+      c.competencyAverages?.[0] ??
+      {};
+    return { CSD: avgRow.Productivity_CSD, USD: avgRow.Productivity_USD };
+  };
+
+  const productivityRows =
+    candidates
+      .map((c) => {
+        const { CSD, USD } = getCandidateProductivity(c);
+        return (
+          `   ${String(c.lastName ?? "-").padEnd(15)}` +
+          `   ${String(c.firstName ?? "-").padEnd(15)}` +
+          `   ${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
+          `   ${fmt(CSD).padEnd(24)}` +
+          `   ${fmt(USD)}`
+        );
+      })
+      .join("\n     ") || "     No productivity data available";
 
 
 
@@ -914,16 +942,14 @@ export async function buildUnitEZReport({ unit }) {
 
      Pass percentages below are based on the average values of each corresponding metric: 
 
-     ${proficiencyUnilateralLines.join("\n")}
+     ${proficiencyUnilateralLines.join("\n     ")}
 
-     Pass % Avg Receptive Ratio - RRN          :     ${fmt(getAvg("RRN") ?? "-")}
-     Pass % Avg Productive Ratio - PRN         :     ${fmt(getAvg("PRN") ?? "-")}
-     ${unitType === "Third Parameter" ? `Pass % Avg Productive Ratio - ARN         :     ${fmt(getAvg("ARN") ?? "-")}` : ""}
-     Pass % Avg Equivalent Proficiency - XEP   :     ${fmt(getAvg("XEP") ?? "-")}
-     Pass % Avg Composite Proficiency - XCP    :     ${fmt(getAvg("XCP") ?? "-")}
-     Pass % Avg Band Proficiency - XBP         :     ${fmt(getAvg("XBP") ?? "-")}
+     ${ratioLines.join("\n     ")}
+     ${line("Pass % Avg Equivalent Proficiency - XEP", passPct("XEP", XEP))}
+     ${line("Pass % Avg Composite Proficiency - XCP", passPct("XCP", XCP))}
+     ${line("Pass % Avg Band Proficiency - XBP", passPct("XBP", XBP))}
 
-     Pass % Stability in Proficiency           :     ${fmt(competencyStability?.stapStableFraction) ?? "-"}
+     ${line("Pass % Stability in Proficiency", competencyStability?.stapStableFraction)}
 
 ---------------------------------------
  TABULATIONS - GROWTH:
@@ -941,7 +967,7 @@ export async function buildUnitEZReport({ unit }) {
 
      Pass percentages below are based on the average values of each corresponding metric: 
 
-     ${growthLines.join("\n")}
+     ${growthLines.join("\n     ")}
 
 ---------------------------------------
  TABULATIONS - HYBRID:
@@ -966,6 +992,11 @@ export async function buildUnitEZReport({ unit }) {
      Pass % Avg Productivity Rates - CSD       :     ${fmt(getAvg("Productivity_CSD"))}
      Pass % Avg Productivity Rates - USD       :     ${fmt(getAvg("Productivity_USD"))}
 
+     ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| PRODUCTIVITY - CSD |||     ||| PRODUCTIVITY - USD |||
+
+     ${productivityRows}
+
+           
      ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| EFFORT - CSD |||     ||| EFFORT - USD |||
 
      ${candidates.map(c => {
@@ -984,7 +1015,7 @@ export async function buildUnitEZReport({ unit }) {
           `   ${fmt(USD)}`
         );
       }).join("\n     ") || "     No effort data available"}
-    
+
 
 ---------------------------------------
  ATTENDANCE TRACKING:
