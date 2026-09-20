@@ -11,7 +11,7 @@ import { useFormStatus } from "@/context/FormStatusContext";
 
 
 export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockManager, setShowEdit, unitRosterData = [],
-  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate, onBlockUpdate, refreshCandidateData, refreshAssessmentBlocks, showEditBlockManager  }) {
+  selectedUnit, onBlockSelect, selectedCandidate, onRosterUpdate, onBlockUpdate, refreshCandidateData, refreshAssessmentBlocks, showEditBlockManager }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [showSearchLookup, setShowSearchLookup] = useState(false);
   const [selectedEntitiyRows, setSelectedEntityRows] = useState([]);
@@ -31,13 +31,26 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
   );
   const [visible, setVisible] = useState(true);
 
+  const [rosterSortKey, setRosterSortKey] = useState("lastName");
+  const [rosterSortOrder, setRosterSortOrder] = useState("asc");
+
+  const handleRosterSort = (key) => {
+    if (rosterSortKey === key) {
+      setRosterSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setRosterSortKey(key);
+      setRosterSortOrder("asc");
+    }
+  };
+
+
   const handlePointChange = (index, field, value) => {
     setDisplayRosterData(prev => {
       const updated = [...prev];
       if (updated[index]) {
         const item = { ...updated[index] };
-  
-        switch(field) {
+
+        switch (field) {
           case "present": item.presentCount = value; break;
           case "excusedAbs": item.excusedAbsences = value; break;
           case "unexcusedAbs": item.unexcusedAbsences = value; break;
@@ -46,27 +59,27 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
           case "unitOutcome": item.unitOutcome = value; break;
           default: item[field] = value;
         }
-  
+
         updated[index] = item;
       }
       return updated;
     });
   };
 
-// Refresh blocks when edit panel closes
-useEffect(() => {
-  if (!showCreateBlockForm && !setShowEditBlockManager) return;
+  // Refresh blocks when edit panel closes
+  useEffect(() => {
+    if (!showCreateBlockForm && !setShowEditBlockManager) return;
 
-  if (!showEditBlockManager) {
-    fetchBlocksByUnitAndCandidate();
-  }
-}, [showEditBlockManager]);
+    if (!showEditBlockManager) {
+      fetchBlocksByUnitAndCandidate();
+    }
+  }, [showEditBlockManager]);
 
 
-  
-  
 
-  
+
+
+
   const toggleRowSelection = (index) => {
     // setSelectedRow((prev) =>
     //   prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
@@ -76,7 +89,7 @@ useEffect(() => {
 
   const handleUnitRosterDeleteCurve = async () => {
     if (selectedEntitiyRows.length === 0) return;
-  
+
     try {
       // Get the selected roster items to delete
       const itemsToDelete = displayRosterData.filter(item =>
@@ -90,29 +103,29 @@ useEffect(() => {
           setFormStatus("Unit Roster Deleted");
         }
       }
-  
+
       // Refresh roster table after deletion
       await fetchRosterData();
 
-       // Remove deleted candidates from refreshCandidateData
+      // Remove deleted candidates from refreshCandidateData
       if (refreshCandidateData) {
-        refreshCandidateData(prevCandidates => 
-          prevCandidates.filter(candidate => 
+        refreshCandidateData(prevCandidates =>
+          prevCandidates.filter(candidate =>
             !itemsToDelete.some(item => item.candidate_id === candidate.id)
           )
         );
       }
-  
+
       // Clear selection
       setSelectedEntityRows([]);
-  
+
       console.log("✅ Selected roster items deleted successfully");
     } catch (err) {
       console.error("❌ Failed to delete selected roster items:", err);
       alert("Failed to delete selected roster items. Please try again.");
     }
   };
-  
+
 
   // Add this near your other state
   // const fetchBlocks = async () => {
@@ -135,7 +148,7 @@ useEffect(() => {
   // }, [selectedUnit?.id]);
   const sortBlocksByPPId = (blocks, tab) => {
     if (!blocks || blocks.length === 0) return [];
-    
+
     return blocks.sort((a, b) => {
       if (tab === "Direct") {
         return a.ppId - b.ppId;       // 1,2,3,4...
@@ -146,21 +159,21 @@ useEffect(() => {
     });
   };
 
-  
+
 
   const fetchBlocksByUnitAndCandidate = async () => {
     if (!selectedUnit?.id || !selectedCandidate?.id) return;
     try {
       setLoading(true);
       const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
-  
+
       let blockArray = [];
       if (Array.isArray(blocks)) blockArray = blocks;
       else if (blocks && typeof blocks === 'object') blockArray = [blocks];
-  
+
       // Sort blocks by ppId based on activeTab
       const sortedBlocks = sortBlocksByPPId(blockArray, activeTab);
-  
+
       setAssessmentBlocks(sortedBlocks);
       console.log("blocks", sortedBlocks);
     } catch (err) {
@@ -171,7 +184,7 @@ useEffect(() => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
   }, [selectedUnit?.id, selectedCandidate?.id, activeTab]);
@@ -182,16 +195,16 @@ useEffect(() => {
       try {
         setLoading(true);
         const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
-        
+
         let blockArray = [];
         if (Array.isArray(blocks)) {
           blockArray = blocks;
         } else if (blocks && typeof blocks === "object") {
           blockArray = [blocks];
         }
-        
+
         setAssessmentBlocks(blockArray);
-  
+
         // Automatically select the first block if available
         if (blockArray.length > 0) {
           setSelectedBlock(blockArray[0]);
@@ -204,7 +217,7 @@ useEffect(() => {
           setSelectedBlock(null);
           setSelectedRow(null);
         }
-  
+
       } catch (err) {
         console.error("Failed to fetch blocks:", err);
         setError("Failed to load blocks. Please try again.");
@@ -213,11 +226,11 @@ useEffect(() => {
         setLoading(false);
       }
     };
-  
+
     fetchAndSelectFirstBlock();
-  }, [selectedUnit?.id, selectedCandidate?.id]); 
-  
-  console.log("selected candidate in roster", assessmentBlocks );
+  }, [selectedUnit?.id, selectedCandidate?.id]);
+
+  console.log("selected candidate in roster", assessmentBlocks);
   // call it when unit changes
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
@@ -238,126 +251,126 @@ useEffect(() => {
   };
 
   // Function to swap and update ppId values
-const swapAssessmentBlocks = async (index1, index2) => {
-  if (
-    index1 < 0 ||
-    index2 < 0 ||
-    index1 >= filteredAssessmentBlocks.length ||
-    index2 >= filteredAssessmentBlocks.length
-  ) {
-    return;
-  }
-
-  try {
-    const updatedBlocks = [...assessmentBlocks];
-
-    const block1 = filteredAssessmentBlocks[index1];
-    const block2 = filteredAssessmentBlocks[index2];
-
-    const mainIndex1 = updatedBlocks.findIndex((b) => b.id === block1.id);
-    const mainIndex2 = updatedBlocks.findIndex((b) => b.id === block2.id);
-
-    if (mainIndex1 === -1 || mainIndex2 === -1) return;
-
-    // --- Adjust ppId values depending on tab & direction ---
-    let newBlock1 = { ...block1 };
-    let newBlock2 = { ...block2 };
-
-    if (activeTab === "Direct") {
-      // Direct performance
-      if (index2 < index1) {
-        // Move Up
-        newBlock1.ppId = block1.ppId - 1;
-        newBlock2.ppId = block2.ppId + 1;
-      } else {
-        // Move Down
-        newBlock1.ppId = block1.ppId + 1;
-        newBlock2.ppId = block2.ppId - 1;
-      }
-    } else if (activeTab === "Indirect") {
-      // Indirect performance (reverse logic)
-      if (index2 < index1) {
-        // Move Up
-        newBlock1.ppId = block1.ppId + 1;
-        newBlock2.ppId = block2.ppId - 1;
-      } else {
-        // Move Down
-        newBlock1.ppId = block1.ppId - 1;
-        newBlock2.ppId = block2.ppId + 1;
-      }
+  const swapAssessmentBlocks = async (index1, index2) => {
+    if (
+      index1 < 0 ||
+      index2 < 0 ||
+      index1 >= filteredAssessmentBlocks.length ||
+      index2 >= filteredAssessmentBlocks.length
+    ) {
+      return;
     }
 
-    // Swap their order in UI
-    [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [
-      newBlock2,
-      newBlock1,
-    ];
+    try {
+      const updatedBlocks = [...assessmentBlocks];
 
-    setAssessmentBlocks(updatedBlocks);
+      const block1 = filteredAssessmentBlocks[index1];
+      const block2 = filteredAssessmentBlocks[index2];
 
-    // Update selection
-    setSelectedRow(index2);
-    setSelectedBlock(newBlock1);
+      const mainIndex1 = updatedBlocks.findIndex((b) => b.id === block1.id);
+      const mainIndex2 = updatedBlocks.findIndex((b) => b.id === block2.id);
 
-    // --- Persist to backend ---
-    await Promise.all([
-      updateAssessmentBlock(newBlock1.id, { ...newBlock1 }),
-      updateAssessmentBlock(newBlock2.id, { ...newBlock2 }),
-    ]);
+      if (mainIndex1 === -1 || mainIndex2 === -1) return;
 
-    // Notify parent if needed
-    if (onBlockUpdate) {
-      onBlockUpdate(updatedBlocks);
+      // --- Adjust ppId values depending on tab & direction ---
+      let newBlock1 = { ...block1 };
+      let newBlock2 = { ...block2 };
+
+      if (activeTab === "Direct") {
+        // Direct performance
+        if (index2 < index1) {
+          // Move Up
+          newBlock1.ppId = block1.ppId - 1;
+          newBlock2.ppId = block2.ppId + 1;
+        } else {
+          // Move Down
+          newBlock1.ppId = block1.ppId + 1;
+          newBlock2.ppId = block2.ppId - 1;
+        }
+      } else if (activeTab === "Indirect") {
+        // Indirect performance (reverse logic)
+        if (index2 < index1) {
+          // Move Up
+          newBlock1.ppId = block1.ppId + 1;
+          newBlock2.ppId = block2.ppId - 1;
+        } else {
+          // Move Down
+          newBlock1.ppId = block1.ppId - 1;
+          newBlock2.ppId = block2.ppId + 1;
+        }
+      }
+
+      // Swap their order in UI
+      [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [
+        newBlock2,
+        newBlock1,
+      ];
+
+      setAssessmentBlocks(updatedBlocks);
+
+      // Update selection
+      setSelectedRow(index2);
+      setSelectedBlock(newBlock1);
+
+      // --- Persist to backend ---
+      await Promise.all([
+        updateAssessmentBlock(newBlock1.id, { ...newBlock1 }),
+        updateAssessmentBlock(newBlock2.id, { ...newBlock2 }),
+      ]);
+
+      // Notify parent if needed
+      if (onBlockUpdate) {
+        onBlockUpdate(updatedBlocks);
+      }
+    } catch (err) {
+      console.error("Failed to swap/update blocks:", err);
     }
-  } catch (err) {
-    console.error("Failed to swap/update blocks:", err);
-  }
-};
+  };
 
 
-const moveRowUp = () => {
-  if (selectedRow === null || selectedRow === 0) return;
-  swapAssessmentBlocks(selectedRow, selectedRow - 1);
-};
+  const moveRowUp = () => {
+    if (selectedRow === null || selectedRow === 0) return;
+    swapAssessmentBlocks(selectedRow, selectedRow - 1);
+  };
 
-const moveRowDown = () => {
-  if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
-  swapAssessmentBlocks(selectedRow, selectedRow + 1);
-};
+  const moveRowDown = () => {
+    if (selectedRow === null || selectedRow === filteredAssessmentBlocks.length - 1) return;
+    swapAssessmentBlocks(selectedRow, selectedRow + 1);
+  };
 
-  
+
   const handleSaveBlock = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-  
+
     try {
       if (!blockData || !selectedBlock) return;
-  
+
       // Call API to update the block
       const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
-  
+
       // Notify parent about the updated block
       if (onBlockUpdate) {
         onBlockUpdate(savedBlock);
       }
-  
+
       if (onBlockSubmitStatus) {
         onBlockSubmitStatus(true);
       }
-  
+
       onClose();
     } catch (err) {
       console.error("Failed to update unit:", err);
-  
+
       const message =
         err.response?.data?.message ||
         err.data?.message ||
         err.message ||
         "Failed to update unit";
-  
+
       setError(message);
-  
+
       if (onBlockSubmitStatus) {
         onBlockSubmitStatus(false);
       }
@@ -365,7 +378,7 @@ const moveRowDown = () => {
       setIsSubmitting(false);
     }
   };
-  
+
 
   // const handleCandidateSelect = (newUnitRosterEntries) => {
   //   console.log("Selected candidate in roster:", newUnitRosterEntries);
@@ -392,12 +405,12 @@ const moveRowDown = () => {
       setLoading(false);
     }
   };
-  
+
   // call on mount or when unit changes
   useEffect(() => {
     fetchRosterData();
   }, [selectedUnit?.id]);
-  
+
 
 
   const toggleRowSelectionMulti = (id) => {
@@ -407,12 +420,12 @@ const moveRowDown = () => {
         : [...prev, id]
     );
   };
-  
+
 
 
   const handleRowClick = (block, index) => {
     setSelectedRow(index);
-    setSelectedBlock(block);   
+    setSelectedBlock(block);
     setShowEditBlockManager(true);
     setShowEdit(false);
 
@@ -423,43 +436,43 @@ const moveRowDown = () => {
 
   // Extract candidate data from unit roster
   const existingCandidates = unitRosterData
-  .filter(rosterItem => rosterItem.candidate)
-  .map(rosterItem => rosterItem.candidate);
+    .filter(rosterItem => rosterItem.candidate)
+    .map(rosterItem => rosterItem.candidate);
 
-  const filteredAssessmentBlocks = assessmentBlocks.filter(block => 
+  const filteredAssessmentBlocks = assessmentBlocks.filter(block =>
     block.manageType === activeTab
   );
 
   const handleDeleteBlock = async () => {
     if (selectedRow === null) return; // no row selected
-  
+
     try {
       const blockToDelete = filteredAssessmentBlocks[selectedRow];
       if (!blockToDelete) return;
 
       setFormStatus("Processing");
-  
+
       // Call API to delete
       await deleteAssessmentBlock(blockToDelete.id);
-  
+
       // Remove from local state
       // setAssessmentBlocks(prev => prev.filter(b => b.id !== blockToDelete.id));
       await fetchBlocksByUnitAndCandidate();
-  
+
       setFormStatus("Assessment Block Deleted");
       // Reset selection
       setSelectedRow(null);
       setShowEditBlockManager(false);
-  
+
       console.log("Deleted block:", blockToDelete.id);
     } catch (err) {
       console.error("Failed to delete block:", err);
       alert("Failed to delete block. Please try again.");
     }
   };
-  
 
-    // Debounce helper
+
+  // Debounce helper
   const debounce = (func, delay) => {
     let timer;
     return (...args) => {
@@ -490,9 +503,9 @@ const moveRowDown = () => {
     setDisplayRosterData(prev => {
       const updated = prev.map(item => {
         if (item.id !== id) return item;
-  
+
         const newItem = { ...item };
-  
+
         switch (field) {
           case "present": newItem.presentCount = parseInt(value) || 0; break;
           case "excusedAbs": newItem.excusedAbsences = parseInt(value) || 0; break;
@@ -501,34 +514,42 @@ const moveRowDown = () => {
           case "unexcusedTardy": newItem.unexcusedTardies = parseInt(value) || 0; break;
           case "unitOutcome": newItem.unitOutcome = value; break;
         }
-  
+
         // 
         if (newItem.id) saveRosterUpdate(newItem.id, newItem);
-  
+
         return newItem;
       });
-  
+
       return updated;
     });
   };
-   
+
   const sortedRoster = useMemo(() => {
+    const dir = rosterSortOrder === "asc" ? 1 : -1;
+
     return [...displayRosterData].sort((a, b) => {
-      const lastA = (a.candidate?.lastName || "").toLowerCase();
-      const lastB = (b.candidate?.lastName || "").toLowerCase();
-      return lastA.localeCompare(lastB);
+      const va = String(a.candidate?.[rosterSortKey] ?? "");
+      const vb = String(b.candidate?.[rosterSortKey] ?? "");
+
+      // case-insensitive, and "C2" sorts before "C10"
+      const cmp = va.localeCompare(vb, undefined, { numeric: true, sensitivity: "base" });
+      if (cmp !== 0) return cmp * dir;
+
+      // tie-breaker so equal values keep a stable order
+      return (a.id ?? 0) - (b.id ?? 0);
     });
-  }, [displayRosterData]);
+  }, [displayRosterData, rosterSortKey, rosterSortOrder]);
 
   if (!visible) return null;
 
   return (
     <div className="flex flex-col h-full ">
-     
+
       <h2 className="text-md font-bold bg-gray-100 p-0.5  flex items-center border-b border-gray-200 relative">
         <span className="pl-2 text-md">Unit Config</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
-        
+
         {showCreateBlockForm && (
           <div className="absolute top-0 left-0  z-50 h-[250px] bg-white shadow-2xl border border-gray-200 rounded-md">
             <CreateBlockManagerForm
@@ -540,10 +561,10 @@ const moveRowDown = () => {
             />
           </div>
         )}
-          
+
       </h2>
 
-       {/* Unit Roster */}
+      {/* Unit Roster */}
       <div className="h-1/3 border border-gray-300 flex flex-col m-1">
 
         <div className="flex items-center justify-between border-b-1 border-gray-400 mb-1 px-1 mx-1 mt-1 text-black ">
@@ -576,16 +597,31 @@ const moveRowDown = () => {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="border p-1 w-8 text-center">#</th>
-                  <th className="border p-1 w-[90px] text-center">Last <br/> Name</th>
-                  <th className="border p-1 w-[90px] text-center">First <br/> Name</th>
-                  <th className="border p-1 w-[90px] text-center">Candidate <br/> ID</th>
-                  <th className="border p-1 w-[90px] text-center">Unit <br/> Outcome</th>
-                  <th className="border p-1 w-[90px] text-center">Present <br/> Count</th>
-                  <th className="border p-1 w-24 text-center">Excused <br/> Absences</th>
-                  <th className="border p-1 w-24 text-center">Unexcused <br/> Absences</th>
-                  <th className="border p-1 w-24 text-center">Excused <br/> Tardies</th>
-                  <th className="border p-1 w-24 text-center">Unexcused <br/> Tardies</th>
-                  <th className="border p-1 w-16 text-center">Total <br/> Tally</th>
+                  <th
+                    onClick={() => handleRosterSort("lastName")}
+                    className="border p-1 w-[90px] text-center cursor-pointer select-none hover:bg-gray-200"
+                  >
+                    Last <br /> Name
+                  </th>
+                  <th
+                    onClick={() => handleRosterSort("firstName")}
+                    className="border p-1 w-[90px] text-center cursor-pointer select-none hover:bg-gray-200"
+                  >
+                    First <br /> Name
+                  </th>
+                  <th
+                    onClick={() => handleRosterSort("candidateId")}
+                    className="border p-1 w-[90px] text-center cursor-pointer select-none hover:bg-gray-200"
+                  >
+                    Candidate <br /> ID
+                  </th>
+                  <th className="border p-1 w-[90px] text-center">Unit <br /> Outcome</th>
+                  <th className="border p-1 w-[90px] text-center">Present <br /> Count</th>
+                  <th className="border p-1 w-24 text-center">Excused <br /> Absences</th>
+                  <th className="border p-1 w-24 text-center">Unexcused <br /> Absences</th>
+                  <th className="border p-1 w-24 text-center">Excused <br /> Tardies</th>
+                  <th className="border p-1 w-24 text-center">Unexcused <br /> Tardies</th>
+                  <th className="border p-1 w-16 text-center">Total <br /> Tally</th>
                 </tr>
               </thead>
               <tbody>
@@ -604,9 +640,8 @@ const moveRowDown = () => {
                   return (
                     <tr
                       key={rosterItem.id}
-                      className={`cursor-pointer ${
-                        isSelected ? "bg-gray-200" : "hover:bg-gray-50"
-                      }`}
+                      className={`cursor-pointer ${isSelected ? "bg-gray-200" : "hover:bg-gray-50"
+                        }`}
                       onClick={() => toggleRowSelectionMulti(rosterItem.id)}
                     >
                       <td className="border text-center">{index + 1}</td>
@@ -718,7 +753,7 @@ const moveRowDown = () => {
               <div className="flex items-center gap-1">
                 {selectedCandidate && (
                   <button
-                    onClick={() => { 
+                    onClick={() => {
                       if (!selectedCandidate) {
                         toast.error("Please select the candidate");
                       }
@@ -726,7 +761,7 @@ const moveRowDown = () => {
                         setShowCreateBlockForm(true);
                         setFormStatus("Creating...");
                       }
-                      
+
                     }
                     }
                     title="Add new"
@@ -742,7 +777,7 @@ const moveRowDown = () => {
                     onClick={handleDeleteBlock}
                   >
                     <span className="flex items-center gap-2 ">
-                    <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </span>
                   </button>
                 )}
@@ -791,7 +826,7 @@ const moveRowDown = () => {
 
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between border-b p-1 bg-gray-100 mx-2">
               {/* Tab Buttons */}
               <div className="flex space-x-2">
@@ -869,7 +904,7 @@ const moveRowDown = () => {
                   <tbody>
                     {filteredAssessmentBlocks.map((block, index) => (
 
-                      <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `}  key={`indirect-${block.id}`} 
+                      <tr className={`hover:bg-gray-50  cursor-pointer ${selectedRow === index ? "bg-gray-200" : ""} `} key={`indirect-${block.id}`}
                         onClick={() => handleRowClick(block, index)}>
 
                         <td className="whitespace-nowrap border p-1 text-center">{block.ppId}</td>
@@ -894,7 +929,7 @@ const moveRowDown = () => {
           existingCandidates={existingCandidates}
           selectedUnit={selectedUnit}
           unitRosterData={unitRosterData}
-          refreshCandidateData={refreshCandidateData} 
+          refreshCandidateData={refreshCandidateData}
         />
       )}
 

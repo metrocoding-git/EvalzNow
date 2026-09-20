@@ -41,8 +41,8 @@ export default function DataReports() {
   // const { selectedUnitId, setSelectedUnitId } = useUnit();
   // const selectedUnitId = sessionStorage.getItem("selectedUnitId");
   const [selectedUnitId, setSelectedUnitId] = useState(null);
-  const [unitData, setUnitData] = useState(null); 
-  const [data, setData] = useState([]); 
+  const [unitData, setUnitData] = useState(null);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeClientId, setActiveClientId] = useState(null);
@@ -68,7 +68,7 @@ export default function DataReports() {
     const storedId = sessionStorage.getItem("selectedUnitId");
     setSelectedUnitId(storedId);
   }, []);
-  
+
   const sortedData = [...data].sort((a, b) => {
     let valA = a[sortKey];
     let valB = b[sortKey];
@@ -149,40 +149,40 @@ export default function DataReports() {
 
   useEffect(() => {
     if (!selectedUnitId || !activeCandidateId) return;
-  
+
     const fetchEffort = async () => {
       try {
         const response = await getEffortBu(selectedUnitId, activeCandidateId);
-  
+
         console.log("Effort Response:", response);
-  
-        
+
+
         setEffortResults(response);
       } catch (err) {
         console.error("Failed to fetch effort data:", err);
         setEffortResults([]);
       }
     };
-  
+
     fetchEffort();
   }, [selectedUnitId, activeCandidateId]);
-  
 
- console.log("effortResults", effortResults);
+
+  console.log("effortResults", effortResults);
 
   useEffect(() => {
     const fetchDataReportByActiveCandidateId = async () => {
       if (!selectedUnitId || !activeCandidateId) return;
-  
+
       try {
         const response = await getDataReportByUnitCandidate(
           selectedUnitId,
           activeCandidateId
         );
-  
+
         console.log("Data Report Response:", response);
         const extracted = extractDataReportByCandidateId(response);
-  
+
         setUnitMeta(extracted.unitMeta);
         setCandidates(extracted.candidates);
         setRosterByCandidate(extracted.rosterByCandidate);
@@ -204,28 +204,28 @@ export default function DataReports() {
         console.log("neuroByCandidate", extracted.neuroByCandidate);
         console.log("engagementByCandidate", extracted.engagementByCandidate);
 
-  
+
       } catch (err) {
         console.error(err);
       }
     };
-  
+
     fetchDataReportByActiveCandidateId();
   }, [selectedUnitId, activeCandidateId]);
 
   useEffect(() => {
     const fetchDataReportBySelectedUnit = async () => {
       if (!selectedUnitId) return;
-  
+
       try {
         const response = await getDataReportByUnit(selectedUnitId);
-        
+
         console.log("Unit Data Report Response:", response);
       } catch (err) {
         console.error(err);
       }
     };
-  
+
     fetchDataReportBySelectedUnit();
   }, [selectedUnitId]);
 
@@ -239,7 +239,7 @@ export default function DataReports() {
         console.error(err);
       }
     };
-  
+
     fetchGlobalDataReportByClient();
   }, [activeClientId]);
 
@@ -252,17 +252,22 @@ export default function DataReports() {
     }
   }
 
-  
+
   const handleExtract = async () => {
     if (!selectedUnitId && selectedReport !== "global-data" && selectedReport !== "client-units")
       return;
-  
+
     setIsDownloading(true);
 
     try {
       if (selectedReport === "candidate-report") {
         const candidate = candidates.find(c => c.id === activeCandidateId);
-    
+
+        if (!candidate) {
+          console.warn("Candidate report data not loaded yet");
+          return;
+        }
+
         const ezText = buildCandidateEZReport({
           unitMeta,
           candidate,
@@ -276,40 +281,40 @@ export default function DataReports() {
           needAssessments: needAssessment[activeCandidateId],
           effortResults: effortResults,
         });
-    
+
         await downloadEZFile(
           ezText,
           `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
         );
-    
+
       } else if (selectedReport === "all-candidates-unit") {
         try {
           const response = await getDataReportByUnitAllCandidates(selectedUnitId);
           const extracted = extractDataReportByCandidateId(response);
-          
+
           if (!extracted?.candidates?.length) {
             console.warn("No candidates found for this unit.");
             return;
           }
-          
-          
+
+
           const filesToZip = [];
 
           // ✅ Loop per candidate
           for (const candidate of extracted.candidates) {
             const candidateId = candidate.id;
-            
+
             // ✅ IMPORTANT: Fetch the FULL candidate data report for THIS specific candidate
             let candidateDataReport;
             try {
               candidateDataReport = await getDataReportByUnitCandidate(
-                selectedUnitId, 
+                selectedUnitId,
                 candidateId
               );
-              
+
               // Extract the data for this specific candidate
               const candidateExtracted = extractDataReportByCandidateId(candidateDataReport);
-              
+
               // Get the specific candidate's data from the extracted result
               const candidateSpecificData = {
                 unitMeta: candidateExtracted.unitMeta,
@@ -323,7 +328,7 @@ export default function DataReports() {
                 assessmentChain: candidateExtracted.assessmentChain[candidateId],
                 needAssessments: candidateExtracted.needAssessments[candidateId],
               };
-              
+
               // ✅ Fetch effort data for this candidate
               let effortResults = [];
               try {
@@ -331,13 +336,13 @@ export default function DataReports() {
               } catch (e) {
                 console.warn(`Effort data missing for candidate ${candidateId}`, e);
               }
-              
+
               // ✅ Build report with FRESH data for this candidate
               const ezText = buildCandidateEZReport({
                 ...candidateSpecificData,
                 effortResults,
               });
-              
+
               // downloadEZFile(
               //   ezText,
               //   `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
@@ -347,95 +352,95 @@ export default function DataReports() {
                 filename: `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`,
                 content: ezText,
               });
-              
+
             } catch (e) {
               console.error(`Failed to fetch data for candidate ${candidateId}`, e);
               // Continue with other candidates even if one fails
               continue;
             }
           }
-          
+
           await downloadEZFilesAsZip(filesToZip, `All_Candidate_Reports_Unit_${selectedUnitId}.zip`);
 
         } catch (err) {
           console.error("Failed to extract all candidate reports:", err);
         }
       } else if (selectedReport === "unit-report") {
-          try {
-            
-            const response = await getDataReportByUnit(selectedUnitId);
-            console.log("Unit Report Response:", response);
-            if (!response?.unit) {
-              console.warn("No unit data found");
-              return;
-            }
-        
-            const ezText = await buildUnitEZReport({
-              unit: response.unit,
-            });
-        
-            await downloadEZFile(
-              ezText,
-              `Unit_Report_${response.unit.unitName}_${response.unit.unitId}.ez`
-            );
-          } catch (err) {
-            console.error("Failed to generate unit report:", err);
+        try {
+
+          const response = await getDataReportByUnit(selectedUnitId);
+          console.log("Unit Report Response:", response);
+          if (!response?.unit) {
+            console.warn("No unit data found");
+            return;
           }
-        }  
-        
-        else if (selectedReport === "client-units") {
-          try {
-            const response = await getDataReportByClient(activeClientId);
-        
-            if (!response?.units || !Array.isArray(response.units)) {
-              console.warn("No units found for this client");
-              return;
-            }
 
-            const filesToZip = [];
-        
-            // ✅ LOOP ALL UNITS
-            for (const unit of response.units) {
-              if (!unit?.unitId) continue;
-        
-              const ezText = await buildUnitEZReport({
-                unit
-              });
-        
-              // downloadEZFile(
-              //   ezText,
-              //   `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
-              // );
+          const ezText = await buildUnitEZReport({
+            unit: response.unit,
+          });
 
-              filesToZip.push({
-                filename: `Unit_Report_${unit.unitName}_${unit.unitId}.ez`,
-                content: ezText,
-              });
-            }
-
-            await downloadEZFilesAsZip(filesToZip, `All_Unit_Reports_${activeClientId}.zip`);
-        
-          } catch (err) {
-            console.error("Failed to generate unit reports:", err);
-          }
+          await downloadEZFile(
+            ezText,
+            `Unit_Report_${response.unit.unitName}_${response.unit.unitId}.ez`
+          );
+        } catch (err) {
+          console.error("Failed to generate unit report:", err);
         }
-        
+      }
+
+      else if (selectedReport === "client-units") {
+        try {
+          const response = await getDataReportByClient(activeClientId);
+
+          if (!response?.units || !Array.isArray(response.units)) {
+            console.warn("No units found for this client");
+            return;
+          }
+
+          const filesToZip = [];
+
+          // ✅ LOOP ALL UNITS
+          for (const unit of response.units) {
+            if (!unit?.unitId) continue;
+
+            const ezText = await buildUnitEZReport({
+              unit
+            });
+
+            // downloadEZFile(
+            //   ezText,
+            //   `Unit_Report_${unit.unitName}_${unit.unitId}.ez`
+            // );
+
+            filesToZip.push({
+              filename: `Unit_Report_${unit.unitName}_${unit.unitId}.ez`,
+              content: ezText,
+            });
+          }
+
+          await downloadEZFilesAsZip(filesToZip, `All_Unit_Reports_${activeClientId}.zip`);
+
+        } catch (err) {
+          console.error("Failed to generate unit reports:", err);
+        }
+      }
+
       else if (selectedReport === "global-data") {
         try {
           const response = await getGlobalDataReportByClient(activeClientId);
-          const icResponse  = await getICValue(activeClientId);
+          const icResponse = await getICValue(activeClientId);
           const stableResponse = await getSTAPAndSTAGStableCount(activeClientId);
           const urResponse = await getProductivityValue(activeClientId);
 
           const totalCandidates = response.totalUniqueCandidates || 0;
           const analytics = response.summary?.[0]?.globalAnalytics;
           const thresholds = response.summary?.[0]?.globalAnalyticsThreshold?.summary;
-      
+
           if (!analytics || !thresholds) {
             console.warn("Incomplete global analytics data");
             return;
           }
-      
+
           const ezText = buildGlobalEZReport({
             client: response.client,
             totalCandidates,
@@ -446,7 +451,7 @@ export default function DataReports() {
             productivityValue: urResponse?.distribution,
 
           });
-      
+
           await downloadEZFile(
             ezText,
             `Global_Analytics_Report.ez`
@@ -461,15 +466,15 @@ export default function DataReports() {
 
     finally {
       setIsDownloading(false);
-    }  
-    
+    }
+
   };
-  
+
 
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden  ">
-        
+
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white m-1">
           <div className="flex flex-col h-full">
@@ -520,16 +525,14 @@ export default function DataReports() {
                         onClick={() => setopenMenu(!openMenu)}
                       >
                         <span
-                          className={`transition-transform duration-200 text-gray-600 mr-1 ${
-                            openMenu ? "rotate-90" : "rotate-0"
-                          }`}
+                          className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
+                            }`}
                         >
                           ▶
                         </span>
                         <span
-                          className={`text-md text-gray-600 ml-2 ${
-                            openMenu ? "font-bold" : ""
-                          }`}
+                          className={`text-md text-gray-600 ml-2 ${openMenu ? "font-bold" : ""
+                            }`}
                         >
                           Details
                         </span>
@@ -565,11 +568,10 @@ export default function DataReports() {
                               <div
                                 key={item.id}
                                 className={`grid grid-cols-3 gap-2 items-center text-sm px-2 py-1 cursor-pointer
-                                ${
-                                  activeCandidateId === item.id
+                                ${activeCandidateId === item.id
                                     ? "bg-blue-100 border-l-4 border-blue-400"
                                     : "hover:bg-gray-100"
-                                }`}
+                                  }`}
                                 onClick={() => {
                                   setShowEdit(true);
                                   setShowSecondary(true);
@@ -637,9 +639,8 @@ export default function DataReports() {
                           disabled: false,
                         },
                       ].map((item) => (
-                        <div key={item.id} className={`flex items-center gap-2 ${
-                          item.disabled ? "opacity-50 cursor-not-allowed" : ""
-                        }`}>
+                        <div key={item.id} className={`flex items-center gap-2 ${item.disabled ? "opacity-50 cursor-not-allowed" : ""
+                          }`}>
                           <input
                             id={item.id}
                             type="radio"
@@ -648,8 +649,7 @@ export default function DataReports() {
                             onChange={() => setSelectedReport(item.id)}
                             className="w-4 h-4 text-gray-600 accent-black border-gray-300 focus:ring-black"
                           />
-                          <label htmlFor={item.id} className={`text-gray-800 ${
-                                item.disabled ? "cursor-not-allowed" : "cursor-pointer" }`}>
+                          <label htmlFor={item.id} className={`text-gray-800 ${item.disabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
                             {item.label}
                           </label>
                         </div>

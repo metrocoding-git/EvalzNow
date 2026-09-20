@@ -762,12 +762,19 @@ export function buildCandidateEZReport({
     year: "numeric",
   });
 
+   const n3 = (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(3) : "-");
+  const rosterStats = unitMeta?.rosterStats ?? {};
+  const safeRoster = { unitOutcome: "-", ...(roster || {}), percentages: roster?.percentages || {} };
+  const effortCSD = effortResults?.data?.CSD ?? "-";
+  const effortUSD = effortResults?.data?.USD ?? "-";
+  const irregularityList =
+    candidate?.irregularities ?? scores?.[0]?.candidate?.irregularities ?? [];
 
   const { leaders, assessors } = extractStaffAssignments(unitMeta.staffAssignments);
 
   const benchmarkRows = renderBenchmarkRows(unitMeta.benchmarks);
 
-  const assessmentBlocks = renderAssessmentBlocks(candidate.pps);
+  const assessmentBlocks = renderAssessmentBlocks(candidate?.pps);
 
   const engagementPercentages = engagement?.percentages ?? {};
 
@@ -805,8 +812,7 @@ export function buildCandidateEZReport({
 
   const productivityRows = renderButlerProductivityRows(competency?.results ?? []);
 
-  const candidateFromScores = scores?.[0]?.candidate;
-  const irregularityRows = renderIrregularitiesRows(candidateFromScores?.irregularities);
+  const irregularityRows = renderIrregularitiesRows(irregularityList);
 
 
 
@@ -933,7 +939,7 @@ export function buildCandidateEZReport({
   Unit End Date                        :     ${unitMeta.unitEndDate ?? "-"}
   Signature Profile                    :     ${unitMeta.signatureProfile ?? "-"}
   Unit Type                            :     ${unitMeta.unitType ?? "-"}
-  Unit Roster Count                    :     ${unitMeta.rosterStats.totalCount ?? "-"}
+  Unit Roster Count                    :     ${rosterStats.totalCount ?? "-"}
   
   Assigned Leader #1                   :     ${leaders[0]}
   Assigned Leader #2                   :     ${leaders[1]}
@@ -993,7 +999,7 @@ ${assessmentBlocks}
      Interaction Class 4: Advanced
      Interaction Class 5: Exceptional
 
-     Unit Outcome for Candidate                 :     ${roster.unitOutcome ?? "-"}
+     Unit Outcome for Candidate                 :     ${safeRoster.unitOutcome ?? "-"}
 
 
 *******************************************************                                  SECTION 04                               *******************************************************
@@ -1063,18 +1069,18 @@ ${hybridRows}
 
 ${productivityRows}
 
-     Effort -  CSD Reference                   :     ${effortResults.data.CSD}
-     Effort -  USD Reference                   :     ${effortResults.data.USD}
+     Effort -  CSD Reference                   :     ${effortCSD}
+     Effort -  USD Reference                   :     ${effortUSD}
 
 ---------------------------------------
  ATTENDANCE TRACKING:
 ---------------------------------------
 
-     Attendance % - Present                    :     ${Number(roster.percentages.present).toFixed(3) ?? "-"}
-     Attendance % - Excused Absences           :     ${Number(roster.percentages.excusedAbsences).toFixed(3) ?? "-"}
-     Attendance % - Unexcused Absences         :     ${Number(roster.percentages.unexcusedAbsences).toFixed(3) ?? "-"}
-     Attendance % - Excused Tardies            :     ${Number(roster.percentages.excusedTardies).toFixed(3) ?? "-"}
-     Attendance % - Unexcused Tardies          :     ${Number(roster.percentages.unexcusedTardies).toFixed(3) ?? "-"}
+     Attendance % - Present                    :     ${n3(safeRoster.percentages.present)}
+     Attendance % - Excused Absences           :     ${n3(safeRoster.percentages.excusedAbsences)}
+     Attendance % - Unexcused Absences         :     ${n3(safeRoster.percentages.unexcusedAbsences)}
+     Attendance % - Excused Tardies            :     ${n3(safeRoster.percentages.excusedTardies)}
+     Attendance % - Unexcused Tardies          :     ${n3(safeRoster.percentages.unexcusedTardies)}
 
 ---------------------------------------
  ENGAGEMENT TRACKING:
