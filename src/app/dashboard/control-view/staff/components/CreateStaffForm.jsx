@@ -22,11 +22,11 @@ export default function CreateStaffForm({ onClose, onCreate }) {
 
   const { formStatus, setFormStatus } = useFormStatus();
 
-    // // Set status when the form opens
-    // useEffect(() => {
-    //   setFormStatus("Creating...");
-    //   return () => setFormStatus("Ready..."); // Reset when form unmounts
-    // }, [setFormStatus]);
+  // // Set status when the form opens
+  // useEffect(() => {
+  //   setFormStatus("Creating...");
+  //   return () => setFormStatus("Ready..."); // Reset when form unmounts
+  // }, [setFormStatus]);
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -90,21 +90,20 @@ export default function CreateStaffForm({ onClose, onCreate }) {
         dateOfEmployment: form["Date of Employment"],
         contactNumber: form["Contact Number"],
         emailAddress: form["Company E-mail Address"],
-        staffId: form["Staff ID"],   
+        staffId: form["Staff ID"],
         accessLevel: form["Access Level"] || "Leaders Access",
         accountStatus: form["Account Status"] || "Enabled",
       };
 
       const result = await onCreate(staffData);
-      
-      if (result !== false) {
+
+      if (result) {
         setFormStatus("Staff Created");
-        onClose(); // close form only on success
+        onClose();
       } else {
-        setFormStatus("Submission failed");
+        setFormStatus("Creating...");   
       }
-     
-      
+
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Failed to create staff";
@@ -188,7 +187,7 @@ export default function CreateStaffForm({ onClose, onCreate }) {
           <label className="col-span-1 flex items-center text-gray-700">Account Status:</label>
           <select
             value={form["Account Status"] || ""}
-            disabled={!form["Access Level"]} 
+            disabled={!form["Access Level"]}
             className="col-span-2 border border-gray-300 px-2 py-1 bg-gray-100 text-sm"
             onChange={(e) => handleChange("Account Status", e.target.value)}
             required
@@ -214,11 +213,10 @@ export default function CreateStaffForm({ onClose, onCreate }) {
             type="submit"
             disabled={!isFormValid() || isSubmitting}
             // onClick={onClose}
-            className={`px-4 py-1 bg-gray-200  text-sm transition-colors ${
-              !isFormValid() || isSubmitting
+            className={`px-4 py-1 bg-gray-200  text-sm transition-colors ${!isFormValid() || isSubmitting
                 ? "cursor-not-allowed"
                 : "bg-gray-200 hover:bg-gray-300"
-            }`}
+              }`}
           >
             Close
           </button>

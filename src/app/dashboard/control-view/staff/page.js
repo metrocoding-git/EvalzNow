@@ -32,7 +32,7 @@ export default function StaffControl() {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  
+
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -45,7 +45,7 @@ export default function StaffControl() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const {formStatus, setFormStatus} = useFormStatus();
+  const { formStatus, setFormStatus } = useFormStatus();
   const [user, setUser] = useState(null);
   const controlsRef = useRef(null);
   const [activeClientId, setActiveClientId] = useState(null);
@@ -58,7 +58,7 @@ export default function StaffControl() {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
+
     if (!token || !user) {
       router.replace("/login");
     }
@@ -80,10 +80,10 @@ export default function StaffControl() {
 
     const fetchStaffs = async () => {
       try {
-        
+
         setLoading(true);
         const data = await getAllStaffs(activeClientId);
-         // Sort ascending by staffId or id
+        // Sort ascending by staffId or id
         const sortedData = (Array.isArray(data) ? data : []).sort(
           (a, b) => Number(a.id) - Number(b.id)
         );
@@ -111,55 +111,37 @@ export default function StaffControl() {
   // Create new staff
   const handleCreate = async (newStaff) => {
     try {
-
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(newStaff.emailAddress)) {
         toast.error("Please enter a valid email address");
         return false;
       }
-
-      const staffIdExists = dataList.some(
-        (staff) => staff.staffId === newStaff.staffId
-      );
-
-      const staffEmailExists = dataList.some(
-        (staff) => staff.emailAddress === newStaff.emailAddress
-      );
-  
-      if (staffIdExists) {
+      if (dataList.some((s) => s.staffId === newStaff.staffId)) {
         toast.error(`Staff ID "${newStaff.staffId}" already exists`);
         return false;
       }
-
-      if (staffEmailExists) {
+      if (dataList.some((s) => s.emailAddress === newStaff.emailAddress)) {
         toast.error(`Staff Email "${newStaff.emailAddress}" already exists`);
         return false;
       }
 
-      const accountPayload = {
-        username: newStaff.emailAddress,
-        password: "12345678", // default password
-        acc_id: loggedInUser?.acc,
-        role: "staff",
-      };
-      const createdAccount = await createAccount(accountPayload);
-  
-      const staffWithAccount = {
+      const createdStaff = await createStaff({
         ...newStaff,
-        accountId: loggedInUser?.id, // ✅ assign accountId
-        clientId: activeClientId, 
-      };
-      const createdStaff = await createStaff(staffWithAccount);
+        clientId: activeClientId,      
+        accountId: loggedInUser?.id,
+      });
+
       setDataList((prev) => [...prev, createdStaff]);
       setSelectedStaff(createdStaff);
       setShowAdd(false);
       setFormStatus("Staff Created");
-      return createStaff;
+      return createdStaff;                 // success -> the object
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || "Failed to create staff";
-      toast.error(errorMessage); // ✅ show toast here
-      return null;
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to create staff"
+      );
+      return false;                        // failure -> false, so the form stays open
     }
   };
 
@@ -238,16 +220,16 @@ export default function StaffControl() {
       if (
         !isContextMenuClick &&
         !isStaffClick &&
-        !isControlClick &&  !isFormClick 
+        !isControlClick && !isFormClick
       ) {
         setSelectedStaff(null);
         setShowEdit(false);
         setFormStatus("Ready...");
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
-  
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -264,14 +246,14 @@ export default function StaffControl() {
     try {
       setFormStatus('Processing...')
       await deleteStaff(id); // API call to delete from backend
-      
+
       setDataList((prev) => prev.filter((staff) => staff.id !== id)); // Remove from state
       setFormStatus('Staff Deleted');
       if (selectedStaff?.id === id) {
         setSelectedStaff(null);
         setShowEdit(false);
       }
-  
+
     } catch (err) {
       console.error("Failed to delete staff:", err);
       setError("Failed to delete staff. Please try again.");
@@ -302,13 +284,12 @@ export default function StaffControl() {
                 {selectedStaff && loggedInUser?.role !== "staff" && (
                   <div className="flex gap-1 staff-item">
                     <button
-                      className={`p-1.5 text-gray-800 hover:text-gray-900 bg-gray-200 transition-colors ${
-                        selectedStaff.accessLevel === "Full Access" && user.role === "staff"
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-400 hover:text-gray-900"
-                      }`}
+                      className={`p-1.5 text-gray-800 hover:text-gray-900 bg-gray-200 transition-colors ${selectedStaff.accessLevel === "Full Access" && user.role === "staff"
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-400 hover:text-gray-900"
+                        }`}
                       onClick={() => handleDelete(selectedStaff.id)}
-                      disabled= {selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
+                      disabled={selectedStaff.accessLevel === "Full Access" && user.role === "staff"}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -443,20 +424,20 @@ export default function StaffControl() {
                 const updatedList = prev.map((item) =>
                   item.id === updatedStaff.id ? updatedStaff : item
                 );
-            
+
                 // Keep the list sorted the same way as your staff list
                 const sortedList = [...updatedList].sort(
                   (a, b) => Number(a.id) - Number(b.id)
                 );
-            
+
                 if (sortedList.length > 0) {
                   setSelectedStaff(sortedList[0]); // Select first staff
                   setShowEdit(true);               // Keep editor open
                 }
-            
+
                 return sortedList;
               });
-            
+
               setFormStatus("Staff Updated");
             }}
           />

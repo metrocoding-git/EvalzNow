@@ -72,11 +72,11 @@ export default function AdminControl() {
   // const { activeClientId, setActiveClientId } = useClient();
 
   const ACTIVE_CLIENT_KEY = "activeClientId";
-  
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
+
     if (!token || !user) {
       router.replace("/login");
     }
@@ -90,25 +90,25 @@ export default function AdminControl() {
         const clientsArray = Array.isArray(data) ? data : [];
         setDataList(clientsArray);
         setClients(clientsArray);
-  
+
         if (clientsArray.length === 0) return;
-  
+
         // ✅ Keep the active client stored in sessionStorage
         const storedId = sessionStorage.getItem(ACTIVE_CLIENT_KEY);
-  
+
         // ✅ Do NOT overwrite the active client
         // We just need to ensure one is stored
 
         if (!storedId || storedId === "undefined" || storedId === "null") {
           sessionStorage.setItem(ACTIVE_CLIENT_KEY, String(clientsArray[0].id));
         }
-  
+
         // ✅ Always select the first client for editing (independent of active)
         const firstClient = clientsArray[0];
         setSelectedClient(firstClient);
         setShowEdit(true);
         setShowAdd(false);
-  
+
       } catch (err) {
         console.error("Failed to fetch clients:", err);
         setError("Failed to load clients. Please try again.");
@@ -117,30 +117,18 @@ export default function AdminControl() {
         setLoading(false);
       }
     };
-  
+
     fetchClients();
   }, []);
-  
-  
+
+
   const handleCreate = async (newClient) => {
     try {
 
-      const accountPayload = {
-        username: newClient.emailAddress,
-        password: "12345678", // default password
-        acc_id: loggedInUser?.acc,
-        role: "admin",
-      };
-      const createdAccount = await createAccount(accountPayload);
-
-      console.log("client created: ->", createdAccount);
-
-      const clientWithAccount = {
+      const createdClient = await createClient({
         ...newClient,
-        accountId: loggedInUser?.id, // ✅ assign accountId
-      };
-      
-      const createdClient = await createClient(clientWithAccount);
+        accountId: loggedInUser?.id,
+      });
       setClients(prev => [...prev, createdClient]);
       setDataList(prev => [...prev, createdClient]);
       // console.log(dataList);
@@ -186,7 +174,7 @@ export default function AdminControl() {
       );
     });
   };
-  
+
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -199,20 +187,20 @@ export default function AdminControl() {
     return [...dataList].sort((a, b) => {
       const valA = a[sortBy];
       const valB = b[sortBy];
-      
+
       // Handle cases where values might be undefined/null
       if (valA == null) return sortOrder === "asc" ? 1 : -1;
       if (valB == null) return sortOrder === "asc" ? -1 : 1;
-      
+
       // If both values are numbers, compare numerically
       if (typeof valA === 'number' && typeof valB === 'number') {
         return sortOrder === "asc" ? valA - valB : valB - valA;
       }
-      
+
       // Otherwise, compare as strings
       const strA = String(valA).toLowerCase();
       const strB = String(valB).toLowerCase();
-      
+
       if (strA < strB) return sortOrder === "asc" ? -1 : 1;
       if (strA > strB) return sortOrder === "asc" ? 1 : -1;
       return 0;
@@ -255,17 +243,17 @@ export default function AdminControl() {
       setFormStatus('Processing...')
       // Call the delete service
       await deleteClient(id);
-      
+
       // Update local state
       const updatedData = dataList.filter((item) => item.id !== id);
       setFormStatus('Client Deleted');
       setDataList(updatedData);
-      
+
       // Update selected client if needed
       if (selectedClient?.id === id) {
         setSelectedClient(updatedData[0] || null);
       }
-      
+
       // Show success message or notification
       console.log("Client deleted successfully");
     } catch (err) {
@@ -295,63 +283,63 @@ export default function AdminControl() {
       }
     };
 
-    
+
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [ setFormStatus]);
-  
+  }, [setFormStatus]);
+
 
 
   return (
     <div className="flex h-full overflow-hidden w-full">
-      
+
       <div className="w-1/2 lg:w-4/12 bg-white shadow-sm border-r border-gray-200 flex flex-col">
         <div className="h-1/2 flex flex-col border-1 border-gray-200 overflow-hidden">
           {/* Header with controls */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
-                <div className="flex justify-end gap-1" >
+              <div className="flex justify-end gap-1" >
                 {isSuperAdmin && (
+                  <button
+                    ref={controlsRef}
+                    className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                    onClick={() => {
+                      setSelectedClient(null);
+                      setShowAdd(true);
+                      setShowEdit(false);
+                      setFormStatus("Creating...");
+                    }}
+                  >
+                    <Plus className="w-3.5 h-3.5 text-black" />
+                  </button>
+                )}
+
+                {selectedClient && (
+                  <div className="flex gap-1 client-item">
                     <button
-                      ref={controlsRef}
-                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors"
+                      className="p-1.5 text-gray-800 bg-gray-200 hover:bg-gray-400 hover:text-gray-900 transition-colors"
                       onClick={() => {
-                        setSelectedClient(null);
-                        setShowAdd(true);
-                        setShowEdit(false);
-                        setFormStatus("Creating...");
+                        handleDelete(selectedClient.id)
                       }}
                     >
-                      <Plus className="w-3.5 h-3.5 text-black" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                  )}
-
-                  {selectedClient && (
-                    <div className="flex gap-1 client-item">
-                      <button
-                        className="p-1.5 text-gray-800 bg-gray-200 hover:bg-gray-400 hover:text-gray-900 transition-colors"
-                        onClick={() => {
-                          handleDelete(selectedClient.id)
-                        }}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="relative w-full mt-1">
-                  <input
-                    type="text"
-                    className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
-                    placeholder="Search"
-                    value={searchTerm}                 // ✅ Controlled input
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
-                </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative w-full mt-1">
+                <input
+                  type="text"
+                  className="border w-full pl-2 pr-8 py-1 text-sm bg-white"
+                  placeholder="Search"
+                  value={searchTerm}                 // ✅ Controlled input
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
             </div>
+          </div>
 
           {/* Column headers */}
           <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black tracking-wide px-4 py-2">
@@ -426,7 +414,7 @@ export default function AdminControl() {
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                      
+
                         // ✅ Open context menu
                         setContextMenu({
                           visible: true,
@@ -435,26 +423,23 @@ export default function AdminControl() {
                           selectedClient: item,
                         });
                       }}
-                      
+
                     >
                       <p
-                        className={`text-sm truncate ${
-                          isActive ? "font-bold text-black" : "text-gray-800"
-                        }`}
+                        className={`text-sm truncate ${isActive ? "font-bold text-black" : "text-gray-800"
+                          }`}
                       >
                         {item.lastName}
                       </p>
                       <p
-                        className={`text-sm truncate ${
-                          isActive ? "font-bold text-black" : "text-gray-800"
-                        }`}
+                        className={`text-sm truncate ${isActive ? "font-bold text-black" : "text-gray-800"
+                          }`}
                       >
                         {item.firstName}
                       </p>
                       <p
-                        className={`text-sm truncate ${
-                          isActive ? "font-bold text-black" : "text-gray-800"
-                        }`}
+                        className={`text-sm truncate ${isActive ? "font-bold text-black" : "text-gray-800"
+                          }`}
                       >
                         {item.executiveId}
                       </p>
@@ -481,7 +466,7 @@ export default function AdminControl() {
           </div>
         </div>
 
-        
+
 
         {/* Context Menu */}
         {contextMenu.visible && (
@@ -495,7 +480,7 @@ export default function AdminControl() {
                 handleDelete(contextMenu.selectedClient.id);
                 setContextMenu((prev) => ({ ...prev, visible: false }));
               }}
-              
+
             >
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
@@ -522,7 +507,7 @@ export default function AdminControl() {
               <span className="flex items-center gap-2">
                 <Check className="w-4 h-4" /> Set Active Client
               </span>
-              
+
             </button>
           </div>
         )}
@@ -561,7 +546,7 @@ export default function AdminControl() {
         </div>
       </div>
 
-      
+
     </div>
   );
 }
