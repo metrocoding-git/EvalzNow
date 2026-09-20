@@ -84,7 +84,7 @@ export default function UnitControl() {
   const { setFormStatus } = useFormStatus();
   // const { activeClientId, setActiveClientId } = useClient();
   const controlsRef = useRef(null);
-  const { selectedUnitId, setSelectedUnitId } = useUnit(); 
+  const { selectedUnitId, setSelectedUnitId } = useUnit();
   // const loggedInUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user")) : null;
   // const activeClientId = sessionStorage.getItem('activeClientId');
   const [staff, setStaff] = useState();
@@ -95,7 +95,7 @@ export default function UnitControl() {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-  
+
     if (!token || !user) {
       router.replace("/login");
     }
@@ -117,10 +117,10 @@ export default function UnitControl() {
     const fetchUnits = async () => {
       try {
         setLoading(true);
-        
+
         const units = await getAllUnits(activeClientId);
         setDataList(Array.isArray(units) ? units : []);
-        console.log("units in control: " , units, " using data list: ", dataList);
+        console.log("units in control: ", units, " using data list: ", dataList);
         if (units.length > 0) {
           setSelectedUnit(units[0]);
           setShowEdit(true);
@@ -153,20 +153,20 @@ export default function UnitControl() {
   useEffect(() => {
     const fetchCriteria = async () => {
       if (!selectedUnit?.id) return;
-  
+
       try {
         const data = await getScoringCriteriaByUnitId(selectedUnit?.id);
         if (!Array.isArray(data)) throw new Error("Invalid scoring criteria response");
-  
+
         // Sort by criteriaId to keep correct order
         const sorted = [...data].sort((a, b) => a.criteriaId - b.criteriaId);
-  
+
         setCustomCriteria(sorted);
       } catch (err) {
         console.error("Failed to fetch scoring criteria:", err);
       }
     };
-  
+
     fetchCriteria();
   }, [selectedUnit?.id]);
 
@@ -177,7 +177,7 @@ export default function UnitControl() {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        
+
         const data = await getAllCandidates(activeClientId);
         setCandidateList(Array.isArray(data) ? data : []);
         console.log(data);
@@ -194,7 +194,7 @@ export default function UnitControl() {
 
   // Fetch all candidates on mount
   useEffect(() => {
-    const fetchUnitRoster  = async () => {
+    const fetchUnitRoster = async () => {
       try {
         setLoading(true);
         const data = await getAllUnitRoster();
@@ -206,7 +206,7 @@ export default function UnitControl() {
           }
           return acc;
         }, []);
-        
+
         setCandidateList(uniqueCandidates);
         // console.log(uniqueCandidates);
       } catch (err) {
@@ -225,7 +225,7 @@ export default function UnitControl() {
       // Remove old roster item if exists
       const filtered = prev.filter(r => r.id !== updatedRoster.id);
       const newRosterData = [...filtered, updatedRoster];
-  
+
       // Rebuild candidate list from updated roster
       const uniqueCandidates = newRosterData.reduce((acc, rosterItem) => {
         const candidate = rosterItem.candidate;
@@ -235,7 +235,7 @@ export default function UnitControl() {
         return acc;
       }, []);
       setCandidateList(uniqueCandidates);
-  
+
       return newRosterData;
     });
   };
@@ -243,30 +243,30 @@ export default function UnitControl() {
 
   // Filtered candidate list based on searchTerm
   const filteredCandidates = unitRosterData
-  .filter(roster => roster.unitId === selectedUnit?.id) // only current unit
-  .filter(roster => {
-    const candidate = roster.candidate;
-    if (!candidate) return false;
-    const term = searchTerm.toLowerCase();
-    return (
-      (candidate.lastName || "").toLowerCase().includes(term) ||
-      (candidate.firstName || "").toLowerCase().includes(term) ||
-      (candidate.candidateId || "").toLowerCase().includes(term)
-    );
-  }).sort((a, b) => {
-    const valA = (a.candidate?.[sortBy] || "").toString().toLowerCase();
-    const valB = (b.candidate?.[sortBy] || "").toString().toLowerCase();
+    .filter(roster => roster.unitId === selectedUnit?.id) // only current unit
+    .filter(roster => {
+      const candidate = roster.candidate;
+      if (!candidate) return false;
+      const term = searchTerm.toLowerCase();
+      return (
+        (candidate.lastName || "").toLowerCase().includes(term) ||
+        (candidate.firstName || "").toLowerCase().includes(term) ||
+        (candidate.candidateId || "").toLowerCase().includes(term)
+      );
+    }).sort((a, b) => {
+      const valA = (a.candidate?.[sortBy] || "").toString().toLowerCase();
+      const valB = (b.candidate?.[sortBy] || "").toString().toLowerCase();
 
-    if (sortBy === "candidateId") {
+      if (sortBy === "candidateId") {
+        return candidateSortOrder === "asc"
+          ? valA.localeCompare(valB, undefined, { numeric: true })
+          : valB.localeCompare(valA, undefined, { numeric: true });
+      }
+
       return candidateSortOrder === "asc"
-        ? valA.localeCompare(valB, undefined, { numeric: true })
-        : valB.localeCompare(valA, undefined, { numeric: true });
-    }
-
-    return candidateSortOrder === "asc"
-      ? valA.localeCompare(valB)
-      : valB.localeCompare(valA);
-  });
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    });
 
 
   // Add this function to refresh candidate data
@@ -275,7 +275,7 @@ export default function UnitControl() {
       setLoading(true);
       const data = await getAllUnitRoster();
       setUnitRosterData(Array.isArray(data) ? data : []);
-      
+
       // Extract unique candidates from roster data
       const uniqueCandidates = data.reduce((acc, rosterItem) => {
         if (rosterItem.candidate && !acc.some(c => c.id === rosterItem.candidate.id)) {
@@ -283,7 +283,7 @@ export default function UnitControl() {
         }
         return acc;
       }, []);
-      
+
       setCandidateList(uniqueCandidates);
     } catch (err) {
       console.error("Failed to fetch candidates:", err);
@@ -299,7 +299,7 @@ export default function UnitControl() {
   useEffect(() => {
     const fetchUnitRosterByUnitId = async () => {
       if (!selectedUnit?.id) return;
-      
+
       try {
         setLoading(true);
         const data = await getUniRostertByUnitId(selectedUnit.id) || [];
@@ -307,7 +307,7 @@ export default function UnitControl() {
           setUnitRosterData(Array.isArray(data) ? data : []);
           console.log("Unit Roster Data:", data);
         }
-        
+
       } catch (err) {
         console.error("Failed to fetch unit roster:", err);
         setError("Failed to load unit roster. Please try again.");
@@ -319,8 +319,8 @@ export default function UnitControl() {
     fetchUnitRosterByUnitId();
   }, [selectedUnit?.id]);
 
-   // Fetch staff data only if logged-in user is staff
-   useEffect(() => {
+  // Fetch staff data only if logged-in user is staff
+  useEffect(() => {
 
     if (!loggedInUser?.staffId) {
       return;
@@ -342,14 +342,14 @@ export default function UnitControl() {
 
     fetchStaffById();
   }, [loggedInUser?.staffId]);
-  
+
   //  Add handleCreate
   const handleCreate = async (newUnit) => {
     try {
       const duplicate = dataList.some(
         (u) => u.unitId?.toLowerCase() === newUnit.unitId?.toLowerCase()
       );
-  
+
       if (duplicate) {
         toast.error(`A unit with ID "${newUnit.unitId}" already exists.`);
         setShowAdd(true);
@@ -359,13 +359,13 @@ export default function UnitControl() {
       const unitWithAccount = {
         ...newUnit,
         accountId: loggedInUser?.id, // ✅ assign accountId
-        clientId: activeClientId, 
+        clientId: activeClientId,
       };
 
       const data = await createUnit(unitWithAccount);
-       
+
       setDataList((prev) => [...prev, data]); // update datalist
-      setSelectedUnit(data); 
+      setSelectedUnit(data);
 
       setShowAdd(false); // ✅ only closes after successful creation
       return true;// close form after success
@@ -377,7 +377,7 @@ export default function UnitControl() {
   };
 
 
-  
+
 
 
   const sortedDataList = [...dataList].sort((a, b) => {
@@ -385,17 +385,17 @@ export default function UnitControl() {
       const value = sortField === "name" ? item.unitName : item[sortField];
       return sortField === "id" ? String(value) : String(value || "").toLowerCase();
     };
-  
+
     const valA = getValue(a);
     const valB = getValue(b);
-  
+
     if (sortField === "id") {
-      return sortOrder === "asc" 
+      return sortOrder === "asc"
         ? valA.localeCompare(valB, undefined, { numeric: true })
         : valB.localeCompare(valA, undefined, { numeric: true });
     }
-  
-    return sortOrder === "asc" 
+
+    return sortOrder === "asc"
       ? valA.localeCompare(valB)
       : valB.localeCompare(valA);
   });
@@ -445,7 +445,7 @@ export default function UnitControl() {
         setSelectedUnit(updated[0] || null);
         setShowEdit(updated.length > 0);
       }
-      
+
       setContextMenu(prev => ({ ...prev, visible: false }));
     } catch (err) {
       console.error("Failed to delete unit:", err);
@@ -458,7 +458,7 @@ export default function UnitControl() {
     setSelectedCandidate(prev =>
       prev?.id === candidate?.id ? null : candidate
     );
-  };  
+  };
 
 
   // Add this near your other state
@@ -467,7 +467,7 @@ export default function UnitControl() {
     try {
       setLoading(true);
       const blocks = await getAssessmentBlockByUnitId(selectedUnit.id);
-      
+
       // Handle the response properly - it could be a single object or an array
       if (Array.isArray(blocks)) {
         setAssessmentBlocks(blocks);
@@ -477,7 +477,7 @@ export default function UnitControl() {
       } else {
         setAssessmentBlocks([]);
       }
-      
+
       console.log("blocks", blocks);
     } catch (err) {
       console.error("Failed to fetch blocks:", err);
@@ -493,7 +493,7 @@ export default function UnitControl() {
   useEffect(() => {
     fetchBlocksByUnitAndCandidate();
   }, [selectedUnit?.id, selectedCandidate?.id]);
-  
+
 
 
   useEffect(() => {
@@ -542,7 +542,7 @@ export default function UnitControl() {
       setFormStatus("Processing...");
       // Call the update API
       const result = await updateUnit(updatedUnit.id, updatedUnit);
-      
+
       // console.log(result);
       // Update the local state
       setDataList(prev =>
@@ -550,9 +550,9 @@ export default function UnitControl() {
       );
       setSelectedUnit(result);
       setShowEdit(false);
-      
+
       setFormStatus("Unit Updated");
-      
+
 
       return result;
     } catch (err) {
@@ -568,23 +568,23 @@ export default function UnitControl() {
 
   useEffect(() => {
     const fetchAndSeparateScores = async () => {
-    if (!selectedUnit?.id || !selectedCandidate?.id) return;
-  
+      if (!selectedUnit?.id || !selectedCandidate?.id) return;
+
       // Reset previous data
       setClassroomData([]);
       setWorkforceData([]);
       setInsertScores([]);
       setLoading(true);
       setError(null);
-  
+
       try {
         const data = await getInsertScoreByUnitAndCandidate(selectedUnit?.id, selectedCandidate?.id);
         if (!Array.isArray(data)) throw new Error("Invalid insert score response");
         // console.log("Fetched insert scores:", data);
-  
+
         const classroomRows = [];
         const workforceRows = [];
-  
+
         data.forEach((row) => {
           const env = row.unit?.environment || "Workforce"; // default Workforce
           const ppId = row.ppId;
@@ -612,11 +612,11 @@ export default function UnitControl() {
         //  sort by ppId ascending before setting state
         classroomRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
         workforceRows.sort((a, b) => parseInt(a.ppId, 10) - parseInt(b.ppId, 10));
-  
+
         setClassroomData(classroomRows);
         setWorkforceData(workforceRows);
         setInsertScores(data);
-  
+
       } catch (err) {
         console.error("Error fetching insert scores:", err);
         setError("Failed to load insert scores.");
@@ -624,7 +624,7 @@ export default function UnitControl() {
         setLoading(false);
       }
     };
-  
+
     fetchAndSeparateScores();
   }, [selectedUnit?.id, selectedCandidate?.id]);
 
@@ -636,7 +636,7 @@ export default function UnitControl() {
   };
 
   // Add this computed value to get filtered roster data
-  const filteredUnitRosterData = unitRosterData.filter(roster => 
+  const filteredUnitRosterData = unitRosterData.filter(roster =>
     (roster.unitId === selectedUnit?.id || roster.unit?.id === selectedUnit?.id) &&
     (!selectedCandidate || roster.candidate?.id === selectedCandidate.id)
   );
@@ -644,13 +644,13 @@ export default function UnitControl() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!selectedUnit) return; // require a selected unit
-  
+
       // Shift + E → Duplicate
       if (e.shiftKey && e.key.toLowerCase() === "e") {
         e.preventDefault();
         handleDuplicate(selectedUnit);
       }
-  
+
       // Shift + C → Unit Config
       if (e.shiftKey && e.key.toLowerCase() === "c") {
         e.preventDefault();
@@ -660,7 +660,7 @@ export default function UnitControl() {
         setUnitRoster(true);
         setShowAdd(false);
         setShowEdit(false);
-  
+
         const rosterForUnit = unitRosterData.filter(
           (r) => r.unitId === selectedUnit.id || r.unit?.id === selectedUnit.id
         );
@@ -670,13 +670,13 @@ export default function UnitControl() {
           setSelectedCandidate(null);
         }
       }
-  
+
       // Delete → Delete unit
       if (e.shiftKey && e.key === "Delete") {
         e.preventDefault();
         handleDelete(selectedUnit.id);
       }
-  
+
       // Shift + 2 → Activate Setup View
       if (e.shiftKey && e.code === "Digit2") {
         e.preventDefault();
@@ -686,7 +686,7 @@ export default function UnitControl() {
           `/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
         );
       }
-  
+
       // Shift + 3 → Activate Analytics View
       if (e.shiftKey && e.code === "Digit3") {
         e.preventDefault();
@@ -697,31 +697,31 @@ export default function UnitControl() {
         );
       }
     };
-  
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedUnit, unitRosterData, router, setSelectedUnitId]);
-  
+
 
   const handleDuplicate = (unit) => {
     if (!unit) return;
 
-      // ✅ Clean up any IDs or timestamps to avoid conflicts
-  const unitToCopy = {
-    ...unit,
-    staffAssignments: unit.staffAssignments
-      ? unit.staffAssignments.map(sa => ({
+    // ✅ Clean up any IDs or timestamps to avoid conflicts
+    const unitToCopy = {
+      ...unit,
+      staffAssignments: unit.staffAssignments
+        ? unit.staffAssignments.map(sa => ({
           roleType: sa.roleType,
           staff: { ...sa.staff } // Copy staff details
         }))
-      : [],
-  };
-  
-    // Pass the unit to duplicate form
-  
+        : [],
+    };
 
-    
-  
+    // Pass the unit to duplicate form
+
+
+
+
     // Close context menu if visible
     setContextMenu(prev => ({ ...prev, visible: false }));
     setUnitToDuplicate(unitToCopy);
@@ -738,7 +738,7 @@ export default function UnitControl() {
         <div className="flex flex-col border-1 border-gray-200 overflow-hidden h-1/2 ">
           {/* Header */}
           <div className="bg-gray-100 border-b border-gray-200 px-4 py-1.5">
-          
+
             {/* Control buttons */}
             <div className="flex flex-col mb-3">
               <div className="flex justify-end gap-1">
@@ -754,27 +754,26 @@ export default function UnitControl() {
                       setUnitRoster(false);
                     }}
                   >
-                    <Undo2 className="w-3.5 h-3.5 text-black"/>
+                    <Undo2 className="w-3.5 h-3.5 text-black" />
                   </button>
                 ) : (
                   <>
-                    	{!(loggedInUser?.role === "staff" && staff?.accessLevel === "Leaders Access") && (
-                      <button ref={controlsRef}
-                        className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
-                        onClick={() => {
-                          if (showUnitRoster) {
-                            setShowAddBlockManager(true);
-                          } else {
-                            setSelectedUnit(null);
-                            setShowAdd(true);
-                            setShowEdit(false);
-                            setFormStatus("Creating...");
-                          }
-                        }}
-                      >
-                        <Plus className="w-3.5 h-3.5 text-black" />
-                      </button>
-                      )}
+
+                    <button ref={controlsRef}
+                      className="inline-flex items-center px-1.5 py-1.5 text-xs font-medium text-white bg-gray-200 hover:bg-gray-400 transition-colors cursor-pointer"
+                      onClick={() => {
+                        if (showUnitRoster) {
+                          setShowAddBlockManager(true);
+                        } else {
+                          setSelectedUnit(null);
+                          setShowAdd(true);
+                          setShowEdit(false);
+                          setFormStatus("Creating...");
+                        }
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5 text-black" />
+                    </button>
 
                     {selectedUnit && (
                       <div className="flex gap-1 unit-item">
@@ -805,7 +804,7 @@ export default function UnitControl() {
             {/* Conditional Column Headers */}
             {showUnitRoster ? (
               <div className="grid grid-cols-3 gap-1 text-xs font-semibold text-black">
-                <div className="cursor-pointer select-none" 
+                <div className="cursor-pointer select-none"
                   onClick={() => {
                     if (sortBy === "lastName") {
                       setCandidateSortOrder(candidateSortOrder === "asc" ? "desc" : "asc");
@@ -815,7 +814,7 @@ export default function UnitControl() {
                     }
                   }}
                 >Last Name</div>
-                <div className="cursor-pointer select-none" 
+                <div className="cursor-pointer select-none"
                   onClick={() => {
                     if (sortBy === "firstName") {
                       setCandidateSortOrder(candidateSortOrder === "asc" ? "desc" : "asc");
@@ -833,7 +832,7 @@ export default function UnitControl() {
                       setSortBy("candidateId");
                       setCandidateSortOrder("asc");
                     }
-                  }}              
+                  }}
                 >Candidate ID</div>
               </div>
             ) : (
@@ -866,13 +865,13 @@ export default function UnitControl() {
                 </div>
               </div>
             )}
-        
+
           </div>
 
           {/* <div className=""> */}
           {!showAdd && showUnitRoster && (
             <div className=" pb-1 flex-1 overflow-auto">
-              
+
 
               {/* Unit Details (smaller and less prominent) */}
               <div className="items-center justify-center px-4 py-2 mt-1 mb-2 ">
@@ -898,18 +897,18 @@ export default function UnitControl() {
               {/* Candidate List */}
               <div>
                 {filteredCandidates.map((rosterItem, index) => (
-                    <div 
+                  <div
                     key={index}
                     className={`grid grid-cols-3 gap-1 px-4 py-1 border-b border-gray-200 cursor-pointer 
                       ${selectedCandidate?.id === rosterItem.candidate?.id ? "bg-blue-100 border-l-4 border-l-blue-400 text-black"
                         : "hover:bg-gray-50"}`}
                     onClick={() => handleCandidateSelect(rosterItem.candidate)}
-                    >
-                      <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
-                      <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
-                    </div>
-                  ))
+                  >
+                    <div className="text-sm">{rosterItem.candidate?.lastName || 'N/A'}</div>
+                    <div className="text-sm">{rosterItem.candidate?.firstName || 'N/A'}</div>
+                    <div className="text-sm">{rosterItem.candidate?.candidateId || 'N/A'}</div>
+                  </div>
+                ))
                 }
               </div>
             </div>
@@ -978,14 +977,14 @@ export default function UnitControl() {
                   );
                 })}
 
-                {/* Header */}
-          
-            {/* List Toggle */}
-            <div className="flex-[1.1] min-h-0 overflow-auto">
+              {/* Header */}
+
+              {/* List Toggle */}
+              <div className="flex-[1.1] min-h-0 overflow-auto">
+
+              </div>
 
             </div>
-                
-          </div>
           )}
         </div>
 
@@ -999,7 +998,7 @@ export default function UnitControl() {
             <button
               className="flex justify-between items-center px-4 py-2 text-xs text-gray-800 hover:bg-gray-300 w-full text-left"
               onClick={async (e) => {
-                
+
                 e.stopPropagation();
                 if (contextMenu.selectedUnit) {
                   handleDuplicate(contextMenu.selectedUnit);//  pass selected unit
@@ -1111,10 +1110,10 @@ export default function UnitControl() {
             showUnitForm={selectedUnit && showEdit}
             showEditBlockManager={selectedUnit && showEditBlockManager}
             activeTab={activeTab}
-            onSave={handleUnitSave} 
-            updateUnit={updateUnit} 
+            onSave={handleUnitSave}
+            updateUnit={updateUnit}
             onBlockUpdate={handleBlockUpdate}
-            refreshAssessmentBlocks={refreshAssessmentBlocks} 
+            refreshAssessmentBlocks={refreshAssessmentBlocks}
           />
 
         </div>
@@ -1125,8 +1124,9 @@ export default function UnitControl() {
         {showAdd && (
           <div className="h-full flex flex-col" ref={createFormRef}>
             <CreateUnitForm onClose={() => {
-               setShowAdd(false)
-               setUnitToDuplicate([])}} onSubmit={handleCreate} unitData={unitToDuplicate}  />
+              setShowAdd(false)
+              setUnitToDuplicate([])
+            }} onSubmit={handleCreate} unitData={unitToDuplicate} />
           </div>
         )}
 
@@ -1138,15 +1138,15 @@ export default function UnitControl() {
 
         {!showAdd && showUnitRoster && (
           <div className="h-full overflow-auto">
-            <UnitRoster activeTab={activeTab}  setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit}
-            unitRosterData={filteredUnitRosterData} // Pass filtered data
-            selectedUnit={selectedUnit}
-            selectedCandidate={selectedCandidate}
-            onBlockSelect={setSelectedBlock}
-            onRosterUpdate={handleRosterUpdate}
-            refreshCandidateData={refreshCandidateData} 
-            showEditBlockManager={showEditBlockManager}
-               />
+            <UnitRoster activeTab={activeTab} setActiveTab={setActiveTab} setShowEditBlockManager={setShowEditBlockManager} setShowEdit={setShowEdit}
+              unitRosterData={filteredUnitRosterData} // Pass filtered data
+              selectedUnit={selectedUnit}
+              selectedCandidate={selectedCandidate}
+              onBlockSelect={setSelectedBlock}
+              onRosterUpdate={handleRosterUpdate}
+              refreshCandidateData={refreshCandidateData}
+              showEditBlockManager={showEditBlockManager}
+            />
           </div>
         )}
       </div>

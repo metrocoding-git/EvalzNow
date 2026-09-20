@@ -1,53 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation';
-import { getUserRoleRedirect } from '@/utils/authHelpers';
-import { login, recoverAccount } from "@/services/accountService";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { recoverAccount } from "@/services/accountService";
 import toast, { Toaster } from "react-hot-toast";
 
-
 export default function RecoverForm() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ username: "" });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = async (e) => {
+  const handleRecover = async (e) => {
     e.preventDefault();
-    setError('');
-  
+    if (loading) return;                 // blocks double submits
+
+    setLoading(true);
     try {
-      const res = await recoverAccount({
-        username: formData.username,
-      });
-  
-      toast.success(res.message);
-  
+      const res = await recoverAccount({ username: formData.username.trim() });
+      toast.success(res.message || "Recovery email sent successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Recovery failed");
+      toast.error(err.response?.data?.message || err.message || "Recovery failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex-1 relative flex items-center justify-center p-12 bg-white">
-      {/* Top left "Return Home" */}
-      <div className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors" 
+      <Toaster position="top-right" reverseOrder={false} />
+
+      <div
+        className="absolute top-4 left-4 text-sm font-bold cursor-pointer hover:text-gray-900 transition-colors"
         onClick={() => router.push("/login")}
       >
         &lt;&lt; BACK
       </div>
-  
-      {/* Login Form */}
-      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
+
+      <form onSubmit={handleRecover} className="w-full max-w-sm space-y-6">
         <h2 className="text-2xl text-black font-bold text-center">EVALZNOW</h2>
-        <p className="text-center text-xs">
-          PLEASE ENTER YOUR EMAIL ADDRESS
-        </p>
-  
+        <p className="text-center text-xs">PLEASE ENTER YOUR EMAIL ADDRESS</p>
+
         <input
           type="text"
           name="username"
@@ -56,24 +52,20 @@ export default function RecoverForm() {
           onChange={handleChange}
           value={formData.username}
         />
-  
-        {/* {error && <p className="text-red-600 text-sm text-center">{error}</p>} */}
-  
+
+        {/* no onClick here: the form's onSubmit already handles it */}
         <button
           type="submit"
-          className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium"
-          onClick={handleLogin}
+          disabled={loading || !formData.username.trim()}
+          className="bg-blue-900 text-white py-3 w-full hover:bg-blue-800 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          RECOVER
+          {loading ? "SENDING..." : "RECOVER"}
         </button>
       </form>
-  
-      {/* Bottom-right copyright */}
+
       <div className="absolute bottom-4 right-4 text-xs font-bold">
         © EvalzNow. All Rights Reserved.
       </div>
-  
     </div>
   );
-  
 }

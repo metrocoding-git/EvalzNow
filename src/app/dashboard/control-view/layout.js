@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getStaffById } from "@/services/staffService";
@@ -8,36 +8,49 @@ const tabs = [
   { label: "Admin", path: "/dashboard/control-view/admin" },
   { label: "Staff", path: "/dashboard/control-view/staff" },
   { label: "Candidate", path: "/dashboard/control-view/candidate" },
-  { label: "Unit", path: "/dashboard/control-view/unit" }
+  { label: "Unit", path: "/dashboard/control-view/unit" },
 ];
+
+// which tabs each role / access level can see
+const TAB_ACCESS = {
+  "super admin": ["Admin", "Staff", "Candidate", "Unit"],
+  admin: ["Staff", "Candidate", "Unit"],
+  staff: {
+    "Full Access": ["Staff", "Candidate", "Unit"],
+    "Leaders Access": ["Candidate", "Unit"],
+  },
+};
 
 export default function ControlViewLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const loggedInUser =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("user"))
-      : null;
-
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [staff, setStaff] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [staff, setStaff] = useState();
 
-  const isSuperAdmin = loggedInUser?.role === "super admin";
-  const isAdmin = loggedInUser?.role === "admin";
   const isStaff = loggedInUser?.role === "staff";
 
-  // Fetch staff data only if logged-in user is staff
+  // Read the login once on the client; redirect if missing
   useEffect(() => {
-    if (!isStaff) return;
+    const token = localStorage.getItem("token");
+    const raw = localStorage.getItem("user");
+    if (!token || !raw) {
+      router.replace("/login");
+      return;
+    }
+    setLoggedInUser(JSON.parse(raw));
+  }, [router]);
+
+  // Fetch the staff record only for staff users
+  useEffect(() => {
+    if (!isStaff || !loggedInUser?.staffId) return;
 
     const fetchStaffById = async () => {
       try {
         setLoading(true);
-        const data = await getStaffById(loggedInUser?.staffId);
-        setStaff(data);
-        console.log("Staff data:", data);
+        setStaff(await getStaffById(loggedInUser.staffId));
       } catch (err) {
         console.error("Failed to fetch staff:", err);
         setError("Failed to load staff data. Please try again.");
@@ -47,98 +60,41 @@ export default function ControlViewLayout({ children }) {
     };
 
     fetchStaffById();
-  }, [loggedInUser?.staffId, isStaff]);
+  }, [isStaff, loggedInUser?.staffId]);
 
-  // Determine visible tabs based on role / access level
-  const visibleTabs = tabs.filter((tab) => {
-    if (isSuperAdmin) {
-      // Super admin sees all tabs
-      return true;
-    }
+  const visibleTabs = useMemo(() => {
+    if (!loggedInUser) return [];
 
-    if (isAdmin) {
-      // Admin sees Staff, Candidate, Unit
-      return tab.label !== "Admin";
-    }
-
+    let allowed = [];
     if (isStaff) {
-      // if (staff?.accessLevel === "Full Access") {
-        // Staff Full Access sees Staff, Candidate, Unit
-        return tab.label !== "Admin" && tab.label !== "Staff";
-      // } else if (staff?.accessLevel === "Leaders Access") {
-        // Staff Leaders Access sees only Candidate + Unit
-      //   return tab.label === "Unit";
-      // }
+      allowed = TAB_ACCESS.staff[staff?.accessLevel] ?? [];   // empty until the staff record loads
+    } else {
+      allowed = TAB_ACCESS[loggedInUser.role] ?? [];
     }
+    return tabs.filter((tab) => allowed.includes(tab.label));
+  }, [loggedInUser, isStaff, staff?.accessLevel]);
 
-    // Default: hide all tabs
-    return false;
-  });
+  // Active tab comes from the URL, so it is right even when tabs load late
+  const activeTab = visibleTabs.find((tab) => pathname?.startsWith(tab.path))?.label;
 
-  const currentTab =
-    visibleTabs.find((tab) => pathname?.startsWith(tab.path))?.label ||
-    visibleTabs[0]?.label;
-
-  const [activeTab, setActiveTab] = useState(currentTab);
-
-  // Redirect if not logged in
+  // If the current URL isn't allowed, go to the first allowed tab
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
-    if (!token || !user) {
-      router.replace("/login");
-    }
-  }, [router]);
+    if (!loggedInUser) return;
+    if (isStaff && !staff) return;               // wait for access level
+    if (!visibleTabs.length) return;
 
-  // Redirect to first visible tab if current path is invalid
-  useEffect(() => {
-    const isValidPath = visibleTabs.some((tab) =>
-      pathname?.startsWith(tab.path)
-    );
-    if (!isValidPath && visibleTabs.length > 0) {
-      router.replace(visibleTabs[0].path);
-    }
-  }, [pathname, visibleTabs, router]);
+    const isValidPath = visibleTabs.some((tab) => pathname?.startsWith(tab.path));
+    if (!isValidPath) router.replace(visibleTabs[0].path);
+  }, [pathname, visibleTabs, loggedInUser, isStaff, staff, router]);
 
-  // useEffect(() => {
-  //   const handleKeyDown = (e) => {
-  //     // Ignore if user is typing in input/textarea
-  //     const tag = e.target.tagName;
-  //     if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) {
-  //       return;
-  //     }
-  
-  //     if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-  //       switch (e.key) {
-  //         case "2":
-  //           e.preventDefault();
-  //           router.push("/dashboard/setup-view");
-  //           break;
-  
-  //         case "3":
-  //           e.preventDefault();
-  //           router.push("/dashboard/analytics-view");
-  //           break;
-  
-  //         default:
-  //           break;
-  //       }
-  //     }
-  //   };
-  
-  //   window.addEventListener("keydown", handleKeyDown);
-  //   return () => window.removeEventListener("keydown", handleKeyDown);
-  // }, [router]);
-  
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-0.5 border-1 border-gray-200">
         {/* Tab buttons */}
         <div className="flex space-x-0 border-b border-gray-200 bg-gray-50 mt-1.5">
-          {visibleTabs.map((tab, index) => (
-            <Link href={tab.path} key={index}>
+          {visibleTabs.map((tab) => (
+            <Link href={tab.path} key={tab.path}>
               <span
-                onClick={() => setActiveTab(tab.label)}
                 className={
                   `relative px-8.5 py-2 text-sm font-medium transition-all duration-200 ease-in-out cursor-pointer ` +
                   (activeTab === tab.label
