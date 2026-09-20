@@ -160,7 +160,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
 
   const METRICS = [
     { title: "Neuro-Indicator Trends for", label: "RMS", yLabel: "RMS Value", keyOf: (d) => d.rmsKey },
-    { title: "Neuro-Load Trends for", label: "Cognitive Load", yLabel: "Cognitive Load", keyOf: (d) => d.loadKey },
+    { title: "Neuro-Load Trends for", label: "Cognitive Load", yLabel: "Cognitive Load Value", keyOf: (d) => d.loadKey },
   ];
 
   const TARGETS = ["Proficiency", "Growth"];
@@ -413,19 +413,19 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   }, [indicatorsData]);
 
   const chartData = useMemo(() => {
-  if (!selectedChart || selectedChart.type !== "chart") return [];
+    if (!selectedChart || selectedChart.type !== "chart") return [];
 
-  const config = chartConfig[selectedChart.id];
-  if (!config) return [];
+    const config = chartConfig[selectedChart.id];
+    if (!config) return [];
 
-  return indicatorsWithLoads
-    .filter((row) => row.target === config.target)
-    .map((row) => ({
-      ppId: row.ppId,
-      rmsValue: Number(row[config.valueKey]) || 0,
-    }))
-    .sort((a, b) => a.ppId - b.ppId);
-}, [selectedChart, indicatorsWithLoads]);
+    return indicatorsWithLoads
+      .filter((row) => row.target === config.target)
+      .map((row) => ({
+        ppId: row.ppId,
+        rmsValue: Number(row[config.valueKey]) || 0,
+      }))
+      .sort((a, b) => a.ppId - b.ppId);
+  }, [selectedChart, indicatorsWithLoads]);
 
   const lineDashMap = {
     solid: undefined,
@@ -1126,7 +1126,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
 
                   <YAxis>
                     <Label
-                      value="RMS Value"
+                      value={chartConfig[selectedChart.id]?.yLabel ?? "RMS Value"}
                       angle={-90}
                       position="insideLeft"
                       offset={0}

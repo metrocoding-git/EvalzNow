@@ -635,12 +635,12 @@ export async function buildUnitEZReport({ unit }) {
     ([key, threshold]) => line(`Pass % Avg Unilateral - ${key}`, passPct(key, threshold))
   );
 
-  const RATIO_PASS = 0.5; // same 0.50 rule used in calculateSTAP for RRN/PRN/ARN
+  const RATIO_PASS = 0.7;
 
   const ratioLines = [
     line("Pass % Avg Receptive Ratio - RRN", passPct("RRN", RATIO_PASS)),
     line("Pass % Avg Productive Ratio - PRN", passPct("PRN", RATIO_PASS)),
-    (unitType === "Third Parameter"          // <-- keep the ...
+    ...(unitType === "Third Parameter"
       ? [line("Pass % Avg Acuity Ratio - ARN", passPct("ARN", RATIO_PASS))]
       : []),
   ];
@@ -648,7 +648,7 @@ export async function buildUnitEZReport({ unit }) {
   const growthLines = [
     line("Pass % Average Growth - ΔRRN", passPct("deltaRRN", deltaRRN)),
     line("Pass % Average Growth - ΔPRN", passPct("deltaPRN", deltaPRN)),
-    (unitType === "Third Parameter"
+    ...(unitType === "Third Parameter"
       ? [line("Pass % Average Growth - ΔARN", passPct("deltaARN", deltaARN))]
       : []),
     "",
@@ -788,7 +788,7 @@ export async function buildUnitEZReport({ unit }) {
           `   ${String(c.lastName ?? "-").padEnd(15)}` +
           `   ${String(c.firstName ?? "-").padEnd(15)}` +
           `   ${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
-          `   ${fmt(CSD).padEnd(24)}` +
+          `   ${fmt(CSD).padEnd(18)}` +
           `   ${fmt(USD)}`
         );
       })
@@ -989,14 +989,10 @@ export async function buildUnitEZReport({ unit }) {
 
      Pass percentages below are based on the average values of each corresponding metric: 
 
-     Pass % Avg Productivity Rates - CSD       :     ${fmt(getAvg("Productivity_CSD"))}
-     Pass % Avg Productivity Rates - USD       :     ${fmt(getAvg("Productivity_USD"))}
-
      ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| PRODUCTIVITY - CSD |||     ||| PRODUCTIVITY - USD |||
 
      ${productivityRows}
-
-           
+  
      ||| LAST NAME |||     ||| FIRST NAME |||     ||| CANDIDATE ID |||     ||| EFFORT - CSD |||     ||| EFFORT - USD |||
 
      ${candidates.map(c => {
@@ -1015,7 +1011,6 @@ export async function buildUnitEZReport({ unit }) {
           `   ${fmt(USD)}`
         );
       }).join("\n     ") || "     No effort data available"}
-
 
 ---------------------------------------
  ATTENDANCE TRACKING:
