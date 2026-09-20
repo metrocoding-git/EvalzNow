@@ -1093,7 +1093,7 @@ export default function CurveEditor() {
                   <strong>Weight Index (WI)</strong>
                 </td>
                 <td className="border border-gray-300 px-2 py-1 font-mono text-center">
-                  {weightIndex !== null ? weightIndex.toFixed(4) : ""}
+                  {weightIndex !== null ? weightIndex.toFixed(3) : ""}
                 </td>
                 {/* <td className="border border-gray-300 px-2 py-1"></td> */}
                 {/* <td className="border border-gray-300 px-2 py-1"></td> */}
