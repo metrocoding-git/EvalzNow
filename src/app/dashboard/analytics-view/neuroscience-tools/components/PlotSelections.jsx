@@ -749,7 +749,7 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
                   onResetFilters(); // ✅ reset filters in parent
                 }
                 // setScoreAdd(true); 
-              }} title="Create Reset" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
+              }} title="Reset Filter" className='text-blue-600 hover:text-blue-800 cursor-pointer'>
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
 

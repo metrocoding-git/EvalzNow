@@ -408,7 +408,23 @@ export default function CurveEditor() {
       ["Weight Index (WI)", weightIndex !== null ? weightIndex.toFixed(4) : ""],
     ];
 
-    const csv = rows.map((r) => r.map(escapeCSV).join(",")).join("\r\n");
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+    const metaLines = [
+      "EvalzNow – A Novel Human Capital Assessment Method",
+      "Competency Accounting for Education and Industry",
+      "Hybrid Proficiency & Growth Monitoring",
+      `Global Analytics Export Date: ${formattedDate}`,
+      " ",
+    ];
+
+    const csv = metaLines.join("\n") + "\n" + rows.map(r => r.map(escapeCSV).join(",")).join("\n");
+
 
     // "\uFEFF" (BOM) keeps symbols like ≤, ∆ readable when opened in Excel
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -632,8 +648,8 @@ export default function CurveEditor() {
     "Global Percentage of T&P",
     "Global Percentage of Third Parameter",
     "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 10",
-    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 30",
-    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 20",
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 20",
     "Global Percentage of Benchmark Counts, BC ≤ 10",
     "Global Percentage of Benchmark Counts, 10 < BC ≤ 25",
     "Global Percentage of Benchmark Counts, BC > 25",
@@ -713,8 +729,8 @@ export default function CurveEditor() {
 
     const labelMap = {
       "≤ 10": "CTL ≤ 10",
-      "10–30": "10 < CTL ≤ 30",
-      "≥ 30": "CTL > 30",
+      "10–30": "10 < CTL ≤ 20",
+      "≥ 30": "CTL > 20",
     };
 
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
@@ -772,11 +788,11 @@ export default function CurveEditor() {
     "Global Percentage of Units with Candidate-to-Leader Ratio, CTL ≤ 10": (g) =>
       percent(g.candidateStaffRatio?.["≤ 10"], g.totalUnits),
 
-    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 30": (g) =>
-      percent(g.candidateStaffRatio?.["10–30"], g.totalUnits),
+    "Global Percentage of Units with Candidate-to-Leader Ratio, 10 < CTL ≤ 20": (g) =>
+      percent(g.candidateStaffRatio?.["10–20"], g.totalUnits),
 
-    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 30": (g) =>
-      percent(g.candidateStaffRatio?.["≥ 30"], g.totalUnits),
+    "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 20": (g) =>
+      percent(g.candidateStaffRatio?.["≥ 20"], g.totalUnits),
 
     // ===== Benchmark Counts =====
     "Global Percentage of Benchmark Counts, BC ≤ 10": (g) =>
