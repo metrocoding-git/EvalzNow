@@ -506,11 +506,12 @@ export async function buildUnitEZReport({ unit }) {
       "-";
     const candidateStartDate = c.candidateStartDate ?? c.startDate ?? "-";
 
+    
     return (
       `${" ".repeat(LEFT_PAD)}` +
       `${String(c.lastName ?? "-").padEnd(15)}` +
       `${String(c.firstName ?? "-").padEnd(19)}` +
-      `${String(c.candidateId ?? c.id ?? "-").padEnd(20)}` +
+      `${String(c.candidateId ?? c.candidateId ?? "-").padEnd(20)}` +
       `${String(candidateStartDate).padEnd(28)}` +
       `${String(c.nationality ?? "-").padEnd(19)}` +
       `${String(unitOutcome).padEnd(15)}`

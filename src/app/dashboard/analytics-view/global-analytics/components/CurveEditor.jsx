@@ -729,8 +729,8 @@ export default function CurveEditor() {
 
     const labelMap = {
       "≤ 10": "CTL ≤ 10",
-      "10–30": "10 < CTL ≤ 20",
-      "≥ 30": "CTL > 20",
+      "10–20": "10 < CTL ≤ 20",
+      "> 20": "CTL > 20",
     };
 
     return Object.entries(globalAnalytics.candidateStaffRatio).map(
@@ -792,7 +792,7 @@ export default function CurveEditor() {
       percent(g.candidateStaffRatio?.["10–20"], g.totalUnits),
 
     "Global Percentage of Units with Candidate-to-Leader Ratio, CTL > 20": (g) =>
-      percent(g.candidateStaffRatio?.["≥ 20"], g.totalUnits),
+      percent(g.candidateStaffRatio?.["> 20"], g.totalUnits),
 
     // ===== Benchmark Counts =====
     "Global Percentage of Benchmark Counts, BC ≤ 10": (g) =>

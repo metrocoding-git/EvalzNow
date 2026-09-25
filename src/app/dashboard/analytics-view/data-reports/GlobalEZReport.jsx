@@ -276,7 +276,7 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
   ---------------------------------------
   % Units Cand-to-Lead, CTL ≤ 10            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits)}
   % Units Cand-to-Lead, 10 < CTL ≤ 20       :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["10–20"], analytics.totalUnits)}
-  % Units Cand-to-Lead, CTL > 20            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 20"], analytics.totalUnits)}
+  % Units Cand-to-Lead, CTL > 20            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["> 20"], analytics.totalUnits)}
 
   % Benchmark Counts, BC ≤ 10               :     ${pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits)}
   % Benchmark Counts, 10 < BC ≤ 25          :     ${pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits)}

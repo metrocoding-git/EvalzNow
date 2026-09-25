@@ -697,7 +697,7 @@ export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
                         </div>
                         <div className="grid grid-cols-5 text-xs text-gray-400">
                           <span>Candidate ID:</span>
-                          <span>{candidate.id}</span>
+                          <span>{candidate.candidateId}</span>
                         </div>
                         {candidate.startDate && (
                           <div className="grid grid-cols-5 text-xs text-gray-400">
