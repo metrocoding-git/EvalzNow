@@ -284,7 +284,7 @@ export default function DataReports() {
 
         await downloadEZFile(
           ezText,
-          `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`
+          `${candidate.lastName}_${candidate.firstName}_${candidate.specialIdNo}.ez`
         );
 
       } else if (selectedReport === "all-candidates-unit") {
@@ -349,7 +349,7 @@ export default function DataReports() {
               // );
 
               filesToZip.push({
-                filename: `Candidate_Report_${candidate.lastName}_${candidate.id}.ez`,
+                filename: `${candidate.lastName}_${candidate.firstName}_${candidate.specialIdNo}.ez`,
                 content: ezText,
               });
 
@@ -360,7 +360,7 @@ export default function DataReports() {
             }
           }
 
-          await downloadEZFilesAsZip(filesToZip, `All_Candidate_Reports_Unit_${selectedUnitId}.zip`);
+          await downloadEZFilesAsZip(filesToZip, `Candidate Reports Pull.zip`);
 
         } catch (err) {
           console.error("Failed to extract all candidate reports:", err);
@@ -418,7 +418,7 @@ export default function DataReports() {
             });
           }
 
-          await downloadEZFilesAsZip(filesToZip, `All_Unit_Reports_${activeClientId}.zip`);
+          await downloadEZFilesAsZip(filesToZip, `Unit Reports Pull.zip`);
 
         } catch (err) {
           console.error("Failed to generate unit reports:", err);
