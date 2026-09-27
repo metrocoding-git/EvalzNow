@@ -983,7 +983,7 @@ export default function EvalzNowPage() {
                             <div>
                                 <span>EVALZNOW</span>
                                 <p className="footer-copy">COPYRIGHT &copy; {new Date().getFullYear()} EVALZNOW | ALL RIGHTS RESERVED</p>
-                                <p className="footer-copy">DEVELOPED BY <a href="https://www.metrocoding.com/" target="_blank" rel="noopener noreferrer">METROCODING</a></p>
+                                {/* <p className="footer-copy">DEVELOPED BY <a href="https://www.metrocoding.com/" target="_blank" rel="noopener noreferrer">METROCODING</a></p> */}
 
                             </div>
                         </div>
