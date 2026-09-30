@@ -641,18 +641,26 @@ export default function UnitControl() {
     (!selectedCandidate || roster.candidate?.id === selectedCandidate.id)
   );
 
+  const escHeld = useRef(false);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!selectedUnit) return; // require a selected unit
+      // Track Esc as a "modifier"
+      if (e.key === "Escape") {
+        escHeld.current = true;
+        return;
+      }
 
-      // Shift + E → Duplicate
-      if (e.shiftKey && e.key.toLowerCase() === "e") {
+      if (!escHeld.current || !selectedUnit) return;
+
+      // Esc + E → Duplicate
+      if (e.code === "KeyE") {
         e.preventDefault();
         handleDuplicate(selectedUnit);
       }
 
-      // Shift + C → Unit Config
-      if (e.shiftKey && e.key.toLowerCase() === "c") {
+      // Esc + C → Unit Config
+      if (e.code === "KeyC") {
         e.preventDefault();
         setSelectedUnit(selectedUnit);
         setSelectedUnitId(selectedUnit.id);
@@ -671,14 +679,14 @@ export default function UnitControl() {
         }
       }
 
-      // Delete → Delete unit
-      if (e.shiftKey && e.key === "Delete") {
+      // Esc + Delete → Delete unit
+      if (e.code === "Delete") {
         e.preventDefault();
         handleDelete(selectedUnit.id);
       }
 
-      // Shift + 2 → Activate Setup View
-      if (e.shiftKey && e.code === "Digit2") {
+      // Esc + 2 → Setup View
+      if (e.code === "Digit2") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
@@ -687,8 +695,8 @@ export default function UnitControl() {
         );
       }
 
-      // Shift + 3 → Activate Analytics View
-      if (e.shiftKey && e.code === "Digit3") {
+      // Esc + 3 → Analytics View
+      if (e.code === "Digit3") {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
@@ -698,10 +706,22 @@ export default function UnitControl() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedUnit, unitRosterData, router, setSelectedUnitId]);
+    const handleKeyUp = (e) => {
+      if (e.key === "Escape") escHeld.current = false;
+    };
 
+    // Prevents a "stuck" Esc if the window loses focus while it's held
+    const handleBlur = () => { escHeld.current = false; };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [selectedUnit, unitRosterData, router, setSelectedUnitId]);
 
   const handleDuplicate = (unit) => {
     if (!unit) return;
@@ -1009,7 +1029,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Copy className="w-4 h-4" /> Duplicate
               </span>
-              <span className="text-gray-400 text-xs ml-4">Shift + E</span>
+              <span className="text-gray-400 text-xs ml-4">ESE + E</span>
             </button>
 
 
@@ -1040,7 +1060,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Settings className="w-4 h-4" /> Unit Config
               </span>
-              <span className="text-gray-400 text-xs ml-4">Shift + C</span>
+              <span className="text-gray-400 text-xs ml-4">ESE + C</span>
             </button>
 
 
@@ -1054,7 +1074,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </span>
-              <span className="text-gray-400 text-xs ml-4">Shift + Del</span>
+              <span className="text-gray-400 text-xs ml-4">ESE + Del</span>
             </button>
 
             <button
@@ -1072,7 +1092,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Setup View
               </span>
-              <span className="text-gray-400 text-xs ml-4">Shift + 2</span>
+              <span className="text-gray-400 text-xs ml-4">ESE + 2</span>
             </button>
 
 
@@ -1092,7 +1112,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Analytics View
               </span>
-              <span className="text-gray-400 text-xs ml-4">Shift + 3</span>
+              <span className="text-gray-400 text-xs ml-4">ESE + 3</span>
             </button>
           </div>
         )}

@@ -60,7 +60,8 @@ export function extractDataReportByCandidateId(payload) {
         specialIdNo: c.specialIdNo,
         dateOfBirth: c.dateOfBirth,
         candidateStartDate: c.candidateStartDate,	
-        pps: c.pps
+        pps: c.pps,
+        irregularities: c.irregularities
       });
   
       rosterByCandidate[c.candidateId] = c.roster?.[0] || null;

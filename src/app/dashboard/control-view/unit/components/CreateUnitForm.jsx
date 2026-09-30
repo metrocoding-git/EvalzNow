@@ -160,6 +160,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
     setForm((prev) => ({ ...prev, signatureProfile: "" }));
   }, [form.unitType, unitData]);
 
+
   const handleStaffSelect = (selectedStaffArray) => {
     if (lookupFor === "leaders") {
       const leaderIds = selectedStaffArray.map((s) => s.id);
@@ -194,6 +195,15 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
       (form.environment !== "Workforce" || form.scoringSystem?.trim())
     );
   };
+
+  const handleUnitTypeChange = (value) => {
+  setForm((prev) => ({
+    ...prev,
+    unitType: value,
+    signatureProfile: "",   // reset to empty
+    passThresholds: defaultThresholds[value] ? { ...defaultThresholds[value] } : {},
+  }));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -404,7 +414,11 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                 <label className="text-gray-700">{label}:</label>
                 <select
                   value={form[key] || ""}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                   onChange={(e) =>
+    key === "unitType"
+      ? handleUnitTypeChange(e.target.value)
+      : handleChange(key, e.target.value)
+  }
                   className="col-span-2 border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 >
                   <option value="" disabled>Select {label}</option>
@@ -455,9 +469,8 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                           [k]: e.target.value,
                         })
                       }
-                      className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${
-                        k === "IC" ? "bg-gray-100" : "bg-white"
-                      }`}
+                      className={`w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent ${k === "IC" ? "bg-gray-100" : "bg-white"
+                        }`}
                     />
                   </div>
                 ))}
@@ -580,11 +593,10 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
           <button
             type="submit"
             disabled={!isFormValid()}
-            className={`px-4 py-1 text-sm transition-colors ${
-              !isFormValid()
-                ? "bg-gray-200 cursor-not-allowed text-gray-400"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-            }`}
+            className={`px-4 py-1 text-sm transition-colors ${!isFormValid()
+              ? "bg-gray-200 cursor-not-allowed text-gray-400"
+              : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+              }`}
           >
             Close
           </button>
@@ -599,10 +611,10 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
             lookupFor === "leaders"
               ? form.assignedLeaders || []
               : lookupFor === "assessors"
-              ? form.assignedAssessors || []
-              : lookupFor === "director"
-              ? form.unitDirector ? [form.unitDirector] : []
-              : []
+                ? form.assignedAssessors || []
+                : lookupFor === "director"
+                  ? form.unitDirector ? [form.unitDirector] : []
+                  : []
           }
         />
       )}
