@@ -26,11 +26,8 @@ import { getProjection } from '@/services/projectionService';
 
 import dynamic from "next/dynamic";
 
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 

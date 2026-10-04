@@ -5,11 +5,8 @@ import { FolderOutput, RefreshCw } from 'lucide-react';
 import PropertyEditor from '../../components/PropertyEditor';
 import { getUnitAndCandidateSummary } from '@/services/tabulationTableService';
 import { useUnit } from '@/context/UnitContext';
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF, ensureExportLibs } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 
 export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
   const [openCandidate, setOpenCandidate] = useState({});
@@ -281,6 +278,7 @@ export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
 
   // Function to export with image and data in single worksheet
   const exportToExcel = async () => {
+    await ensureExportLibs();
     if (!tableData || tableData.length === 0) {
       alert("No table data available to export");
       return;
