@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { logout } from "@/lib/auth";
 
 export default function BottomRibbon({  activeButton, formStatus }) {
   const pathname = usePathname();
@@ -19,11 +20,7 @@ export default function BottomRibbon({  activeButton, formStatus }) {
   const activeTab = getActiveTabFromPath();
   console.log("active tab:", activeTab);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");  // remove JWT
-    localStorage.removeItem("user");   // remove user info
-    router.push("/login");             // redirect to login page
-  };
+  const handleLogout = () => logout();   // server revoke + clear session + replace history
 
   return (
     <div className="w-full bg-gray-200 shadow-sm text-sm font-medium border border-black mt-1 p-2 grid grid-cols-12 items-center">

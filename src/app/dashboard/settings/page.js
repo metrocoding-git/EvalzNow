@@ -4,6 +4,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { logout } from "@/lib/auth";
 
 // This prevents pdfjs-dist from being imported during SSR/prerender
 const SecurePdfViewer = dynamic(() => import("@/components/PdfViewers"), {
@@ -27,11 +28,9 @@ export default function SettingsPage() {
   const [selectedDoc, setSelectedDoc] = useState(null);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("activeClientId");
-    sessionStorage.removeItem("selectedUnitId");
-    router.push("/login");
+    // Revokes the token on the server, clears all session data in every tab,
+    // and replaces history so Back cannot return to the dashboard.
+    logout();
   };
 
   const openDoc = (file) => setSelectedDoc(file);

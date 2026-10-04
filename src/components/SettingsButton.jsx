@@ -1,14 +1,11 @@
 import { Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { logout } from "@/lib/auth";
 
 export default function SettingsButton({ active }) {
     const router = useRouter();
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");  // remove JWT
-        localStorage.removeItem("user");   // remove user info
-        router.push("/login");             // redirect to login page
-    };
+    const handleLogout = () => logout();   // server revoke + clear session + replace history
 
   return (
     <button onClick={() => router.push("/dashboard/settings")} className={
