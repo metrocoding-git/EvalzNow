@@ -8,6 +8,7 @@ import { UnitProvider } from '@/context/UnitContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { hasValidSession, logout, watchSession, clearSession } from '@/lib/auth';
 
 const IDLE_TIMEOUT = 30 * 60 * 1000;
 
@@ -15,6 +16,9 @@ export default function DashboardLayout({ children }) {
   const [activeTab, setActiveTab] = useState('');
   const [activeButton, setActiveButton] = useState('');
   const [formStatus, setFormStatus] = useState("");
+  // Security: nothing inside the dashboard is rendered until a valid session is confirmed
+  // (prevents protected data flashing after logout, e.g. via the Back button).
+  const [authorized, setAuthorized] = useState(false);
   // const [loading, setLoading] = useState(true); 
 
   const router = useRouter();
@@ -22,13 +26,24 @@ export default function DashboardLayout({ children }) {
   const idleTimerRef = useRef(null);
 
   const logoutUser = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.clear();
-
     // toast.error("Session expired due to inactivity");
-    router.replace("/login");
+    logout(); // revokes the token on the server, clears storage, replaces history
   };
+
+  // Session guard: check on mount and whenever the page is shown again
+  // (Back/Forward cache, tab focus, logout in another tab, token expiry).
+  useEffect(() => {
+    if (!hasValidSession()) {
+      clearSession();
+      window.location.replace("/login");
+      return;
+    }
+    setAuthorized(true);
+    return watchSession(() => {
+      setAuthorized(false);
+      window.location.replace("/login");
+    });
+  }, []);
 
   const resetIdleTimer = () => {
     if (idleTimerRef.current) {
@@ -192,6 +207,8 @@ export default function DashboardLayout({ children }) {
     };
   }, [router]);
 
+
+  if (!authorized) return null;
 
   return (
     <FormStatusContext.Provider value={{ formStatus, setFormStatus }}>

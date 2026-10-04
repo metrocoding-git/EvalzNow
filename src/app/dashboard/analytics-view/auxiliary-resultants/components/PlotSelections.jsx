@@ -18,11 +18,8 @@ import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableSe
 import BenchmarkTable from './BenchmarkTable';
 import BenchmarkTableUnitLevel from './BenchmarkTableUnitLevel';
 import { getInsertScoreByUnitAndCandidate } from '@/services/insertScoreService';
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF, ensureExportLibs } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 import { div } from 'three/src/nodes/math/OperatorNode';
 import { useFormStatus } from '@/context/FormStatusContext';
 
@@ -1007,7 +1004,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     }
   };
 
-  const exportTableToExcel = () => {
+  const exportTableToExcel = async () => {
+    await ensureExportLibs();
     if (!selectedChart || selectedChart.type !== "table") {
       alert("Please select a table to export.");
       return;

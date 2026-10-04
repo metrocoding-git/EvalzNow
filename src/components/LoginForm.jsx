@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { getUserRoleRedirect } from '@/utils/authHelpers';
 import { login } from "@/services/accountService";
+import { getToken, logout } from "@/lib/auth";
 import toast, { Toaster } from "react-hot-toast";
 
 
@@ -16,13 +17,11 @@ export default function LoginForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Security: reaching the login page (Back button, link, typed URL) while still
+  // signed in ends that session - on the server and in every open tab.
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Optional: validate token with backend before redirect
-      router.push("/welcome");
-    }
-  }, [router]);
+    if (getToken()) logout({ redirect: false });
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -41,7 +40,8 @@ export default function LoginForm() {
       // Save logged-in user data in localStorage
       localStorage.setItem("user", JSON.stringify(res.user));
 
-      router.push("/welcome");
+      // replace(): the login form is not kept in history behind the app
+      router.replace("/welcome");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Login failed");
       setError(err.response?.data?.message || err.message || "Login failed");

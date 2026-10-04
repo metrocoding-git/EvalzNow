@@ -14,11 +14,8 @@ import Parietal_Lobe from '../../../../../../public/icons/Parietal_Lobe.png';
 import Occipital_Lobe from '../../../../../../public/icons/Occipital_Lobe.png';
 import Temporal_Lobe from '../../../../../../public/icons/Temporal_Lobe.png';
 import Image from 'next/image';
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 
 /// <param name="xArray">array data - covers the range of Performance Point IDs (+PP ID only)</param>
 /// <param name="yArray">array data - represents the RMS for each +PP ID.</param>
