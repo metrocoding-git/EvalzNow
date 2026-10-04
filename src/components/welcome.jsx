@@ -2,10 +2,20 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { hasValidSession, clearSession } from '@/lib/auth';
 const loadingImg = "/images/welcome-image.jpg";
 
 export default function Welcome() {
     const router = useRouter();
+
+    // Security: the welcome screen is only for signed-in users
+    useEffect(() => {
+        if (!hasValidSession()) {
+            clearSession();
+            window.location.replace("/login");
+        }
+    }, []);
 
     const handleContinue = () => {
         router.push("/dashboard/control-view");

@@ -4,7 +4,7 @@ import { Plus, Trash2, Copy, Search, X, FolderOutput } from 'lucide-react';
 import ScoringCriteria from './ScoringCriteria';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recharts";
 import { getAllGLobalAnalyticsData, getICValue, getProductivityValue, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
-import html2canvas from 'html2canvas-pro';
+import { html2canvas } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
 
 const assignedWeights = [
