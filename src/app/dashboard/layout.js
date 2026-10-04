@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { hasValidSession, logout, watchSession, clearSession } from '@/lib/auth';
 
-const IDLE_TIMEOUT = 30 * 60 * 1000;
+const IDLE_TIMEOUT = 10 * 60 * 1000;
 
 export default function DashboardLayout({ children }) {
   const [activeTab, setActiveTab] = useState('');
