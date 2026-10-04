@@ -1029,7 +1029,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Copy className="w-4 h-4" /> Duplicate
               </span>
-              <span className="text-gray-400 text-xs ml-4">ESE + E</span>
+              <span className="text-gray-400 text-xs ml-4">ESC + E</span>
             </button>
 
 
@@ -1060,7 +1060,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Settings className="w-4 h-4" /> Unit Config
               </span>
-              <span className="text-gray-400 text-xs ml-4">ESE + C</span>
+              <span className="text-gray-400 text-xs ml-4">ESC + C</span>
             </button>
 
 
@@ -1074,7 +1074,7 @@ export default function UnitControl() {
               <span className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </span>
-              <span className="text-gray-400 text-xs ml-4">ESE + Del</span>
+              <span className="text-gray-400 text-xs ml-4">ESC + Del</span>
             </button>
 
             <button
@@ -1092,7 +1092,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Setup View
               </span>
-              <span className="text-gray-400 text-xs ml-4">ESE + 2</span>
+              <span className="text-gray-400 text-xs ml-4">ESC + 2</span>
             </button>
 
 
@@ -1112,7 +1112,7 @@ export default function UnitControl() {
                 <Play className="w-4 h-4" />
                 Activate Analytics View
               </span>
-              <span className="text-gray-400 text-xs ml-4">ESE + 3</span>
+              <span className="text-gray-400 text-xs ml-4">ESC + 3</span>
             </button>
           </div>
         )}
