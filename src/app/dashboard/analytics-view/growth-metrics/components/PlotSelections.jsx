@@ -19,11 +19,8 @@ import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableSe
 import { getUnitById } from '@/services/unitService';
 import { GrowthProjectionChart } from './ProjectionGraph';
 
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF, ensureExportLibs } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 
 //This script is used to plot the undershoot curves, the overshoot curves, and the vertical projection lines
 //on the Growth Projection graph -> Candidate Analysis: Growth Projections (Data Analytics)
@@ -585,6 +582,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     }
   }, [selectedSort]);
   const exportToExcelWithImage = async () => {
+    await ensureExportLibs();
     if (!selectedChart) {
       alert("Please select a chart first.");
       return;

@@ -25,11 +25,8 @@ import {
 // import PropertyEditor from "../../components/PropertyEditor";
 import { getScoringCriteriaByUnitId } from "@/services/scoringCriteriaService";
 import { getAttainedScoreSummary, getMaxScoresSummary, getScoringTrendsSummary } from "@/services/scoringTrendsService";
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
-import jsPDF from 'jspdf';
 import PropertyEditor from "./PropertyEditor";
 
 const COMPETENCY_COLORS = {

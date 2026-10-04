@@ -26,14 +26,11 @@ import {
   Bar,
   Cell
 } from "recharts";
-import html2canvas from "html2canvas-pro";
+import { html2canvas, XLSX, ExcelJS, jsPDF } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
-import * as XLSX from "xlsx";
-import ExcelJS from 'exceljs';
 import PropertyEditor from "./PropertyEditor";
 import CandidateSelectionTable from "./CandidateSelection";
 import { getBetaDistributionData, getChiDistributionData, getChilDistributionData, getExponentialDistributionData, getFDistributionData, getNormalDistributionData, getTDistributionData, getUniformDistributionData, getWeibullCDFDistributionData, getWeibullPDFDistributionData, getWeibullRiskDistributionData } from "@/services/unitDistributionService";
-import jsPDF from "jspdf";
 import { getUnitById } from "@/services/unitService";
 
 export default function PlotSelections({ onCandidatesSelected, unitId, onWeibullSelect, betaValue, unitType, onResetBeta }) {
