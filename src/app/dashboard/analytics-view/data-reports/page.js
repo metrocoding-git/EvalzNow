@@ -449,7 +449,8 @@ export default function DataReports() {
             icValue: icResponse?.icDistribution,
             stableValue: stableResponse,
             productivityValue: urResponse?.distribution,
-
+            frameworkAge: response.frameworkAge,
+            effectivity: response.effectivity,
           });
 
           await downloadEZFile(

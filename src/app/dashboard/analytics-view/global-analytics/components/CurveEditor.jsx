@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from "recha
 import { getAllGLobalAnalyticsData, getICValue, getProductivityValue, getSTAPAndSTAGStableCount, getUnitSuccessRatesByThreshold } from '@/services/globalAnalyticsService';
 import { html2canvas } from "@/lib/exportLibs"; // loaded on demand (performance)
 import { saveAs } from 'file-saver';
+import { getIndexRating } from '@/lib/indexRating';
 
 const assignedWeights = [
   0.500, 1.000, 0.250, 0.250,
@@ -50,14 +51,8 @@ function mainFunction(F6, assignedWeights) {
       ? totalMetricWeight / totalAssignedWeight
       : 0;
 
-  let rating = "Unknown value";
-
-  if (weightedIndex < 0.0903) rating = "Negligent";
-  else if (weightedIndex < 0.1075) rating = "Underperforming";
-  else if (weightedIndex < 0.1246) rating = "Below Average";
-  else if (weightedIndex < 0.6734) rating = "Average";
-  else if (weightedIndex < 0.6906) rating = "Above Average";
-  else rating = "Overperforming";
+  // 8-band rating (see src/lib/indexRating.js)
+  const rating = getIndexRating(weightedIndex);
 
   return [
     rating,

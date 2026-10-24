@@ -18,6 +18,7 @@ const PAGES = [
   '/dashboard/analytics-view/unit-distributions',
   '/dashboard/analytics-view/auxiliary-resultants',
   '/dashboard/analytics-view/neuroscience-tools',
+  '/dashboard/analytics-view/effectivity',
   '/dashboard/analytics-view/global-analytics',
   '/dashboard/analytics-view/data-extractions',
   '/dashboard/analytics-view/data-reports',

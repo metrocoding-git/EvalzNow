@@ -719,7 +719,7 @@ export default function ViewerSelections({ candidate, unitId, unitStartDate }) {
 
             {/* candidate table */}
             <div className="flex flex-col flex-1 min-h-0 border border-gray-200">
-              <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate</h2>
+              <h2 className="text-sm font-semibold mx-1 p-1 text-gray-700">Candidate Tabulation Tables</h2>
 
               <div className="flex-1 mx-1 overflow-x-auto">
                 <div ref={chartContainerRef}

@@ -22,6 +22,7 @@ export const API_ROUTES = {
     AUXILIARY: "/auxiliary",
     NEURO_SCIENCE: "/neuro-science",
     GLOBAL_ANALYTICS: "/global-analytics",
+    EFFECTIVITY: "/effectivity",
     DATA_EXTRACTION: "/data-extract",
     DATA_REPORT: "/data-report",
 };
