@@ -57,14 +57,6 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   const [engageSummary, setEngageSummary] = useState(null);
   const [editingCandidateMark, setEditingCandidateMark] = useState(null);
 
-  const floatChartData = [
-    { name: "Jan", xValue: 1.2, yValue: 2.1, zValue: 0.9 },
-    { name: "Feb", xValue: 2.8, yValue: 1.4, zValue: 1.6 },
-    { name: "Mar", xValue: 1.5, yValue: 2.9, zValue: 2.2 },
-    { name: "Apr", xValue: 3.1, yValue: 3.0, zValue: 2.7 },
-    { name: "May", xValue: 2.0, yValue: 1.8, zValue: 3.1 },
-    { name: "Jun", xValue: 2.6, yValue: 2.2, zValue: 3.4 },
-  ];
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [chartProperties, setChartProperties] = useState({
     // Standard
@@ -777,8 +769,11 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   console.log("leader marks: ", leaderMarks);
 
   useEffect(() => {
+    // Ignore responses of an older candidate selection (out-of-order responses used to
+    // clear the pie and switch the Unit-level chart to another chart type).
+    let stale = false;
     const fetchNeedAssessmentSummary = async () => {
-      if (!unitId || !candidateId) {
+      if (!unitId || !candidateId || (Array.isArray(candidateId) && candidateId.length === 0)) {
         setNeedAssessmentSummary([]);
         return;
       }
@@ -788,8 +783,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
       try {
         const result = await getNeedAssessmentSummary(unitId, candidateId);
-        // console.log("need assessment summary result: ", result);
-        const { statusCounts } = result;
+        if (stale) return;
+        const statusCounts = result?.statusCounts || {};
   
         const pieData = [
           { name: "Open", value: statusCounts.Open || 0 },
@@ -800,15 +795,17 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         setNeedAssessmentSummary(pieData);
   
       } catch (err) {
+        if (stale) return;
         console.error("Failed to load need assessment summary:", err);
         setError("Failed to load table data.");
         setNeedAssessmentSummary([]);
       } finally {
-        setLoading(false);
+        if (!stale) setLoading(false);
       }
     };
   
     fetchNeedAssessmentSummary();
+    return () => { stale = true; };
   }, [unitId, candidateId]);
   
   
@@ -2480,25 +2477,13 @@ const handleDeleteChain = async (chainId) => {
       }      
       
     
-      // Default fallback chart
+      // No matching chart or no data yet: never draw placeholder/demo data.
       return (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={floatChartData} margin={{ top: 10, right: 20, left: 20, bottom: 60 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name">
-              <Label value="Time Period (X)" offset={-10} position="insideBottom" />
-            </XAxis>
-            <YAxis>
-              <Label value="Score / Value (Y/Z)" angle={-90} position="insideLeft" dy={0} />
-            </YAxis>
-            <Tooltip />
-            <Legend verticalAlign="bottom"  align="center"
-                              wrapperStyle={{ paddingTop: 10, paddingLeft: 50 }} />
-            <Line type="monotone" dataKey="xValue" name="X Axis Value" stroke="#3b82f6" strokeWidth={2} dot isAnimationActive={false} />
-            <Line type="monotone" dataKey="yValue" name="Y Axis Value" stroke="#10b981" strokeWidth={2} dot isAnimationActive={false} />
-            <Line type="monotone" dataKey="zValue" name="Z Axis Value" stroke="#f59e0b" strokeWidth={2} dot isAnimationActive={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500 uppercase">
+            {loading ? "Loading..." : `No data available for ${selectedChart.name}`}
+          </p>
+        </div>
       );
     }
   };

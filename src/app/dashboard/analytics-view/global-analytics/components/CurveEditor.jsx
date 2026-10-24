@@ -656,7 +656,7 @@ export default function CurveEditor() {
     "Global Percentage of Attendance - Unexcused Absences",
     "Global Percentage of Attendance - Excused Tardies",
     "Global Percentage of Attendance - Unexcused Tardies",
-    "Global Percentage Open Items for All Courses",
+    "Global Percentage Closed Items for All Courses",
     "Global Percentage of Positive Candidate Marks",
     "Global Percentage of Positive Leader Marks",
     "Global Percentage of Passing Candidates",
@@ -848,15 +848,16 @@ export default function CurveEditor() {
         ? g.leaderMarks.impactScore
         : null,
 
-    // ===== Open Items =====
-    "Global Percentage Open Items for All Courses": (g) => {
+    // ===== Closed Items =====
+    "Global Percentage Closed Items for All Courses": (g) => {
 
       const open = g.needAssessments?.Open ?? 0;
       const pending = g.needAssessments?.Pending ?? 0;
       const closed = g.needAssessments?.Closed ?? 0;
 
       const total = open + pending + closed;
-      return total ? open / total : null;
+      // Index uses the Closed share (same value as "Closed" in the Open Action Item pie).
+      return total ? closed / total : null;
     },
 
     // ===== Outcomes =====

@@ -140,7 +140,7 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
     fraction(analytics.attendance.excusedTardies, totalAttendance),
     fraction(analytics.attendance.unexcusedTardies, totalAttendance),
 
-    pct(analytics.needAssessments.Open, analytics.needAssessments.Total),
+    pct(analytics.needAssessments.Closed, analytics.needAssessments.Total),
     fmt(analytics.candidateMarks.impactScore),
     fmt(analytics.leaderMarks.impactScore),
 
@@ -242,7 +242,7 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
     kvg("% Attendance - Excused Tardies", fraction(analytics.attendance.excusedTardies, totalAttendance)),
     kvg("% Attendance - Unexcused Tardies", fraction(analytics.attendance.unexcusedTardies, totalAttendance)),
     "",
-    kvg("% Action Status - Open", pct(analytics.needAssessments.Open, analytics.needAssessments.Total)),
+    kvg("% Action Status - Closed", pct(analytics.needAssessments.Closed, analytics.needAssessments.Total)),
     kvg("% Positive Candidate Marks", fmt(analytics.candidateMarks.impactScore)),
     kvg("% Positive Leader Marks", fmt(analytics.leaderMarks.impactScore)),
     "",
