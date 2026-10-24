@@ -1,3 +1,4 @@
+import { EFFECTIVITY_HEADERS, effectivityCells } from "./extractionEffectivity";
 
 
 const downloadCSV = (headers, rows, filename) => {
@@ -34,7 +35,7 @@ const downloadCSV = (headers, rows, filename) => {
       return escaped;
     };
 
-    const csv = metaLines.join("\n") + headers.map(csvEscape).join(",") + "\n" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
+    const csv = metaLines.join("\n") + "\n" + headers.map(csvEscape).join(",") + "\n" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
   
     const blob = new Blob(
       ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
@@ -94,7 +95,8 @@ const HEADERS = [
     "RMS/G Frontal/R","RMS/G Occipital/R","RMS/G Parietal/R","RMS/G Temporal/R",
     "Load/G Frontal/L","Load/G Occipital/L","Load/G Parietal/L","Load/G Temporal/L",
     "Load/G Frontal/R","Load/G Occipital/R","Load/G Parietal/R","Load/G Temporal/R",
-    "Observations & Goals","Action Status"
+    "Observations & Goals","Action Status",
+    ...EFFECTIVITY_HEADERS
   ];
 
   const buildRow = (values) => {
@@ -276,7 +278,8 @@ export const extractCandidateUnitsCSV = async ({ extractionData, clientId, candi
             getLoadG(neuro, pp.ppId, "Temporal Lobe - Right"),
 
             need.observation,
-            need.status || "Open"
+            need.status || "Open",
+            ...effectivityCells(candidate, pp.ppId)
           ]));
         });
       });

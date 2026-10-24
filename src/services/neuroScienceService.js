@@ -67,3 +67,9 @@ export const updateNeuroObject = async (sessionId, updateData) => {
       throw error;
   }
 };
+
+// Yes/No cognitive function matrix for every candidate in the unit.
+export const getCognitiveMatrixByUnit = async (unitId) => {
+  const response = await api.get(`${API_ROUTES.NEURO_SCIENCE}/matrix/${unitId}`);
+  return response.data;
+};

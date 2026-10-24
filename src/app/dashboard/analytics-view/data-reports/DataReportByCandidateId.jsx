@@ -61,7 +61,8 @@ export function extractDataReportByCandidateId(payload) {
         dateOfBirth: c.dateOfBirth,
         candidateStartDate: c.candidateStartDate,	
         pps: c.pps,
-        irregularities: c.irregularities
+        irregularities: c.irregularities,
+        effectivity: c.effectivity || null
       });
   
       rosterByCandidate[c.candidateId] = c.roster?.[0] || null;

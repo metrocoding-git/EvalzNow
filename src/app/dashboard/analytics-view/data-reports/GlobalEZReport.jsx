@@ -1,3 +1,9 @@
+// Global / Institutional report (.ez) – follows "Global_Analytics_Report (new).ez".
+import { getIndexRating } from "@/lib/indexRating";
+import { text, headerLines, introLines, sectionBanner, subHeader, kv, nomenclatureBlock, legalBlock, finalize } from "./helper/reportFormat";
+import { effectivityPassLines, effectivityTypeLines } from "./helper/effectivityReport";
+
+const FRAMEWORK_AGES = ["< 1 year", "1-2 years", "3-5 years", "6-10 years", "> 10 years"];
 
 const assignedWeights = [
   0.500, 1.000, 0.250, 0.250,
@@ -42,14 +48,8 @@ function mainFunction(F6, assignedWeights) {
       ? totalMetricWeight / totalAssignedWeight
       : 0;
 
-  let rating = "Unknown value";
-
-  if (weightedIndex < 0.0903) rating = "Negligent";
-  else if (weightedIndex < 0.1075) rating = "Underperforming";
-  else if (weightedIndex < 0.1246) rating = "Below Average";
-  else if (weightedIndex < 0.6734) rating = "Average";
-  else if (weightedIndex < 0.6906) rating = "Above Average";
-  else rating = "Overperforming";
+  // 8-band rating (see src/lib/indexRating.js)
+  const rating = getIndexRating(weightedIndex);
 
   return [
     rating,
@@ -62,8 +62,7 @@ function mainFunction(F6, assignedWeights) {
 
 
 
-export function buildGlobalEZReport({ client, totalCandidates, analytics, thresholds, icValue, stableValue, productivityValue }) {
-  const today = new Date().toDateString();
+export function buildGlobalEZReport({ client, totalCandidates, analytics, thresholds, icValue, stableValue, productivityValue, frameworkAge, effectivity }) {
 
   const candidateStaffRatioPct = (value, total) => {
     const v = Number(value) || 0;
@@ -103,8 +102,6 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
   const fmt = (v) =>
     v === null || v === undefined ? "0.000" : Number(v).toFixed(3);
 
-  const fmtFraction = (v) =>
-    v === null || v === undefined ? "0.000" : (Number(v) / 100).toFixed(3);
 
   const totalAssessmentBlocks = Object.values(analytics.assessmentBlocks || {})
     .reduce((sum, v) => sum + (Number(v) || 0), 0);
@@ -126,8 +123,8 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
 
     // Effectivity (20)
     candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits),
-    candidateStaffRatioPct(analytics.candidateStaffRatio["10–30"], analytics.totalUnits),
-    candidateStaffRatioPct(analytics.candidateStaffRatio["≥ 30"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["10–20"], analytics.totalUnits),
+    candidateStaffRatioPct(analytics.candidateStaffRatio["> 20"], analytics.totalUnits),
 
     pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits),
     pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits),
@@ -190,277 +187,126 @@ export function buildGlobalEZReport({ client, totalCandidates, analytics, thresh
   const indexRating = indexResult[0];
   const weightedIndex = indexResult[1];
 
-  return `
-                                                     *******************************************************************************
-                                                     **                                                                           **
-                                                     **                          EvalzNow Latest Edition                          **
-                                                     **                                                                           **
-                                                     **                     Human Capital Assessment Software                     **
-                                                     **                              Ricky D. Butler                              **
-                                                     **                                                                           **
-                                                     **                                                                           **
-                                                     **             The First Comprehensive Assessment Solution for               **
-                                                     **                           Industry and Education                          **
-                                                     **                                                                           **
-                                                     **                      Unit Developmental Capabilities                      **
-                                                     **                                                                           **
-                                                     **                  Quantitative and Qualitative Assessments                 **
-                                                     **                   Hybrid Proficiency & Growth Monitoring                  **
-                                                     **                            Competency Accounting                          **
-                                                     **                                                                           **
-                                                     **                      Analysis Report Level: Global / Institutional        **
-                                                     **                    Report Generation Date: ${today}                **
-                                                     **                                                                           **
-                                                     *******************************************************************************
-                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                  **
-                                                     **                   Compiled for Subscriber End User Use                    **
-                                                     **     Decompilation or disassembly of this software strictly prohibited.    **
-                                                     *******************************************************************************
+  const kvg = (label, value) => kv(label, value, { indent: 2, width: 42 });
+  const kvc = (label, value) => kv(label, value, { indent: 2, width: 37 });
+  const sub = (title) => subHeader(title, "  ");
+  const fw = frameworkAge || null; // null -> no Classroom units -> "-"
 
-*******************************************************                                 INTRODUCTION                              *******************************************************
+  const lines = [
+    headerLines("Global / Institutional"),
+    "",
+    introLines(),
+    "",
+    sectionBanner(1),
+    "",
+    sub("CLIENT DETAILS :"),
+    kvc("Executive ID", text(client?.executiveId)),
+    kvc("Company Name", text(client?.companyName)),
+    kvc("Company Contact Number", text(client?.companyContactNumber)),
+    kvc("Institutional Type", text(client?.institutionalType)),
+    kvc("Country", text(client?.country)),
+    kvc("Company Size", text(client?.companySize?.candidate)),
+    "",
+    kvc("Total Unit Count", text(analytics.totalUnits)),
+    kvc("Total Candidate Count", text(totalCandidates)),
+    "",
+    sectionBanner(2),
+    "",
+    sub("SIGNATURE PROFILE SELECTIONS:"),
+    kvg("Global Percentage of Case 1 Profiles", pct(analytics.signatureProfiles["Case 1: Solid Balanced"], analytics.totalUnits)),
+    kvg("Global Percentage of Case 2 Profiles", pct(analytics.signatureProfiles["Case 2: Rigorous Balanced"], analytics.totalUnits)),
+    kvg("Global Percentage of Case 3a Profiles", pct(analytics.signatureProfiles["Case 3a: Productive-Weighted"], analytics.totalUnits)),
+    kvg("Global Percentage of Case 3b Profiles", pct(analytics.signatureProfiles["Case 3b: Receptive-Weighted"], analytics.totalUnits)),
+    "",
+    sub("UNIT TYPE SELECTIONS:"),
+    kvg("Global Percentage of CI/CO", pct(analytics.unitTypes["Communicative I/O"], analytics.totalUnits)),
+    kvg("Global Percentage of T&P", pct(analytics.unitTypes["Theory & Practice"], analytics.totalUnits)),
+    kvg("Global Percentage of Third Parameter", pct(analytics.unitTypes["Third Parameter"], analytics.totalUnits)),
+    "",
+    sub("EFFECTIVITY OF UNITS:"),
+    kvg("% Units Cand-to-Lead, CTL ≤ 10", candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits)),
+    kvg("% Units Cand-to-Lead, 10 < CTL ≤ 20", candidateStaffRatioPct(analytics.candidateStaffRatio["10–20"], analytics.totalUnits)),
+    kvg("% Units Cand-to-Lead, CTL > 20", candidateStaffRatioPct(analytics.candidateStaffRatio["> 20"], analytics.totalUnits)),
+    "",
+    kvg("% Benchmark Counts, BC ≤ 10", pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits)),
+    kvg("% Benchmark Counts, 10 < BC ≤ 25", pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits)),
+    kvg("% Benchmark Counts, BC > 25", pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits)),
+    "",
+    kvg("% Assessment Blocks, AB ≤ 8", pct(analytics.assessmentBlocks["AB ≤ 8"], totalAssessmentBlocks)),
+    kvg("% Assessment Blocks, 8 < AB ≤ 20", pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks)),
+    kvg("% Assessment Blocks, AB > 20", pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks)),
+    "",
+    kvg("% Attendance - Present", fraction(analytics.attendance.present, totalAttendance)),
+    kvg("% Attendance - Excused Absences", fraction(analytics.attendance.excusedAbsences, totalAttendance)),
+    kvg("% Attendance - Unexcused Absences", fraction(analytics.attendance.unexcusedAbsences, totalAttendance)),
+    kvg("% Attendance - Excused Tardies", fraction(analytics.attendance.excusedTardies, totalAttendance)),
+    kvg("% Attendance - Unexcused Tardies", fraction(analytics.attendance.unexcusedTardies, totalAttendance)),
+    "",
+    kvg("% Action Status - Open", pct(analytics.needAssessments.Open, analytics.needAssessments.Total)),
+    kvg("% Positive Candidate Marks", fmt(analytics.candidateMarks.impactScore)),
+    kvg("% Positive Leader Marks", fmt(analytics.leaderMarks.impactScore)),
+    "",
+    kvg("% Passing Candidates", pct(analytics.unitOutcomes.Pass, totalUnitOutcomes)),
+    kvg("% Failed Candidates", pct(analytics.unitOutcomes.Fail, totalUnitOutcomes)),
+    kvg("% Ongoing Candidates", pct(analytics.unitOutcomes.Ongoing, totalUnitOutcomes)),
+    "",
+    sectionBanner(3),
+    "",
+    sub("PROFICIENCY OUTCOMES OF ALL UNITS:"),
+    kvg("% Passed Average Unilateral - XRR", fmt(thresholds.regularMetrics.XRR.successRate)),
+    kvg("% Passed Average Unilateral - XLR", fmt(thresholds.regularMetrics.XLR.successRate)),
+    kvg("% Passed Average Unilateral - XWR", fmt(thresholds.regularMetrics.XWR.successRate)),
+    kvg("% Passed Average Unilateral - XSR", fmt(thresholds.regularMetrics.XSR.successRate)),
+    "",
+    kvg("% Passed Average Unilateral - XTR", fmt(thresholds.regularMetrics.XTR.successRate)),
+    kvg("% Passed Average Unilateral - XPR", fmt(thresholds.regularMetrics.XPR.successRate)),
+    "",
+    kvg("% Passed Average Unilateral - XRVSR", fmt(thresholds.regularMetrics.XRVSR.successRate)),
+    kvg("% Passed Average Unilateral - XPVSR", fmt(thresholds.regularMetrics.XPVSR.successRate)),
+    kvg("% Passed Average Unilateral - XAVSR", fmt(thresholds.regularMetrics.XAVSR.successRate)),
+    "",
+    kvg("% Passed Average Equivalent Prof - XEP", fmt(thresholds.regularMetrics.XEP.successRate)),
+    kvg("% Passed Average Composite Prof - XCP", fmt(thresholds.regularMetrics.XCP.successRate)),
+    kvg("% Passed Average Band Prof - XBP", fmt(thresholds.regularMetrics.XBP.successRate)),
+    kvg("% Passed Stability Proficiency - STA/P", stapStability),
+    "",
+    sub("HYBRID OUTCOMES OF ALL UNITS:"),
+    kvg("% Passed Average Butler Int - MSIP", fmt(thresholds.regularMetrics.MSIP.successRate)),
+    "",
+    ...[0, 1, 2, 3, 4, 5].map((c) => kvg(`% Units Interaction Class ${c}`, fmt(icValue?.[c]))),
+    "",
+    sub("GROWTH OUTCOMES OF ALL UNITS:"),
+    kvg("% Passed Average Growth - ∆RR", fmt(thresholds.averageDeltaMetrics.avgDeltaRRN.successRate)),
+    kvg("% Passed Average Growth - ∆PR", fmt(thresholds.averageDeltaMetrics.avgDeltaPRN.successRate)),
+    kvg("% Passed Average Growth - ∆AR", fmt(thresholds.averageDeltaMetrics.avgDeltaARN.successRate)),
+    "",
+    kvg("% Passed Cumulative Growth - ∆RR", fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaRRN.successRate)),
+    kvg("% Passed Cumulative Growth - ∆PR", fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaPRN.successRate)),
+    kvg("% Passed Cumulative Growth - ∆AR", fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaARN.successRate)),
+    "",
+    kvg("% Passed Avg Equivalent Growth - ∆GEQ", fmt(thresholds.regularMetrics.GEQ.successRate)),
+    kvg("% Passed Stability Proficiency - STA/G", stagStability),
+    "",
+    sub("UTILIZATION OUTCOMES:"),
+    kvg("Productivity, UR < 0.300", fmt(productivityValue?.low)),
+    kvg("Productivity, 0.300 ≤ UR ≤ 0.600", fmt(productivityValue?.mid)),
+    kvg("Productivity, UR > 0.600", fmt(productivityValue?.high)),
+    "",
+    sub("EFFECTIVITY OUTCOMES:"),
+    effectivityPassLines(effectivity?.passFractions, { label: (n) => `% Passed Effectivity Parameter ${n}`, indent: 2 }),
+    "",
+    effectivityTypeLines(effectivity?.typeBreakdown, { label: (t) => `% Effectivity Type - ${t}`, indent: 2 }),
+    "",
+    sub("FRAMEWORK/CURRICULUM AGE:"),
+    ...FRAMEWORK_AGES.map((age) => kvg(`% FRAMEWORK AGE: ${age}`, fw ? fmt(fw[age]) : "-")),
+    "",
+    sub("CONCLUSIONS:"),
+    kvg("Index Rating", indexRating),
+    kvg("Weighted Index", fmt(weightedIndex)),
+    "",
+    nomenclatureBlock(),
+    legalBlock(),
+  ];
 
-     EvalzNow provides detailed, human capital assessments using an innovative approach known as Competency Accounting.  As the approach suggests, Competency Accounting is the
-     measurement, the processing, and the communication of quantitative information and qualitative information regarding any performance-based entity such as students, employees, AI 
-     humanoids, educational facilities, businesses, defense agencies, and so forth.  The foundation of the Competency Accounting approach centers on grouping independent variables 
-     pertaining to the cerebral structure into exclusive categories prior to data processing for proficiency and growth.
-
-     Proficiency, which passes the accountability to the candidate, is a static metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a 
-     baseline threshold.  This determination is based on the candidate’s ability to demonstrate mastery of core concepts/principles at a fixed point in time.
-
-     Growth, which passes the accountability to the leader (instructor, manager, etc.), refers to the differential changes in productive skills and in receptive skills from one 
-     performance point to another performance point. These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional
-     level, are dynamic indications of the direction of candidate progress.
-
-     End Users are free to use data outputs, data extractions, and data reports at their lawful discretion; however, the Creator will not be held liable for the decisions of End Users 
-     and the actions of End Users based on subjective interpretations.  Educators, instructors, executives, managers, and administrators should exercise sound judgment by combining 
-     EvalzNow outputs with real-life observations, relatable experience, and direct accounts.
-
-  
-  *******************************************************  SECTION 01  *******************************************************
-  
-  ---------------------------------------
-  CLIENT DETAILS :
-  ---------------------------------------
-  
-  Executive ID                         :     ${client.executiveId}
-  Company Name                         :     ${client.companyName}
-  Company Contact Number               :     ${client.companyContactNumber}
-  Institutional Type                   :     ${client.institutionalType}
-  Country                              :     ${client.country}
-  Company Size                         :     ${client.companySize?.candidate}
-  
-  Total Unit Count                     :     ${analytics.totalUnits}
-  Total Candidate Count                :     ${totalCandidates}
-  
-  *******************************************************  SECTION 02  *******************************************************
-  
-  ---------------------------------------
-  SIGNATURE PROFILE SELECTIONS:
-  ---------------------------------------
-  
-  Global Percentage of Case 1 Profiles      :     ${pct(analytics.signatureProfiles["Case 1: Solid Balanced"], analytics.totalUnits)}
-  Global Percentage of Case 2 Profiles      :     ${pct(analytics.signatureProfiles["Case 2: Rigorous Balanced"], analytics.totalUnits)}
-  Global Percentage of Case 3a Profiles     :     ${pct(analytics.signatureProfiles["Case 3a: Productive-Weighted"], analytics.totalUnits)}
-  Global Percentage of Case 3b Profiles     :     ${pct(analytics.signatureProfiles["Case 3b: Receptive-Weighted"], analytics.totalUnits)}
-  
-  ---------------------------------------
-  UNIT TYPE SELECTIONS:
-  ---------------------------------------
-  
-  Global Percentage of CI/CO                :     ${pct(analytics.unitTypes["Communicative I/O"], analytics.totalUnits)}
-  Global Percentage of T&P                  :     ${pct(analytics.unitTypes["Theory & Practice"], analytics.totalUnits)}
-  Global Percentage of Third Parameter      :     ${pct(analytics.unitTypes["Third Parameter"], analytics.totalUnits)}
-  
-  ---------------------------------------
-  EFFECTIVITY OF UNITS:
-  ---------------------------------------
-  % Units Cand-to-Lead, CTL ≤ 10            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["≤ 10"], analytics.totalUnits)}
-  % Units Cand-to-Lead, 10 < CTL ≤ 20       :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["10–20"], analytics.totalUnits)}
-  % Units Cand-to-Lead, CTL > 20            :     ${candidateStaffRatioPct(analytics.candidateStaffRatio["> 20"], analytics.totalUnits)}
-
-  % Benchmark Counts, BC ≤ 10               :     ${pct(analytics.benchmarkCounts["BC ≤ 10"], analytics.totalUnits)}
-  % Benchmark Counts, 10 < BC ≤ 25          :     ${pct(analytics.benchmarkCounts["10 < BC ≤ 25"], analytics.totalUnits)}
-  % Benchmark Counts, BC > 25               :     ${pct(analytics.benchmarkCounts["BC > 25"], analytics.totalUnits)}
-  
-  % Assessment Blocks, AB ≤ 8               :     ${pct(analytics.assessmentBlocks["AB ≤ 8"], totalAssessmentBlocks)}
-  % Assessment Blocks, 8 < AB ≤ 20          :     ${pct(analytics.assessmentBlocks["8 < AB ≤ 20"], totalAssessmentBlocks)}
-  % Assessment Blocks, AB > 20              :     ${pct(analytics.assessmentBlocks["AB > 20"], totalAssessmentBlocks)}
-
-  % Attendance - Present                    :     ${fraction(analytics.attendance.present, totalAttendance)}
-  % Attendance - Excused Absences           :     ${fraction(analytics.attendance.excusedAbsences, totalAttendance)}
-  % Attendance - Unexcused Absences         :     ${fraction(analytics.attendance.unexcusedAbsences, totalAttendance)}
-  % Attendance - Excused Tardies            :     ${fraction(analytics.attendance.excusedTardies, totalAttendance)}
-  % Attendance - Unexcused Tardies          :     ${fraction(analytics.attendance.unexcusedTardies, totalAttendance)}
-
-  % Action Status - Open                    :     ${pct(analytics.needAssessments.Open, analytics.needAssessments.Total)}
-  % Positive Candidate Marks                :     ${fmt(analytics.candidateMarks.impactScore)}
-  % Positive Leader Marks                   :     ${fmt(analytics.leaderMarks.impactScore)}
-
-  % Passing Candidates                      :     ${pct(analytics.unitOutcomes.Pass, totalUnitOutcomes)}
-  % Failed Candidates                       :     ${pct(analytics.unitOutcomes.Fail, totalUnitOutcomes)}
-  % Ongoing Candidates                      :     ${pct(analytics.unitOutcomes.Ongoing, totalUnitOutcomes)}
-
-
-  
-  *******************************************************  SECTION 03  *******************************************************
-  
-  ---------------------------------------
-  PROFICIENCY OUTCOMES OF ALL UNITS:
-  ---------------------------------------
-  
-  % Passed Average Unilateral  - XRR        :     ${fmt(thresholds.regularMetrics.XRR.successRate)}
-  % Passed Average Unilateral  - XLR        :     ${fmt(thresholds.regularMetrics.XLR.successRate)}
-  % Passed Average Unilateral  - XWR        :     ${fmt(thresholds.regularMetrics.XWR.successRate)}
-  % Passed Average Unilateral  - XSR        :     ${fmt(thresholds.regularMetrics.XSR.successRate)}
-  
-  % Passed Average Unilateral  - XTR        :     ${fmt(thresholds.regularMetrics.XTR.successRate)}
-  % Passed Average Unilateral  - XPR        :     ${fmt(thresholds.regularMetrics.XPR.successRate)}
-  
-  % Passed Average Unilateral  - XRVSR      :     ${fmt(thresholds.regularMetrics.XRVSR.successRate)}
-  % Passed Average Unilateral  - XPVSR      :     ${fmt(thresholds.regularMetrics.XPVSR.successRate)}
-  % Passed Average Unilateral  - XAVSR      :     ${fmt(thresholds.regularMetrics.XAVSR.successRate)}
-  
-  % Passed Average Equivalent Prof - XEP    :     ${fmt(thresholds.regularMetrics.XEP.successRate)}
-  % Passed Average Composite Prof - XCP     :     ${fmt(thresholds.regularMetrics.XCP.successRate)}
-  % Passed Average Band Prof - XBP          :     ${fmt(thresholds.regularMetrics.XBP.successRate)}
-  % Passed Stability Proficiency - STA/P    :     ${stapStability}
-  
-  ---------------------------------------
-  HYBRID OUTCOMES OF ALL UNITS:
-  ---------------------------------------
-
-     % Passed Average Butler Int - MSIP        :     ${fmt(thresholds.regularMetrics.MSIP.successRate)}
-	 
-     % Units Interaction Class 0               :     ${fmt(icValue[0])}
-     % Units Interaction Class 1               :     ${fmt(icValue[1])}
-     % Units Interaction Class 2               :     ${fmt(icValue[2])}
-     % Units Interaction Class 3               :     ${fmt(icValue[3])}
-     % Units Interaction Class 4               :     ${fmt(icValue[4])}
-     % Units Interaction Class 5               :     ${fmt(icValue[5])}
-
-  ---------------------------------------
-  GROWTH OUTCOMES OF ALL UNITS:
-  ---------------------------------------
-  
-  % Passed Average Growth - ∆RR             :     ${fmt(thresholds.averageDeltaMetrics.avgDeltaRRN.successRate)}
-  % Passed Average Growth - ∆PR             :     ${fmt(thresholds.averageDeltaMetrics.avgDeltaPRN.successRate)}
-  % Passed Average Growth - ∆AR             :     ${fmt(thresholds.averageDeltaMetrics.avgDeltaARN.successRate)}
-  
-  % Passed Cumulative Growth - ∆RR          :     ${fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaRRN.successRate)}
-  % Passed Cumulative Growth - ∆PR          :     ${fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaPRN.successRate)}
-  % Passed Cumulative Growth - ∆AR          :     ${fmt(thresholds.cumulativeSumDeltaMetrics.sumDeltaARN.successRate)}
-  
-  % Passed Avg Equivalent Growth - ∆GEQ    :      ${fmt(thresholds.regularMetrics.GEQ.successRate)}
-  % Passed Stability Proficiency - STA/G   :      ${stagStability}
-
-  ---------------------------------------
-  UTILIZATION OUTCOMES:
-  ---------------------------------------
-
-  Productivity, UR < 0.300           :     ${fmt(productivityValue.low)}
-  Productivity, 0.300 ≤ UR ≤ 0.600   :     ${fmt(productivityValue.mid)}
-  Productivity, UR > 0.600           :     ${fmt(productivityValue.high)}
-
-  ---------------------------------------
-  CONCLUSIONS:
-  ---------------------------------------
-
-  Index Rating                       :     ${indexRating}
-  Weighted Index                     :     ${fmt(weightedIndex)}
-
-  ---------------------------------------
- NOMENCLATURE:
----------------------------------------
-
-     ∆ARN                                      :     Acuity Ratio Growth Differential
-     ∆GEQ                                      :     Equivalent Growth
-     ∆PRN                                      :     Productive Ratio Growth Differential
-     ∆RRN                                      :     Receptive Ratio Growth Differential
-     AAVS                                      :     Attained Acuity Variable Scores
-     ALS                                       :     Attained Listening Score
-     APS                                       :     Attained Practical Score
-     APVS                                      :     Attained Productive Variable Scores
-     AR                                        :     Acuity Ratio of Outputs
-     ARGT                                      :     Projected Acuity Ratio Component for Growth Target
-     ARN                                       :     Acuity Ratio of the Performance Point
-     ARS                                       :     Attained Reading Score
-     ARVS                                      :     Attained Receptive Variable Scores
-     ASP                                       :     Attained Speaking Score
-     ATS                                       :     Attained Theory-Based Score
-     AWS                                       :     Attained Writing Score
-     BID                                       :     Benchmark ID
-     CID                                       :     Candidate ID
-     CSD                                       :     Candidate Start Date
-     DC                                        :     Day Count
-     GT                                        :     Growth Target of a Performance Point
-     IC                                        :     Interaction Class Based on Performance Point
-     IEP                                       :     Individualized Educational Plan
-     MAVS                                      :     Maximum Acuity Variable Scores
-     MGS                                       :     Maximum Grammar Score
-     MLS                                       :     Maximum Listening Score
-     MPS                                       :     Maximum Practical Score
-     MPVS                                      :     Maximum Productive Variable Scores
-     MRS                                       :     Maximum Reading Score
-     MRVS                                      :     Maximum Receptive Variable Scores
-     MSIP                                      :     Margins of Interaction Proficiency
-     MSS                                       :     Maximum Speaking Score
-     MTS                                       :     Maximum Theory-Based Score
-     MWS                                       :     Maximum Writing Score
-     PP                                        :     Performance Point
-     PR                                        :     Productive Ratio of Outputs
-     PRGT                                      :     Projected Productive Ratio Component for Growth Target
-     PRN                                       :     Productive Ratio of the Performance Point
-     PTP                                       :     Projection Termination Point
-     RMS                                       :     Root Mean Square
-     RR                                        :     Receptive Ratio of Inputs
-     RRGT                                      :     Projected Receptive Ratio Component for Growth Target
-     RRN                                       :     Receptive Ratio of the Performance Point
-     SGP                                       :     Student Growth Percentile
-     SLA                                       :     Student Language Acquisition
-     SMART                                     :     Specific/Measurable/Attainable/Relevancy (Realistic)/Time-Bound
-     STA/G                                     :     Stability in Growth
-     STA/P                                     :     Stability in Proficiency
-     TEFL                                      :     Teaching English as a Foreign Language
-     TTT                                       :     Teacher Talk Time
-     USD                                       :     Unit Start Date
-     VAM                                       :     Value-Added Model
-     VTM                                       :     Value-Table Model
-     XAVSR                                     :     Acuity Variable Scoring Ratio
-     XBP                                       :     Band Proficiency
-     XCP                                       :     Composite Proficiency
-     XEP                                       :     Equivalent Proficiency
-     XLR                                       :     Listening Ratio
-     XPR                                       :     Practical Ratio
-     XPVSR                                     :     Productive Variable Scoring Ratio
-     XRR                                       :     Reading Ratio
-     XRVSR                                     :     Receptive Variable Scoring Ratio
-     XSR                                       :     Speaking Ratio
-     XTR                                       :     Theory-Based Ratio
-     XWR                                       :     Writing Ratio
-
----------------------------------------
- LEGAL NOTICE:
----------------------------------------
-
-     Unless otherwise indicated, EvalzNow is the intellectual property of Ricky D. Butler (the Creator). All source codes, database builds, functionality, designs, logos, theories, 
-	 proprietary techniques, utilities, and methodologies are owned, are controlled, and are licensed to the Creator under applicable copyright laws and unfair competition laws of the 
-	 United States, foreign jurisdictions, and international conventions – whichever is more severe.
-
-     All rights reserved. No part of this application or works associated with the development of the application may be reproduced, may be distributed, may be rewritten, may be edited, 
-	 may be modified, or may be transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written consent
-	 of the Creator. This includes any derivative works, any parallel works, or seemingly similar works of any form of any industry-related field – public or private.
-
-     The aforementioned restrictions above also apply to the concept of Competency Accounting, which is an innovative idea that belongs to Ricky D. Butler.  This idea cannot be applied 
-	 in any manner, direct or indirect, without the written approval of the Creator.  Any unlawful use of the concept of Competency Accounting is subject to applicable copyright laws 
-	 and unfair competition laws of the United States, foreign jurisdictions, and international conventions – whichever is more severe.
-
-     For Fair Use cases, any entity using our copywritten material for, but not limited to, criticism, commentary, news reporting, teaching, scholarship, research, or informative 
-	 purposes must attribute the work to the Creator.  The attribution is required regardless of the non-commercial intent, the educational intent, the scientific intent, or the 
-	 historical intent even if the purpose is transformative.  Please reach out to the Creator or the EvalzNow team for general inquiries or official requests.
-
-     End Users, however, are free to use database feeds, data analytics, data extractions, and data reports at their lawful discretion.
-
-                                                     *******************************************************************************
-                                                     **                               End of Report                               **
-                                                     *******************************************************************************`;
+  return finalize(lines);
 }

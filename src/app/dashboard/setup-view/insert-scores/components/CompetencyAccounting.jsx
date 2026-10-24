@@ -755,13 +755,13 @@ insertScores.forEach((row) => {
   
       // Use file-saver if available, otherwise fallback
       if (typeof saveAs !== 'undefined') {
-        saveAs(blob, `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
+        saveAs(blob, `Competency Accounting Data.csv`);
       } else {
         // Fallback download
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.href = url;
-        link.download = `Competency_Accounting_Data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
+        link.download = `Competency Accounting Data.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

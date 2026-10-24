@@ -114,6 +114,8 @@ const THRESHOLD_NAMES = {
   XAVSR: "Acuity Value Score Ratio"
 };
 
+const FRAMEWORK_AGES = ["< 1 year", "1-2 years", "3-5 years", "6-10 years", "> 10 years"];
+
 const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockManager, activeTab, showUnitRoster, onSave, selectedBlock, onBlockUpdate, onBlockSubmitStatus }) => {
   const [unit, setUnit] = useState({
     unitName: "",
@@ -125,6 +127,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
     signatureProfile: "",
     environment: "",
     scoringSystem: "",
+    frameworkAge: "",
     benchmarks: [],
     assignedLeaders: [],
     assignedAssessors: [],
@@ -234,6 +237,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
           signatureProfile: unitData.signatureProfile,
           environment: unitData.environment,
           scoringSystem: unitData.scoringSystem || "",
+          frameworkAge: unitData.frameworkAge || "",
           benchmarks: (unitData.benchmarks || []).map(bm => ({
             id: bm.id,
             benchmarkId: bm.benchmarkId,
@@ -367,6 +371,10 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (unit.environment === "Classroom" && !unit.frameworkAge) {
+      alert("Please select the Framework Age (Years) for this Classroom unit");
+      return;
+    }
     setIsSubmitting(true);
     setFormStatus("Processing..."); 
     setError(null);
@@ -401,6 +409,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
         signatureProfile: unit.signatureProfile,
         environment: unit.environment,
         scoringSystem: unit.scoringSystem,
+        frameworkAge: unit.environment === "Classroom" ? unit.frameworkAge : null,
         benchmarks: unit.benchmarks,
         staffLookup: staffLookup,
         ...unit.passThresholds, // Include thresholds in the update
@@ -603,6 +612,26 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                     className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                   />
             
+              {unit.environment === "Classroom" && (
+                <>
+                  <label className="col-span-2 text-gray-700 font-medium text-xs">Framework Age (Years):</label>
+                  <select
+                    name="frameworkAge"
+                    required
+                    value={unit.frameworkAge || ""}
+                    onChange={(e) => setUnit((prev) => ({ ...prev, frameworkAge: e.target.value }))}
+                    onFocus={() => setFormStatus("Editing...")}
+                    onBlur={() => setFormStatus("Ready...")}
+                    className="col-span-3 w-full border border-gray-300 px-2 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                  >
+                    <option value="" disabled>Select Framework Age</option>
+                    {FRAMEWORK_AGES.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
               {unit.environment === "Workforce" && (
                 <>
                   <label className="col-span-2 text-gray-700 font-medium text-xs">Scoring System:</label>

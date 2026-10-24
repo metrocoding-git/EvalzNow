@@ -1,753 +1,219 @@
-import { useEffect } from "react";
+// Candidate report (.ez) – follows "Candidate Report - CICO / T&P / TPRM (new).ez".
+import {
+  n2, n3, text, isoDate, headerLines, introLines, sectionBanner, subHeader, kv, table,
+  nomenclatureBlock, legalBlock, finalize,
+} from "./helper/reportFormat";
+import { effectivityRows, effectivityThresholdLines, effectivityTypeLines, EFFECTIVITY_INTRO } from "./helper/effectivityReport";
 
-function extractStaffAssignments(staffAssignments = []) {
-  const leaders = staffAssignments
-    .filter(s => s.roleType === "Leader")
-    .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
+const TH_WIDTH = 43; // label width of the "GRADE SCALE DEFINITION & THRESHOLDS" block
 
-  const assessors = staffAssignments
-    .filter(s => s.roleType === "Assessor")
-    .map(s => `${s.staff.lastName}, ${s.staff.firstName}`);
+const CICO = "Communicative I/O";
+const TP = "Theory & Practice";
+const TPRM = "Third Parameter";
 
-  const pad = (arr, size = 3) =>
-    Array.from({ length: size }, (_, i) => arr[i] ?? "-");
-
+function staffNames(staffAssignments = []) {
+  const name = (s) => `${s.staff?.lastName ?? "-"}, ${s.staff?.firstName ?? "-"}`;
+  const pad = (arr) => Array.from({ length: 3 }, (_, i) => arr[i] ?? "-");
   return {
-    leaders: pad(leaders),
-    assessors: pad(assessors)
+    leaders: pad(staffAssignments.filter((s) => s.roleType === "Leader").map(name)),
+    assessors: pad(staffAssignments.filter((s) => s.roleType === "Assessor").map(name)),
   };
 }
 
-
-function renderBenchmarkRows(benchmarks = []) {
-  if (!benchmarks.length) {
-    return "     -";
-  }
-
-  return benchmarks
-    .map(b => {
-      return (
-        `     ${String(b.benchmarkId).padEnd(12)}` +
-        `     ${b.benchmarkType.padEnd(22)}` +
-        `     ${b.benchmarkRef.padEnd(22)}` +
-        `     ${b.benchmarkDescription}`
-      );
-    })
-    .join("\n");
-}
-
-
-function renderAssessmentBlocks(pps = []) {
-  if (!pps || !pps.length) return "     -";
-
-  const indent = "     ";
-  const gap = "   ";
-
-  return pps
-    .map((pp) =>
-      indent +
-      String(pp.ppId ?? "").padEnd(12) + gap +
-      String(pp.periodType ?? "").padEnd(22) + gap +
-      String(pp.delivery ?? "").padEnd(32) + gap +
-      String(pp.shortDescription ?? "")
-    )
-    .join("\n");
-}
-
-
-
-function renderCandidateMarksRows(candidateMarks = []) {
-  if (!candidateMarks.length) {
-    return "     -";
-  }
-
-  // Define column widths
-  const colWidths = {
-    entryNumber: 14,
-    impactType: 20,
-    concernIdentified: 30,
-    identityDate: 20,
-    concernResolved: 25,
-    resolutionDate: 20
-  };
-
-  return candidateMarks
-    .sort((a, b) => a.entryNumber - b.entryNumber)
-    .map((mark, index) => {
-      return (
-        "         " +
-        String(index + 1 ?? "-").padEnd(colWidths.entryNumber) +
-        String(mark.impactType ?? "-").padEnd(colWidths.impactType) +
-        String(mark.concernIdentified ?? "-").padEnd(colWidths.concernIdentified) +
-        String(mark.identityDate ?? "-").padEnd(colWidths.identityDate) +
-        String(mark.concernResolved ?? "-").padEnd(colWidths.concernResolved) +
-        String(mark.resolutionDate ?? "-").padEnd(colWidths.resolutionDate)
-      );
-    })
-    .join("\n");
-}
-
-
-
-const UNIT_TYPE_RULES = {
-  ALL: {
-    proficiency: ["RRN", "PRN"],
-    growth: ["deltaRRN", "deltaPRN"],
-  },
-
-  "Communicative I/O": {
-    proficiency: ["XRR", "XLR", "XSR", "XWR"],
-    averages: ["XRR", "XLR", "XSR", "XWR"],
-  },
-
-  "Theory & Practice": {
-    proficiency: ["XTR", "XPR"],
-    averages: ["XTR", "XPR"],
-  },
-
-  "Third Parameter": {
-    proficiency: ["ARN", "XRVSR", "XPVSR", "XAVSR"],
-    averages: ["ARN"],
-    growth: ["deltaARN"],
-  },
-};
-
-const METRIC_LABELS = {
-  RRN: "RRN",
-  PRN: "PRN",
-  ARN: "ARN",
-
-  XRR: "XRR",
-  XLR: "XLR",
-  XSR: "XSR",
-  XWR: "XWR",
-  XTR: "XTR",
-  XPR: "XPR",
-  XRVSR: "XRVSR",
-  XPVSR: "XPVSR",
-  XAVSR: "XAVSR",
-
-  deltaRRN: "ΔRRN",
-  deltaPRN: "ΔPRN",
-  deltaARN: "ΔARN",
-  GEQ: "∆GEQ",
-};
-
-function renderProficiencyHeader(unitType) {
-  const metrics = [
-    ...UNIT_TYPE_RULES.ALL.proficiency,
-    ...(UNIT_TYPE_RULES[unitType]?.proficiency ?? []),
-  ];
-
-  let header = "     ||| PP ID |||";
-
-  metrics.forEach(m => {
-    header += `     ||| ${METRIC_LABELS[m]} |||`;
-  });
-
-  header += "     ||| STA/P |||";
-  return header;
-}
-
-function renderGrowthHeader(unitType) {
-  const metrics = [
-    ...UNIT_TYPE_RULES.ALL.growth,
-    ...(UNIT_TYPE_RULES[unitType]?.growth ?? []),
-    "GEQ",
-  ].filter(Boolean);
-
-  let header = "||| PP ID |||     ||| DAYCOUNT |||";
-
-  metrics.forEach(m => {
-    header += `     ||| ${METRIC_LABELS[m]} |||`;
-  });
-
-  header += "     ||| STA/G |||";
-  return header;
-}
-
-const fmt = (v) => typeof v === "number" ? v.toFixed(3) : "-";
-const fmt2 = (v) => typeof v === "number" ? v.toFixed(2) : "-";
-
-const hasMetric = (unitType, metric) =>
-  UNIT_TYPE_RULES.ALL?.proficiency?.includes(metric) ||
-  UNIT_TYPE_RULES.ALL?.growth?.includes(metric) ||
-  UNIT_TYPE_RULES[unitType]?.proficiency?.includes(metric) ||
-  UNIT_TYPE_RULES[unitType]?.growth?.includes(metric) ||
-  UNIT_TYPE_RULES[unitType]?.averages?.includes(metric);
-
-function renderCompetencyProficiencyRows(results = [], unitType) {
-  if (!results.length) return "     -";
-
-  const cols = [
-    ["RRN", 8],
-    ["PRN", 8],
-    ["XRR", 8],
-    ["XLR", 8],
-    ["XSR", 8],
-    ["XWR", 8],
-    ["XTR", 8],
-    ["XPR", 8],
-    ["ARN", 8],
-    ["XRVSR", 8],
-    ["XPVSR", 8],
-    ["XAVSR", 8],
-    ["XEP", 8],   // ADDED - Equivalent Proficiency
-    ["XCP", 8],   // ADDED - Composite Proficiency
-    ["XBP", 8],   // ADDED - Band Proficiency
-  ].filter(([key]) => hasMetric(unitType, key) || ["XEP", "XCP", "XBP"].includes(key)); // Always include XEP, XCP, XBP
-
-  return results
-    .map(r => {
-      let row =
-        `         ${String(r.ppId).padEnd(10)}  `;
-
-      cols.forEach(([key, w]) => {
-        row += `     ${fmt(r[key]).padEnd(w)}  `;
-      });
-
-      row += `     ${(r.STAP ?? "-").padEnd(8)}  `;
-      return row;
-    })
-    .join("\n");
-}
-
-
-
-function renderCompetencyGrowthRows(results = [], scores = [], unitType) {
-  if (!results.length) return "     -";
-
-  const cols = [
-    ["deltaRRN", 8],
-    ["deltaPRN", 8],
-    ["deltaARN", 8],
-    ["GEQ", 8],
-  ].filter(([key]) => hasMetric(unitType, key) || key === "GEQ"); // Always include GEQ
-
-  return results
-    .map(r => {
-      let row =
-        `          ${String(r.ppId).padEnd(10)}  ` +
-        `     ${fmt2(r.totalDuration).padEnd(14)}  `;
-
-      cols.forEach(([key, w]) => {
-        row += `     ${fmt(r[key]).padEnd(w)}  `;
-      });
-
-      row += `     ${(r.STAG ?? "-").padEnd(8)}  `;
-      return row;
-    })
-    .join("\n");
-}
-
-
-
-function renderCompetencyHybridRows(results = [], scores = []) {
-  if (!results.length) return "     -";
-
-  return results
-    .map(r => {
-      return (
-        `          ${String(r.ppId).padEnd(10)}  ` +
-        `     ${fmt2(r.totalDuration).padEnd(13)}  ` +
-        `     ${fmt(r.MSIP).padEnd(11)}  ` +
-        `     ${Number(getICValue(r.unitType, r.signatureProfile, r.IC)).toFixed(2).padEnd(8)}  `
-      );
-    })
-    .join("\n");
-}
-
-function renderAverages(averages = {}, unitType) {
-  const lines = [];
-
-  if (hasMetric(unitType, "RRN"))
-    lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
-
-  if (hasMetric(unitType, "PRN"))
-    lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
-
-  if (unitType === "Third Parameter")
-    lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
-
-  return lines.join("\n");
-}
-
-function resolveActionStatus(bIds = [], observation = "") {
-  const hasBids = Array.isArray(bIds) && bIds.length > 0;
-  const hasObservation = Boolean(observation?.trim());
-
-  if (hasBids && hasObservation) return "CLOSED";
-  if (hasBids || hasObservation) return "PENDING";
-  return "OPEN";
-}
-
-
-function renderNeedsAssessmentRows(needAssessments = [], competencyRows = []) {
-  if (!needAssessments.length) return "     ";
-
-  return needAssessments
-    .map(na => {
-      const competencyRow = competencyRows.find(c => c.ppId === na.ppId);
-
-      const dayCount = competencyRow?.totalDuration ?? "-";
-      const criticalRefDate = competencyRow?.criticalRefDate
-        ? new Date(competencyRow.criticalRefDate).toISOString().split("T")[0]
-        : "-";
-
-      const benchmarkText = na.bIds?.length
-        ? ` ${na.bIds.join(", ")}`
-        : "";
-      const actionStatus = resolveActionStatus(na.bIds, na.observation);
-      const observation = na.observation?.trim() || "-";
-
-      return (
-        `       ${String(na.ppId).padEnd(13)}` +
-        `       ${String(criticalRefDate).padEnd(30)}` +
-        `       ${actionStatus.padEnd(18)}` +
-        `       ${benchmarkText.padEnd(15)}` +
-        `       ${observation}`
-      );
-    })
-    .join("\n");
-}
-
-function renderRecordOfAssignments(scores = []) {
-  if (!Array.isArray(scores) || scores.length === 0) {
-    return {
-      table1: "     -",
-      table2: "     -"
-    };
-  }
-
-  const padCol = (value, width) => {
-    const str = String(value ?? "-");
-    return (str.length > width ? str.slice(0, width - 1) + "…" : str).padEnd(width);
-  };
-
-  const durationStr = (v) => {
-    const num = Number(v);
-    return Number.isFinite(num) ? num.toFixed(2) : "-";
-  };
-
-  const table1 = scores
-    .map(s =>
-      `      ${padCol(s.ppId, 10)}` +
-      `     ${padCol(durationStr(s.durationHrs), 12)}` +
-      `     ${padCol(s.remarks, 45)}` +
-      `     ${padCol(s.competency, 14)}` +
-      `     ${padCol(s.attainedScore, 18)}` +
-      `     ${padCol(s.maxScore, 10)}`
-    )
-    .join("\n");
-
-  const table2 = scores
-    .map(s =>
-      `      ${padCol(s.ppId, 10)}` +
-      `     ${padCol(durationStr(s.durationHrs), 12)}` +
-      `     ${padCol(s.workflowStage, 22)}` +
-      `     ${padCol(s.assessmentType, 30)}` +
-      `     ${padCol(s.scheduleImpact, 30)}`
-    )
-    .join("\n");
-
-  return { table1, table2 };
-}
-
-function hasSelectionData(sel) {
-  return (
-    sel.RRN != null ||
-    sel.PRN != null ||
-    sel.ARN != null ||
-    (Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length > 0) ||
-    sel.actionStatus
-  );
-}
-
-function renderSingleChain(chain) {
-  const validSelections = (chain.selections || []).filter(hasSelectionData);
-
-  if (!validSelections.length) return null;
-
-  return validSelections
-    .map((sel, index) => {
-      const ic = sel.ARN != null ? `<${fmt(sel.RRN)},${fmt(sel.PRN)},${fmt(sel.ARN)}>`
-        : `<${fmt(sel.RRN)},${fmt(sel.PRN)}>`;
-      const bids =
-        Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length
-          ? sel.benchmarkIds.join(", ")
-          : "-";
-
-      const crd = sel.criticalRefDate
-        ? new Date(sel.criticalRefDate).toISOString().split("T")[0]
-        : "-";
-
-      const seq = index + 1;
-      return (
-        ` Performance Point ID ${sel.ppId ?? "-"}\n` +
-        ` IC #${sel.IC}: ${ic}\n` +
-        ` Benchmark IDs: ${bids}\n` +
-        ` Action Status: ${sel.actionStatus ?? "-"}\n` +
-        ` Critical Reference Date: ${crd}\n`
-      );
-    })
-    .join("\n");
-}
-
-
-function renderAssessmentChain(assessmentChain = []) {
-  if (!Array.isArray(assessmentChain) || !assessmentChain.length) {
-    return "     -";
-  }
-
-
-  const renderedChains = assessmentChain
-    .map((chain, index) => {
-      const content = renderSingleChain(chain);
-      if (!content) return null;
-
-      return {
-        header: `||| ASSESSMENT CHAIN ${index + 1} |||`,
-        body: content
-      };
-    })
-    .filter(Boolean);
-
-  if (!renderedChains.length) return "     -";
-
-  const headers = renderedChains.map(c => c.header.padEnd(40)).join("     ");
-  const bodies = renderedChains.map(c => c.body.split("\n"));
-
-  const maxLines = Math.max(...bodies.map(b => b.length));
-
-  const rows = Array.from({ length: maxLines }, (_, i) =>
-    bodies
-      .map(col => (col[i] ?? "").padEnd(40))
-      .join("     ")
-  );
-
-  return `${headers}\n\n${rows.join("\n")}`;
-}
-
-function buildDayCountByPpMap(competencyResults = []) {
-  const map = new Map();
-
-  competencyResults.forEach(r => {
-    if (r?.ppId && r?.totalDuration != null) {
-      map.set(r.ppId, r.totalDuration);
-    }
-  });
-
-  return map;
-}
-
-
-function getRms(entry, mode, lobeName) {
-  const lobe = entry?.lobes?.[lobeName];
-
-  if (!lobe) return "-";
-
-  if (mode === "proficiency") {
-    return fmt3(lobe.RMS);
-  }
-
-  if (mode === "growth") {
-    return fmt3(lobe.deltaRMS);
-  }
-
-  return "-";
-}
-
-function renderRmsProficiencyTables(neuro, competencyResults) {
-  if (!Array.isArray(neuro?.data)) return "";
-
-  const dayCountMap = buildDayCountByPpMap(competencyResults);
-
-  const leftRows = [];
-  const rightRows = [];
-
-  neuro.data.forEach(entry => {
-    const dayCount =
-      dayCountMap.get(entry.ppId) ?? entry.dayCount ?? "-";
-
-    leftRows.push(
-      `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
-      `${getRms(entry, "proficiency", "Frontal Lobe - Left").padEnd(14)}` +
-      `${getRms(entry, "proficiency", "Occipital Lobe - Left").padEnd(18)}` +
-      `${getRms(entry, "proficiency", "Parietal Lobe - Left").padEnd(16)}` +
-      `${getRms(entry, "proficiency", "Temporal Lobe - Left")}`
-    );
-
-    rightRows.push(
-      `     ${String(entry.ppId ?? "").padEnd(8)} ${String(dayCount).padEnd(10)} ` +
-      `${getRms(entry, "proficiency", "Frontal Lobe - Right").padEnd(14)}` +
-      `${getRms(entry, "proficiency", "Occipital Lobe - Right").padEnd(18)}` +
-      `${getRms(entry, "proficiency", "Parietal Lobe - Right").padEnd(16)}` +
-      `${getRms(entry, "proficiency", "Temporal Lobe - Right")}`
-    );
-  });
-
-  return `         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (L) - Frontal |||     ||| P/ RMS (L) - Occipital Lobe |||     ||| P/ RMS (L) - Parietal |||     ||| P/ RMS (L) - Temporal |||
-
-  ${leftRows.join("\n  ")}
-
-         ||| PP ID |||     ||| DAYCOUNT |||     ||| P/ RMS (R) - Frontal |||     ||| P/ RMS (R) - Occipital Lobe |||     ||| P/ RMS (R) - Parietal |||     ||| P/ RMS (R) - Temporal |||
-
-  ${rightRows.join("\n  ")}`;
-}
-
-
-function fmt3(value) {
-  const n = typeof value === "number" ? value : parseFloat(value);
-  return Number.isFinite(n) ? n.toFixed(3) : "-";
-}
-
-const LOBE_NAMES = ["Frontal", "Occipital", "Parietal", "Temporal"];
-const CELL_PADS = [14, 18, 16, 0];
-
-function getNeuroCell(neuro, entry, kind, mode, lobeName) {
-  if (kind === "rms") {
-    const lobe = entry?.lobes?.[lobeName];
-    return fmt3(mode === "proficiency" ? lobe?.RMS : lobe?.deltaRMS);
-  }
-
-  // kind === "cl" (cognitive load) -> per-PP series from backend
-  const series = neuro?.cognitiveLoad?.[lobeName]?.[mode];
-  const point = series?.find((p) => p.ppId === entry.ppId);
-  return fmt3(point?.value);
-}
-
-// kind: "rms" | "cl"  ->  4 tables: P (L), P (R), G (L), G (R)
-function renderNeuroTables(neuro, competencyResults, kind) {
-  if (!Array.isArray(neuro?.data) || !neuro.data.length) return "     -";
-
-  const dayCountMap = buildDayCountByPpMap(competencyResults);
-  const abbr = kind === "rms" ? "RMS" : "CL";
-  const blocks = [];
-
-  [["proficiency", "P"], ["growth", "G"]].forEach(([mode, p]) => {
-    [["Left", "L"], ["Right", "R"]].forEach(([sideName, s]) => {
-      const header =
-        `         ||| PP ID |||     ||| DAYCOUNT |||` +
-        LOBE_NAMES.map(
-          (l) => `     ||| ${p}/ ${abbr} (${s}) - ${l === "Occipital" ? "Occipital Lobe" : l} |||`
-        ).join("");
-
-      const rows = neuro.data.map((entry) => {
-        const raw = dayCountMap.get(entry.ppId) ?? entry.dayCount;
-        const dayCount = raw != null && Number.isFinite(Number(raw)) ? Number(raw).toFixed(2) : "-";
-
-        const cells = LOBE_NAMES.map((l, i) =>
-          getNeuroCell(neuro, entry, kind, mode, `${l} Lobe - ${sideName}`).padEnd(CELL_PADS[i])
-        ).join("");
-
-        return `       ${String(entry.ppId ?? "").padEnd(8)} ${dayCount.padEnd(10)} ${cells}`;
-      });
-
-      blocks.push(`${header}\n\n${rows.join("\n")}`);
-    });
-  });
-
-  return blocks.join("\n\n");
-}
-
-
-function sumCognitiveLoad(cognitiveLoad = {}) {
-  const result = {};
-
-  Object.entries(cognitiveLoad).forEach(([lobeName, data]) => {
-    const profSum = (data.proficiency || []).reduce(
-      (sum, p) => sum + (parseFloat(p.value) || 0),
-      0
-    );
-
-    const growthSum = (data.growth || []).reduce(
-      (sum, g) => sum + (parseFloat(g.value) || 0),
-      0
-    );
-
-    result[lobeName] = {
-      proficiency: profSum,
-      growth: growthSum
-    };
-  });
-
-  return result;
-}
-
-function lobeSide(lobeName) {
-  return lobeName.includes("Left") ? "L" : "R";
-}
-
-function lobeShortName(lobeName) {
-  return lobeName
-    .replace(" - Left", "")
-    .replace(" - Right", "");
-}
-
-function renderCognitiveLoad(neuro) {
-  const cognitiveLoad = neuro?.cognitiveLoad;
-  if (!cognitiveLoad) return "";
-
-  const profLines = [];
-  const growthLines = [];
-
-  // Debugging line
-
-  Object.entries(cognitiveLoad).forEach(([lobe, values]) => {
-    const side = lobeSide(lobe);
-    const short = lobeShortName(lobe);
-
-    profLines.push(
-      `    P/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.proficiencyFinal)}`
-    );
-    growthLines.push(
-      `    G/ Cognitive Load (${side}) - ${short.padEnd(16)} :     ${fmt3(values.growthFinal)}`
-    );
-  });
-
-  return `${profLines.join("\n")}\n\n${growthLines.join("\n")}`;
-}
-
-
-function renderAverageBlock(averages = {}, unitType) {
-  const lines = [];
-
-  if (hasMetric(unitType, "RRN"))
-    lines.push(`     Average Receptive Ratio - RRN             :     ${fmt(averages.RRN)}`);
-
-  if (hasMetric(unitType, "PRN"))
-    lines.push(`     Average Productive Ratio - PRN            :     ${fmt(averages.PRN)}`);
-
-  if (unitType === "Third Parameter")
-    lines.push(`     Average Acuity Ratio - ARN                :     ${fmt(averages.ARN)}`);
-
-  lines.push(` `);
-  lines.push(`     Average Equivalent Proficiency - XEP      :     ${fmt(averages.XEP)}`);
-  lines.push(`     Average Composite Proficiency - XCP       :     ${fmt(averages.XCP)}`);
-  lines.push(`     Average Band Proficiency - XBP            :     ${fmt(averages.XBP)}`);
-
-  return lines.join("\n");
-}
-
-function renderGrowthSummary(cumulative = {}, averages = {}, unitType) {
-  const lines = [];
-
-  if (hasMetric(unitType, "deltaRRN")) {
-    lines.push(`     Cumulative Growth - ΔRRN                  :     ${fmt(cumulative.deltaRRN)}`);
-    lines.push(`     Average Growth - ΔRRN                     :     ${fmt(averages.deltaRRN)}`);
-    lines.push(``);
-  }
-
-  if (hasMetric(unitType, "deltaPRN")) {
-    lines.push(`     Cumulative Growth - ΔPRN                  :     ${fmt(cumulative.deltaPRN)}`);
-    lines.push(`     Average Growth - ΔPRN                     :     ${fmt(averages.deltaPRN)}`);
-    lines.push(``);
-  }
-
-  if (unitType === "Third Parameter") {
-    lines.push(`     Cumulative Growth - ΔARN                  :     ${fmt(cumulative.deltaARN)}`);
-    lines.push(`     Average Growth - ΔARN                     :     ${fmt(averages.deltaARN)}`);
-    lines.push(``);
-  }
-
-  lines.push(`     Average Equivalent Growth - ∆GEQ          :     ${fmt(averages.GEQ)}`);
-
-  return lines.join("\n");
-}
-
-function renderButlerProductivityRows(productivity = []) {
-  if (!Array.isArray(productivity) || productivity.length === 0) {
-    return "     -";
-  }
-
-  return productivity
-    .map(r => {
-      const date = r.criticalRefDate
-        ? new Date(r.criticalRefDate).toISOString().split("T")[0]
-        : "-";
-
-      return (
-        `     ${String(r.ppId).padEnd(10)}` +
-        `     ${date.padEnd(30)}` +
-        `     ${String(Number(r.totalDuration).toFixed(2) ?? "-").padEnd(12)}` +
-        `     ${String(r.Productivity_CSD ?? "-").padEnd(28)}` +
-        `     ${String(r.Productivity_USD ?? "-")}`
-      );
-    })
-    .join("\n");
-}
-
-function renderIrregularitiesRows(irregularities = []) {
-  if (!Array.isArray(irregularities) || irregularities.length === 0) {
-    return `     NONE RECORDED`;
-  }
-
-  return irregularities
-    .map((item, index) => {
-      return `     ${String(index + 1).padEnd(10)}     ${String(item.type ?? "-").padEnd(28)}     ${item.comments ?? "-"}`;
-    })
-    .join("\n");
-}
-
-const getICValue = (unitType, signatureProfile, icString) => {
+export const getICValue = (unitType, signatureProfile, icString) => {
   if (!icString) return 0;
-
-  // ---------- CASE 1 / CASE 2 ----------
-  if (
-    unitType === "Communicative I/O" ||
-    unitType === "Theory & Practice"
-  ) {
-    if (
-      signatureProfile === "Case 1: Solid Balanced" ||
-      signatureProfile === "Case 2: Rigorous Balanced"
-    ) {
-      const map = {
-        "0R0P": 0, "1R1P": 1, "2R2P": 2,
-        "3R3P": 3, "4R4P": 4, "5R5P": 5
-      };
-      return map[icString] ?? 0;
+  const balanced = { "0R0P": 0, "1R1P": 1, "2R2P": 2, "3R3P": 3, "4R4P": 4, "5R5P": 5 };
+  if (unitType === CICO || unitType === TP) {
+    if (signatureProfile === "Case 1: Solid Balanced" || signatureProfile === "Case 2: Rigorous Balanced") {
+      return balanced[icString] ?? 0;
     }
-
-    // ---------- CASE 3a: PRODUCTIVE ----------
     if (signatureProfile === "Case 3a: Productive-Weighted") {
-      const map = {
-        "0R0P": 0, "0R1P": 0.5, "0R2P": 1,
-        "1R2P": 1.5, "2R2P": 2, "2R3P": 2.5,
-        "3R3P": 3, "3R4P": 3.5, "4R4P": 4,
-        "5R5P": 5
-      };
+      const map = { "0R0P": 0, "0R1P": 0.5, "0R2P": 1, "1R2P": 1.5, "2R2P": 2, "2R3P": 2.5, "3R3P": 3, "3R4P": 3.5, "4R4P": 4, "5R5P": 5 };
       return map[icString] ?? 0;
     }
-
-    // ---------- CASE 3b: RECEPTIVE ----------
     if (signatureProfile === "Case 3b: Receptive-Weighted") {
-      const map = {
-        "0R0P": 0, "1R0P": 0.5, "2R0P": 1,
-        "2R1P": 1.5, "2R2P": 2, "3R2P": 2.5,
-        "3R3P": 3, "4R3P": 3.5, "4R4P": 4,
-        "5R5P": 5
-      };
+      const map = { "0R0P": 0, "1R0P": 0.5, "2R0P": 1, "2R1P": 1.5, "2R2P": 2, "3R2P": 2.5, "3R3P": 3, "4R3P": 3.5, "4R4P": 4, "5R5P": 5 };
       return map[icString] ?? 0;
     }
   }
-
-  // ---------- TPRM ----------
-  if (unitType === "Third Parameter") {
-    const map = {
-      "0R0P": 0, "1R1P": 1, "2R2P": 2,
-      "3R3P": 3, "4R4P": 4, "5R5P": 5
-    };
-    return map[icString] ?? 0;
-  }
-
+  if (unitType === TPRM) return balanced[icString] ?? 0;
   return 0;
 };
 
+/** Threshold value as entered on the unit (3 decimals; whole numbers such as IC stay whole). */
+const thr = (v) => {
+  if (v === null || v === undefined || v === "") return "-";
+  const n = Number(v);
+  if (!Number.isFinite(n)) return text(v);
+  return Number.isInteger(n) && Math.abs(n) >= 1 ? String(n) : n.toFixed(3);
+};
+
+/** Open / Pending / Closed – same rule as the Needs Assessment table in Auxiliary Resultants. */
+function actionStatus(na) {
+  const ids = [...(na?.benchmarkIds || []), ...(na?.bIds || [])];
+  const hasIds = ids.length > 0;
+  const hasObs = Boolean(na?.observation && String(na.observation).trim());
+  if (hasIds && hasObs) return "Closed";
+  if (hasIds || hasObs) return "Pending";
+  return "Open";
+}
+
+const ppSort = (a, b) => {
+  if (a < 0 && b < 0) return b - a;
+  if (a < 0) return -1;
+  if (b < 0) return 1;
+  return a - b;
+};
+
+export function thresholdLines(unitMeta) {
+  const t = unitMeta || {};
+  const line = (label, rule) => kv(label, `PASS → ${rule}`, { width: TH_WIDTH });
+  const unilateral = {
+    [CICO]: [
+      line("Unilateral Proficiency in Reading", `XRR ≥ ${thr(t.XRR)}`),
+      line("Unilateral Proficiency in Listening", `XLR ≥ ${thr(t.XLR)}`),
+      line("Unilateral Proficiency in Speaking", `XSR ≥ ${thr(t.XSR)}`),
+      line("Unilateral Proficiency in Writing", `XWR ≥ ${thr(t.XWR)}`),
+    ],
+    [TP]: [
+      line("Unilateral Proficiency - Theoretical Knowl", `XTR ≥ ${thr(t.XTR)}`),
+      line("Unilateral Proficiency - Practical Knowl", `XPR ≥ ${thr(t.XPR)}`),
+    ],
+    [TPRM]: [
+      line("Unilateral Proficiency - Receptive", `XRVSR ≥ ${thr(t.XRVSR)}`),
+      line("Unilateral Proficiency - Productive", `XPVSR ≥ ${thr(t.XPVSR)}`),
+      line("Unilateral Proficiency - Acuity", `XAVSR ≥ ${thr(t.XAVSR)}`),
+    ],
+  }[t.unitType] || [line("Unilateral Proficiency", "-")];
+
+  return [
+    "     Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth",
+    "     thresholds of all courses are as follow:",
+    "",
+    ...unilateral,
+    line("Equivalent Proficiency", `XEP ≥ ${thr(t.XEP)}`),
+    line("Composite Proficiency", `XCP ≥ ${thr(t.XCP)}`),
+    line("Band Proficiency", `XBP ≥ ${thr(t.XBP)}`),
+    "",
+    line("Receptive Growth Differential", `∆RRN ≥ ${thr(t["ΔRRN"])}`),
+    line("Productive Growth Differential", `∆PRN ≥ ${thr(t["ΔPRN"])}`),
+    ...(t.unitType === TPRM ? [line("Acuity Growth Differential", `∆ARN ≥ ${thr(t["ΔARN"])}`)] : []),
+    line("Equivalent Growth", `∆GEQ ≥ ${thr(t["ΔGEQ"])}`),
+    "",
+    line("Butler Interaction Proficiency", `MSIP ≤ ${thr(t.MSIP)}`),
+    line("Interaction Class", `IC ≥ ${thr(t.IC)}`),
+    "",
+    "     Interaction Class 0: Failing",
+    "     Interaction Class 1: At-Risk",
+    "     Interaction Class 2: Acceptable",
+    "     Interaction Class 3: Standard",
+    "     Interaction Class 4: Advanced",
+    "     Interaction Class 5: Exceptional",
+    "",
+  ];
+}
+
+export const PROFICIENCY_TEXT = [
+  "     Proficiency, which passes the accountability to the student/worker, is a metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a baseline",
+  "     threshold.  This determination is normally based on the candidate’s ability to demonstrate mastery of core concepts at a fixed point in time. (Static Metric)",
+  "",
+  "          •	The Unilateral Proficiency is used to determine if a candidate can demonstrate mastery of individual skills.",
+  "          •	The Equivalent Proficiency is used to determine if a candidate can demonstrate mastery when skills are resolved into an equivocated scalar.",
+  "          •	The Composite Proficiency is used to determine if a candidate can demonstrate mastery across all skills.",
+  "          •	The Band Proficiency is used to determine if a candidate can demonstrate mastery by averaging scores across all skills.",
+  "",
+];
+
+export const GROWTH_TEXT = [
+  "     Growth, which passes the accountability to the instructor/manager, refers to the differential changes in skills from one performance point to another performance point.",
+  "     These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional level, indicate the direction of candidate",
+  "     progress. (Dynamic Metric)",
+  "",
+  "     Candidate growth is based on the candidate’s incremental progress from one point in time to another point with respect to time.",
+  "",
+  "          •	If the differential change in input variables and/or output variables is negative, then the direction of candidate progress decreases due to retarded growth.",
+  "          •	If the differential change in input variables and/or output variables is zero, then the direction of candidate progress remains unchanged with no growth.",
+  "          •	If the differential change in input variables and/or output variables is positive, then the direction of candidate progress increases due to value-added growth.",
+  "",
+];
+
+export const HYBRID_TEXT = [
+  "          •	The Butler Interaction Proficiency is used to determine if a candidate can demonstrate mastery based on an acceptable interaction among all inclusive variables.",
+  "          •	The Interaction Class is an interaction constant based on skills mastery within a pre-defined interaction envelope among all inclusive variables.",
+  "",
+];
+
+const UNILATERAL_KEYS = { [CICO]: ["XRR", "XLR", "XSR", "XWR"], [TP]: ["XTR", "XPR"], [TPRM]: ["ARN", "XRVSR", "XPVSR", "XAVSR"] };
+
+const LOBES = ["Frontal", "Occipital", "Parietal", "Temporal"];
+
+function neuroBlocks(neuro, dayCountByPp) {
+  const data = Array.isArray(neuro?.data) ? [...neuro.data].sort((a, b) => ppSort(a.ppId, b.ppId)) : [];
+  const out = [];
+  [["proficiency", "P", "RMS", "proficiencyFinal"], ["growth", "G", "deltaRMS", "growthFinal"]].forEach(([, p, rmsKey, finalKey]) => {
+    [["Left", "L"], ["Right", "R"]].forEach(([side, s]) => {
+      const headers = ["PP ID", "DAYCOUNT", ...LOBES.map((l) => `${p}/ RMS (${s}) - ${l === "Occipital" ? "Occipital Lobe" : l}`)];
+      const rows = data.map((entry) => [
+        entry.ppId,
+        n2(dayCountByPp.get(entry.ppId) ?? entry.dayCount),
+        ...LOBES.map((l) => n3(entry?.lobes?.[`${l} Lobe - ${side}`]?.[rmsKey])),
+      ]);
+      out.push(...table(headers, rows));
+    });
+    [["Left", "L"], ["Right", "R"]].forEach(([side, s]) => {
+      LOBES.forEach((l) => {
+        out.push(kv(`${p}/ Cognitive Load (${s}) - ${l}`, n3(neuro?.cognitiveLoad?.[`${l} Lobe - ${side}`]?.[finalKey])));
+      });
+    });
+    out.push("");
+  });
+  return out;
+}
+
+function chainBlocks(assessmentChain, unitType) {
+  const chains = (Array.isArray(assessmentChain) ? assessmentChain : [])
+    .map((c) => (c.selections || []).filter((s) => s && s.ppId !== undefined && s.ppId !== null))
+    .filter((sel) => sel.length);
+  if (!chains.length) return ["     -", ""];
+  const tprm = unitType === TPRM;
+  const out = [];
+  chains.forEach((selections, idx) => {
+    out.push(`     ||| ASSESSMENT CHAIN ${idx + 1} |||`, "");
+    selections.forEach((sel) => {
+      const names = tprm ? "<RRN,PRN,ARN>" : "<RRN,PRN>";
+      const vals = tprm ? `<${n3(sel.RRN)},${n3(sel.PRN)},${n3(sel.ARN)}>` : `<${n3(sel.RRN)},${n3(sel.PRN)}>`;
+      const bids = Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length ? sel.benchmarkIds.join(", ") : "-";
+      out.push(
+        ` Performance Point ID ${text(sel.ppId)}`,
+        ` IC ${text(sel.IC)}: ${names} = ${vals}`,
+        ` Benchmark IDs: ${bids}`,
+        ` Action Status: ${text(sel.actionStatus)}`,
+        ` Critical Reference Date: ${isoDate(sel.criticalRefDate)}`,
+        "",
+      );
+    });
+  });
+  return out;
+}
+
+/** Benchmarks of the unit, with the PP IDs whose needs assessment links each benchmark. */
+function benchmarkRows(benchmarks = [], needAssessments = []) {
+  return [...benchmarks]
+    .sort((a, b) => Number(a.benchmarkId) - Number(b.benchmarkId))
+    .map((b) => {
+      const pps = needAssessments
+        .filter((na) => [...(na.benchmarkIds || []), ...(na.bIds || [])].map(String).includes(String(b.benchmarkId)))
+        .map((na) => na.ppId)
+        .sort(ppSort);
+      return [pps.length ? pps.join(", ") : "-", b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription];
+    });
+}
+
 export function buildCandidateEZReport({
-  unitMeta,
-  candidate,
+  unitMeta = {},
+  candidate = {},
   roster,
-  scores,
+  scores = [],
   competency,
   neuro,
   engagement,
@@ -756,501 +222,170 @@ export function buildCandidateEZReport({
   assessmentChain,
   effortResults,
 }) {
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
+  const unitType = unitMeta.unitType;
+  const tprm = unitType === TPRM;
+  const { leaders, assessors } = staffNames(unitMeta.staffAssignments || []);
+  const rosterRow = roster || {};
+  const pct = rosterRow.percentages || {};
+  const eng = engagement?.percentages || {};
+
+  const results = (Array.isArray(competency?.results) ? competency.results : []).slice().sort((a, b) => ppSort(a.ppId, b.ppId));
+  const averages = (Array.isArray(competency?.averages) ? competency.averages[0] : competency?.averages) || {};
+  const cumulative = (Array.isArray(competency?.cumulative) ? competency.cumulative[0] : competency?.cumulative) || {};
+  const dayCountByPp = new Map(results.map((r) => [r.ppId, r.totalDuration]));
+  const needs = Array.isArray(needAssessments) ? needAssessments : [];
+  const effectivity = candidate.effectivity || null;
+
+  // --- Section 04 tables
+  const uniKeys = UNILATERAL_KEYS[unitType] || [];
+  const proficiencyRows = results.map((r) => [r.ppId, n3(r.RRN), n3(r.PRN), ...uniKeys.map((k) => n3(r[k])), n3(r.XEP), n3(r.XCP), n3(r.XBP), text(r.STAP)]);
+  const growthRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.deltaRRN), n3(r.deltaPRN), ...(tprm ? [n3(r.deltaARN)] : []), n3(r.GEQ), text(r.STAG)]);
+  const hybridRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.MSIP), n2(getICValue(r.unitType || unitType, r.signatureProfile || unitMeta.signatureProfile, r.IC))]);
+
+  // --- Section 06 needs assessment: every PP ID (saved or still open)
+  const naByPp = new Map(needs.map((na) => [na.ppId, na]));
+  const allPps = [...new Set([...results.map((r) => r.ppId), ...needs.map((na) => na.ppId)])].sort(ppSort);
+  const needsRows = allPps.map((pp) => {
+    const comp = results.find((r) => r.ppId === pp);
+    const na = naByPp.get(pp);
+    return [pp, isoDate(comp?.criticalRefDate), actionStatus(na), text(na?.observation?.trim())];
   });
 
-   const n3 = (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(3) : "-");
-  const rosterStats = unitMeta?.rosterStats ?? {};
-  const safeRoster = { unitOutcome: "-", ...(roster || {}), percentages: roster?.percentages || {} };
-  const effortCSD = effortResults?.data?.CSD ?? "-";
-  const effortUSD = effortResults?.data?.USD ?? "-";
-  const irregularityList =
-    candidate?.irregularities ?? scores?.[0]?.candidate?.irregularities ?? [];
-
-  const { leaders, assessors } = extractStaffAssignments(unitMeta.staffAssignments);
-
-  const benchmarkRows = renderBenchmarkRows(unitMeta.benchmarks);
-
-  const assessmentBlocks = renderAssessmentBlocks(candidate?.pps);
-
-  const engagementPercentages = engagement?.percentages ?? {};
-
-  const competencyRows = Array.isArray(competency?.results) ? competency.results : [];
-
-  const competencyAverages = Array.isArray(competency?.averages) ? competency.averages[0] ?? {}
-    : competency?.averages ?? {};
-
-  const competencyCumalative = Array.isArray(competency?.cumulative) ? competency.cumulative[0] ?? {}
-    : competency?.cumulative ?? {};
-
-  const cumulativeAverages = Array.isArray(competency?.cumulativeAverages) ? competency.cumulativeAverages[0] ?? {}
-    : competency?.cumulativeAverages ?? {};
-
-  const proficiencyRows =
-    renderCompetencyProficiencyRows(competencyRows, unitMeta.unitType);
-
-  const growthRows =
-    renderCompetencyGrowthRows(competencyRows, scores, unitMeta.unitType);
-
-  const hybridRows = renderCompetencyHybridRows(competencyRows, scores);
-
-  const needsAssessmentRows = renderNeedsAssessmentRows(needAssessments, competencyRows);
-
-  const { table1: assignmentRows1, table2: assignmentRows2 } = renderRecordOfAssignments(scores);
-
-  const assessmentChainBlock = renderAssessmentChain(assessmentChain);
-
-  const candidateMarksRows = renderCandidateMarksRows(candidateMarks);
-
-
-  const rmsTables = renderNeuroTables(neuro, competency?.results ?? [], "rms");
-  const loadTables = renderNeuroTables(neuro, competency?.results ?? [], "cl");
-
-
-  const productivityRows = renderButlerProductivityRows(competency?.results ?? []);
-
-  const irregularityRows = renderIrregularitiesRows(irregularityList);
-
-
-
-  // Inside buildCandidateEZReport, before the template string
-
-  let unilateralProficiencySection = "";
-
-  if (unitMeta.unitType === "Communicative I/O") {
-    unilateralProficiencySection = `
-     Unilateral Proficiency in Reading          :     PASS → XRR ≥ ${unitMeta.XRR ?? "-"}  
-     Unilateral Proficiency in Listening        :     PASS → XLR ≥ ${unitMeta.XLR ?? "-"}  
-     Unilateral Proficiency in Speaking         :     PASS → XSR ≥ ${unitMeta.XSR ?? "-"}  
-     Unilateral Proficiency in Writing          :     PASS → XWR ≥ ${unitMeta.XWR ?? "-"}  `;
-  } else if (unitMeta.unitType === "Theory & Practice") {
-    unilateralProficiencySection = `
-     Unilateral Proficiency - Theoretical Knowl :     PASS → XTR ≥ ${unitMeta.XTR ?? "-"}   
-     Unilateral Proficiency - Practical Knowl   :     PASS → XPR ≥ ${unitMeta.XPR ?? "-"}    `;
-  } else if (unitMeta.unitType === "Third Parameter") {
-    unilateralProficiencySection = `
-     Unilateral Proficiency - Receptive         :     PASS → XRVSR ≥ ${unitMeta.XRVSR ?? "-"}   
-     Unilateral Proficiency - Productive        :     PASS → XPVSR ≥ ${unitMeta.XPVSR ?? "-"} 
-     Unilateral Proficiency - Acuity            :     PASS → XAVSR ≥ ${unitMeta.XAVSR ?? "-"} `;
-  } else {
-    // fallback in case unitType is missing or unknown
-    unilateralProficiencySection = `
-     Unilateral Proficiency                     :     PASS → -`;
-  }
-
-
-  // Determine Proficiency Table Header based on unitType
-  let proficiencyTableHeader = "";
-
-  if (unitMeta.unitType === "Communicative I/O") {
-    proficiencyTableHeader = `
-        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XRR |||     ||| XLR |||     ||| XSR |||     ||| XWR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
-  } else if (unitMeta.unitType === "Theory & Practice") {
-    proficiencyTableHeader = `
-        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XTR |||     ||| XPR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
-  } else if (unitMeta.unitType === "Third Parameter") {
-    proficiencyTableHeader = `
-        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| ARN |||     ||| XRVSR |||     ||| XPVSR |||     ||| XAVSR |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
-  } else {
-    // fallback if unitType is unknown
-    proficiencyTableHeader = `
-        ||| PP ID |||     ||| RRN |||     ||| PRN |||     ||| XEP |||     ||| XCP |||     ||| XBP |||     ||| STA/P |||`;
-  }
-
-
-  // Determine growth table header based on unitType
-  let growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ∆GEQ |||     ||| STA/G |||";
-
-  if (unitMeta.unitType === "Third Parameter") {
-    // Add ΔARN for Third Parameter units
-    growthTableHeader = "||| PP ID |||     ||| DAYCOUNT |||     ||| ΔRRN |||     ||| ΔPRN |||     ||| ΔARN |||     ||| ∆GEQ |||     ||| STA/G |||";
-  }
-
-  return `                                          
-                                                     *******************************************************************************                                                                     
-                                                     **                                                                           **
-                                                     **                          EvalzNow Latest Edition                          **
-                                                     **                                                                           **
-                                                     **                     Human Capital Assessment Software                     **
-                                                     **                              Ricky D. Butler                              **
-                                                     **                                                                           **
-                                                     **                                                                           **
-                                                     **             The First Comprehensive Assessment Solution for               **
-                                                     **                           Industry and Education                          **
-                                                     **                                                                           **
-                                                     **                      Unit Developmental Capabilities                      **
-                                                     **                                                                           **
-                                                     **                  Quantitative and Qualitative Assessments                 **
-                                                     **                   Hybrid Proficiency & Growth Monitoring                  **
-                                                     **                            Competency Accounting                          **
-                                                     **                                                                           **
-                                                     **                      Analysis Report Level: Candidate                     **
-                                                     **                    Report Generation Date: ${today.padEnd(21)}          **
-                                                     **                                                                           **
-                                                     *******************************************************************************
-                                                     **                  All Rights Reserved. COPYRIGHT (C) ${new Date().getFullYear()}                  **
-                                                     **                   Compiled for Subscriber End User Use                    **
-                                                     **     Decompilation or disassembly of this software strictly prohibited.    **
-                                                     *******************************************************************************
-
-*******************************************************                                 INTRODUCTION                              *******************************************************
-
-     EvalzNow provides detailed, human capital assessments using an innovative approach known as Competency Accounting.  As the approach suggests, Competency Accounting is the
-     measurement, the processing, and the communication of quantitative information and qualitative information regarding any performance-based entity such as students, employees, AI 
-     humanoids, educational facilities, businesses, defense agencies, and so forth.  The foundation of the Competency Accounting approach centers on grouping independent variables 
-     pertaining to the cerebral structure into exclusive categories prior to data processing for proficiency and growth.
-
-     Proficiency, which passes the accountability to the candidate, is a static metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a 
-     baseline threshold.  This determination is based on the candidate's ability to demonstrate mastery of core concepts/principles at a fixed point in time.
-
-     Growth, which passes the accountability to the leader (instructor, manager, etc.), refers to the differential changes in productive skills and in receptive skills from one 
-     performance point to another performance point. These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional
-     level, are dynamic indications of the direction of candidate progress.
-
-     End Users are free to use data outputs, data extractions, and data reports at their lawful discretion; however, the Creator will not be held liable for the decisions of End Users 
-     and the actions of End Users based on subjective interpretations.  Educators, instructors, executives, managers, and administrators should exercise sound judgment by combining 
-     EvalzNow outputs with real-life observations, relatable experience, and direct accounts.
-
-
-*******************************************************                                  SECTION 01                               *******************************************************
-
----------------------------------------
- CANDIDATE DETAILS :
----------------------------------------
-
-  Last Name                            :     ${candidate.lastName ?? "-"}
-  First Name                           :     ${candidate.firstName ?? "-"}
-  Candidate ID                         :     ${candidate.candidateId ?? "-"}
-  Candidate Start Date                 :     ${candidate.candidateStartDate ?? "-"}
-  Nationality                          :     ${candidate.nationality ?? "-"}
-  Date of Birth                        :     ${candidate.dateOfBirth ?? "-"}
-  Special ID No.                       :     ${candidate.specialIdNo ?? "-"}
-
----------------------------------------
- UNIT DETAILS :
----------------------------------------
-
-  Unit Name                            :     ${unitMeta.unitName ?? "-"}
-  Unit ID                              :     ${unitMeta.unitId ?? "-"}
-  Unit Start Date                      :     ${unitMeta.unitStartDate ?? "-"}
-  Unit End Date                        :     ${unitMeta.unitEndDate ?? "-"}
-  Signature Profile                    :     ${unitMeta.signatureProfile ?? "-"}
-  Unit Type                            :     ${unitMeta.unitType ?? "-"}
-  Unit Roster Count                    :     ${rosterStats.totalCount ?? "-"}
-  
-  Assigned Leader #1                   :     ${leaders[0]}
-  Assigned Leader #2                   :     ${leaders[1]}
-  Assigned Leader #3                   :     ${leaders[2]}
-
-  Assigned Assessor #1                 :     ${assessors[0]}
-  Assigned Assessor #2                 :     ${assessors[1]}
-  Assigned Assessor #3                 :     ${assessors[2]}
-
-
-
-*******************************************************                                  SECTION 02                               *******************************************************
-
----------------------------------------
- CANDIDATE IRREGULARITIES:
----------------------------------------
-
-     ||| NOTE # |||     ||| IRREGULARITY TYPE |||     ||| COMMENTS |||
-
-${irregularityRows}
-
----------------------------------------
- ASSESSMENT BLOCKS:
----------------------------------------
-
-     ||| PP ID |||     ||| PERIOD TYPE |||     ||| DELIVERY |||     ||| SHORT DESCRIPTION |||
-
-${assessmentBlocks}
-
-
-*******************************************************                                  SECTION 03                               *******************************************************
-
----------------------------------------
- GRADE SCALE DEFINITION & THRESHOLDS:
----------------------------------------
-
-     Based on the grade scale definitions of the unit, the pass/fail criteria for the proficiency thresholds, the hybrid thresholds, and the growth 
-     thresholds of all courses are as follow:
-     ${unilateralProficiencySection}
-     Equivalent Proficiency                     :     PASS → XEP ≥ ${unitMeta.XEP ?? "-"}  
-     Composite Proficiency                      :     PASS → XCP ≥ ${unitMeta.XCP ?? "-"}  
-     Band Proficiency                           :     PASS → XBP ≥ ${unitMeta.XBP ?? "-"}  
-
-     Receptive Growth Differential              :     PASS → ΔRRN ≥ ${unitMeta["ΔRRN"] ?? "-"} 
-     Productive Growth Differential             :     PASS → ΔPRN ≥ ${unitMeta["ΔPRN"] ?? "-"} 
-     ${unitMeta.unitType === "Third Parameter"
-      ? `Acuity Growth Differential                 :     PASS → ΔARN ≥ ${unitMeta["ΔARN"] ?? "-"}` : ""}
-     Equivalent Growth                          :     PASS → ∆GEQ ≥ ${unitMeta["ΔGEQ"] ?? "-"} 
-
-     Butler Interaction Proficiency             :     PASS → MSIP ≤ ${unitMeta.MSIP ?? "-"}  
-     Interaction Class                          :     PASS → IC ≥ ${unitMeta.IC ?? "-"} 
-
-     Interaction Class 0: Failing
-     Interaction Class 1: At-Risk
-     Interaction Class 2: Acceptable
-     Interaction Class 3: Standard
-     Interaction Class 4: Advanced
-     Interaction Class 5: Exceptional
-
-     Unit Outcome for Candidate                 :     ${safeRoster.unitOutcome ?? "-"}
-
-
-*******************************************************                                  SECTION 04                               *******************************************************
-
----------------------------------------
- TABULATIONS - PROFICIENCY:
----------------------------------------
-
-     Proficiency, which passes the accountability to the student/worker, is a metric that is used to determine if a candidate can meet or can exceed a predefined benchmark or a baseline 
-     threshold.  This determination is normally based on the candidate's ability to demonstrate mastery of core concepts at a fixed point in time. (Static Metric)
-
-          •	The Unilateral Proficiency is used to determine if a candidate can demonstrate mastery of individual skills.
-          •	The Equivalent Proficiency is used to determine if a candidate can demonstrate mastery when skills are resolved into an equivocated scalar.
-          •	The Composite Proficiency is used to determine if a candidate can demonstrate mastery across all skills.
-          •	The Band Proficiency is used to determine if a candidate can demonstrate mastery by averaging scores across all skills.
-
-     ${proficiencyTableHeader}
-
-${proficiencyRows}
-
-${renderAverageBlock(competencyAverages, unitMeta.unitType)}
-
-
----------------------------------------
- TABULATIONS - GROWTH:
----------------------------------------
-
-     Growth, which passes the accountability to the instructor/manager, refers to the differential changes in skills from one performance point to another performance point. 
-     These differential changes, which can be correlated with normative measures at a candidate level, a unit level, or an institutional level, indicate the direction of candidate 
-     progress. (Dynamic Metric)
-
-     Candidate growth is based on the candidate's incremental progress from one point in time to another point with respect to time.
-
-          •	If the differential change in input variables and/or output variables is negative, then the direction of candidate progress decreases due to retarded growth.
-          •	If the differential change in input variables and/or output variables is zero, then the direction of candidate progress remains unchanged with no growth.
-          •	If the differential change in input variables and/or output variables is positive, then the direction of candidate progress increases due to value-added growth.
-
-     ${growthTableHeader}
-
-${growthRows}
-
-${renderGrowthSummary(competencyCumalative, competencyAverages, unitMeta.unitType)}
-
-
----------------------------------------
- TABULATIONS - HYBRID:
----------------------------------------
-
-          •	The Butler Interaction Proficiency is used to determine if a candidate can demonstrate mastery based on an acceptable interaction among all inclusive variables.
-          •	The Interaction Class is an interaction constant based on skills mastery within a pre-defined interaction envelope among all inclusive variables.
-
-     ||| PP ID |||     ||| DAYCOUNT |||     ||| MSIP |||     ||| IC |||
-
-${hybridRows}
-
-     Average MSIP                             :     ${competencyAverages.MSIP ?? "-"}
-     Average Interaction Class - IC           :     ${Number(getICValue(unitMeta.unitType, unitMeta.signatureProfile, competencyAverages.IC)).toFixed(2)}
-
-
-*******************************************************                                  SECTION 05                               *******************************************************
-
----------------------------------------
- BUTLER PRODUCTIVITY & UTILIZATION:
----------------------------------------
-
-     ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| DAYCOUNT |||     ||| PRODUCTIVITY RATES - CSD |||     ||| PRODUCTIVITY RATES - USD |||
-
-${productivityRows}
-
-     Effort -  CSD Reference                   :     ${effortCSD}
-     Effort -  USD Reference                   :     ${effortUSD}
-
----------------------------------------
- ATTENDANCE TRACKING:
----------------------------------------
-
-     Attendance % - Present                    :     ${n3(safeRoster.percentages.present)}
-     Attendance % - Excused Absences           :     ${n3(safeRoster.percentages.excusedAbsences)}
-     Attendance % - Unexcused Absences         :     ${n3(safeRoster.percentages.unexcusedAbsences)}
-     Attendance % - Excused Tardies            :     ${n3(safeRoster.percentages.excusedTardies)}
-     Attendance % - Unexcused Tardies          :     ${n3(safeRoster.percentages.unexcusedTardies)}
-
----------------------------------------
- ENGAGEMENT TRACKING:
----------------------------------------
-
-     Engagement Level % - High                :     ${engagementPercentages.High != null ? engagementPercentages.High.toFixed(3) : "-"}
-     Engagement Level % - Medium              :     ${engagementPercentages.Medium != null ? engagementPercentages.Medium.toFixed(3) : "-"}
-     Engagement Level % - Low                 :     ${engagementPercentages.Low != null ? engagementPercentages.Low.toFixed(3) : "-"}
-     Engagement Level % - Not Applicable      :     ${engagementPercentages["N/A"] != null ? engagementPercentages["N/A"].toFixed(3) : "-"}
-
-
-*******************************************************                                  SECTION 06                               *******************************************************
-
----------------------------------------
- BENCHMARKS:
----------------------------------------
-
-     ||| BIDs |||     ||| BENCHMARK TYPE |||     ||| BENCHMARK REF |||     ||| BENCHMARK DESCRIPTION |||
-
-${benchmarkRows}
-
----------------------------------------
- CANDIDATE MARKS:
----------------------------------------
-
-     ||| ENTRY |||     ||| IMPACT TYPE |||     ||| CONCERN IDENTIFIED |||     ||| IDENTITY DATE |||     ||| CONCERN RESOLVED |||     ||| RESOLUTION DATE |||
-
-${candidateMarksRows}
-
----------------------------------------
- NEEDS ASSESSMENT:
----------------------------------------
-
-     ||| PP ID |||     ||| CRITICAL REFERENCE DATE |||     ||| ACTION STATUS |||          ||| BIDS |||     ||| OBSERVATIONS & GOALS |||
-
-${needsAssessmentRows}
-
----------------------------------------
- NEEDS ASSESSMENT CHAIN:
----------------------------------------
-
-    ${assessmentChainBlock}
-
-
-*******************************************************                                  SECTION 07                               *******************************************************
-
----------------------------------------
- RECORD OF ASSIGNMENTS:
----------------------------------------
-
-      ||| PP ID |||     ||| DAYCOUNT |||     ||| TASK DECLARATION |||     ||| COMPETENCY |||     ||| ATTAINED SCORE |||     ||| MAX SCORE |||
-
-${assignmentRows1}
-
-      ||| PP ID |||     ||| DAYCOUNT |||     ||| WORKFLOW STAGE |||     ||| ASSESSMENT TYPE |||     ||| SCHEDULE IMPACT |||
-
-${assignmentRows2}
-
-
-*******************************************************                                  SECTION 08                               *******************************************************
-
----------------------------------------
- NEUROSCIENCE INDICATORS:
----------------------------------------
-
-The RMS value of each indicator is provided below.
-
-      ${rmsTables}
-
-The cognitive load of each indicator is provided below.
-
-      ${loadTables}
-
-
-
-*******************************************************                                  SECTION 09                               *******************************************************
-
----------------------------------------
- NOMENCLATURE:
----------------------------------------
-
-     ∆ARN                                      :     Acuity Ratio Growth Differential
-     ∆GEQ                                      :     Equivalent Growth
-     ∆PRN                                      :     Productive Ratio Growth Differential
-     ∆RRN                                      :     Receptive Ratio Growth Differential
-     AAVS                                      :     Attained Acuity Variable Scores
-     ALS                                       :     Attained Listening Score
-     APS                                       :     Attained Practical Score
-     APVS                                      :     Attained Productive Variable Scores
-     AR                                        :     Acuity Ratio of Outputs
-     ARGT                                      :     Projected Acuity Ratio Component for Growth Target
-     ARN                                       :     Acuity Ratio of the Performance Point
-     ARS                                       :     Attained Reading Score
-     ARVS                                      :     Attained Receptive Variable Scores
-     ASP                                       :     Attained Speaking Score
-     ATS                                       :     Attained Theory-Based Score
-     AWS                                       :     Attained Writing Score
-     BID                                       :     Benchmark ID
-     CID                                       :     Candidate ID
-     CSD                                       :     Candidate Start Date
-     DC                                        :     Day Count
-     GT                                        :     Growth Target of a Performance Point
-     IC                                        :     Interaction Class Based on Performance Point
-     IEP                                       :     Individualized Educational Plan
-     MAVS                                      :     Maximum Acuity Variable Scores
-     MGS                                       :     Maximum Grammar Score
-     MLS                                       :     Maximum Listening Score
-     MPS                                       :     Maximum Practical Score
-     MPVS                                      :     Maximum Productive Variable Scores
-     MRS                                       :     Maximum Reading Score
-     MRVS                                      :     Maximum Receptive Variable Scores
-     MSIP                                      :     Margins of Interaction Proficiency
-     MSS                                       :     Maximum Speaking Score
-     MTS                                       :     Maximum Theory-Based Score
-     MWS                                       :     Maximum Writing Score
-     PP                                        :     Performance Point
-     PR                                        :     Productive Ratio of Outputs
-     PRGT                                      :     Projected Productive Ratio Component for Growth Target
-     PRN                                       :     Productive Ratio of the Performance Point
-     PTP                                       :     Projection Termination Point
-     RMS                                       :     Root Mean Square
-     RR                                        :     Receptive Ratio of Inputs
-     RRGT                                      :     Projected Receptive Ratio Component for Growth Target
-     RRN                                       :     Receptive Ratio of the Performance Point
-     SGP                                       :     Student Growth Percentile
-     SLA                                       :     Student Language Acquisition
-     SMART                                     :     Specific/Measurable/Attainable/Relevancy (Realistic)/Time-Bound
-     STA/G                                     :     Stability in Growth
-     STA/P                                     :     Stability in Proficiency
-     TEFL                                      :     Teaching English as a Foreign Language
-     TTT                                       :     Teacher Talk Time
-     USD                                       :     Unit Start Date
-     VAM                                       :     Value-Added Model
-     VTM                                       :     Value-Table Model
-     XAVSR                                     :     Acuity Variable Scoring Ratio
-     XBP                                       :     Band Proficiency
-     XCP                                       :     Composite Proficiency
-     XEP                                       :     Equivalent Proficiency
-     XLR                                       :     Listening Ratio
-     XPR                                       :     Practical Ratio
-     XPVSR                                     :     Productive Variable Scoring Ratio
-     XRR                                       :     Reading Ratio
-     XRVSR                                     :     Receptive Variable Scoring Ratio
-     XSR                                       :     Speaking Ratio
-     XTR                                       :     Theory-Based Ratio
-     XWR                                       :     Writing Ratio
-
----------------------------------------
- LEGAL NOTICE:
----------------------------------------
-
-     Unless otherwise indicated, EvalzNow is the intellectual property of Ricky D. Butler (the Creator). All source codes, database builds, functionality, designs, logos, theories, 
-     proprietary techniques, utilities, and methodologies are owned, are controlled, and are licensed to the Creator under applicable copyright laws and unfair competition laws of the 
-     United States, foreign jurisdictions, and international conventions – whichever is more severe.
-
-     All rights reserved. No part of this application or works associated with the development of the application may be reproduced, may be distributed, may be rewritten, may be edited, 
-     may be modified, or may be transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written consent
-     of the Creator. This includes any derivative works, any parallel works, or seemingly similar works of any form of any industry-related field – public or private.
-
-     The aforementioned restrictions above also apply to the concept of Competency Accounting, which is an innovative idea that belongs to Ricky D. Butler.  This idea cannot be applied 
-     in any manner, direct or indirect, without the written approval of the Creator.  Any unlawful use of the concept of Competency Accounting is subject to applicable copyright laws 
-     and unfair competition laws of the United States, foreign jurisdictions, and international conventions – whichever is more severe.
-
-     For Fair Use cases, any entity using our copywritten material for, but not limited to, criticism, commentary, news reporting, teaching, scholarship, research, or informative 
-     purposes must attribute the work to the Creator.  The attribution is required regardless of the non-commercial intent, the educational intent, the scientific intent, or the 
-     historical intent even if the purpose is transformative.  Please reach out to the Creator or the EvalzNow team for general inquiries or official requests.
-
-     End Users, however, are free to use database feeds, data analytics, data extractions, and data reports at their lawful discretion.
-
-                                                     *******************************************************************************
-                                                     **                               End of Report                               **
-                                                     *******************************************************************************`;
+  const marksRows = (Array.isArray(candidateMarks) ? candidateMarks : [])
+    .slice().sort((a, b) => a.entryNumber - b.entryNumber)
+    .map((m, i) => [i + 1, m.impactType, m.concernIdentified, isoDate(m.identityDate), m.concernResolved, isoDate(m.resolutionDate)]);
+
+  const irregularities = candidate.irregularities ?? scores?.[0]?.candidate?.irregularities ?? [];
+
+  const lines = [
+    headerLines("Candidate"),
+    "",
+    introLines(),
+    "",
+    sectionBanner(1),
+    "",
+    subHeader("CANDIDATE DETAILS :"),
+    kv("Last Name", text(candidate.lastName), { indent: 2, width: 37 }),
+    kv("First Name", text(candidate.firstName), { indent: 2, width: 37 }),
+    kv("Candidate ID", text(candidate.candidateId), { indent: 2, width: 37 }),
+    kv("Candidate Start Date", text(candidate.candidateStartDate), { indent: 2, width: 37 }),
+    kv("Nationality", text(candidate.nationality), { indent: 2, width: 37 }),
+    kv("Date of Birth", text(candidate.dateOfBirth), { indent: 2, width: 37 }),
+    kv("Special ID No.", text(candidate.specialIdNo), { indent: 2, width: 37 }),
+    "",
+    subHeader("UNIT DETAILS :"),
+    kv("Unit Name", text(unitMeta.unitName), { indent: 2, width: 37 }),
+    kv("Unit ID", text(unitMeta.unitId), { indent: 2, width: 37 }),
+    kv("Unit Start Date", text(unitMeta.unitStartDate), { indent: 2, width: 37 }),
+    kv("Unit End Date", text(unitMeta.unitEndDate), { indent: 2, width: 37 }),
+    kv("Signature Profile", text(unitMeta.signatureProfile), { indent: 2, width: 37 }),
+    kv("Unit Type", text(unitType), { indent: 2, width: 37 }),
+    kv("Unit Roster Count", text(unitMeta.rosterStats?.totalCount), { indent: 2, width: 37 }),
+    "",
+    ...leaders.map((n, i) => kv(`Assigned Leader #${i + 1}`, n, { indent: 2, width: 37 })),
+    "",
+    ...assessors.map((n, i) => kv(`Assigned Assessor #${i + 1}`, n, { indent: 2, width: 37 })),
+    "",
+    sectionBanner(2),
+    "",
+    subHeader("CANDIDATE IRREGULARITIES:"),
+    table(["NOTE #", "IRREGULARITY TYPE", "COMMENTS"], irregularities.map((it, i) => [i + 1, it.type, it.comments])),
+    subHeader("ASSESSMENT BLOCKS:"),
+    table(["PP ID", "PERIOD TYPE", "DELIVERY", "SHORT DESCRIPTION"],
+      (candidate.pps || []).slice().sort((a, b) => ppSort(a.ppId, b.ppId)).map((p) => [p.ppId, p.periodType, p.delivery, p.shortDescription])),
+    sectionBanner(3),
+    "",
+    subHeader("GRADE SCALE DEFINITION & THRESHOLDS:"),
+    thresholdLines(unitMeta),
+    kv("Unit Outcome for Candidate", text(rosterRow.unitOutcome), { width: TH_WIDTH }),
+    "",
+    sectionBanner(4),
+    "",
+    subHeader("TABULATIONS - PROFICIENCY:"),
+    PROFICIENCY_TEXT,
+    table(["PP ID", "RRN", "PRN", ...uniKeys, "XEP", "XCP", "XBP", "STA/P"], proficiencyRows),
+    kv("Average Receptive Ratio - RRN", n3(averages.RRN)),
+    kv("Average Productive Ratio - PRN", n3(averages.PRN)),
+    ...(tprm ? [kv("Average Acuity Ratio - ARN", n3(averages.ARN))] : []),
+    "",
+    kv("Average Equivalent Proficiency - XEP", n3(averages.XEP)),
+    kv("Average Composite Proficiency - XCP", n3(averages.XCP)),
+    kv("Average Band Proficiency - XBP", n3(averages.XBP)),
+    "",
+    subHeader("TABULATIONS - GROWTH:"),
+    GROWTH_TEXT,
+    table(["PP ID", "DAYCOUNT", "ΔRRN", "ΔPRN", ...(tprm ? ["ΔARN"] : []), "∆GEQ", "STA/G"], growthRows),
+    kv("Cumulative Growth - ΔRRN", n3(cumulative.deltaRRN)),
+    kv("Average Growth - ΔRRN", n3(averages.deltaRRN)),
+    "",
+    kv("Cumulative Growth - ΔPRN", n3(cumulative.deltaPRN)),
+    kv("Average Growth - ΔPRN", n3(averages.deltaPRN)),
+    "",
+    ...(tprm ? [kv("Cumulative Growth - ΔARN", n3(cumulative.deltaARN)), kv("Average Growth - ΔARN", n3(averages.deltaARN)), ""] : []),
+    kv("Average Equivalent Growth - ∆GEQ", n3(averages.GEQ)),
+    "",
+    subHeader("TABULATIONS - HYBRID:"),
+    HYBRID_TEXT,
+    table(["PP ID", "DAYCOUNT", "MSIP", "IC"], hybridRows),
+    kv("Butler Interaction Proficiency - MSIP", n3(averages.MSIP)),
+    kv("Average Interaction Class - IC", n2(getICValue(unitType, unitMeta.signatureProfile, averages.IC))),
+    "",
+    sectionBanner(5),
+    "",
+    subHeader("BUTLER PRODUCTIVITY & UTILIZATION:"),
+    table(["PP ID", "CRITICAL REFERENCE DATE", "DAYCOUNT", "PRODUCTIVITY RATES - CSD", "PRODUCTIVITY RATES - USD"],
+      results.map((r) => [r.ppId, isoDate(r.criticalRefDate), n2(r.totalDuration), n3(r.Productivity_CSD), n3(r.Productivity_USD)])),
+    kv("Effort -  CSD Reference", n3(effortResults?.data?.CSD ?? effortResults?.CSD)),
+    kv("Effort -  USD Reference", n3(effortResults?.data?.USD ?? effortResults?.USD)),
+    "",
+    subHeader("ATTENDANCE TRACKING:"),
+    kv("Attendance % - Present", n3(pct.present)),
+    kv("Attendance % - Excused Absences", n3(pct.excusedAbsences)),
+    kv("Attendance % - Unexcused Absences", n3(pct.unexcusedAbsences)),
+    kv("Attendance % - Excused Tardies", n3(pct.excusedTardies)),
+    kv("Attendance % - Unexcused Tardies", n3(pct.unexcusedTardies)),
+    "",
+    subHeader("ENGAGEMENT TRACKING:"),
+    kv("Engagement Level % - High", n3(eng.High)),
+    kv("Engagement Level % - Medium", n3(eng.Medium)),
+    kv("Engagement Level % - Low", n3(eng.Low)),
+    kv("Engagement Level % - Not Applicable", n3(eng["N/A"])),
+    "",
+    sectionBanner(6),
+    "",
+    subHeader("BENCHMARKS:"),
+    table(["PP ID", "BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows(unitMeta.benchmarks || [], needs)),
+    subHeader("CANDIDATE MARKS:"),
+    table(["ENTRY", "IMPACT TYPE", "CONCERN IDENTIFIED", "IDENTITY DATE", "CONCERN RESOLVED", "RESOLUTION DATE"], marksRows),
+    subHeader("NEEDS ASSESSMENT:"),
+    table(["PP ID", "CRITICAL REFERENCE DATE", "ACTION STATUS", "OBSERVATIONS & GOALS"], needsRows),
+    subHeader("NEEDS ASSESSMENT CHAIN:"),
+    chainBlocks(assessmentChain, unitType),
+    sectionBanner(7),
+    "",
+    subHeader("RECORD OF ASSIGNMENTS:"),
+    table(["PP ID", "DAYCOUNT", "TASK DECLARATION", "ATTAINED SCORE", "MAX SCORE"],
+      scores.map((s) => [s.ppId, n2(s.durationHrs), s.remarks, s.attainedScore, s.maxScore])),
+    table(["PP ID", "DAYCOUNT", "WORKFLOW STAGE", "ASSESSMENT TYPE", "SCHEDULE IMPACT"],
+      scores.map((s) => [s.ppId, n2(s.durationHrs), s.workflowStage, s.assessmentType, s.scheduleImpact])),
+    sectionBanner(8),
+    "",
+    subHeader("NEUROSCIENCE INDICATORS:"),
+    neuroBlocks(neuro, dayCountByPp),
+    sectionBanner(9),
+    "",
+    subHeader("EFFECTIVITY:"),
+    EFFECTIVITY_INTRO,
+    effectivityThresholdLines(effectivity?.thresholds),
+    "",
+    effectivityRows(effectivity, dayCountByPp),
+    effectivityTypeLines(effectivity?.typeBreakdown),
+    "",
+    sectionBanner(10),
+    "",
+    nomenclatureBlock(),
+    legalBlock(),
+  ];
+
+  return finalize(lines);
 }

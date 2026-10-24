@@ -1,6 +1,10 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput } from 'lucide-react';
+import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput, FileSpreadsheet } from 'lucide-react';
+import toast from 'react-hot-toast';
+import DownloadLoader from '@/components/DownloadLoader';
+import { getCognitiveMatrixByUnit } from '@/services/neuroScienceService';
+import { exportCognitiveMatrix } from '../helpers/exportCognitiveMatrix';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer,
@@ -273,6 +277,22 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   const [showNeuroObject, setShowNeuroObject] = useState(false);
 
   const handlePlusClick = () => setShowNeuroObject(true);
+
+  // "Extract Cognitive Matrix": Yes/No cognitive functions of all candidates in the unit -> Excel
+  const [isExtractingMatrix, setIsExtractingMatrix] = useState(false);
+  const handleExtractCognitiveMatrix = async () => {
+    if (!unitId || isExtractingMatrix) return;
+    setIsExtractingMatrix(true);
+    try {
+      const matrix = await getCognitiveMatrixByUnit(unitId);
+      await exportCognitiveMatrix(matrix);
+    } catch (err) {
+      console.error("Cognitive matrix extraction failed:", err);
+      toast.error("Could not extract the cognitive matrix. Please try again.");
+    } finally {
+      setIsExtractingMatrix(false);
+    }
+  };
   const handleCloseNeuroObject = () => setShowNeuroObject(false);
   const [selectedLobe, setSelectedLobe] = useState('');
 
@@ -723,6 +743,12 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
   if (!visible) return null;
   return (
     <>
+      {isExtractingMatrix && (
+        <DownloadLoader
+          title="Extracting Cognitive Matrix..."
+          message="Collecting the cognitive functions of all candidates in the unit."
+        />
+      )}
       <h2 className="text-md font-bold bg-gray-100 p-2 flex items-center relative">
         <span className='pl-2 text-md'>Entity Selections</span>
         <span className="flex-grow border-dotted border-t border-gray-400 mx-2"></span>
@@ -738,6 +764,15 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Tables & Plots</h2>
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleExtractCognitiveMatrix}
+                disabled={!unitId || isExtractingMatrix}
+                title="Extract the Yes/No cognitive function matrix of all candidates in this unit to Excel"
+                className="flex items-center gap-1 text-xs border border-blue-600 text-blue-700 px-2 py-0.5 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                Extract Cognitive Matrix
+              </button>
               <button onClick={handlePlusClick} title="Add Neuro Object" className="text-blue-600 hover:text-red-800 cursor-pointer">
                 <Plus className="w-4 h-4 hover:text-blue-600" />
               </button>

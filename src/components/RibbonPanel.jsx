@@ -71,7 +71,7 @@ const analyticCategories = [
     items: [
       {
         path: "/icons/Unit_Distributions.png",
-        label: "Unit Distributions",
+        label: "Stat Distributions",
         link: "/dashboard/analytics-view/unit-distributions",
         type: false,
       },
@@ -85,6 +85,12 @@ const analyticCategories = [
         path: "/icons/Neuroscience_Tools.png",
         label: "Neuroscience Tools",
         link: "/dashboard/analytics-view/neuroscience-tools",
+        type: false,
+      },
+      {
+        path: "/icons/Effectivity.png",
+        label: "Effectivity",
+        link: "/dashboard/analytics-view/effectivity",
         type: false,
       },
       {

@@ -13,6 +13,8 @@ const UNIT_TYPES = [
   "Third Parameter",
 ];
 const ENVIRONMENTS = ["Workforce", "Classroom"];
+// Framework / curriculum age – mandatory for Classroom units only.
+const FRAMEWORK_AGES = ["< 1 year", "1-2 years", "3-5 years", "6-10 years", "> 10 years"];
 const SIGNATURE_PROFILES = [
   "Case 1: Solid Balanced",
   "Case 2: Rigorous Balanced",
@@ -60,6 +62,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
     signatureProfile: "",
     unitDirector: "",
     scoringSystem: "",
+    frameworkAge: "",
     passThresholds: {},
     benchmarks: [],
     assignedLeaders: [],
@@ -192,7 +195,8 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
       form.unitType?.trim() &&
       form.signatureProfile?.trim() &&
       form.environment?.trim() &&
-      (form.environment !== "Workforce" || form.scoringSystem?.trim())
+      (form.environment !== "Workforce" || form.scoringSystem?.trim()) &&
+      (form.environment !== "Classroom" || form.frameworkAge?.trim())
     );
   };
 
@@ -209,6 +213,10 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
     e.preventDefault();
     if (!form.unitName || !form.unitId || !form.unitType || !form.unitDirector) {
       alert("Please fill in all required fields");
+      return;
+    }
+    if (form.environment === "Classroom" && !form.frameworkAge) {
+      alert("Please select the Framework Age (Years)");
       return;
     }
     setIsSubmitting(true);
@@ -235,6 +243,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
         signatureProfile: form.signatureProfile,
         environment: form.environment,
         scoringSystem: form.scoringSystem,
+        frameworkAge: form.environment === "Classroom" ? form.frameworkAge : null,
         benchmarks: benchmarks,
         staffLookup: staffLookup,
         ...form.passThresholds,
@@ -301,6 +310,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
       assignedLeaders,
       assignedAssessors,
       scoringSystem: unitData.scoringSystem || "",
+      frameworkAge: unitData.frameworkAge || "",
     });
 
     setUnitDirectors(unitDirectors);
@@ -428,6 +438,23 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                 </select>
               </div>
             ))}
+
+            {form.environment === "Classroom" && (
+              <div className="grid grid-cols-3 items-center gap-4">
+                <label className="text-gray-700">Framework Age (Years):</label>
+                <select
+                  required
+                  value={form.frameworkAge || ""}
+                  onChange={(e) => handleChange("frameworkAge", e.target.value)}
+                  className="col-span-2 border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                >
+                  <option value="" disabled>Select Framework Age</option>
+                  {FRAMEWORK_AGES.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {form.environment === "Workforce" && (
               <div className="grid grid-cols-3 items-center gap-4">
