@@ -78,8 +78,7 @@ export async function exportCognitiveMatrix(matrix) {
       c.ppIds.forEach((pp, i) => { head.getCell(COL_LABEL + 1 + i).value = `PP ID ${pp}`; });
       for (let col = COL_LABEL; col <= COL_LABEL + c.ppIds.length; col++) {
         const cell = head.getCell(col);
-        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E79" } };
+        cell.font = { bold: true };
         cell.alignment = { horizontal: col === COL_LABEL ? "left" : "center", vertical: "middle" };
         cell.border = box;
       }
@@ -93,14 +92,12 @@ export async function exportCognitiveMatrix(matrix) {
           const cell = row.getCell(COL_LABEL + 1 + i);
           cell.value = v || "-";
           cell.alignment = { horizontal: "center" };
-          if (v === "Yes") cell.font = { color: { argb: "FF1E7B34" } };
         });
         for (let col = COL_LABEL; col <= COL_LABEL + c.ppIds.length; col++) {
           const cell = row.getCell(col);
           cell.border = box;
           if (isCapacity) {
-            cell.font = { ...(cell.font || {}), bold: true };
-            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF2F2F2" } };
+            cell.font = { bold: true };
           }
         }
         r++;

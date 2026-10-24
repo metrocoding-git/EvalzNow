@@ -170,30 +170,51 @@ function neuroBlocks(neuro, dayCountByPp) {
   return out;
 }
 
+/**
+ * Needs Assessment Chain – chains shown side by side in columns (original layout):
+ *     ||| ASSESSMENT CHAIN 1 |||               ||| ASSESSMENT CHAIN 2 |||
+ *  Performance Point ID 1                    Performance Point ID 4
+ *  IC #1: <0.500,0.250>                      IC #1: <0.750,0.500>
+ */
+const CHAIN_COL_WIDTH = 40;
+const CHAIN_GAP = "     ";
+
+const hasSelectionData = (sel) =>
+  !!sel && (sel.RRN != null || sel.PRN != null || sel.ARN != null ||
+    (Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length > 0) || !!sel.actionStatus);
+
+function singleChainLines(chain, unitType) {
+  const selections = (chain?.selections || []).filter(hasSelectionData);
+  if (!selections.length) return null;
+  const tprm = unitType === TPRM;
+  const lines = [];
+  selections.forEach((sel, i) => {
+    const ic = tprm || sel.ARN != null
+      ? `<${n3(sel.RRN)},${n3(sel.PRN)},${n3(sel.ARN)}>`
+      : `<${n3(sel.RRN)},${n3(sel.PRN)}>`;
+    const bids = Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length ? sel.benchmarkIds.join(", ") : "-";
+    if (i > 0) lines.push("");
+    lines.push(
+      ` Performance Point ID ${text(sel.ppId)}`,
+      ` IC #${text(sel.IC)}: ${ic}`,
+      ` Benchmark IDs: ${bids}`,
+      ` Action Status: ${text(sel.actionStatus)}`,
+      ` Critical Reference Date: ${isoDate(sel.criticalRefDate)}`,
+    );
+  });
+  return lines;
+}
+
 function chainBlocks(assessmentChain, unitType) {
   const chains = (Array.isArray(assessmentChain) ? assessmentChain : [])
-    .map((c) => (c.selections || []).filter((s) => s && s.ppId !== undefined && s.ppId !== null))
-    .filter((sel) => sel.length);
+    .map((chain, idx) => ({ header: `||| ASSESSMENT CHAIN ${idx + 1} |||`, body: singleChainLines(chain, unitType) }))
+    .filter((c) => c.body);
   if (!chains.length) return ["     -", ""];
-  const tprm = unitType === TPRM;
-  const out = [];
-  chains.forEach((selections, idx) => {
-    out.push(`     ||| ASSESSMENT CHAIN ${idx + 1} |||`, "");
-    selections.forEach((sel) => {
-      const names = tprm ? "<RRN,PRN,ARN>" : "<RRN,PRN>";
-      const vals = tprm ? `<${n3(sel.RRN)},${n3(sel.PRN)},${n3(sel.ARN)}>` : `<${n3(sel.RRN)},${n3(sel.PRN)}>`;
-      const bids = Array.isArray(sel.benchmarkIds) && sel.benchmarkIds.length ? sel.benchmarkIds.join(", ") : "-";
-      out.push(
-        ` Performance Point ID ${text(sel.ppId)}`,
-        ` IC ${text(sel.IC)}: ${names} = ${vals}`,
-        ` Benchmark IDs: ${bids}`,
-        ` Action Status: ${text(sel.actionStatus)}`,
-        ` Critical Reference Date: ${isoDate(sel.criticalRefDate)}`,
-        "",
-      );
-    });
-  });
-  return out;
+  const headers = "    " + chains.map((c) => c.header.padEnd(CHAIN_COL_WIDTH)).join(CHAIN_GAP);
+  const maxLines = Math.max(...chains.map((c) => c.body.length));
+  const rows = Array.from({ length: maxLines }, (_, i) =>
+    chains.map((c) => (c.body[i] ?? "").padEnd(CHAIN_COL_WIDTH)).join(CHAIN_GAP).trimEnd());
+  return [headers.trimEnd(), "", ...rows, ""];
 }
 
 /** Benchmarks of the unit, with the PP IDs whose needs assessment links each benchmark. */
