@@ -1,4 +1,5 @@
 'use client';
+import { toIdArray } from '@/lib/jsonIds';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus, Trash2, Copy, Search, X, RefreshCw, FolderOutput, Edit } from 'lucide-react';
@@ -258,6 +259,19 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   
   ];
   
+  // Candidate and Unit level have different plot lists, and some entries share a key
+  // (e.g. "nat" = candidate Needs Assessment Table / unit Needs Assessment Tracking pie).
+  // When the level changes keep the same plot only if it exists (by name) in the new list,
+  // otherwise clear it, so a candidate-only table is never shown at unit level (and vice versa).
+  useEffect(() => {
+    const list = selectedSort === "activateUnitLevel" ? activateUnitLevel : activateCandidateLevel;
+    setSelectedChart((prev) => {
+      if (!prev) return prev;
+      const match = list.find((c) => c.name === prev.name);
+      return match || null;
+    });
+  }, [selectedSort]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const isGraph = selectedChart && selectedChart.type !== "table";
 
   const copyToClipboard = async () => {
@@ -511,10 +525,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
             ...row,
             bIds: Array.isArray(row.bIds)
               ? row.bIds
-              : JSON.parse(row.bIds || "[]"),
+              : toIdArray(row.bIds),
             benchmarkIds: Array.isArray(row.benchmarkIds)
               ? row.benchmarkIds
-              : JSON.parse(row.benchmarkIds || "[]"),
+              : toIdArray(row.benchmarkIds),
           }))
         );
         
@@ -668,8 +682,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     return {
       ...row,
-      benchmarkIds: matchedNeed ? JSON.parse(matchedNeed.benchmarkIds) : [],
-      bIds: matchedNeed ? JSON.parse(matchedNeed.bIds) : [],
+      benchmarkIds: toIdArray(matchedNeed?.benchmarkIds),
+      bIds: toIdArray(matchedNeed?.bIds),
       observation: matchedNeed ? matchedNeed.observation : ""
     };
   });
@@ -1100,8 +1114,8 @@ const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
     const existingNeed = needAssessment.find(n => n.ppId === selectedRow.ppId);
     
     // Get existing benchmark IDs
-    const existingBIds = existingNeed ? JSON.parse(existingNeed.bIds) : [];
-    const existingBenchmarkIds = existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [];
+    const existingBIds = toIdArray(existingNeed?.bIds);
+    const existingBenchmarkIds = toIdArray(existingNeed?.benchmarkIds);
     
     // Determine which benchmarks to KEEP (selected ones)
     const benchmarksToKeep = selectedBenchmarkIds;
@@ -1540,8 +1554,8 @@ const handleDeleteChain = async (chainId) => {
                             if (!existingNeed && newObservation === "") return;
                             const payload = {
                               unitId, candidateId, ppId: item.ppId,
-                              bIds: existingNeed ? JSON.parse(existingNeed.bIds) : [],
-                              benchmarkIds: existingNeed ? JSON.parse(existingNeed.benchmarkIds) : [],
+                              bIds: toIdArray(existingNeed?.bIds),
+                              benchmarkIds: toIdArray(existingNeed?.benchmarkIds),
                               observation: newObservation
                             };
                             if (existingNeed) await updateNeedAssessment(existingNeed.id, payload);

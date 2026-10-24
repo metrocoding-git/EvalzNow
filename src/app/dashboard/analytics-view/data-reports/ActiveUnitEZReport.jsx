@@ -70,6 +70,7 @@ export async function buildUnitEZReport({ unit = {} }) {
   } = unit;
   const tprm = unitType === TPRM;
   const { leaders, assessors } = staffNames(staffAssignments);
+  const isClassroom = String(environment ?? "").trim().toLowerCase() === "classroom";
 
   const getAvg = (key) => {
     if (Array.isArray(tabulationAverages)) {
@@ -155,8 +156,8 @@ export async function buildUnitEZReport({ unit = {} }) {
     kv("Signature Profile", text(signatureProfile), { indent: 2, width: 37 }),
     kv("Unit Type", text(unitType), { indent: 2, width: 37 }),
     kv("Environment", text(environment), { indent: 2, width: 37 }),
-    // Framework Age only applies to Classroom units
-    kv("Framework Age (Years)", environment === "Classroom" ? text(frameworkAge) : "-", { indent: 2, width: 37 }),
+    // Framework Age only applies to Classroom units (line is left out for Workforce units)
+    ...(isClassroom ? [kv("Framework Age (Years)", text(frameworkAge), { indent: 2, width: 37 })] : []),
     kv("Unit Roster Count", text(rosterStats.totalCount), { indent: 2, width: 37 }),
     "",
     ...leaders.map((n, i) => kv(`Assigned Leader #${i + 1}`, n, { indent: 2, width: 37 })),
