@@ -85,15 +85,23 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
 
   const candidateKey = Array.isArray(candidateId) ? candidateId.join(',') : candidateId;
 
+  const noUnitSelection = isUnitLevel && (!Array.isArray(candidateId) || candidateId.length === 0);
+
   useEffect(() => {
     if (!unitId || (!isUnitLevel && !candidateId)) return;
+    // Unit Level: like the other metric screens the charts stay blank until candidates are ticked.
+    if (noUnitSelection) {
+      setUnitData(null);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
       try {
         if (isUnitLevel) {
-          const data = await getUnitEffectivity(unitId, Array.isArray(candidateId) ? candidateId : [], filters || {});
+          const data = await getUnitEffectivity(unitId, candidateId, filters || {});
           if (!cancelled) setUnitData(data);
         } else {
           const data = await getCandidateEffectivity(unitId, candidateId, filters || {});
@@ -171,27 +179,36 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
     }
   };
 
+  // Effectivity Table export: all candidates of the unit, one block per candidate
+  // (title lines, "Last Name, First Name, Candidate ID", then the PP ID rows). No Average / Threshold rows.
   const exportTableExcel = async () => {
+    const ids = candidates.map((c) => c.id);
+    if (!unitId || !ids.length) return toast.error('No candidates to export');
     try {
       await ensureExportLibs();
+      const all = await getUnitEffectivity(unitId, ids, filters || {});
+      const byId = new Map((all?.candidates || []).map((c) => [String(c.candidateId), c]));
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Effectivity');
+      const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      ['EvalzNow – A Novel Human Capital Assessment Method',
+        'Competency Accounting for Education and Industry',
+        'Hybrid Proficiency & Growth Monitoring',
+        `Data Extraction Date: ${today}`].forEach((t) => ws.addRow([t]));
       const header = ['PP ID Callout', ...EFFECTIVITY_FIELD_LABELS.map(([, l]) => l), ...PARAMS.map(pName)];
-      const addRows = (label, tableRows, average) => {
-        if (label) ws.addRow([label]).font = { bold: true };
-        const h = ws.addRow(header);
-        h.font = { bold: true };
-        tableRows.forEach((r) => ws.addRow([r.ppId, ...EFFECTIVITY_FIELD_LABELS.map(([k]) => r[k] || '-'), ...PARAMS.map((i) => (r.parameters ? r.parameters[i] : '-'))]));
-        if (average) ws.addRow(['Average', '---', '---', '---', '---', '---', ...PARAMS.map((i) => (average.parameters ? average.parameters[i] : '-'))]).font = { bold: true };
-        ws.addRow(['Threshold (Pass ≤)', '', '', '', '', '', ...thresholds]);
+      candidates.forEach((c) => {
+        const data = byId.get(String(c.id));
         ws.addRow([]);
-      };
-      if (isUnitLevel) {
-        (unitData?.candidates || []).forEach((c) => addRows(nameOf(c.candidateId), c.rows, c.average));
-      } else {
-        addRows(null, rows, candidateData?.average);
-      }
-      ws.columns.forEach((col, idx) => { col.width = idx === 0 ? 18 : idx <= 5 ? 22 : 13; });
+        ws.addRow([`${c.lastName ?? ''}, ${c.firstName ?? ''}, ${c.candidateId ?? ''}`]);
+        ws.addRow([]);
+        ws.addRow(header).font = { bold: true };
+        (data?.rows || []).forEach((r) => ws.addRow([
+          r.ppId,
+          ...EFFECTIVITY_FIELD_LABELS.map(([k]) => r[k] || '-'),
+          ...PARAMS.map((p) => (r.parameters ? r.parameters[p] : '-')),
+        ]));
+      });
+      ws.columns.forEach((col, idx) => { col.width = idx === 0 ? 14 : idx <= 5 ? 22 : 13; });
       const buffer = await wb.xlsx.writeBuffer();
       saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
         `Effectivity_Table_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -227,8 +244,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
   };
 
   const thresholdLine = selectedChart?.index !== undefined && thresholdOn && thresholds[selectedChart.index] !== undefined ? (
-    <ReferenceLine y={thresholds[selectedChart.index]} stroke="#000000" strokeWidth={2} strokeDasharray="7 4 1 4"
-      label={{ value: `Threshold ${fmt(thresholds[selectedChart.index])}`, position: 'insideTopRight', fill: '#b45309', fontSize: 12 }} />
+    <ReferenceLine y={thresholds[selectedChart.index]} stroke="#000000" strokeWidth={2} strokeDasharray="7 4 1 4" />
   ) : null;
 
   const yDomain = [
@@ -236,77 +252,60 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
     (dataMax) => (thresholdLine ? Math.max(dataMax, thresholds[selectedChart.index]) : dataMax),
   ];
 
-  const passClass = (pass) => (!thresholdOn || pass === null || pass === undefined ? '' : pass ? 'text-green-700 bg-green-50' : 'text-red-600 bg-red-50');
-
+  // Same table style as the Neuro Tools table: black grid lines, black text, centred values.
+  const cell = 'whitespace-nowrap text-center border px-2 py-1';
   const renderEffectivityTable = () => (
     <div ref={chartContainerRef} className="flex flex-col h-full min-h-0 bg-white">
       <h2 className="text-lg font-semibold mb-2 text-center">🟦 Effectivity Table</h2>
-      <div className="flex-1 overflow-auto">
-        <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
+      <div className="flex-1 min-h-0 overflow-auto">
+        <table className="table-auto min-w-max text-xs border border-gray-300 text-black">
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
-              <th className="border border-gray-300 px-2 py-1 whitespace-nowrap">PP ID Callout</th>
-              {EFFECTIVITY_FIELD_LABELS.map(([k, l]) => (
-                <th key={k} className="border border-gray-300 px-2 py-1 whitespace-nowrap">{l}</th>
-              ))}
-              {PARAMS.map((i) => (
-                <th key={i} className="border border-gray-300 px-2 py-1 whitespace-nowrap">{pName(i)}</th>
-              ))}
+              <th className={cell}>PP ID Callout</th>
+              {EFFECTIVITY_FIELD_LABELS.map(([k, l]) => <th key={k} className={cell}>{l}</th>)}
+              {PARAMS.map((i) => <th key={i} className={cell}>{pName(i)}</th>)}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={16} className="text-center text-gray-400 py-4 italic">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
+              <tr><td colSpan={16} className="text-center text-gray-400 py-4 italic border">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
             )}
             {rows.map((r) => (
-              <tr key={r.ppId} className="hover:bg-blue-50">
-                <td className="border border-gray-300 px-2 py-1 text-center">{r.ppId}</td>
+              <tr key={r.ppId}>
+                <td className={cell}>{r.ppId}</td>
                 {EFFECTIVITY_FIELD_LABELS.map(([k, l]) => (
-                  <td key={k} className="border border-gray-300 px-1 py-0.5">
+                  <td key={k} className="border px-1 py-0.5">
                     <select
                       aria-label={`${l} for PP ID ${r.ppId}`}
-                      className="w-full bg-transparent px-1 py-0.5 text-xs disabled:opacity-50"
+                      className={`w-full bg-transparent px-1 py-0.5 text-xs disabled:opacity-50 ${r[k] ? 'text-black' : 'text-gray-400'}`}
                       value={r[k] || ''}
                       disabled={savingCell !== null}
                       onChange={(e) => handleCellChange(r, k, e.target.value)}
                     >
-                      <option value="">-</option>
-                      {(options?.options?.[k] || []).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      <option value="" className="text-gray-400">Select {l}</option>
+                      {(options?.options?.[k] || []).map((opt) => <option key={opt} value={opt} className="text-black">{opt}</option>)}
                     </select>
                   </td>
                 ))}
-                {PARAMS.map((i) => (
-                  <td key={i} className={`border border-gray-300 px-2 py-1 text-center ${passClass(r.pass?.[i])}`}>
-                    {r.parameters ? fmt(r.parameters[i]) : '-'}
-                  </td>
-                ))}
+                {PARAMS.map((i) => <td key={i} className={cell}>{r.parameters ? fmt(r.parameters[i]) : '-'}</td>)}
               </tr>
             ))}
             {rows.length > 0 && (
-              <tr className="font-semibold bg-gray-50">
-                <td className="border border-gray-300 px-2 py-1 text-center">Average</td>
-                {EFFECTIVITY_FIELD_LABELS.map(([k]) => (
-                  <td key={k} className="border border-gray-300 px-2 py-1 text-center">---</td>
-                ))}
-                {PARAMS.map((i) => (
-                  <td key={i} className={`border border-gray-300 px-2 py-1 text-center ${passClass(candidateData?.average?.pass?.[i])}`}>
-                    {fmt(candidateData?.average?.parameters?.[i])}
-                  </td>
-                ))}
+              <tr className="font-semibold">
+                <td className={cell}>Average</td>
+                {EFFECTIVITY_FIELD_LABELS.map(([k]) => <td key={k} className={cell}>---</td>)}
+                {PARAMS.map((i) => <td key={i} className={cell}>{fmt(candidateData?.average?.parameters?.[i])}</td>)}
               </tr>
             )}
             {thresholdOn && rows.length > 0 && (
-              <tr className="text-gray-600">
-                <td className="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">Threshold (Pass ≤)</td>
-                <td colSpan={5} className="border border-gray-300 px-2 py-1" />
-                {PARAMS.map((i) => (
-                  <td key={i} className="border border-gray-300 px-2 py-1 text-center">{fmt(thresholds[i])}</td>
-                ))}
+              <tr>
+                <td className={cell}>Threshold (Pass ≤)</td>
+                <td colSpan={5} className="border px-2 py-1" />
+                {PARAMS.map((i) => <td key={i} className={cell}>{fmt(thresholds[i])}</td>)}
               </tr>
             )}
           </tbody>
         </table>
-       
       </div>
     </div>
   );
@@ -322,10 +321,8 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
       return (
         <div ref={chartContainerRef} className="flex flex-col h-full p-4 bg-white overflow-hidden">
           <h2 className="text-lg font-semibold mb-2 text-center flex-shrink-0">{selectedChart.icon} {selectedChart.name}</h2>
-          {pieData.length === 0 ? (
-            <div className="text-center text-gray-400 italic pt-10">NO EFFECTIVITY TYPES RECORDED</div>
-          ) : (
-            <div className="flex-1 min-h-0 h-[60vh]">
+          {pieData.length === 0 ? null : (
+            <div className="flex-1 min-h-0 [&_*:focus]:outline-none [&_*:focus-visible]:outline-none">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 0, right: 30, left: 30, bottom: 70 }}>
                   <Tooltip formatter={(value, name, props) => [`${Number(value).toFixed(3)}  Count: ${props?.payload?.count}`, name]} />
@@ -342,15 +339,12 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
       );
     }
 
-    const empty = series.negative.length === 0 && series.positive.length === 0;
     const yLabel = pName(selectedChart.index);
     return (
       <div ref={chartContainerRef} className="flex flex-col h-full min-h-0" style={{ backgroundColor: chartProperties.shadeArea }}>
         <h2 className="text-lg font-semibold mb-2 text-center">{selectedChart.icon} {selectedChart.name}</h2>
-        {empty ? (
-          <div className="text-center text-gray-400 italic pt-10">NO DATA FOR SELECTED PLOT</div>
-        ) : (
-          <div className="w-full h-[68vh] flex-1 min-h-0">
+        {(
+          <div className="w-full h-[68vh] flex-1 min-h-0 [&_*:focus]:outline-none [&_*:focus-visible]:outline-none">
             <ResponsiveContainer width="100%" height="100%">
               {selectedChart.type === 'line' ? (
                 <LineChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
@@ -402,59 +396,42 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
     );
   };
 
+  // Side "Table" tab, same rules as Proficiency Metrics:
+  // Unit Level -> not available; pie / Effectivity Table -> not available;
+  // parameter charts -> separate Positive PP IDs and Negative PP IDs tables.
   const renderDataTab = () => {
-    if (!selectedChart) return <div className="text-center text-gray-400 py-4 italic">SELECT A CHART TO DISPLAY DATA</div>;
-    if (selectedChart.type === 'pie' || selectedChart.type === 'table') {
-      if (!typeBreakdown) return <div className="text-center text-gray-400 py-4 italic">NOT AVAILABLE FOR SELECTED CHART</div>;
-      return (
-        <table className="text-xs border border-gray-300 w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border border-gray-300 px-2 py-1">Effectivity Type</th>
-              <th className="border border-gray-300 px-2 py-1">Count</th>
-              <th className="border border-gray-300 px-2 py-1">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(typeBreakdown.counts).map((t) => (
-              <tr key={t}>
-                <td className="border border-gray-300 px-2 py-1">{t}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{typeBreakdown.counts[t]}</td>
-                <td className="border border-gray-300 px-2 py-1 text-center">{fmt(typeBreakdown.percentages[t])}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
-    }
-    const all = [...series.negative, ...series.positive];
-    if (!all.length) return <div className="text-center text-gray-400 py-4 italic">NOT AVAILABLE FOR SELECTED CHART</div>;
-    return (
-      <>
-        {isUnitLevel && unitData?.passFractions && (
-          <div className="text-xs text-gray-700 mb-2">
-            Pass % ({pName(selectedChart.index)}, based on candidate averages): <strong>{fmt(unitData.passFractions[selectedChart.index])}</strong>
-          </div>
-        )}
+    const note = (t) => <div className="text-center text-gray-400 py-4 italic">{t}</div>;
+    if (isUnitLevel) return note('NOT AVAILABLE AT UNIT LEVEL');
+    if (!selectedChart) return note('SELECT A CHART TO DISPLAY DATA');
+    if (selectedChart.type === 'pie' || selectedChart.type === 'table') return note('NOT AVAILABLE FOR SELECTED CHART');
+    if (!series.negative.length && !series.positive.length) return note('NOT AVAILABLE FOR SELECTED CHART');
+    const th = 'whitespace-nowrap border border-gray-300 px-2 py-1 text-center w-20';
+    const td = 'whitespace-nowrap text-center border border-gray-300 px-2 py-1 w-20';
+    const block = (title, data, emptyText) => (
+      <div>
+        <h3 className="text-gray-600 font-semibold mb-2 ml-2">{title}</h3>
         <table className="text-xs border border-gray-300" style={{ width: 'max-content', minWidth: '100%' }}>
           <thead className="bg-gray-100">
-            <tr>
-              {isUnitLevel && <th className="border border-gray-300 px-2 py-1">Candidate</th>}
-              <th className="border border-gray-300 px-2 py-1">PP ID</th>
-              <th className="border border-gray-300 px-2 py-1">{pName(selectedChart.index)}</th>
-            </tr>
+            <tr><th className={th}>PP ID</th><th className={th}>{pName(selectedChart.index)}</th></tr>
           </thead>
           <tbody>
-            {all.map((p, idx) => (
-              <tr key={idx} className="hover:bg-blue-50">
-                {isUnitLevel && <td className="border border-gray-300 px-2 py-1">{p.candidate}</td>}
-                <td className="border border-gray-300 px-2 py-1 text-center">{p.ppId}</td>
-                <td className={`border border-gray-300 px-2 py-1 text-center ${thresholdOn ? (p.value <= thresholds[selectedChart.index] ? 'text-green-700' : 'text-red-600') : ''}`}>{fmt(p.value)}</td>
+            {data.length ? data.map((p) => (
+              <tr key={p.ppId} className="hover:bg-blue-50">
+                <td className={td}>{p.ppId}</td>
+                <td className={td}>{fmt(p.value)}</td>
               </tr>
-            ))}
+            )) : (
+              <tr><td colSpan={2} className="text-center text-gray-500 border border-gray-300 px-2 py-1">{emptyText}</td></tr>
+            )}
           </tbody>
         </table>
-      </>
+      </div>
+    );
+    return (
+      <div className="space-y-10 mb-10 pb-3">
+        {block('Positive PP IDs', series.positive, 'NO POSITIVE DATA AVAILABLE')}
+        {block('Negative PP IDs', series.negative, 'NO NEGATIVE DATA AVAILABLE')}
+      </div>
     );
   };
 
@@ -482,14 +459,15 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => { setObjectPpId(null); setShowObject(true); }}
-                disabled={isUnitLevel}
-                title={isUnitLevel ? 'Switch to Candidate Level to add an Effectivity Object' : 'Add Effectivity Object'}
-                className="text-blue-600 hover:text-blue-800 cursor-pointer disabled:text-gray-300 disabled:cursor-not-allowed"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+              {!isUnitLevel && (
+                <button
+                  onClick={() => { setObjectPpId(null); setShowObject(true); }}
+                  title="Add Effectivity Object"
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
               <button onClick={() => onResetFilters?.()} title="Reset Filter" className="text-blue-600 hover:text-blue-800 cursor-pointer">
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
