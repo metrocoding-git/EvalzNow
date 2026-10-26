@@ -1404,7 +1404,7 @@ const showAverages =
               }))} 
               dataKey={yKey} 
               fill="#7c3aed" 
-              name="Projection PP ID"
+              name="Projection PP IDs"
               isAnimationActive={false}
               // legendType="none"
               shape={(props) => (
@@ -1582,7 +1582,7 @@ const showAverages =
           color: '#8b5cf6',
           symbol: 'star'
         },
-        name: "Performance PP IDs",
+        name: "Projection PP IDs",
         showlegend: true,
         legendrank: 4,
         hovertemplate: "RR: %{x:.3f}<br>PR: %{y:.3f}<br>AR: %{z:.3f}<extra></extra>", 

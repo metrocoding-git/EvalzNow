@@ -116,16 +116,10 @@ export async function buildUnitEZReport({ unit = {} }) {
   // Needs assessment status split (Open / Closed / Pending)
   const statusPct = assessmentSummary?.statusPercentages ?? {};
 
-  // Benchmarks with the PP IDs that link them (any candidate's needs assessment)
-  const allNeeds = candidates.flatMap((c) => c.needAssessments || []);
+  // Benchmarks of the unit (template columns: BIDs / type / ref / description)
   const benchmarkRows = [...benchmarks]
     .sort((a, b) => Number(a.benchmarkId) - Number(b.benchmarkId))
-    .map((b) => {
-      const pps = [...new Set(allNeeds
-        .filter((na) => [...parseIds(na.benchmarkIds), ...parseIds(na.bIds)].map(String).includes(String(b.benchmarkId)))
-        .map((na) => na.ppId))].sort((x, y) => x - y);
-      return [pps.length ? pps.join(", ") : "-", b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription];
-    });
+    .map((b) => [b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription]);
 
   // Leader marks / improvements are unit-level (repeated on every candidate row)
   const leaderMarks = uniqueBy(candidates.flatMap((c) => c.leaderMarks || []), (m) => m.id ?? JSON.stringify([m.entryNumber, m.impactType, m.concernIdentified, m.identityDate]))
@@ -234,7 +228,7 @@ export async function buildUnitEZReport({ unit = {} }) {
     sectionBanner(6),
     "",
     subHeader("BENCHMARKS:"),
-    table(["PP ID", "BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows),
+    table(["BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows),
     subHeader("LEADER MARKS:"),
     table(["ENTRY", "IMPACT TYPE", "CONCERN IDENTIFIED", "IDENTITY DATE", "CONCERN RESOLVED", "RESOLUTION DATE"], leaderMarks),
     subHeader("IMPROVEMENTS & OPTIMIZATION:"),

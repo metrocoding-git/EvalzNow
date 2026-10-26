@@ -89,7 +89,7 @@ const analyticCategories = [
       },
       {
         path: "/icons/Effectivity.png",
-        label: "Effectivity",
+        label: "Effectivity Add-on",
         link: "/dashboard/analytics-view/effectivity",
         type: false,
       },
