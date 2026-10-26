@@ -27,7 +27,7 @@ export default function HybridMetrics() {
 
   const [selectedSort, setSelectedSort] = useState("activateCandidateLevel");
 
-  
+
   const [activeTab, setActiveTab] = useState(currentTab);
   const [showEdit, setShowEdit] = useState(true);
   const [showSecondary, setShowSecondary] = useState(true);
@@ -46,7 +46,7 @@ export default function HybridMetrics() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSelectedInteractionClass, setIsSelectedInteractionClass] = useState(false);
-  const [data, setData] = useState([]);  
+  const [data, setData] = useState([]);
   // const data = [
   //   { id: 1, firstName: "John", lastName: "Doe" },
   //   { id: 2, firstName: "Jane", lastName: "Smith" },
@@ -64,7 +64,7 @@ export default function HybridMetrics() {
     const storedId = sessionStorage.getItem("selectedUnitId");
     setSelectedUnitId(storedId);
   }, []);
-  
+
   const [secondaryValues, setSecondaryValues] = useState(null);
   const [resetSignal, setResetSignal] = useState(0);
 
@@ -145,11 +145,11 @@ export default function HybridMetrics() {
   useEffect(() => {
     // Reset secondary input values
     setSecondaryValues(null);
-  
+
     // Trigger SecondaryInputForm reset
     setResetSignal((prev) => prev + 1);
   }, [selectedSort]);
-  
+
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -165,7 +165,7 @@ export default function HybridMetrics() {
       selectedSort === "activateCandidateLevel" &&
       data.length > 0
     ) {
-      setSelectedCandidateIds([]); 
+      setSelectedCandidateIds([]);
     }
   }, [selectedSort, data]);
 
@@ -185,7 +185,7 @@ export default function HybridMetrics() {
   return (
     <div className="w-full flex flex-col">
       <div className="h-full flex flex-col overflow-hidden m-1  ">
-        
+
         {/* Active tab content */}
         <div className="flex-1 overflow-auto bg-white  p-1">
           <div className="flex flex-col h-full">
@@ -195,14 +195,12 @@ export default function HybridMetrics() {
               <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
                 <div className="flex-grow  flex flex-col h-1/2">
                   {/* Header */}
-                  <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${
-      selectedSort === "activateUnitLevel"
-        ? "grid-cols-4 px-4"
-        : "grid-cols-3 px-4"
-    } text-gray-800 font-semibold text-sm`}>
+                  <div className={`bg-gray-100  py-2 border-b border-gray-300 grid ${selectedSort === "activateUnitLevel"
+                      ? "grid-cols-4 px-4"
+                      : "grid-cols-3 px-4"
+                    } text-gray-800 font-semibold text-sm`}>
 
-      {/* 👇 Header for checkbox column (blank) */}
-    {selectedSort === "activateUnitLevel" && <div></div>}
+                    {/* 👇 Header for checkbox column (blank) */}
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1"
@@ -260,16 +258,14 @@ export default function HybridMetrics() {
                         onClick={() => setopenMenu(!openMenu)}
                       >
                         <span
-                          className={`transition-transform duration-200 text-gray-600 mr-1 ${
-                            openMenu ? "rotate-90" : "rotate-0"
-                          }`}
+                          className={`transition-transform duration-200 text-gray-600 mr-1 ${openMenu ? "rotate-90" : "rotate-0"
+                            }`}
                         >
                           ▶
                         </span>
                         <span
-                          className={`text-md text-gray-600 ml-2 ${
-                            openMenu ? "font-bold" : ""
-                          }`}
+                          className={`text-md text-gray-600 ml-2 ${openMenu ? "font-bold" : ""
+                            }`}
                         >
                           Details
                         </span>
@@ -277,79 +273,78 @@ export default function HybridMetrics() {
 
                       {openMenu && (
                         <>
-                        {unitData && (
-                        <div className=" items-center justify-center  px-4 ">
-                          <div className="border border-gray-200 p-1">
-                            <span className="text-sm text-gray-400">
-                              Unit Name: {unitData.unitName}
-                            </span>
-                            <br />
-                            <span className="text-sm text-gray-400">
-                              Unit ID: {unitData.unitId}
-                            </span>
-                            <br />
-                            <span className="text-sm text-gray-400">
-                              Unit Type: {unitData.unitType}
-                            </span>
-                            <br />
-                            <span className="text-sm text-gray-400">
-                              Signature Profile: {unitData.signatureProfile}
-                            </span>
-                          </div>
-                        </div>
-                        )}
+                          {unitData && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">
+                                  Unit Name: {unitData.unitName}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit ID: {unitData.unitId}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Unit Type: {unitData.unitType}
+                                </span>
+                                <br />
+                                <span className="text-sm text-gray-400">
+                                  Signature Profile: {unitData.signatureProfile}
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
-                        {/* Candidate Data */}
-                        <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
-                          {sortedData.map((item) => (
-                            <div
-                              key={item.id}
-                              className={`grid ${
-                                  selectedSort === "activateUnitLevel"
+                          {/* Candidate Data */}
+                          <div className="flex-1 overflow-auto px-4 py-2 space-y-1">
+                            {sortedData.map((item) => (
+                              <div
+                                key={item.id}
+                                className={`grid ${selectedSort === "activateUnitLevel"
                                     ? "grid-cols-4" // extra column for checkbox
                                     : "grid-cols-3 px-2"
-                                } gap-2 items-center text-sm  py-1 cursor-pointer
+                                  } gap-2 items-center text-sm  py-1 cursor-pointer
                                   ${activeCandidateId === item.id && selectedSort === "activateCandidateLevel"
                                     ? "bg-blue-100 border-l-4 border-blue-400"
                                     : "hover:bg-gray-100"}`}
-                              onClick={() => {
-                                setShowEdit(true);
-                                setShowSecondary(true);
-                                setActiveCandidateId(item.id); // ✅ mark candidate as active
-                              }}
-                              onDoubleClick={() => {
-                                setScoresOpen(true);
-                                setActiveCandidateId(item.id);
-                              }}
-                            >
-                              {selectedSort === "activateUnitLevel" && (
-                                <input
-                                type="checkbox"
-                                className="h-4 w-4"
-                                checked={selectedCandidateIds.includes(item.id)}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedCandidateIds((prev) =>
-                                    e.target.checked
-                                      ? [...prev, item.id]
-                                      : prev.filter((id) => id !== item.id)
-                                  );
+                                onClick={() => {
+                                  setShowEdit(true);
+                                  setShowSecondary(true);
+                                  setActiveCandidateId(item.id); // ✅ mark candidate as active
                                 }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              
-                              )}
-                              <span className="text-gray-800 ">
-                                {item.lastName}
-                              </span>
-                              <span className="text-gray-800">
-                                {item.firstName}
-                              </span>
-                              <span className="text-gray-600">{item.candidateId}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
+                                onDoubleClick={() => {
+                                  setScoresOpen(true);
+                                  setActiveCandidateId(item.id);
+                                }}
+                              >
+                                {selectedSort === "activateUnitLevel" && (
+                                  <input
+                                    type="checkbox"
+                                    className="h-4 w-4"
+                                    checked={selectedCandidateIds.includes(item.id)}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedCandidateIds((prev) =>
+                                        e.target.checked
+                                          ? [...prev, item.id]
+                                          : prev.filter((id) => id !== item.id)
+                                      );
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+
+                                )}
+                                <span className="text-gray-800 ">
+                                  {item.lastName}
+                                </span>
+                                <span className="text-gray-800">
+                                  {item.firstName}
+                                </span>
+                                <span className="text-gray-600">{item.candidateId}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
                       )}
                     </div>
 
@@ -360,8 +355,8 @@ export default function HybridMetrics() {
                 {/* Secondary Input Area */}
                 {showSecondary && (
                   <div className="h-1/2 overflow-auto ">
-                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort}  isSelectedInteractionClass={isSelectedInteractionClass} 
-                    onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal}  />
+                    <SecondaryInputForm onClose={() => setShowSecondary(false)} selectedSort={selectedSort} isSelectedInteractionClass={isSelectedInteractionClass}
+                      onSubmit={(values) => { setSecondaryValues(values); console.log("log data:->", values); }} resetSignal={resetSignal} />
                   </div>
                 )}
               </div>
@@ -389,7 +384,7 @@ export default function HybridMetrics() {
                     </div>
                   </div>
                 </div>
-                {ScoresOpen && <PlotSelections selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData.unitType} unitSignature ={unitData.signatureProfile}
+                {ScoresOpen && <PlotSelections selectedSort={selectedSort} unitId={selectedUnitId} unitType={unitData.unitType} unitSignature={unitData.signatureProfile}
                   candidateId={
                     selectedSort === "activateUnitLevel"
                       ? selectedCandidateIds.length > 0
