@@ -767,11 +767,10 @@ export default function PlotSelections({ activeChart, setActiveChart, unitId, ca
               <button
                 onClick={handleExtractCognitiveMatrix}
                 disabled={!unitId || isExtractingMatrix}
-                title="Extract the Yes/No cognitive function matrix of all candidates in this unit to Excel"
-                className="flex items-center gap-1 text-xs border border-blue-600 text-blue-700 px-2 py-0.5 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                title="Extract Cognitive Matrix"
+                className="text-blue-600 hover:text-red-800 cursor-pointer"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" />
-                Extract Cognitive Matrix
               </button>
               <button onClick={handlePlusClick} title="Add Neuro Object" className="text-blue-600 hover:text-red-800 cursor-pointer">
                 <Plus className="w-4 h-4 hover:text-blue-600" />

@@ -77,6 +77,8 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
   });
 
   const thresholdOn = filters?.thresholdEnabled === true;
+  // Effectivity Table selected: no chart panel, the table is shown full width in the lower tab area (as Neuro Tools).
+  const tableMode = !isUnitLevel && selectedChart?.type === 'table';
 
   // Keep the same plot (by key) when switching level, else pick the first one.
   useEffect(() => {
@@ -152,6 +154,11 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
   // ---- inline drop-down edit in the Effectivity Table -------------------------
   const handleCellChange = async (row, field, value) => {
     setSavingCell(`${row.ppId}-${field}`);
+    // Show the choice straight away (also the empty "Select ..." option), then save.
+    setCandidateData((prev) => (prev ? {
+      ...prev,
+      rows: prev.rows.map((x) => (x.ppId === row.ppId ? { ...x, [field]: value || null } : x)),
+    } : prev));
     try {
       const payload = { unitId: Number(unitId), candidateId: Number(candidateId), ppId: row.ppId };
       EFFECTIVITY_FIELD_LABELS.forEach(([k]) => { payload[k] = row[k] || null; });
@@ -252,13 +259,13 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
     (dataMax) => (thresholdLine ? Math.max(dataMax, thresholds[selectedChart.index]) : dataMax),
   ];
 
-  // Same table style as the Neuro Tools table: black grid lines, black text, centred values.
+  // Same as the Neuro Tools table (Neuro Indicators tab): plain bordered table, sticky header,
+  // scrollable area with the horizontal scrollbar always at the bottom.
   const cell = 'whitespace-nowrap text-center border px-2 py-1';
   const renderEffectivityTable = () => (
-    <div ref={chartContainerRef} className="flex flex-col h-full min-h-0 bg-white">
-      <h2 className="text-lg font-semibold mb-2 text-center">🟦 Effectivity Table</h2>
-      <div className="flex-1 min-h-0 overflow-auto">
-        <table className="table-auto min-w-max text-xs border border-gray-300 text-black">
+    <div className="flex flex-col h-full min-h-0">
+      <div ref={chartContainerRef} className="flex-1 min-h-0 overflow-auto bg-white" style={{ overflowX: 'scroll' }}>
+        <table className="table-auto min-w-max text-xs border border-gray-300">
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
               <th className={cell}>PP ID Callout</th>
@@ -268,43 +275,47 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={16} className="text-center text-gray-400 py-4 italic border">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
+              <tr><td colSpan={16} className="text-center text-gray-400 py-4 border">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
             )}
             {rows.map((r) => (
               <tr key={r.ppId}>
                 <td className={cell}>{r.ppId}</td>
                 {EFFECTIVITY_FIELD_LABELS.map(([k, l]) => (
-                  <td key={k} className="border px-1 py-0.5">
+                  <td key={k} className="text-center border px-1 py-0.5">
                     <select
                       aria-label={`${l} for PP ID ${r.ppId}`}
-                      className={`w-full bg-transparent px-1 py-0.5 text-xs disabled:opacity-50 ${r[k] ? 'text-black' : 'text-gray-400'}`}
+                      className={`w-full bg-transparent px-1 text-xs text-center cursor-pointer disabled:opacity-50 ${r[k] ? 'text-black' : 'text-gray-400'}`}
+                      style={{ textAlignLast: 'center' }}
                       value={r[k] || ''}
                       disabled={savingCell !== null}
                       onChange={(e) => handleCellChange(r, k, e.target.value)}
                     >
-                      <option value="" className="text-gray-400">Select {l}</option>
-                      {(options?.options?.[k] || []).map((opt) => <option key={opt} value={opt} className="text-black">{opt}</option>)}
+                      {/* normal (black) option so it can always be chosen again to clear the value */}
+                      <option value="" disabled style={{ color: '#000' }}>Select {l}</option>
+                      {(options?.options?.[k] || []).map((opt) => <option key={opt} value={opt} style={{ color: '#000' }}>{opt}</option>)}
                     </select>
                   </td>
                 ))}
                 {PARAMS.map((i) => <td key={i} className={cell}>{r.parameters ? fmt(r.parameters[i]) : '-'}</td>)}
               </tr>
             ))}
-            {rows.length > 0 && (
-              <tr className="font-semibold">
+          </tbody>
+          {rows.length > 0 && (
+            <tfoot className="sticky bottom-0 z-10 bg-gray-200">
+              <tr className="font-semibold bg-gray-200">
                 <td className={cell}>Average</td>
                 {EFFECTIVITY_FIELD_LABELS.map(([k]) => <td key={k} className={cell}>---</td>)}
                 {PARAMS.map((i) => <td key={i} className={cell}>{fmt(candidateData?.average?.parameters?.[i])}</td>)}
               </tr>
-            )}
-            {thresholdOn && rows.length > 0 && (
-              <tr>
-                <td className={cell}>Threshold (Pass ≤)</td>
-                <td colSpan={5} className="border px-2 py-1" />
-                {PARAMS.map((i) => <td key={i} className={cell}>{fmt(thresholds[i])}</td>)}
-              </tr>
-            )}
-          </tbody>
+              {thresholdOn && (
+                <tr className="font-semibold bg-gray-200">
+                  <td className={cell}>Threshold (Pass ≤)</td>
+                  <td colSpan={5} className="border px-2 py-1" />
+                  {PARAMS.map((i) => <td key={i} className={cell}>{fmt(thresholds[i])}</td>)}
+                </tr>
+              )}
+            </tfoot>
+          )}
         </table>
       </div>
     </div>
@@ -312,7 +323,9 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
 
   const renderChart = () => {
     if (!selectedChart) return <div className="flex justify-center h-full text-gray-400 text-lg">SELECT PLOT</div>;
-    if (loading) return <div className="flex justify-center h-full text-gray-400 text-sm pt-10">Loading...</div>;
+    // Like the other screens: keep the current chart on screen while new data loads (no "Loading..." flash).
+    const hasData = isUnitLevel ? !!unitData : !!candidateData;
+    if (loading && !hasData) return null;
     if (error) return <div className="flex justify-center h-full text-red-500 text-sm pt-10">{error}</div>;
 
     if (selectedChart.type === 'table') return renderEffectivityTable();
@@ -455,7 +468,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
         )}
       </h2>
       <div className="flex flex-1 min-h-100 w-full my-2">
-        <div className="w-6/12 lg:w-4/12 flex flex-col border-2 h-full border-gray-200 p-1">
+        <div className={`${tableMode ? 'w-full' : 'w-6/12 lg:w-4/12'} flex flex-col border-2 h-full border-gray-200 p-1`}>
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
@@ -477,8 +490,12 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
                 </button>
                 {showExportMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 min-w-[160px]">
-                    <button onClick={() => { exportAsJPG(); setShowExportMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export as JPG</button>
-                    <button onClick={() => { exportTableExcel(); setShowExportMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export Table (Excel)</button>
+                    {/* JPG is for charts only; the Effectivity Table is exported to Excel (a JPG cuts the wide table off). */}
+                    {selectedChart?.type === 'table' ? (
+                      <button onClick={() => { exportTableExcel(); setShowExportMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export Table (Excel)</button>
+                    ) : (
+                      <button onClick={() => { exportAsJPG(); setShowExportMenu(false); }} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export as JPG</button>
+                    )}
                   </div>
                 )}
               </div>
@@ -509,20 +526,28 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
 
             <div className="h-[65%] flex flex-col border border-gray-200">
               <div className="flex space-x-2 border-b p-2">
-                {['Property editor', 'Table'].map((tab) => (
+                {tableMode ? (
+                  <button className="px-3 py-1 text-sm cursor-pointer text-black bg-white border-t-2 border-blue-400 shadow-sm">
+                    Effectivity Table
+                  </button>
+                ) : ['Property editor', 'Table'].map((tab) => (
                   <button
                     key={tab}
                     className={`px-3 py-1 text-sm cursor-pointer ${activeTab === tab
                       ? 'text-black bg-white border-t-2 border-blue-400 shadow-sm'
                       : 'text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white'}`}
                     onClick={() => setActiveTab(tab)}
-                  >
+                  >Effectivity Type
                     {tab === 'Property editor' ? 'Property Editor' : 'Table'}
                   </button>
                 ))}
               </div>
-              <div className="flex-1 overflow-auto p-2 h-full mb-8">
-                {activeTab === 'Property editor' ? (
+              <div className="flex-1 overflow-auto p-2 h-full ">
+                {tableMode ? (
+                  loading && !candidateData ? null
+                    : error ? <div className="text-center text-red-500 text-sm pt-4">{error}</div>
+                      : renderEffectivityTable()
+                ) : activeTab === 'Property editor' ? (
                   selectedChart && (selectedChart.type === 'line' || selectedChart.type === 'scatter') ? (
                     <PropertyEditor properties={chartProperties} onChange={setChartProperties} selectedChart={selectedChart} />
                   ) : (
@@ -536,9 +561,11 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
           </div>
         </div>
 
-        <div className="w-6/12 lg:w-8/12 flex flex-col h-full bg-white border-2 border-l-0 border-gray-200 p-2 min-h-0">
-          {renderChart()}
-        </div>
+        {!tableMode && (
+          <div className="w-6/12 lg:w-8/12 flex flex-col h-full bg-white border-2 border-l-0 border-gray-200 p-2 min-h-0">
+            {renderChart()}
+          </div>
+        )}
       </div>
     </>
   );
