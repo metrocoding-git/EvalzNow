@@ -307,13 +307,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
                 {EFFECTIVITY_FIELD_LABELS.map(([k]) => <td key={k} className={cell}>---</td>)}
                 {PARAMS.map((i) => <td key={i} className={cell}>{fmt(candidateData?.average?.parameters?.[i])}</td>)}
               </tr>
-              {thresholdOn && (
-                <tr className="font-semibold bg-gray-200">
-                  <td className={cell}>Threshold (Pass ≤)</td>
-                  <td colSpan={5} className="border px-2 py-1" />
-                  {PARAMS.map((i) => <td key={i} className={cell}>{fmt(thresholds[i])}</td>)}
-                </tr>
-              )}
+              
             </tfoot>
           )}
         </table>
@@ -472,15 +466,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
           <div className="flex items-center justify-between px-1 mx-1 text-gray-700">
             <h2 className="text-sm font-semibold">Plots</h2>
             <div className="flex items-center gap-2">
-              {!isUnitLevel && (
-                <button
-                  onClick={() => { setObjectPpId(null); setShowObject(true); }}
-                  title="Add Effectivity Object"
-                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              )}
+              
               <button onClick={() => onResetFilters?.()} title="Reset Filter" className="text-blue-600 hover:text-blue-800 cursor-pointer">
                 <RefreshCw className="w-4 h-4 hover:text-green-600" />
               </button>
@@ -537,7 +523,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
                       ? 'text-black bg-white border-t-2 border-blue-400 shadow-sm'
                       : 'text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white'}`}
                     onClick={() => setActiveTab(tab)}
-                  >Effectivity Type
+                  >
                     {tab === 'Property editor' ? 'Property Editor' : 'Table'}
                   </button>
                 ))}
