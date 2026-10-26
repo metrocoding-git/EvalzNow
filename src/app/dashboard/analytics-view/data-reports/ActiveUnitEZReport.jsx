@@ -232,7 +232,7 @@ export async function buildUnitEZReport({ unit = {} }) {
     subHeader("LEADER MARKS:"),
     table(["ENTRY", "IMPACT TYPE", "CONCERN IDENTIFIED", "IDENTITY DATE", "CONCERN RESOLVED", "RESOLUTION DATE"], leaderMarks),
     subHeader("IMPROVEMENTS & OPTIMIZATION:"),
-    table(["ENTRY #", "BIDs", "LESSONS LEARNED", "LINKED BENCHMARKS"], improvements),
+    table(["ENTRY #", "BIDs", "LESSONS LEARNED"], improvements),
     sectionBanner(7),
     "",
     subHeader("EFFECTIVITY:"),
