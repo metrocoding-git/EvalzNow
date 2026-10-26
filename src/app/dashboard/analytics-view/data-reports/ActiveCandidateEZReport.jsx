@@ -261,13 +261,12 @@ export function buildCandidateEZReport({
   const growthRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.deltaRRN), n3(r.deltaPRN), ...(tprm ? [n3(r.deltaARN)] : []), n3(r.GEQ), text(r.STAG)]);
   const hybridRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.MSIP), n2(getICValue(r.unitType || unitType, r.signatureProfile || unitMeta.signatureProfile, r.IC))]);
 
-  // --- Section 06 needs assessment: PP IDs of the candidate's assessment blocks that have a needs
-  // assessment (Pending / Closed), with the linked Benchmark IDs. Open PP IDs (nothing entered) and
-  // entries of PP IDs that no longer exist are left out.
+  // --- Section 06 needs assessment: every PP ID of the candidate's assessment blocks with its
+  // action status (OPEN / PENDING / CLOSED) and linked Benchmark IDs. Entries of PP IDs that no
+  // longer exist are left out.
   const naByPp = new Map(needs.map((na) => [na.ppId, na]));
   const needsRows = results
     .map((r) => ({ r, na: naByPp.get(r.ppId) }))
-    .filter(({ na }) => actionStatus(na) !== "Open")
     .map(({ r, na }) => {
       const bids = linkedBids(na);
       return [r.ppId, isoDate(r.criticalRefDate), actionStatus(na).toUpperCase(), bids.length ? bids.join(", ") : "-", text(na?.observation?.trim())];
