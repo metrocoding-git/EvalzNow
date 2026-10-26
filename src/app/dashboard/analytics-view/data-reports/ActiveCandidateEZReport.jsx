@@ -217,18 +217,16 @@ function chainBlocks(assessmentChain, unitType) {
   return [headers.trimEnd(), "", ...rows, ""];
 }
 
-/** Benchmarks of the unit, with the PP IDs whose needs assessment links each benchmark. */
-function benchmarkRows(benchmarks = [], needAssessments = []) {
+/** Benchmarks of the unit (the PP IDs that link them are shown in the Needs Assessment table). */
+function benchmarkRows(benchmarks = []) {
   return [...benchmarks]
     .sort((a, b) => Number(a.benchmarkId) - Number(b.benchmarkId))
-    .map((b) => {
-      const pps = needAssessments
-        .filter((na) => [...(na.benchmarkIds || []), ...(na.bIds || [])].map(String).includes(String(b.benchmarkId)))
-        .map((na) => na.ppId)
-        .sort(ppSort);
-      return [pps.length ? pps.join(", ") : "-", b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription];
-    });
+    .map((b) => [b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription]);
 }
+
+/** Benchmark IDs linked to one needs assessment entry, sorted and de-duplicated. */
+const linkedBids = (na) =>
+  [...new Set([...(na?.benchmarkIds || []), ...(na?.bIds || [])].map(Number).filter(Number.isFinite))].sort((a, b) => a - b);
 
 export function buildCandidateEZReport({
   unitMeta = {},
@@ -263,14 +261,17 @@ export function buildCandidateEZReport({
   const growthRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.deltaRRN), n3(r.deltaPRN), ...(tprm ? [n3(r.deltaARN)] : []), n3(r.GEQ), text(r.STAG)]);
   const hybridRows = results.map((r) => [r.ppId, n2(r.totalDuration), n3(r.MSIP), n2(getICValue(r.unitType || unitType, r.signatureProfile || unitMeta.signatureProfile, r.IC))]);
 
-  // --- Section 06 needs assessment: every PP ID (saved or still open)
+  // --- Section 06 needs assessment: PP IDs of the candidate's assessment blocks that have a needs
+  // assessment (Pending / Closed), with the linked Benchmark IDs. Open PP IDs (nothing entered) and
+  // entries of PP IDs that no longer exist are left out.
   const naByPp = new Map(needs.map((na) => [na.ppId, na]));
-  const allPps = [...new Set([...results.map((r) => r.ppId), ...needs.map((na) => na.ppId)])].sort(ppSort);
-  const needsRows = allPps.map((pp) => {
-    const comp = results.find((r) => r.ppId === pp);
-    const na = naByPp.get(pp);
-    return [pp, isoDate(comp?.criticalRefDate), actionStatus(na), text(na?.observation?.trim())];
-  });
+  const needsRows = results
+    .map((r) => ({ r, na: naByPp.get(r.ppId) }))
+    .filter(({ na }) => actionStatus(na) !== "Open")
+    .map(({ r, na }) => {
+      const bids = linkedBids(na);
+      return [r.ppId, isoDate(r.criticalRefDate), actionStatus(na).toUpperCase(), bids.length ? bids.join(", ") : "-", text(na?.observation?.trim())];
+    });
 
   const marksRows = (Array.isArray(candidateMarks) ? candidateMarks : [])
     .slice().sort((a, b) => a.entryNumber - b.entryNumber)
@@ -375,11 +376,11 @@ export function buildCandidateEZReport({
     sectionBanner(6),
     "",
     subHeader("BENCHMARKS:"),
-    table(["PP ID", "BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows(unitMeta.benchmarks || [], needs)),
+    table(["BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows(unitMeta.benchmarks || [])),
     subHeader("CANDIDATE MARKS:"),
     table(["ENTRY", "IMPACT TYPE", "CONCERN IDENTIFIED", "IDENTITY DATE", "CONCERN RESOLVED", "RESOLUTION DATE"], marksRows),
     subHeader("NEEDS ASSESSMENT:"),
-    table(["PP ID", "CRITICAL REFERENCE DATE", "ACTION STATUS", "OBSERVATIONS & GOALS"], needsRows),
+    table(["PP ID", "CRITICAL REFERENCE DATE", "ACTION STATUS", "BID", "OBSERVATIONS & GOALS"], needsRows),
     subHeader("NEEDS ASSESSMENT CHAIN:"),
     chainBlocks(assessmentChain, unitType),
     sectionBanner(7),
