@@ -186,7 +186,6 @@ export default function AuxiliaryResultants() {
                    ? "grid-cols-4 px-4" : "grid-cols-3 px-4"  } text-gray-800 font-semibold text-sm`}>
 
                    {/*  Header for checkbox column (blank) */}
-                    {selectedSort === "activateUnitLevel" && <div></div>}
                     <div
                       onClick={() => handleSort("lastName")}
                       className="cursor-pointer flex items-center gap-1 whitespace-nowrap"
