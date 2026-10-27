@@ -238,6 +238,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       : [])
   ];
 
+  // Unit Level: the Secondary Input Area shows "Individual PP ID Averages" by default, so use it
+  // until another mode is submitted (before, nothing was drawn until Submit was pressed).
+  const unitMode = filters?.unitMode ?? (selectedSort === "activateUnitLevel" ? "averages" : null);
+
   const activateUnitLevel = [
     {
       name: "Interaction Class (IC) vs. PP ID",
@@ -1128,7 +1132,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       aspectRatio: '1 / 1',
     };
 
-    const isTargetMode = filters?.unitMode === "target";
+    const isTargetMode = unitMode === "target";
     const targetPpId = filters?.selectedPpId;
     const isPositiveTarget = targetPpId > 0;
 
@@ -1139,7 +1143,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         : !!candidateId;
 
     const showAverages =
-      filters?.unitMode === "averages" &&
+      unitMode === "averages" &&
       averageData.length > 0 &&
       hasCandidates;
     // Check if we should show projection data
@@ -1439,7 +1443,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
     const showTableDataPoints = selectedSort !== "activateUnitLevel" || hasSelectedPp;
 
-    const showAverages = filters?.unitMode === "averages" && averageData.length > 0 && hasCandidates;
+    const showAverages = unitMode === "averages" && averageData.length > 0 && hasCandidates;
 
     // Check if we should show projection data
     const showProjection = filters?.showProjectionPoints === true && projectionData.length > 0;
@@ -2684,7 +2688,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
                     onChange={setChartProperties}
                     selectedChart={selectedChart}
                     showAverages={
-                      filters?.unitMode === "averages" &&
+                      unitMode === "averages" &&
                       averageData.length > 0 &&
                       (Array.isArray(candidateId) ? candidateId.length > 0 : !!candidateId) &&
                       !(selectedChart?.id === "1" && selectedSort === "activateUnitLevel")
