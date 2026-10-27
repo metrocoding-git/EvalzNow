@@ -147,25 +147,32 @@ const UNILATERAL_KEYS = { [CICO]: ["XRR", "XLR", "XSR", "XWR"], [TP]: ["XTR", "X
 
 const LOBES = ["Frontal", "Occipital", "Parietal", "Temporal"];
 
+/**
+ * Section 08 – per PP ID tables, in template order:
+ *   P/ RMS (L), P/ RMS (R), P/ Load (L), P/ Load (R), G/ RMS (L), G/ RMS (R), G/ Load (L), G/ Load (R).
+ * The load of a PP ID is the cumulative cognitive load up to that PP ID (cognitiveLoad.<lobe>.proficiency / growth).
+ */
 function neuroBlocks(neuro, dayCountByPp) {
   const data = Array.isArray(neuro?.data) ? [...neuro.data].sort((a, b) => ppSort(a.ppId, b.ppId)) : [];
+  const lobeLabel = (l) => (l === "Occipital" ? "Occipital Lobe" : l);
+  const loadOf = (lobeKey, kind, pp) => {
+    const list = neuro?.cognitiveLoad?.[lobeKey]?.[kind];
+    const hit = Array.isArray(list) ? list.find((x) => String(x.ppId) === String(pp)) : null;
+    return hit ? n3(hit.value) : "-";
+  };
   const out = [];
-  [["proficiency", "P", "RMS", "proficiencyFinal"], ["growth", "G", "deltaRMS", "growthFinal"]].forEach(([, p, rmsKey, finalKey]) => {
-    [["Left", "L"], ["Right", "R"]].forEach(([side, s]) => {
-      const headers = ["PP ID", "DAYCOUNT", ...LOBES.map((l) => `${p}/ RMS (${s}) - ${l === "Occipital" ? "Occipital Lobe" : l}`)];
+  [["proficiency", "P", "RMS"], ["growth", "G", "deltaRMS"]].forEach(([kind, p, rmsKey]) => {
+    const block = (metric, valueOf) => [["Left", "L"], ["Right", "R"]].forEach(([side, s]) => {
+      const headers = ["PP ID", "DAYCOUNT", ...LOBES.map((l) => `${p}/ ${metric} (${s}) - ${lobeLabel(l)}`)];
       const rows = data.map((entry) => [
         entry.ppId,
         n2(dayCountByPp.get(entry.ppId) ?? entry.dayCount),
-        ...LOBES.map((l) => n3(entry?.lobes?.[`${l} Lobe - ${side}`]?.[rmsKey])),
+        ...LOBES.map((l) => valueOf(`${l} Lobe - ${side}`, entry)),
       ]);
       out.push(...table(headers, rows));
     });
-    [["Left", "L"], ["Right", "R"]].forEach(([side, s]) => {
-      LOBES.forEach((l) => {
-        out.push(kv(`${p}/ Cognitive Load (${s}) - ${l}`, n3(neuro?.cognitiveLoad?.[`${l} Lobe - ${side}`]?.[finalKey])));
-      });
-    });
-    out.push("");
+    block("RMS", (lobeKey, entry) => n3(entry?.lobes?.[lobeKey]?.[rmsKey]));
+    block("Load", (lobeKey, entry) => loadOf(lobeKey, kind, entry.ppId));
   });
   return out;
 }
