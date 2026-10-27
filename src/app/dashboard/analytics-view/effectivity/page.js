@@ -82,7 +82,6 @@ export default function EffectivityPage() {
             <div className="w-6/12 lg:w-3/12 flex flex-col border-1 h-full border-gray-200">
               <div className="flex-grow flex flex-col h-1/2">
                 <div className={`bg-gray-100 py-2 border-b border-gray-300 grid ${isUnitLevel ? "grid-cols-4" : "grid-cols-3"} px-4 text-gray-800 font-semibold text-sm`}>
-                  {isUnitLevel && <div />}
                   <div className="whitespace-nowrap">Last Name</div>
                   <div className="whitespace-nowrap">First Name</div>
                   <div className="whitespace-nowrap">Candidate ID</div>
