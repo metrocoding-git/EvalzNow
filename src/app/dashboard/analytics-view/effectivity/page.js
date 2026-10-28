@@ -1,4 +1,7 @@
 "use client";
+import CapsuleEffectivity from "../capsule/effectivity/CapsuleEffectivity";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
@@ -6,7 +9,7 @@ import { getEffectivityOptions } from "@/services/effectivityService";
 import PlotSelections from "./components/PlotSelections";
 import SecondaryInputForm from "./components/SecondaryArea";
 
-export default function EffectivityPage() {
+function EffectivityPage() {
   const router = useRouter();
   const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [unitData, setUnitData] = useState(null);
@@ -186,4 +189,13 @@ export default function EffectivityPage() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleEffectivity /> : <EffectivityPage />;
 }

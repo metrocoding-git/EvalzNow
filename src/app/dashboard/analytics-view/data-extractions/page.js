@@ -19,6 +19,10 @@ import { extractActiveUnitCandidatesCSV } from "./components/CandidateExtraction
 import { extractClientCandidatesCSV } from "./components/CandidateExtractionByClientId";
 import { extractCandidateUnitsCSV } from "./components/CandidateExtractionByCandidateId";
 import DownloadLoader from "@/components/DownloadLoader";
+import { getActiveCapsuleId, getActiveEntityType } from "@/lib/activeEntity";
+import { getCapsuleById } from "@/services/capsuleService";
+import { getCapsuleCandidates } from "@/services/capsuleAnalyticsService";
+import { allCapsulesCSV, downloadText, extractActiveCapsuleCSV, extractCandidateCapsulesCSV } from "@/lib/capsule/capsuleExtraction";
 
 export default function DataExtractions() {
   const tabs = [
@@ -67,6 +71,11 @@ export default function DataExtractions() {
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
   const [extractLoading, setExtractLoading] = useState(false);
+  // Unit or Capsule active (Capacity_Part16): unit options need an active unit, capsule options an active capsule
+  const [entityMode, setEntityMode] = useState(null);
+  const [capsuleData, setCapsuleData] = useState(null);
+  const capsuleActive = entityMode === "capsule" && !!capsuleData;
+  const unitActive = entityMode === "unit" && !!selectedUnitId;
 
   const sortedData = [...data].sort((a, b) => {
     const valA = a[sortKey];
@@ -145,8 +154,22 @@ export default function DataExtractions() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedUnitId = sessionStorage.getItem("selectedUnitId");
-      setSelectedUnitId(storedUnitId);
+      const mode = getActiveEntityType();
+      setEntityMode(mode);
+      if (mode === "unit") {
+        const storedUnitId = sessionStorage.getItem("selectedUnitId");
+        setSelectedUnitId(storedUnitId);
+      } else {
+        const capsuleId = getActiveCapsuleId();
+        Promise.all([getCapsuleById(capsuleId), getCapsuleCandidates(capsuleId)])
+          .then(([capsule, list]) => {
+            setCapsuleData(capsule);
+            const sorted = [...list].sort((a, b) => a.id - b.id);
+            setData(sorted);
+            setActiveCandidateId(sorted[0]?.id ?? null);
+          })
+          .catch((err) => console.error("Failed to load the active capsule:", err));
+      }
     }
   }, []);
 
@@ -210,7 +233,23 @@ export default function DataExtractions() {
     : selectedExtractOption === "all-candidates-database" ? clientExtractionData : candidateExtractionData;
 
     const handleExtract = async () => {
-      if (!selectedExtractOption || !extractionData) return;
+      if (!selectedExtractOption) return;
+      // Capsule options (UI phase: built in the browser from the capsule data)
+      if (selectedExtractOption === "active-capsule-candidates" || selectedExtractOption === "all-capsules-candidates") {
+        setIsDownloading(true);
+        setExtractLoading(true);
+        try {
+          if (selectedExtractOption === "active-capsule-candidates") await extractActiveCapsuleCSV(capsuleData.id);
+          else await extractCandidateCapsulesCSV(activeCandidateId);
+        } catch (err) {
+          console.error("Capsule extraction failed:", err);
+        } finally {
+          setExtractLoading(false);
+          setIsDownloading(false);
+        }
+        return;
+      }
+      if (!extractionData && selectedExtractOption !== "all-candidates-database") return;
     
       setIsDownloading(true);
 
@@ -225,10 +264,15 @@ export default function DataExtractions() {
         }
     
         if (selectedExtractOption === "all-candidates-database") {
-          await extractClientCandidatesCSV({
-            extractionData,
-            clientId: activeClientId,
-          });
+          // Full database pull: the unit CSV and the capsule CSV are exported separately
+          if (extractionData) {
+            await extractClientCandidatesCSV({
+              extractionData,
+              clientId: activeClientId,
+            });
+          }
+          const capsules = await allCapsulesCSV();
+          if (capsules.count) await downloadText(capsules.text, "Capsule Data Extraction - All.csv");
         }
     
         if (selectedExtractOption === "all-units-candidates") {
@@ -337,6 +381,19 @@ export default function DataExtractions() {
 
                       {openMenu && (
                         <>
+                          {capsuleActive && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">Capsule Name: {capsuleData.capsuleName}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Capsule ID: {capsuleData.capsuleId}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Capsule Type: {capsuleData.capsuleType}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Signature Profile: {capsuleData.signatureProfile}</span>
+                              </div>
+                            </div>
+                          )}
                           {unitData && (
                             <div className=" items-center justify-center  px-4 ">
                               <div className="border border-gray-200 p-1">
@@ -410,12 +467,22 @@ export default function DataExtractions() {
                           {
                             id: "active-unit-candidates",
                             label: "Extract Candidate Data for the Active Unit",
-                            disabled: !selectedUnitId,
+                            disabled: !unitActive,
                           },
                           {
                             id: "all-units-candidates",
                             label: "Extract Candidate Data for All Units in Database",
-                            disabled: !selectedUnitId && !activeCandidateId,
+                            disabled: !unitActive || !activeCandidateId,
+                          },
+                          {
+                            id: "active-capsule-candidates",
+                            label: "Extract Candidate Data for the Active Capsule",
+                            disabled: !capsuleActive,
+                          },
+                          {
+                            id: "all-capsules-candidates",
+                            label: "Extract Candidate Data for All Capsules in Database",
+                            disabled: !capsuleActive || !activeCandidateId,
                           },
                           {
                             id: "all-candidates-database",

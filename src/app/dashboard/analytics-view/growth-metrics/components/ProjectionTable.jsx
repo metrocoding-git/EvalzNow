@@ -838,7 +838,7 @@ const handleSubmit = async () => {
                     </td>
 
                     <td className="px-2 py-1 border border-black">{row.RRN === "-" ? "-" : Number(row.RRN).toFixed(3)}</td>
-                    <td className="px-2 py-1 border border-black">{row.RRN === "-" ? "-" : Number(row.RRN).toFixed(3)}</td>
+                    <td className="px-2 py-1 border border-black">{row.PRN === "-" ? "-" : Number(row.PRN).toFixed(3)}</td>
 
                     {unitType === "Third Parameter" && (
                       <td className="px-2 py-1 border border-black">{row.ARN === "-" ? "-" : Number(row.ARN).toFixed(3)}</td>

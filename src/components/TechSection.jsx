@@ -1,5 +1,5 @@
 import Image from "next/image";
-import loginImg from "../../public/icons/login.png"; // correct path alias
+import loginImg from "../../public/icons/login-new.png"; // correct path alias
 
 export default function TextSection() {
   return (

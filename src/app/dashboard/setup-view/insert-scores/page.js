@@ -1,4 +1,6 @@
 "use client";
+import CapsuleInsertScores from "../capsule/CapsuleInsertScores";
+import { getActiveEntityType } from "@/lib/activeEntity";
 import { useState, useEffect } from "react";
 import {
   Plus,
@@ -23,7 +25,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useClient } from "@/context/ClientContext";
 import { useUnit } from "@/context/UnitContext";
 
-export default function EntitiesManager() {
+function EntitiesManager() {
   // Initial table data in state
   const [data, setData] = useState([
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -391,4 +393,13 @@ export default function EntitiesManager() {
       {/* <Toaster position="top-right" reverseOrder={false} /> */}
     </div>
   );
+}
+
+
+/** Shows the capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function SetupViewTab() {
+  const [mode, setMode] = useState(null);
+  useEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleInsertScores /> : <EntitiesManager />;
 }

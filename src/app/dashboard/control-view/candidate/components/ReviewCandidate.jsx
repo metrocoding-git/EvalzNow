@@ -1,4 +1,5 @@
 import { getUnitByCandidateId } from "@/services/unitRosterService";
+import { getCapsulesByCandidateId } from "@/services/capsuleService";
 import { Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -15,6 +16,17 @@ export default function ReviewCandidate({ candidate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [capsules, setCapsules] = useState([]);
+
+  // Connected capsules (Capacity Accounting – UI phase data)
+  useEffect(() => {
+    getCapsulesByCandidateId(candidate.id).then((d) => setCapsules(Array.isArray(d) ? d : [])).catch(() => setCapsules([]));
+  }, [candidate.id]);
+
+  const filteredCapsules = capsules.filter((c) => {
+    const term = searchTerm.toLowerCase();
+    return c.capsuleId?.toLowerCase().includes(term) || c.capsuleName?.toLowerCase().includes(term) || c.status?.toLowerCase().includes(term);
+  });
 
 
   const filteredUnits = units.filter((unit) => {
@@ -93,12 +105,30 @@ export default function ReviewCandidate({ candidate }) {
           
           {filteredUnits.map((unit) => (
             <li
-              key={unit.id}
+              key={unit.id ?? unit.unitId}
               className="p-3 bg-gray-100 border border-gray-300 shadow-sm flex gap-3"
             >
               <div className="text-sm text-gray-600">Unit ID: {unit.unitId}</div>
               <div className="text-sm text-gray-600">Unit Name: <span className="font-semibold">{unit.unitName}</span></div>
               <div className="text-sm text-gray-600">Status: {unit.status}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="border-t border-gray-200 pt-2">
+        <h3 className="text-md font-medium text-gray-800 mb-2">
+          Connected Capsules
+        </h3>
+        <ul className="grid grid-cols-2 gap-3">
+          {filteredCapsules.length === 0 && (
+            <li className="text-gray-500">No capsules found.</li>
+          )}
+          {filteredCapsules.map((c) => (
+            <li key={c.id ?? c.capsuleId} className="p-3 bg-gray-100 border border-gray-300 shadow-sm flex gap-3">
+              <div className="text-sm text-gray-600">Capsule ID: {c.capsuleId}</div>
+              <div className="text-sm text-gray-600">Capsule Name: <span className="font-semibold">{c.capsuleName}</span></div>
+              <div className="text-sm text-gray-600">Status: {c.status}</div>
             </li>
           ))}
         </ul>

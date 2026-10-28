@@ -24,6 +24,10 @@ import { buildUnitEZReport } from "./ActiveUnitEZReport";
 import { downloadEZFilesAsZip } from "./helper/downloadEZFilesAsZip";
 import DownloadLoader from "@/components/DownloadLoader";
 import { getICValue, getProductivityValue, getSTAPAndSTAGStableCount } from "@/services/globalAnalyticsService";
+import { getActiveCapsuleId, getActiveEntityType } from "@/lib/activeEntity";
+import { getAllCapsules, getCapsuleById } from "@/services/capsuleService";
+import { getCapsuleCandidates } from "@/services/capsuleAnalyticsService";
+import { buildCapsuleCandidateReport, buildCapsuleReport, buildClinicalReport, reportFileName } from "@/lib/capsule/capsuleReports";
 
 export default function DataReports() {
   const tabs = [
@@ -64,10 +68,62 @@ export default function DataReports() {
   const [needAssessment, setNeedAssessment] = useState({});
   const [effortResults, setEffortResults] = useState([]);
 
+  // Unit or Capsule active (Capacity_Part17)
+  const [entityMode, setEntityMode] = useState(null);
+  const [capsuleData, setCapsuleData] = useState(null);
+  const capsuleActive = entityMode === "capsule" && !!capsuleData;
+  const unitActive = entityMode === "unit" && !!selectedUnitId;
+
   useEffect(() => {
-    const storedId = sessionStorage.getItem("selectedUnitId");
-    setSelectedUnitId(storedId);
+    const mode = getActiveEntityType();
+    setEntityMode(mode);
+    if (mode === "unit") {
+      const storedId = sessionStorage.getItem("selectedUnitId");
+      setSelectedUnitId(storedId);
+      return;
+    }
+    const capsuleId = getActiveCapsuleId();
+    Promise.all([getCapsuleById(capsuleId), getCapsuleCandidates(capsuleId)])
+      .then(([capsule, list]) => {
+        setCapsuleData(capsule);
+        setData([...list].sort((a, b) => a.id - b.id));
+      })
+      .catch((err) => console.error("Failed to load the active capsule:", err));
   }, []);
+
+  /** Capsule / Clinical reports (UI phase, built in the browser). Returns true when handled. */
+  const handleCapsuleExtract = async () => {
+    const capsuleOptions = ["all-candidates-capsule", "capsule-report", "all-capsule-reports", "clinical-data"];
+    if (!(capsuleOptions.includes(selectedReport) || (selectedReport === "candidate-report" && capsuleActive))) return false;
+    setIsDownloading(true);
+    try {
+      if (selectedReport === "candidate-report") {
+        const c = data.find((x) => x.id === activeCandidateId) || data[0];
+        if (c) await downloadEZFile(await buildCapsuleCandidateReport(capsuleData.id, c.id), reportFileName("Candidate", `${c.lastName}_${c.firstName}`, c.candidateId));
+      } else if (selectedReport === "all-candidates-capsule") {
+        const files = [];
+        for (const c of data) {
+          files.push({ filename: reportFileName("Candidate", `${c.lastName}_${c.firstName}`, c.candidateId), content: await buildCapsuleCandidateReport(capsuleData.id, c.id) });
+        }
+        await downloadEZFilesAsZip(files, `Candidate Reports_${capsuleData.capsuleName}_${capsuleData.capsuleId}.zip`);
+      } else if (selectedReport === "capsule-report") {
+        await downloadEZFile(await buildCapsuleReport(capsuleData.id), reportFileName("Capsule", capsuleData.capsuleName, capsuleData.capsuleId));
+      } else if (selectedReport === "all-capsule-reports") {
+        const files = [];
+        for (const c of await getAllCapsules()) {
+          files.push({ filename: reportFileName("Capsule", c.capsuleName, c.capsuleId), content: await buildCapsuleReport(c.id) });
+        }
+        await downloadEZFilesAsZip(files, "Capsule Reports.zip");
+      } else if (selectedReport === "clinical-data") {
+        await downloadEZFile(await buildClinicalReport(), "Clinical Data Report.ez");
+      }
+    } catch (err) {
+      console.error("Capsule report failed:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+    return true;
+  };
 
   const sortedData = [...data].sort((a, b) => {
     let valA = a[sortKey];
@@ -254,6 +310,7 @@ export default function DataReports() {
 
 
   const handleExtract = async () => {
+    if (await handleCapsuleExtract()) return;
     if (!selectedUnitId && selectedReport !== "global-data" && selectedReport !== "client-units")
       return;
 
@@ -541,6 +598,19 @@ export default function DataReports() {
 
                       {openMenu && (
                         <>
+                          {capsuleActive && (
+                            <div className=" items-center justify-center  px-4 ">
+                              <div className="border border-gray-200 p-1">
+                                <span className="text-sm text-gray-400">Capsule Name: {capsuleData.capsuleName}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Capsule ID: {capsuleData.capsuleId}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Capsule Type: {capsuleData.capsuleType}</span>
+                                <br />
+                                <span className="text-sm text-gray-400">Signature Profile: {capsuleData.signatureProfile}</span>
+                              </div>
+                            </div>
+                          )}
                           {unitData && (
                             <div className=" items-center justify-center  px-4 ">
                               <div className="border border-gray-200 p-1">
@@ -609,7 +679,7 @@ export default function DataReports() {
                       <p>EvalzNow – Human Capital & Education </p>
                       <p> Quantitative and Qualitative Assessment </p>
                       <p> Hybrid Proficiency & Growth Monitoring </p>
-                      <p> Candidate & Unit Report Generation</p>
+                      <p> Candidate & Unit/Capsule Report Generation</p>
                     </div>
 
                     <div className="flex flex-col justify-center space-y-3 text-sm ">
@@ -617,17 +687,17 @@ export default function DataReports() {
                         {
                           id: "candidate-report",
                           label: "Extract Candidate Report for the Active Candidate",
-                          disabled: !selectedUnitId,
+                          disabled: !unitActive && !capsuleActive,
                         },
                         {
                           id: "all-candidates-unit",
                           label: "Extract All Candidate Reports for the Active Unit",
-                          disabled: !selectedUnitId,
+                          disabled: !unitActive,
                         },
                         {
                           id: "unit-report",
                           label: "Extract Unit Report for the Active Unit",
-                          disabled: !selectedUnitId,
+                          disabled: !unitActive,
                         },
                         {
                           id: "client-units",
@@ -635,8 +705,28 @@ export default function DataReports() {
                           disabled: false,
                         },
                         {
+                          id: "all-candidates-capsule",
+                          label: "Extract All Candidate Reports for the Active Capsule",
+                          disabled: !capsuleActive,
+                        },
+                        {
+                          id: "capsule-report",
+                          label: "Extract Capsule Report for the Active Capsule",
+                          disabled: !capsuleActive,
+                        },
+                        {
+                          id: "all-capsule-reports",
+                          label: "Extract All Capsule Reports",
+                          disabled: false,
+                        },
+                        {
                           id: "global-data",
                           label: "Extract Global Data Report",
+                          disabled: false,
+                        },
+                        {
+                          id: "clinical-data",
+                          label: "Extract Clinical Data Report",
                           disabled: false,
                         },
                       ].map((item) => (

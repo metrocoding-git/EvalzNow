@@ -1,4 +1,7 @@
 "use client";
+import CapsuleGrowth from "../capsule/CapsuleGrowth";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useState } from "react";
 import {
   Plus,
@@ -15,7 +18,7 @@ import { usePathname } from "next/navigation";
 import { useUnit } from "@/context/UnitContext";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
-export default function GrowthMetrics() {
+function GrowthMetrics() {
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/scoring-trends" },
   ];
@@ -389,4 +392,13 @@ export default function GrowthMetrics() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleGrowth /> : <GrowthMetrics />;
 }

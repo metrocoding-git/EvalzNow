@@ -99,6 +99,12 @@ const analyticCategories = [
         link: "/dashboard/analytics-view/global-analytics",
         type: true,
       },
+      {
+        path: "/icons/Clinical_Analytics.png",
+        label: "Clinical Analytics",
+        link: "/dashboard/analytics-view/clinical-analytics",
+        type: true,
+      },
     ],
   },
   {
@@ -114,6 +120,12 @@ const analyticCategories = [
         path: "/icons/Data_Reports.png",
         label: "Data Reports",
         link: "/dashboard/analytics-view/data-reports",
+        type: true,
+      },
+      {
+        path: "/icons/Audit_Status.png", // placeholder – Rick will provide the Audit Status icon
+        label: "Audit Status",
+        link: "/dashboard/analytics-view/audit-status",
         type: true,
       },
       {
@@ -205,7 +217,8 @@ export default function RibbonPanel() {
             (item) =>
               activeTab === "Analytics View" ||
               (category.name === "Outputs" && item.type) ||
-              item.label === "Global Analytics" // always show this one
+              item.label === "Global Analytics" || // always show these two (institution level)
+              item.label === "Clinical Analytics"
           );
 
           if (visibleItems.length === 0) return null;

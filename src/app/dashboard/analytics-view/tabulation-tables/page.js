@@ -1,4 +1,7 @@
 "use client";
+import CapsuleTabulationTables from "../capsule/CapsuleTabulationTables";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useState } from "react";
 import {
   Plus,
@@ -14,7 +17,7 @@ import ViewerSelections from "./components/ViewerSelections";
 import { useUnit } from "@/context/UnitContext";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 
-export default function TabulationTables() {
+function TabulationTables() {
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/scoring-trends" },
   ];
@@ -314,4 +317,13 @@ export default function TabulationTables() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleTabulationTables /> : <TabulationTables />;
 }
