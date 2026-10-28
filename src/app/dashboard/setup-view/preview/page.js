@@ -1,4 +1,6 @@
 "use client";
+import CapsulePreview from "../capsule/CapsulePreview";
+import { getActiveEntityType } from "@/lib/activeEntity";
 
 import { useState, useEffect } from "react";
 import { ChevronRight, Plus, Search } from "lucide-react";
@@ -90,7 +92,7 @@ const activatedCandidates = [
   },
 ];
 
-export default function PreviewPage() {
+function PreviewPage() {
   const [open, setOpen] = useState(true);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -341,4 +343,13 @@ export default function PreviewPage() {
       </div>
     </div>
   );
+}
+
+
+/** Shows the capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function SetupViewTab() {
+  const [mode, setMode] = useState(null);
+  useEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsulePreview /> : <PreviewPage />;
 }

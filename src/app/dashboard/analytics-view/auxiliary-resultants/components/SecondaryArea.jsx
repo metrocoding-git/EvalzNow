@@ -392,7 +392,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
                 </div>
 
                 <div className="flex items-center ">
-                  <label htmlFor="" className="w-1/2">From:</label>
+                  <label htmlFor="" className="w-1/2">To:</label>
                   <input
                     type="date"
                     value={criticalDateTo}

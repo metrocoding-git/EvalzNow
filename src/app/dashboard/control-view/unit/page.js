@@ -665,6 +665,7 @@ export default function UnitControl() {
         setSelectedUnit(selectedUnit);
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
+        sessionStorage.setItem("activeEntityType", "unit");
         setUnitRoster(true);
         setShowAdd(false);
         setShowEdit(false);
@@ -690,6 +691,7 @@ export default function UnitControl() {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
+        sessionStorage.setItem("activeEntityType", "unit");
         router.push(
           `/dashboard/setup-view/insert-scores?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
         );
@@ -700,6 +702,7 @@ export default function UnitControl() {
         e.preventDefault();
         setSelectedUnitId(selectedUnit.id);
         sessionStorage.setItem("selectedUnitId", selectedUnit.id);
+        sessionStorage.setItem("activeEntityType", "unit");
         router.push(
           `/dashboard/analytics-view/scoring-trends?unitId=${encodeURIComponent(selectedUnit.id)}&environment=${encodeURIComponent(selectedUnit.environment)}&type=${encodeURIComponent(selectedUnit.unitType)}`
         );
@@ -1040,6 +1043,7 @@ export default function UnitControl() {
                 setSelectedUnit(unit);
                 setSelectedUnitId(unit.id);
                 sessionStorage.setItem("selectedUnitId", unit.id);
+                sessionStorage.setItem("activeEntityType", "unit");
                 setUnitRoster(true);
                 setShowAdd(false);
                 setShowEdit(false);
@@ -1084,6 +1088,7 @@ export default function UnitControl() {
                 setSelectedUnit(unit);
                 setSelectedUnitId(unit.id);
                 sessionStorage.setItem("selectedUnitId", unit.id);
+                sessionStorage.setItem("activeEntityType", "unit");
                 setContextMenu((prev) => ({ ...prev, visible: false }));
                 router.push(`/dashboard/setup-view/insert-scores`);
               }}
@@ -1102,6 +1107,7 @@ export default function UnitControl() {
                 if (contextMenu.selectedUnit) {
                   setSelectedUnitId(contextMenu.selectedUnit.id);
                   sessionStorage.setItem("selectedUnitId", contextMenu.selectedUnit.id);
+                  sessionStorage.setItem("activeEntityType", "unit");
                   console.log("Global Unit Id: ", contextMenu.selectedUnit.id);
                 }
                 setContextMenu((prev) => ({ ...prev, visible: false }));
