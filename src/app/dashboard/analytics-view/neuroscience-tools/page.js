@@ -1,4 +1,7 @@
 "use client";
+import CapsuleNeuroscience from "../capsule/CapsuleNeuroscience";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useState } from "react";
 import {
   Plus,
@@ -18,7 +21,7 @@ import PlotSelections from "./components/PlotSelections";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useUnit } from "@/context/UnitContext";
 
-export default function NeuroscienceTools() {
+function NeuroscienceTools() {
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/unit-distributions" },
   ];
@@ -327,4 +330,13 @@ export default function NeuroscienceTools() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleNeuroscience /> : <NeuroscienceTools />;
 }

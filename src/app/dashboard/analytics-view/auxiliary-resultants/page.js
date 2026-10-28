@@ -1,4 +1,7 @@
 "use client";
+import CapsuleAuxiliary from "../capsule/auxiliary/CapsuleAuxiliary";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useState } from "react";
 import {
   Plus,
@@ -21,7 +24,7 @@ import SecondaryInputForm from "./components/SecondaryArea";
 import CreateChainForm from "./components/CreateChainForm";
 import { useFormStatus } from "@/context/FormStatusContext";
 
-export default function AuxiliaryResultants() {
+function AuxiliaryResultants() {
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/scoring-trends" },
   ];
@@ -522,4 +525,13 @@ export default function AuxiliaryResultants() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleAuxiliary /> : <AuxiliaryResultants />;
 }

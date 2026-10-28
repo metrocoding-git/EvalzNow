@@ -1,4 +1,7 @@
 "use client";
+import CapsuleProficiency from "../capsule/CapsuleProficiency";
+import { getActiveEntityType } from "@/lib/activeEntity";
+import { useEffect as useEntityEffect, useState as useEntityState } from "react";
 import { useEffect, useState } from "react";
 import {
   Plus,
@@ -16,7 +19,7 @@ import SecondaryInputForm from "./components/SecondaryArea";
 import { getUniRostertByUnitId } from "@/services/unitRosterService";
 import { useUnit } from "@/context/UnitContext";
 
-export default function ProficiencyMetrics() {
+function ProficiencyMetrics() {
   const tabs = [
     { label: "Session", path: "/dashboard/analytics-view/scoring-trends" },
   ];
@@ -373,4 +376,13 @@ export default function ProficiencyMetrics() {
       </div>
     </div>
   );
+}
+
+
+/** Capsule screen when a capsule is the active entity, else the unit screen (unchanged). */
+export default function AnalyticsTab() {
+  const [mode, setMode] = useEntityState(null);
+  useEntityEffect(() => { setMode(getActiveEntityType()); }, []);
+  if (!mode) return null;
+  return mode === "capsule" ? <CapsuleProficiency /> : <ProficiencyMetrics />;
 }

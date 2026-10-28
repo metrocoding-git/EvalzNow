@@ -9,15 +9,16 @@ const tabs = [
   { label: "Staff", path: "/dashboard/control-view/staff" },
   { label: "Candidate", path: "/dashboard/control-view/candidate" },
   { label: "Unit", path: "/dashboard/control-view/unit" },
+  { label: "Capsule", path: "/dashboard/control-view/capsule" },
 ];
 
 // which tabs each role / access level can see
 const TAB_ACCESS = {
-  "super admin": ["Admin", "Staff", "Candidate", "Unit"],
-  admin: ["Staff", "Candidate", "Unit"],
+  "super admin": ["Admin", "Staff", "Candidate", "Unit", "Capsule"],
+  admin: ["Staff", "Candidate", "Unit", "Capsule"],
   staff: {
-    "Full Access": ["Staff", "Candidate", "Unit"],
-    "Leaders Access": ["Candidate", "Unit"],
+    "Full Access": ["Staff", "Candidate", "Unit", "Capsule"],
+    "Leaders Access": ["Candidate", "Unit", "Capsule"],
   },
 };
 
