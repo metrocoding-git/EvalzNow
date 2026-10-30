@@ -123,7 +123,11 @@ const analyticCategories = [
         type: true,
       },
       {
+<<<<<<< HEAD
         path: "/icons/Audit_Status_new.png", // placeholder – Rick will provide the Audit Status icon
+=======
+        path: "/icons/Audit_Status.png", // placeholder – Rick will provide the Audit Status icon
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
         label: "Audit Status",
         link: "/dashboard/analytics-view/audit-status",
         type: true,

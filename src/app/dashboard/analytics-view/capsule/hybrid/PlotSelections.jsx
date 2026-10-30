@@ -334,9 +334,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           ]
         };
 
+<<<<<<< HEAD
       // Butler Locus (positive PP IDs) – IDs 6 … 13
       case "6": case "7": case "8": case "9": case "10": case "11": case "12": case "13":
         if (selectedChart.type !== "butler") return null;
+=======
+      // Butler Locus (positive PP IDs)
+      case "BL1": case "BL2": case "BL3": case "BL4": case "BL5": case "BL6": case "BL7": case "BL8":
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
         return {
           columns: [
             { key: "ppId", label: "PP ID" },

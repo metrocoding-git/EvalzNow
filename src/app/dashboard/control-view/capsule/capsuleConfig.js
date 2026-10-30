@@ -83,7 +83,11 @@ export const CAPSULE_DIRECT_DELIVERY = [
 ];
 
 // ---- Capsule Setup View (Capacity_Part4) ----
+<<<<<<< HEAD
 /** Clinical Markers CM1–CM100 (Yes/No fields of the Insert Scores form). */
+=======
+/** Clinical Markers CM1–CM100 (also used for the Neuro Markers NM1–NM100 Yes/No fields). */
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
 export const CLINICAL_MARKERS = [
   "Absence of Feeling",
   "Agitation/Hostility",
@@ -199,10 +203,16 @@ export const MONITOR_TYPES = ["Brain Chemistry", "Cerebral Blood Flow", "Cerebra
 
 export const THERAPY_TYPES = ["Body Positioning (Neuro)", "CPP Target", "Decompression", "Drug-Induced", "Experimental", "First-Line & Nutrition", "Hypothermia/Cooling", "Innovative", "Lund Protocol", "Mechanical", "Mediation", "Not Applicable", "Occupational Therapy", "Osmotic", "Other", "Per Intervention", "Per Investigation", "Physiotherapy", "Rehabilitation", "Respiratory Care", "Rest Period/Isolation", "Special Protocol", "Speech/Language Therapy", "Surgical Management"];
 
+<<<<<<< HEAD
 /** Clinical Marker fields CM1–CM100 on the Insert Scores form: Yes/No, default "No". */
 export const CUSTOM_MARKER_MAX_LENGTH = 30;
 export const NEURO_MARKER_COUNT = 100;
 export const nmLabel = (i) => `CM${i} (${CLINICAL_MARKERS[i - 1]})`;
+=======
+/** Neuro Marker fields NM1–NM100 on the Insert Scores form: Yes/No, default "No". */
+export const NEURO_MARKER_COUNT = 100;
+export const nmLabel = (i) => `NM${i} (${CLINICAL_MARKERS[i - 1]})`;
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
 
 /**
  * Capacities per Capsule Type (Capacity_Part4 / Part5).

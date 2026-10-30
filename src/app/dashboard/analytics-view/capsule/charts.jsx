@@ -76,8 +76,13 @@ const yDomain = (threshold) => [
  * Entity vs PP ID (or vs Days) – Candidate Level line chart / Capsule Level scatter chart,
  * negative PP IDs red, positive PP IDs green, optional threshold line (dash-dot black).
  */
+<<<<<<< HEAD
 export function SeriesChart({ entity, series, props: p, threshold, scatter = false, xLabel = "PP ID", showNegative = true, startAtZero = false, legend = true }) {
   const yLabel = entity.yLabel || entity.name;
+=======
+export function SeriesChart({ entity, series, props: p, threshold, scatter = false, xLabel = "PP ID", showNegative = true, startAtZero = false }) {
+  const yLabel = entity.name;
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
   const domainX = startAtZero ? [0, "auto"] : ["auto", "auto"];
   const common = (
     <>
@@ -89,7 +94,11 @@ export function SeriesChart({ entity, series, props: p, threshold, scatter = fal
         {(p.showLabel || p.labelType !== "Y Type") && <Label value={yLabel} angle={-90} position="insideLeft" textAnchor="middle" offset={-10} />}
       </YAxis>
       <Tooltip content={<TooltipBox xLabel={xLabel} yLabel={yLabel} />} />
+<<<<<<< HEAD
       {legend && <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />}
+=======
+      <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 20, paddingLeft: 50 }} />
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
       {threshold != null && (
         <ReferenceLine y={threshold} stroke="#000000" strokeWidth={2} strokeDasharray="7 4 1 4" />
       )}
@@ -188,7 +197,13 @@ export function PPTables({ series, valueLabel, xLabel = null, showNegative = tru
       </table>
     </div>
   );
+<<<<<<< HEAD
   // Tables are always shown (empty rows say there is no data), as on the unit screens
+=======
+  if (!series.pos.length && !series.neg.length) {
+    return <div className="text-center text-gray-400 py-4 italic">NOT AVAILABLE FOR SELECTED CHART</div>;
+  }
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
   return (
     <>
       {table("Positive PP IDs", series.pos, "NO POSITIVE DATA AVAILABLE")}

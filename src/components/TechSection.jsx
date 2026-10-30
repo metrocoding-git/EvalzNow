@@ -1,5 +1,9 @@
 import Image from "next/image";
+<<<<<<< HEAD
 import loginImg from "../../public/icons/login-new-white.png"; // correct path alias
+=======
+import loginImg from "../../public/icons/login-new.png"; // correct path alias
+>>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
 
 export default function TextSection() {
   return (
