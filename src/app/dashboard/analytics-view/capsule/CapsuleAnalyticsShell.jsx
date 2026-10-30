@@ -114,10 +114,7 @@ export default function CapsuleAnalyticsShell({
             <div className="w-6/12 lg:w-3/12 flex flex-col border-2 h-full border-gray-200">
               <div className={`flex-grow border-gray-300 flex flex-col ${onlyCandidateList ? "h-full" : "h-1/2"}`}>
                 <div className={`bg-gray-100 py-2 border-b border-gray-300 grid ${capsuleLevel ? "grid-cols-4" : "grid-cols-3"} px-4 text-gray-800 font-semibold text-sm`}>
-<<<<<<< HEAD
-=======
-                  {capsuleLevel && <div />}
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
+
                   <div onClick={() => sortBy("lastName")} className="cursor-pointer">Last Name</div>
                   <div onClick={() => sortBy("firstName")} className="cursor-pointer">First Name</div>
                   <div onClick={() => sortBy("candidateId")} className="cursor-pointer">Candidate ID</div>

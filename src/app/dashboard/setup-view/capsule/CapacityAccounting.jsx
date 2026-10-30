@@ -29,11 +29,7 @@ export const SCORE_COLUMNS = [
   { label: "Maximum Score", get: (r) => fmt2(r.maxScore) },
   ...CLINICAL_FIELDS.map((f) => ({ label: f.label, get: (r) => r[f.key] ?? "" })),
   ...Array.from({ length: NEURO_MARKER_COUNT }, (_, i) => ({
-<<<<<<< HEAD
     label: `CM${i + 1}`,
-=======
-    label: `NM${i + 1}`,
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
     get: (r) => (r.nm || emptyNm())[i] || "No",
   })),
 ];

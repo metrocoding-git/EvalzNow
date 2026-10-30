@@ -135,12 +135,8 @@ export default function CapsuleInsertScores() {
       <div className="flex-1 bg-white flex flex-col overflow-y-auto">
         {scoreAdd && capsule && selected && (
           <div className="w-1/2 lg:w-9/12 bg-white h-full">
-<<<<<<< HEAD
             {/* Wider than the unit form so every clinical marker label stays on one line */}
             <div className="h-full flex flex-col w-full max-w-[900px]">
-=======
-            <div className="h-full flex flex-col w-5/7">
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
               <CreateCapsuleScoreForm
                 capsule={capsule}
                 candidate={selected}

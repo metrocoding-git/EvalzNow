@@ -422,11 +422,7 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
                 {selectedChartKey === "bp-usd" && (
                   <div className="gap-1 text-xs p-2 w-full">
                     <label className="block font-medium text-gray-700 mb-1">
-<<<<<<< HEAD
                       Effort – NSD
-=======
-                      Effort – USD
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
                     </label>
                     <input
                       type="text"

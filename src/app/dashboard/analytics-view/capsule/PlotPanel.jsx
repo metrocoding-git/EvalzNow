@@ -13,11 +13,13 @@ import { DEFAULT_CHART_PROPERTIES } from "./charts";
  * entities: [{ name, type, icon? }]
  * renderChart(entity, chartProperties) → chart JSX
  * renderTable(entity) → table JSX (or a string message)
- * extraTabs: [{ label, render(entity) }]
+ * extraTabs: [{ label, render(entity) }] or [{ label, onSelect() }] – a tab with onSelect opens something
+ *   (e.g. the Projection Table modal, as on the unit side) instead of showing content.
+ * tabResetSignal: when it changes, the Table tab is selected again (e.g. after that modal closes).
  */
 export default function PlotPanel({
   entities, renderChart, renderTable, extraTabs = [], onReset, level, title = "Plot Selections",
-  propertyEditorTypes = ["line", "scatter"], tableAtCapsuleLevel = false,
+  propertyEditorTypes = ["line", "scatter"], tableAtCapsuleLevel = false, tabResetSignal = 0,
 }) {
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState("Table");
@@ -41,6 +43,8 @@ export default function PlotPanel({
     }
   };
 
+  useEffect(() => { if (tabResetSignal) setTab("Table"); }, [tabResetSignal]);
+
   const tabs = ["Property Editor", "Table", ...extraTabs.map((t) => t.label)];
   const tabBtn = (label) => (
     <button
@@ -48,7 +52,7 @@ export default function PlotPanel({
       className={`px-3 py-1 text-sm cursor-pointer ${tab === label
         ? "text-black bg-white border-t-2 border-blue-400 shadow-sm"
         : "text-gray-500 hover:text-gray-800 border-t border-r border-b-transparent border-gray-300 hover:bg-white"}`}
-      onClick={() => setTab(label)}
+      onClick={() => { setTab(label); extraTabs.find((t) => t.label === label)?.onSelect?.(); }}
     >
       {label}
     </button>
@@ -129,7 +133,7 @@ export default function PlotPanel({
                 {tab === "Table" && (
                   <div className="text-sm text-gray-600 mt-2 w-full overflow-auto min-h-50 mb-10 pb-3 space-y-10">{tableContent()}</div>
                 )}
-                {extraTabs.map((t) => tab === t.label && <React.Fragment key={t.label}>{t.render(selected)}</React.Fragment>)}
+                {extraTabs.map((t) => tab === t.label && t.render && <React.Fragment key={t.label}>{t.render(selected)}</React.Fragment>)}
               </div>
             </div>
           </div>

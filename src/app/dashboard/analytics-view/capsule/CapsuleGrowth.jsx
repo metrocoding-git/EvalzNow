@@ -66,6 +66,7 @@ function GrowthBody({ ctx }) {
   const entities = useMemo(() => growthEntities(level), [level]);
   const [projection, setProjection] = useState(null);
   const [showProjectionTable, setShowProjectionTable] = useState(false);
+  const [tabResetSignal, setTabResetSignal] = useState(0);
 
   const loadProjection = useCallback(async () => {
     if (!capsule || !activeCandidateId) { setProjection(null); return; }
@@ -129,14 +130,9 @@ function GrowthBody({ ctx }) {
         renderTable={renderTable}
         onReset={resetFilters}
         level={level}
-        extraTabs={level === "candidate" ? [{
-          label: "Projections",
-          render: () => (
-            <div className="text-center py-4">
-              <button onClick={() => setShowProjectionTable(true)} className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-sm">Open Projection Table</button>
-            </div>
-          ),
-        }] : []}
+        // Same as the unit Growth Metrics: clicking "Projections" opens the Projection Table directly
+        extraTabs={level === "candidate" ? [{ label: "Projections", onSelect: () => setShowProjectionTable(true) }] : []}
+        tabResetSignal={tabResetSignal}
       />
       {showProjectionTable && <CapsuleProjectionTable
         visible
@@ -146,7 +142,7 @@ function GrowthBody({ ctx }) {
         unitType="Third Parameter"
         signatureProfile={capsule.signatureProfile}
         onRefreshProjections={loadProjection}
-        onClose={() => setShowProjectionTable(false)}
+        onClose={() => { setShowProjectionTable(false); setTabResetSignal((n) => n + 1); }}
       />}
     </>
   );

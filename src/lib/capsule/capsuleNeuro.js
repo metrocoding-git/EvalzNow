@@ -92,7 +92,6 @@ export function computeDiversity(rows, pairs, ndiv) {
   });
 }
 
-<<<<<<< HEAD
 /**
  * Entities of the Plots list (ids in Excel order).
  * Video "UI_Issues_15": chart titles without "vs. PP ID" (the x-axis says PP ID); the y-axis title is the
@@ -114,24 +113,6 @@ export function neuroEntities(capsuleType) {
   }));
   pairs.forEach((p) => list.push({
     name: `Neuro-Diversity: Divergence Status #${String(p.no).padStart(2, "0")} | ${p.label} |`, type: "status", pair: p,
-=======
-/** Entities of the Plots list (ids in Excel order). */
-export function neuroEntities(capsuleType) {
-  const type = capsuleType === CAPSULE_COMBINED ? CAPSULE_COMBINED : CAPSULE_ISOLATED;
-  const list = [{ name: "Neuro Tools Table", type: "table", icon: "🟦" }];
-  proficiencyLoadColumns(type).forEach((c) => list.push({
-    name: `Neuro-Load Trends for Proficiency - Cognitive Load ${c.chart.startsWith("(") ? c.chart : `- ${c.chart}`} vs. PP ID`,
-    type: "load", target: "Proficiency", key: c.key, column: c.column,
-  }));
-  GROWTH_LOAD_COLUMNS.forEach((c) => list.push({
-    name: `Neuro-Load Trends for Growth - Cognitive Load - ${c.chart} vs. PP ID`,
-    type: "load", target: "Growth", key: c.key, column: c.column,
-  }));
-  const pairs = diversityPairs(type);
-  pairs.forEach((p) => list.push({ name: `Neuro-Diversity: Differences | ${p.label}`, type: "diff", pair: p }));
-  pairs.forEach((p) => list.push({
-    name: `Neuro-Diversity: Divergence Status #${String(p.no).padStart(2, "0")} | ${p.label}`, type: "status", pair: p,
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
   }));
   return list.map((e, i) => ({ ...e, displayId: i + 1 }));
 }

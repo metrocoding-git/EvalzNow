@@ -1,12 +1,8 @@
 /* eslint-disable */
 // 3D growth targets – copied unchanged from evalznow-server src/controllers/tabulationTable.controller.js
 // (Third Parameter model). Capsules use the same model with <PC1, PC2, PC3> instead of <RR, PR, AR>.
-<<<<<<< HEAD
 // Confirmed by Rick (video UI_Comments_03): same Third Parameter scripts for growth targets, IC, MSIP and ∆GEQ,
 // passing PC1 → RRN, PC2 → PRN, PC3 → ARN.
-=======
-// NOTE (Capacity_Part7): "This logic for 3D growth targets will change a bit, discuss with Rick first."
->>>>>>> 6db65c5a0aa5a45f11f514bbcc0876178d12f9cb
 
 function FindRoots(a, b, c, d) {
   let roots = [];
