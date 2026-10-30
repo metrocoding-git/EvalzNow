@@ -10,6 +10,7 @@ import {
   ReferenceLine
 } from 'recharts';
 import PropertyEditor from '../components/PropertyEditor';
+import ButlerLocusChart, { ButlerLocusTable, butlerLocusCharts } from "../../components/ButlerLocusChart";
 import { getUnitAndMultipleCandidateSummary } from '@/services/tabulationTableService';
 // import Plot from "react-plotly.js";
 import IcCurve from './IcCurveData';
@@ -235,7 +236,14 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
         }
 
       ]
-      : [])
+      : []),
+    // Butler Locus models (New Hybrid Models) – candidate level only, positive PP IDs only
+    ...butlerLocusCharts([
+      { short: "RR", label: "Receptive: ∆RR vs. RR", xKey: "RRN", yKey: "deltaRRN" },
+      { short: "PR", label: "Productive: ∆PR vs. PR", xKey: "PRN", yKey: "deltaPRN" },
+      ...(unitType === "Third Parameter" ? [{ short: "AR", label: "Acuity ∆AR vs. AR", xKey: "ARN", yKey: "deltaARN" }] : []),
+      { short: "XEP", label: "Equivalent ∆GEQ vs. XEP", xKey: "XEP", yKey: "GEQ", yLabel: "∆GEQ" },
+    ], unitType === "Third Parameter" ? 6 : 3),
   ];
 
   // Unit Level: the Secondary Input Area shows "Individual PP ID Averages" by default, so use it
@@ -283,7 +291,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
 
   const getTableColumns = () => {
-    if (!selectedChart) return null;
+    if (!selectedChart || selectedChart.type === "butler") return null;
 
     switch (selectedChart.id) {
       case "1":
@@ -572,6 +580,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
           RRN: Number(row.RRN).toFixed(3) || 0.000,
           PRN: Number(row.PRN).toFixed(3) || 0.000,
           ARN: Number(row.ARN).toFixed(3) || 0.000,
+          // Butler Locus charts (∆ vs ratio, ∆GEQ vs XEP)
+          deltaRRN: row.deltaRRN, deltaPRN: row.deltaPRN, deltaARN: row.deltaARN, XEP: row.XEP, GEQ: row.GEQ,
         }));
 
         console.log("🔵 Formatted Data:", formattedData);
@@ -1759,6 +1769,10 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
       borderRadius: '8px'
     };
 
+    if (selectedChart.type === "butler") {
+      return <ButlerLocusChart chart={selectedChart} rows={tableData} properties={chartProperties} />;
+    }
+
     switch (selectedChart.id) {
       case "1":  // Interaction Class vs PP ID (Line) - No averages or projections for this chart
         const positives = tableData.filter(r => r.ppId > 0);
@@ -2699,6 +2713,7 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
 
                 {activeAdjustPropertieTab === "Table" && (() => {
 
+                  if (selectedChart?.type === "butler") return <div className="text-xs text-gray-600 mt-2 w-full overflow-auto mb-10 pb-1"><ButlerLocusTable chart={selectedChart} rows={tableData} /></div>;
                   const cols = getTableColumns();
 
                   console.log("Selected Sort:", cols);

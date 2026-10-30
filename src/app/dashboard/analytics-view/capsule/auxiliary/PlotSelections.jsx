@@ -2099,7 +2099,7 @@ const handleDeleteChain = async (chainId) => {
         );
       }
     
-      // Multi-line chart for USD
+      // Multi-line chart for NSD
       if (selectedSort === 'activateCandidateLevel' && selectedChart.key === 'be-usd') {
         if (!hasCandidateData) {
           return (

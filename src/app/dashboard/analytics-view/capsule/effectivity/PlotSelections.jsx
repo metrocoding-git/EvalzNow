@@ -276,7 +276,7 @@ export default function PlotSelections({ selectedSort, unitId, unitType, candida
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={16} className="text-center text-gray-400 py-4 border">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
+              <tr><td colSpan={1 + EFFECTIVITY_FIELD_LABELS.length + PARAMS.length} className="text-center text-gray-400 py-4 border">NO PERFORMANCE POINTS FOR THIS CANDIDATE</td></tr>
             )}
             {rows.map((r) => (
               <tr key={r.ppId}>
