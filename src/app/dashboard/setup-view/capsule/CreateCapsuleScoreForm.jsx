@@ -64,9 +64,6 @@ export default function CreateCapsuleScoreForm({ capsule, candidate, markerName,
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {blocks.length === 0 && (
-          <p className="mb-3 text-sm text-gray-500">No assessment blocks for this candidate. Add them in Control View → Capsule → Capsule Config.</p>
-        )}
         <ScoreFields form={form} onChange={onChange} blocks={blocks} capsuleType={capsule?.capsuleType} markerName={markerName} />
       </div>
 
