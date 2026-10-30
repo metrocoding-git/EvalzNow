@@ -84,11 +84,12 @@ const inputCls = "flex-1 border px-2 py-1 bg-white";
 
 /**
  * The field grid used by the Insert Scores form and the Entity Editor.
- * `markerName(i)` gives the label of NM i (custom names for CM89–CM100).
+ * `markerName(i)` gives the label of clinical marker CM i (custom names for CM89–CM100).
  */
 export default function ScoreFields({ form, onChange, blocks, capsuleType, markerName, compact = false }) {
   const set = (key) => (e) => onChange(key, e.target.value);
-  const lbl = compact ? "text-xs text-gray-700" : "text-gray-700";
+  // Full form: every label on one line (wide label column); compact (Entity Editor) wraps as before
+  const lbl = compact ? "text-xs text-gray-700" : "text-gray-700 whitespace-nowrap self-center";
   const ctl = compact ? `${inputCls} text-xs` : inputCls;
 
   const select = (key, options, placeholder) => (
@@ -99,7 +100,7 @@ export default function ScoreFields({ form, onChange, blocks, capsuleType, marke
   );
 
   return (
-    <div className={`grid grid-cols-2 gap-1 ${compact ? "space-y-1" : "space-y-3"} max-w-xl`}>
+    <div className={compact ? "grid grid-cols-2 gap-1 space-y-1 max-w-xl" : "grid grid-cols-[max-content_minmax(16rem,1fr)] gap-x-6 gap-y-3 max-w-3xl"}>
       <label className={lbl}>PP ID Callout:</label>
       <select value={form.blockId || ""} onChange={set("blockId")} className={ctl}>
         <option value="" disabled>Select PP ID</option>
@@ -144,7 +145,7 @@ export default function ScoreFields({ form, onChange, blocks, capsuleType, marke
 
       {(form.nm || emptyNm()).map((v, i) => (
         <React.Fragment key={`nm-${i}`}>
-          <label className={lbl}>NM{i + 1} ({markerName(i + 1)}):</label>
+          <label className={lbl}>CM{i + 1} ({markerName(i + 1)}):</label>
           <select
             value={v || "No"}
             onChange={(e) => {

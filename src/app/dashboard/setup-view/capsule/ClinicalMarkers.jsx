@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { CLINICAL_MARKERS } from "../../control-view/capsule/capsuleConfig";
+import { CLINICAL_MARKERS, CUSTOM_MARKER_MAX_LENGTH } from "../../control-view/capsule/capsuleConfig";
 import { updateCapsuleMarkerName } from "@/services/capsuleService";
 import { useFormStatus } from "@/context/FormStatusContext";
 
@@ -29,7 +29,8 @@ export default function ClinicalMarkers({ capsuleId, markerNames, onChanged }) {
     i >= FIRST_CUSTOM ? (
       <input
         type="text"
-        maxLength={40}
+        maxLength={CUSTOM_MARKER_MAX_LENGTH}
+        title={`Up to ${CUSTOM_MARKER_MAX_LENGTH} characters`}
         value={draft[i] || ""}
         placeholder={CLINICAL_MARKERS[i - 1]}
         onChange={(e) => setDraft((d) => ({ ...d, [i]: e.target.value }))}

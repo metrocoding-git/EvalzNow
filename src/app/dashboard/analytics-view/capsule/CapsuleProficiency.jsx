@@ -55,7 +55,7 @@ function CompressionChart({ entity, data, p }) {
           <ScatterChart margin={{ top: 20, right: 30, left: 30, bottom: 50 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" dataKey="x" domain={[0, Math.ceil(maxX * 10) / 10]} tickFormatter={(v) => Number(v).toFixed(2)}>
-              <Label value="Metric Values [Please see Capsule Control]" position="insideBottom" offset={-10} />
+              <Label value="Metric Values" position="insideBottom" offset={-10} />
             </XAxis>
             <YAxis type="number" dataKey="value" domain={[0, Math.ceil(maxY * 1.15 * 100) / 100]} tickFormatter={(v) => Number(v).toFixed(3)}>
               <Label value="Compression %" angle={-90} position="insideLeft" textAnchor="middle" offset={-10} />
@@ -112,24 +112,29 @@ function ProficiencyBody({ ctx }) {
   const renderTable = (e) => {
     if (e.type === "pie") return null;
     if (e.type === "compression") {
+      // Compression is only for positive PP IDs: one table (Capacity_Part8)
       const { points } = compressionData(capsule.capsuleType, e.pc, results, thresholds);
-      if (!points.length) return null;
       return (
+        <div>
+        <h3 className="text-gray-600 font-semibold mb-2 ml-2">Positive PP IDs</h3>
         <table className="text-xs border border-gray-300" style={{ width: "max-content", minWidth: "100%" }}>
           <thead className="bg-gray-100">
             <tr>{["PP ID", "Metric", "Value", "%Comp"].map((h) => <th key={h} className="whitespace-nowrap border border-gray-300 px-2 py-1 text-center">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {points.map((pt, i) => (
+            {points.length ? points.map((pt, i) => (
               <tr key={i} className="hover:bg-blue-50">
                 <td className="text-center border border-gray-300 px-2 py-1">{pt.ppId}</td>
                 <td className="text-center border border-gray-300 px-2 py-1">{pt.metric}</td>
                 <td className="text-center border border-gray-300 px-2 py-1">{fmt3(pt.x)}</td>
                 <td className="text-center border border-gray-300 px-2 py-1">{fmt3(pt.value)}</td>
               </tr>
-            ))}
+            )) : (
+              <tr><td colSpan={4} className="text-center text-gray-500 border border-gray-300 px-2 py-1">NO POSITIVE DATA AVAILABLE</td></tr>
+            )}
           </tbody>
         </table>
+        </div>
       );
     }
     return <PPTables series={splitPP(results, e.key)} valueLabel={e.key} />;

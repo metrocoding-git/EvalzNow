@@ -467,7 +467,7 @@ export default function CapsuleAuxiliary() {
                         }  
                         onSuccess={() => {
                           setRefreshUnitImprovement(prev => prev + 1)
-                          setFormStatus("Unit Improvement Created");
+                          setFormStatus("Capsule Improvement Created");
                         }}
                         editData={editingUnitImprovement}
                         isOpen={showUnitImprovementForm}

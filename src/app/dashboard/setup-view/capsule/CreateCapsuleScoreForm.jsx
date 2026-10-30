@@ -6,7 +6,7 @@ import ScoreFields, { emptyScore, validateScore } from "./ScoreFields";
 import { createCapsuleScore, getCapsuleBlocksByCapsuleAndCandidate, getCapsuleCriticalRange } from "@/services/capsuleService";
 import { useFormStatus } from "@/context/FormStatusContext";
 
-/** "Insert Scores" form of the capsule Setup View (all fields mandatory, NM fields default "No"). */
+/** "Insert Scores" form of the capsule Setup View (all fields mandatory, CM fields default "No"). */
 export default function CreateCapsuleScoreForm({ capsule, candidate, markerName, onClose, onSaved }) {
   const [form, setForm] = useState(emptyScore);
   const [blocks, setBlocks] = useState([]);

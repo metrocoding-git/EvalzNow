@@ -1,5 +1,5 @@
 import Image from "next/image";
-import loginImg from "../../public/icons/login-new.png"; // correct path alias
+import loginImg from "../../public/icons/login-new-white.png"; // correct path alias
 
 export default function TextSection() {
   return (
@@ -9,7 +9,7 @@ export default function TextSection() {
         <Image
           src={loginImg}
           alt="Login illustration"
-          width={300}
+          width={380}
           height={300}
           className="mx-auto mb-6 "
           priority

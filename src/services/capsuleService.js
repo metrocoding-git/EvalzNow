@@ -335,7 +335,9 @@ export const getCapsuleMarkerNames = async (capsuleDbId) => delay(load().markerN
 
 export const updateCapsuleMarkerName = async (capsuleDbId, index, name) => {
   const store = load();
-  store.markerNames[capsuleDbId] = { ...(store.markerNames[capsuleDbId] || {}), [index]: name };
+  // Custom criteria names: max 30 characters (one-line labels on the Insert Scores form)
+  const clean = String(name ?? "").slice(0, 30);
+  store.markerNames[capsuleDbId] = { ...(store.markerNames[capsuleDbId] || {}), [index]: clean };
   save(store);
   return delay(store.markerNames[capsuleDbId]);
 };
