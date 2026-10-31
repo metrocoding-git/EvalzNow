@@ -1,5 +1,5 @@
 /**
- * Staff names for capsule staff assignments (leaders / assessors) in the UI phase.
+ * Staff names for capsule staff assignments (leaders / assessors).
  * Capsules store only staff ids; names come from the client's staff list (real API).
  */
 import { getAllStaffs } from "@/services/staffService";

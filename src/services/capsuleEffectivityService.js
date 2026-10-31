@@ -1,9 +1,11 @@
 /**
- * Capsule Effectivity – same functions / arguments / responses as effectivityService (unitId = capsule id),
- * computed in the browser from the capsule store (UI phase). Same logic as the server effectivity controller
- * with 15 parameters and Ri = PC1, Rj = PC2, Rk = PC3.
+ * Capsule Effectivity – same functions / arguments / responses as effectivityService (unitId = capsule id).
+ * The effectivity objects (drop-down values) are stored by the capsule API; the 15 parameters are calculated
+ * here with the same logic as the server effectivity controller (Ri = PC1, Rj = PC2, Rk = PC3).
  */
-import { getAllCapsules, getCapsuleById, loadCapsuleStore, saveCapsuleStore } from "./capsuleService";
+import {
+  getAllCapsules, getCapsuleById, getCapsuleEffectivityResponses, saveCapsuleEffectivityResponse, deleteCapsuleEffectivityResponse,
+} from "./capsuleService";
 import { getCapsuleCandidates, getCapsuleMultipleCandidateSummary } from "./capsuleAnalyticsService";
 import * as fx from "@/lib/capsule/capsuleEffectivity";
 
@@ -29,8 +31,9 @@ function rangeFilter({ ppIdFrom, ppIdTo } = {}) {
   return (pp) => (from === null || pp >= from) && (to === null || pp <= to);
 }
 
-const responsesOf = (capsuleId, candidateIds) => (loadCapsuleStore().effectivity || []).filter((r) =>
-  String(r.capsuleId) === String(capsuleId) && candidateIds.some((c) => String(c) === String(r.candidateId)));
+const responsesOf = async (capsuleId, candidateIds) => (candidateIds.length
+  ? getCapsuleEffectivityResponses(capsuleId, candidateIds)
+  : []);
 
 async function tabulate(capsuleId, candidateIds, filters = {}) {
   if (!candidateIds.length) return null;
@@ -89,7 +92,7 @@ function passFractions(averages) {
 
 async function capsuleSummary(capsule, candidateIds, filters = {}) {
   const tab = await tabulate(capsule.id, candidateIds, filters);
-  const responses = responsesOf(capsule.id, candidateIds);
+  const responses = await responsesOf(capsule.id, candidateIds);
   const inRange = rangeFilter(filters);
   const candidates = candidateIds.map((cid) => ({
     candidateId: Number(cid),
@@ -118,7 +121,7 @@ export const getEffectivityOptions = async () => ({
 export const getCandidateEffectivity = async (capsuleId, candidateId, filters = {}) => {
   const capsule = await getCapsuleById(capsuleId);
   const tab = await tabulate(capsule.id, [candidateId], filters);
-  const table = buildCandidateTable(candidateId, tab, responsesOf(capsule.id, [candidateId]), rangeFilter(filters));
+  const table = buildCandidateTable(candidateId, tab, await responsesOf(capsule.id, [candidateId]), rangeFilter(filters));
   return { unitType: capsule.capsuleType, candidateId: Number(candidateId), ...table };
 };
 
@@ -164,27 +167,7 @@ export const saveEffectivity = async (payload) => {
     err.response = { status: 400, data: { message: err.message } };
     throw err;
   }
-  const store = loadCapsuleStore();
-  store.effectivity = store.effectivity || [];
-  store.nextId = store.nextId || {};
-  const fields = fx.sanitizeFields(payload);
-  const now = new Date().toISOString();
-  let row = store.effectivity.find((r) => String(r.capsuleId) === String(capsuleId)
-    && String(r.candidateId) === String(candidateId) && Number(r.ppId) === ppId);
-  if (row) {
-    Object.assign(row, fields, { updatedAt: now });
-  } else {
-    store.nextId.effectivity = store.nextId.effectivity || 1;
-    row = { id: store.nextId.effectivity++, capsuleId, candidateId, ppId, ...pickFields(fields), createdAt: now, updatedAt: now };
-    store.effectivity.push(row);
-  }
-  saveCapsuleStore(store);
-  return { ...row };
+  return saveCapsuleEffectivityResponse({ capsuleId, candidateId, ppId, ...fx.sanitizeFields(payload) });
 };
 
-export const deleteEffectivity = async (id) => {
-  const store = loadCapsuleStore();
-  store.effectivity = (store.effectivity || []).filter((r) => String(r.id) !== String(id));
-  saveCapsuleStore(store);
-  return { message: "Effectivity object deleted" };
-};
+export const deleteEffectivity = async (id) => deleteCapsuleEffectivityResponse(id);

@@ -39,10 +39,10 @@ function document(level, details, checks, extra = []) {
   ]);
 }
 
-/** Audit of one capsule (browser capsule store). */
+/** Audit of one capsule (capsule data of the API). */
 export async function buildCapsuleAudit(capsuleId) {
   const capsule = await getCapsuleById(capsuleId);
-  const store = loadCapsuleStore();
+  const store = await loadCapsuleStore(capsule.clientId);
   const roster = await getCapsuleRosterByCapsuleId(capsule.id);
   const candidateIds = [...new Set(roster.map((r) => String(r.candidateId)))];
   const th = thresholdsOf(capsule);

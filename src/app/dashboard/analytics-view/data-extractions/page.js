@@ -234,7 +234,7 @@ export default function DataExtractions() {
 
     const handleExtract = async () => {
       if (!selectedExtractOption) return;
-      // Capsule options (UI phase: built in the browser from the capsule data)
+      // Capsule options (built in the browser from the capsule API data)
       if (selectedExtractOption === "active-capsule-candidates" || selectedExtractOption === "all-capsules-candidates") {
         setIsDownloading(true);
         setExtractLoading(true);

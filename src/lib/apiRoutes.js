@@ -25,4 +25,5 @@ export const API_ROUTES = {
     EFFECTIVITY: "/effectivity",
     DATA_EXTRACTION: "/data-extract",
     DATA_REPORT: "/data-report",
+    CAPSULES: "/capsules",
 };

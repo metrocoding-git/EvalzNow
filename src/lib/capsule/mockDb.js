@@ -1,16 +1,19 @@
 /**
- * A very small Sequelize-like layer over the browser capsule store, so server controller code that only uses
- * findAll / findOne / findByPk / create / update / save / destroy (with simple where, Op.in, order and the
- * includes below) can run unchanged for capsules in the UI phase.
+ * A very small Sequelize-like layer over the capsule data of the API, so the server auxiliary controller
+ * code (findAll / findOne / findByPk / create / update / save / destroy with simple where, Op.in, order
+ * and the includes below) runs unchanged for capsules.
  *
- * "unitId" in the server code is the capsule id. The Unit model is answered from the capsules.
+ * Reads come from the capsule snapshot (GET /capsules/store/:clientId), writes go to
+ * /capsules/aux/:kind. "unitId" in the controller code is the capsule id; the Unit model is answered
+ * from the capsules.
  */
-import { loadCapsuleStore, saveCapsuleStore } from "@/services/capsuleService";
+import {
+  loadCapsuleStore, createCapsuleAuxRecord, updateCapsuleAuxRecord, deleteCapsuleAuxRecord,
+} from "@/services/capsuleService";
 import { getStaffDirectory } from "./staffDirectory";
 
 export const Op = { in: "__in", ne: "__ne", gte: "__gte", lte: "__lte", between: "__between" };
 
-const nowIso = () => new Date().toISOString();
 const same = (a, b) => String(a) === String(b);
 
 function matches(row, where = {}) {
@@ -46,7 +49,7 @@ function sortRows(rows, order) {
 }
 
 // ---------------------------------------------------------------------------
-// Virtual (read-only) tables built from the capsule store
+// Virtual (read-only) tables built from the capsule data
 // ---------------------------------------------------------------------------
 
 function staffLookups(store) {
@@ -73,12 +76,13 @@ const VIRTUAL = {
   Staff: () => getStaffDirectory(),
 };
 
+/** Model → [snapshot key, API record kind] */
 const TABLES = {
-  CandidateMarks: "auxCandidateMarks",
-  CandidateNeedAssessment: "auxNeedAssessments",
-  UnitImprovement: "auxImprovements",
-  AssessmentChain: "auxChains",
-  LeaderMarks: "auxLeaderMarks",
+  CandidateMarks: ["auxCandidateMarks", "candidateMarks"],
+  CandidateNeedAssessment: ["auxNeedAssessments", "needAssessments"],
+  UnitImprovement: ["auxImprovements", "improvements"],
+  AssessmentChain: ["auxChains", "chains"],
+  LeaderMarks: ["auxLeaderMarks", "leaderMarks"],
 };
 
 /** Association alias → [model, foreign key on the row]. */
@@ -93,12 +97,12 @@ const ASSOCIATIONS = {
   block4: ["AssessmentBlockManager", "selection4"],
   block5: ["AssessmentBlockManager", "selection5"],
 };
+const ASSOCIATION_KEYS = Object.keys(ASSOCIATIONS);
+const SERVER_KEYS = ["id", "createdAt", "updatedAt", "capsuleId"];
 
 function rowsOf(name, store) {
   if (VIRTUAL[name]) return VIRTUAL[name](store);
-  const key = TABLES[name];
-  store[key] = store[key] || [];
-  return store[key];
+  return store[TABLES[name][0]] || [];
 }
 
 function withIncludes(row, include, store) {
@@ -115,73 +119,63 @@ function withIncludes(row, include, store) {
   return out;
 }
 
-function instance(name, row, include) {
-  const store = loadCapsuleStore();
+/** Fields of a record that are sent to the API (no relations / server-managed keys). */
+function payloadOf(obj) {
+  const out = { ...obj };
+  ASSOCIATION_KEYS.forEach((k) => delete out[k]);
+  SERVER_KEYS.forEach((k) => delete out[k]);
+  return out;
+}
+
+function instance(name, row, include, store) {
   const data = withIncludes(row, include, store);
   if (!data) return null;
-  const define = (k, fn) => Object.defineProperty(data, k, { value: fn, enumerable: false });
+  const define = (k, fn) => Object.defineProperty(data, k, { value: fn, enumerable: false, writable: true });
+  const kind = TABLES[name]?.[1];
   define("update", async (patch) => {
-    const s = loadCapsuleStore();
-    const list = rowsOf(name, s);
-    const i = list.findIndex((r) => same(r.id, row.id));
-    if (i >= 0) {
-      list[i] = { ...list[i], ...patch, id: list[i].id, updatedAt: nowIso() };
-      saveCapsuleStore(s);
-      Object.assign(data, patch);
-    }
+    if (!kind) throw new Error(`${name} is read-only for capsules`);
+    const saved = await updateCapsuleAuxRecord(kind, row.id, payloadOf({ unitId: row.unitId, ...patch }));
+    Object.assign(data, patch, { updatedAt: saved?.updatedAt });
     return data;
   });
-  define("save", async () => {
-    const plain = { ...data };
-    ASSOCIATION_KEYS.forEach((k) => delete plain[k]);
-    return data.update(plain);
-  });
+  define("save", async () => data.update(payloadOf(data)));
   define("destroy", async () => {
-    const s = loadCapsuleStore();
-    const key = TABLES[name];
-    s[key] = (s[key] || []).filter((r) => !same(r.id, row.id));
-    saveCapsuleStore(s);
+    if (!kind) throw new Error(`${name} is read-only for capsules`);
+    await deleteCapsuleAuxRecord(kind, row.id);
   });
   define("toJSON", () => ({ ...data }));
   define("get", () => ({ ...data }));
   return data;
 }
-const ASSOCIATION_KEYS = Object.keys(ASSOCIATIONS);
 
 function model(name) {
+  const kind = TABLES[name]?.[1];
   return {
     async findAll({ where, order, include } = {}) {
-      const store = loadCapsuleStore();
-      return sortRows(rowsOf(name, store).filter((r) => matches(r, where)), order).map((r) => instance(name, r, include));
+      const store = await loadCapsuleStore();
+      return sortRows(rowsOf(name, store).filter((r) => matches(r, where)), order).map((r) => instance(name, r, include, store));
     },
     async findOne({ where, order, include } = {}) {
-      const store = loadCapsuleStore();
+      const store = await loadCapsuleStore();
       const r = sortRows(rowsOf(name, store).filter((x) => matches(x, where)), order)[0];
-      return r ? instance(name, r, include) : null;
+      return r ? instance(name, r, include, store) : null;
     },
     async findByPk(id, { include } = {}) {
-      const store = loadCapsuleStore();
+      const store = await loadCapsuleStore();
       const r = rowsOf(name, store).find((x) => same(x.id, id));
-      return r ? instance(name, r, include) : null;
+      return r ? instance(name, r, include, store) : null;
     },
     async create(data) {
-      if (VIRTUAL[name]) throw new Error(`${name} is read-only in the capsule UI phase`);
-      const store = loadCapsuleStore();
-      store.nextId = store.nextId || {};
-      const key = TABLES[name];
-      store.nextId[key] = store.nextId[key] || 1;
-      const row = { ...data, id: store.nextId[key]++, createdAt: nowIso(), updatedAt: nowIso() };
-      rowsOf(name, store).push(row);
-      saveCapsuleStore(store);
-      return instance(name, row);
+      if (!kind) throw new Error(`${name} is read-only for capsules`);
+      const row = await createCapsuleAuxRecord(kind, payloadOf(data));
+      return instance(name, row, null, await loadCapsuleStore());
     },
     async destroy({ where } = {}) {
-      const store = loadCapsuleStore();
-      const key = TABLES[name];
-      const before = (store[key] || []).length;
-      store[key] = (store[key] || []).filter((r) => !matches(r, where));
-      saveCapsuleStore(store);
-      return before - store[key].length;
+      if (!kind) throw new Error(`${name} is read-only for capsules`);
+      const store = await loadCapsuleStore();
+      const rows = rowsOf(name, store).filter((r) => matches(r, where));
+      for (const r of rows) await deleteCapsuleAuxRecord(kind, r.id);
+      return rows.length;
     },
   };
 }

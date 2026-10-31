@@ -1,6 +1,6 @@
 /**
  * Capsule Auxiliary Resultants – same functions / arguments / responses as auxiliaryService (unitId = capsule id),
- * answered by the server auxiliary controller logic running on the capsule store (UI phase).
+ * answered by the server auxiliary controller logic running on the capsule API data (../lib/capsule/mockDb).
  */
 import * as C from "@/lib/capsule/auxiliary/auxiliaryController";
 import { ensureStaffDirectory as ensureStaff } from "@/lib/capsule/staffDirectory";
