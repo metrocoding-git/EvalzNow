@@ -97,7 +97,7 @@ const benchmarkRows = (list = []) => [...list].sort((a, b) => Number(a.benchmark
 export async function buildCapsuleCandidateReport(capsuleId, candidateId) {
   const capsule = await getCapsuleAsUnit(capsuleId);
   const type = capsule.capsuleType;
-  const store = loadCapsuleStore();
+  const store = await loadCapsuleStore(capsule.clientId);
   const candidates = await getCapsuleCandidates(capsule.id);
   const candidate = candidates.find((c) => String(c.id) === String(candidateId)) || {};
   const roster = (await getCapsuleRosterByCapsuleId(capsule.id)).find((r) => String(r.candidateId) === String(candidateId)) || {};

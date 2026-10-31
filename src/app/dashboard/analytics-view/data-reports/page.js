@@ -91,7 +91,7 @@ export default function DataReports() {
       .catch((err) => console.error("Failed to load the active capsule:", err));
   }, []);
 
-  /** Capsule / Clinical reports (UI phase, built in the browser). Returns true when handled. */
+  /** Capsule / Clinical reports (built in the browser from the capsule API data). Returns true when handled. */
   const handleCapsuleExtract = async () => {
     const capsuleOptions = ["all-candidates-capsule", "capsule-report", "all-capsule-reports", "clinical-data"];
     if (!(capsuleOptions.includes(selectedReport) || (selectedReport === "candidate-report" && capsuleActive))) return false;

@@ -50,7 +50,7 @@ const idsOf = (v) => {
 /** Rows of every (or the given) candidate of one capsule. */
 export async function capsuleExtractionRows(capsuleId, onlyCandidateId = null) {
   const capsule = await getCapsuleById(capsuleId);
-  const store = loadCapsuleStore();
+  const store = await loadCapsuleStore(capsule.clientId);
   const candidates = (await getCapsuleCandidates(capsule.id))
     .filter((c) => onlyCandidateId === null || String(c.id) === String(onlyCandidateId));
   if (!candidates.length) return [];
