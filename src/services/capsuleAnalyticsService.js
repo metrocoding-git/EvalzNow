@@ -1,7 +1,7 @@
 /**
- * Capsule Analytics – UI phase.
+ * Capsule Analytics.
  *
- * Builds the analytics data of a capsule from the browser capsule store (capsuleService) with the
+ * Builds the analytics data of a capsule from the capsule API data (capsuleService) with the
  * Capacity metrics of src/lib/capsule/capsuleMetrics.js. The response has the same shape as the unit
  * tabulation API (GET /tabulation/proficiency) so the analytics screens can use either source.
  * Rows carry both the capsule keys (PC1, ΔPC → dPC1, XCFL …) and the Third Parameter aliases.
