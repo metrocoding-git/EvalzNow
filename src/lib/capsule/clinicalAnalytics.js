@@ -48,7 +48,7 @@ const icClass = (ic) => {
 /** Raw counts over all capsules. */
 export async function collectClinicalData() {
   const capsules = await getAllCapsules();
-  const store = loadCapsuleStore();
+  const store = await loadCapsuleStore();
   const out = {
     totalCapsules: capsules.length,
     capsuleTypes: { [CAPSULE_COMBINED]: 0, [CAPSULE_ISOLATED]: 0 },
