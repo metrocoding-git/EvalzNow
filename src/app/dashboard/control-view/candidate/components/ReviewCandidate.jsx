@@ -18,7 +18,7 @@ export default function ReviewCandidate({ candidate }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [capsules, setCapsules] = useState([]);
 
-  // Connected capsules (Capacity Accounting – UI phase data)
+  // Connected capsules (Capacity Accounting)
   useEffect(() => {
     getCapsulesByCandidateId(candidate.id).then((d) => setCapsules(Array.isArray(d) ? d : [])).catch(() => setCapsules([]));
   }, [candidate.id]);

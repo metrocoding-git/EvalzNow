@@ -173,7 +173,6 @@ useEffect(() => {
         await createCapsuleRoster({
           capsuleId: selectedCapsule?.id || selectedCapsule?.capsuleId,
           candidateId: candidate.id,
-          // UI phase: keep the candidate record on the roster row (the API will join it later)
           candidate: { ...candidate },
           ageRange: "Unknown",
           presentCount: 0,
