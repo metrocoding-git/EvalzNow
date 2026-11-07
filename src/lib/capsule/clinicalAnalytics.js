@@ -8,7 +8,7 @@
  */
 import { getAllCapsules, loadCapsuleStore } from "@/services/capsuleService";
 import { getCapsuleCandidates, getCapsuleMultipleCandidateSummary } from "@/services/capsuleAnalyticsService";
-import { thresholdsOf } from "@/app/dashboard/control-view/capsule/capsuleConfig";
+import { AGE_RANGES, CAPSULE_FRAMEWORK_AGES, CAPSULE_OUTCOMES, thresholdsOf } from "@/app/dashboard/control-view/capsule/capsuleConfig";
 import { getIndexRating } from "@/lib/indexRating";
 import { CAPSULE_COMBINED, CAPSULE_ISOLATED, RATIO_KEYS } from "./capsuleMetrics";
 
@@ -28,6 +28,8 @@ const idsOf = (v) => {
 
 /** Metrics compared with the capsule thresholds (pass: value ≥ threshold, MSIP: value ≤ threshold). */
 const PASS_METRICS = [
+  // Principal ratios: fixed 0.7 (capsule PC thresholds are not editable)
+  { key: "PC1", fixed: 0.7 }, { key: "PC2", fixed: 0.7 }, { key: "PC3", fixed: 0.7 },
   { key: "XEP", threshold: "XEP" },
   ...RATIO_KEYS[CAPSULE_COMBINED].map((k) => ({ key: k, threshold: k, type: CAPSULE_COMBINED })),
   ...RATIO_KEYS[CAPSULE_ISOLATED].map((k) => ({ key: k, threshold: k, type: CAPSULE_ISOLATED })),
@@ -63,11 +65,17 @@ export async function collectClinicalData() {
     ic: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     STAP: { STABLE: 0, UNSTABLE: 0 },
     STAG: { STABLE: 0, UNSTABLE: 0 },
+    // Clinical Analytics report (Nov 2026 template)
+    outcomes: Object.fromEntries(CAPSULE_OUTCOMES.map((o) => [o, 0])),
+    ageRanges: Object.fromEntries(AGE_RANGES.map((a) => [a, 0])),
+    frameworkAges: Object.fromEntries(CAPSULE_FRAMEWORK_AGES.map((a) => [a, 0])),
+    candidateIds: new Set(),
   };
   const capsuleIds = new Set(capsules.map((c) => String(c.id)));
 
   for (const capsule of capsules) {
     if (out.capsuleTypes[capsule.capsuleType] !== undefined) out.capsuleTypes[capsule.capsuleType] += 1;
+    if (out.frameworkAges[capsule.frameworkAge] !== undefined) out.frameworkAges[capsule.frameworkAge] += 1;
     const candidates = await getCapsuleCandidates(capsule.id);
 
     // Candidate-to-Leader ratio (capsules without a Leader are not counted)
@@ -103,7 +111,7 @@ export async function collectClinicalData() {
       PASS_METRICS.forEach((m) => {
         if (m.type && m.type !== capsule.capsuleType) return;
         const v = toNum(values[m.key]);
-        const t = toNum(th[m.threshold]);
+        const t = m.fixed !== undefined ? m.fixed : toNum(th[m.threshold]);
         if (v === null || t === null) return;
         out.pass[m.key].totalInstances += 1;
         if (m.lower ? v <= t : v >= t) out.pass[m.key].successCount += 1;
@@ -116,6 +124,11 @@ export async function collectClinicalData() {
   }
 
   store.rosters.filter((r) => capsuleIds.has(String(r.capsuleId))).forEach((r) => {
+    out.candidateIds.add(String(r.candidateId));
+    const outcome = r.capsuleOutcome || "Ongoing";
+    if (out.outcomes[outcome] !== undefined) out.outcomes[outcome] += 1;
+    const age = r.ageRange || "Unknown";
+    out.ageRanges[out.ageRanges[age] !== undefined ? age : "Unknown"] += 1;
     Object.keys(out.attendance).forEach((k) => { out.attendance[k] += Number(r[k === "present" ? "presentCount" : k]) || 0; });
   });
 

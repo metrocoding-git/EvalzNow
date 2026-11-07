@@ -52,7 +52,7 @@ const write = async (promise) => {
  */
 export async function loadCapsuleStore(clientId = activeClientId()) {
   const empty = {
-    capsules: [], rosters: [], blocks: [], scores: [], markerNames: {}, projections: [], effectivity: [],
+    client: null, capsules: [], rosters: [], blocks: [], scores: [], markerNames: {}, projections: [], effectivity: [],
     auxCandidateMarks: [], auxNeedAssessments: [], auxImprovements: [], auxChains: [], auxLeaderMarks: [],
   };
   if (!clientId) return empty;

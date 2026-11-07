@@ -244,6 +244,12 @@ export function computeCandidateTabulation(capsule, candidate, scores, capacitie
       out[`PC2GT${n}`] = g2;
       out[`PC3GT${n}`] = g3;
     }
+    // GT3 exists only when GT2 exists (same rule as the unit tabulation; GT4 / GT5 always exist)
+    if (out.PC1GT2 == null && out.PC2GT2 == null && out.PC3GT2 == null) {
+      out.PC1GT3 = null;
+      out.PC2GT3 = null;
+      out.PC3GT3 = null;
+    }
     return out;
   });
 

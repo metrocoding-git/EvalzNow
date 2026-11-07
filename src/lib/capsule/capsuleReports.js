@@ -1,9 +1,8 @@
 /**
  * Capsule .ez reports (Capacity_Part17) – Candidate (capsule), Capsule and Clinical levels.
  *
- * PROVISIONAL: Rick will provide the capsule report templates. Until then these follow the layout of the
- * unit .ez reports (same title box, section banners, key/value and table formats, nomenclature, legal notice)
- * with the capsule metrics (PC1/PC2/PC3, capacity ratios, 15 Effectivity parameters, neuro loads / diversity).
+ * Capsule and Clinical reports follow Rick's templates (capsuleReportTemplates.js, Nov 2026).
+ * The Candidate (capsule) report is still PROVISIONAL (unit candidate layout) until its template arrives.
  */
 import {
   finalize, headerLines, introLines, isoDate, kv, legalBlock, n2, n3, nomenclatureBlock, sectionBanner, subHeader, table, text,
@@ -11,11 +10,14 @@ import {
 import { EFFECTIVITY_INTRO, EFFECTIVITY_TYPES } from "@/app/dashboard/analytics-view/data-reports/helper/effectivityReport";
 import { getAllCapsules, getCapsuleById, getCapsuleRosterByCapsuleId, getCapsuleScoresByCapsuleAndCandidate, loadCapsuleStore } from "@/services/capsuleService";
 import { getCapsuleAsUnit, getCapsuleCandidates, getCapsuleMultipleCandidateSummary } from "@/services/capsuleAnalyticsService";
-import { getCandidateEffectivity, getUnitEffectivity } from "@/services/capsuleEffectivityService";
+import { getCandidateEffectivity, getClientEffectivity, getUnitEffectivity } from "@/services/capsuleEffectivityService";
+import { getEffortBu } from "@/services/capsuleAuxiliaryService";
+import { CAPSULE_COMBINED_TEMPLATE, CAPSULE_ISOLATED_TEMPLATE, CLINICAL_TEMPLATE } from "./capsuleReportTemplates";
+import { fillTemplate } from "./capsuleReportFill";
 import { thresholdsOf } from "@/app/dashboard/control-view/capsule/capsuleConfig";
-import { CAPSULE_COMBINED, RATIO_KEYS, RATIO_NAMES } from "./capsuleMetrics";
+import { CAPSULE_COMBINED, CAPSULE_ISOLATED, RATIO_KEYS, RATIO_NAMES } from "./capsuleMetrics";
 import { GROWTH_LOAD_COLUMNS, computeDiversity, computeLoads, diversityPairs, positiveRows, proficiencyLoadColumns } from "./capsuleNeuro";
-import { CLINICAL_CHARTS, buildIndexTable, collectClinicalData } from "./clinicalAnalytics";
+import { buildIndexTable, collectClinicalData } from "./clinicalAnalytics";
 
 const PARAMS = Array.from({ length: 15 }, (_, i) => i);
 const pNum = (i) => String(i + 1).padStart(2, "0");
@@ -132,7 +134,7 @@ export async function buildCapsuleCandidateReport(capsuleId, candidateId) {
     kv("Last Name", text(candidate.lastName), W), kv("First Name", text(candidate.firstName), W),
     kv("Candidate ID", text(candidate.candidateId), W), kv("Candidate Start Date", isoDate(candidate.startDate), W),
     kv("Nationality", text(candidate.nationality), W), kv("Date of Birth", isoDate(candidate.dateOfBirth), W),
-    kv("Special ID No.", text(candidate.specialIdNo), W), "",
+    kv("Special ID No.", text(candidate.specialIdNo), W), kv("Age Range", text(roster.ageRange), W), "",
     subHeader("CAPSULE DETAILS :"),
     kv("Capsule Name", text(capsule.capsuleName), W), kv("Capsule ID", text(capsule.capsuleId), W),
     kv("Capsule Start Date", text(capsule.capsuleStartDate), W), kv("Capsule End Date", text(capsule.capsuleEndDate), W),
@@ -215,107 +217,209 @@ export async function buildCapsuleCandidateReport(capsuleId, candidateId) {
   ]);
 }
 
-/** Capsule-level report (pass percentages over the capsule's candidates). */
+/** Leader names "Last, First" (3 lines each). */
+const ENGAGE = [["High", "High"], ["Medium", "Medium"], ["Low", "Low"], ["Not Applicable", "N/A"]];
+const ATTENDANCE = [
+  ["Present", "presentCount"], ["Excused Absences", "excusedAbsences"], ["Unexcused Absences", "unexcusedAbsences"],
+  ["Excused Tardies", "excusedTardies"], ["Unexcused Tardies", "unexcusedTardies"],
+];
+// Template labels of the unilateral ratios
+const UNILATERAL_LABELS = {
+  XCFL: "Comb Frontal", XCPL: "Comb Parietal", XCTL: "Comb Temporal", XCOL: "Comb Occipital",
+  XFLL: "Frontal (L)", XFLR: "Frontal (R)", XPLL: "Parietal (L)", XPLR: "Parietal (R)",
+  XTLL: "Temporal (L)", XTLR: "Temporal (R)", XOLL: "Occipital (L)", XOLR: "Occipital (R)",
+};
+const fraction = (part, whole) => (whole ? n3(part / whole) : "-");
+const mean = (vals) => {
+  const v = vals.map(Number).filter(Number.isFinite);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+};
+
+/** Threshold values of the template "PASS →" lines. */
+function capsuleThresholdValues(capsule) {
+  const t = thresholdsOf(capsule);
+  const out = { PC1: "0.700", PC2: "0.700", PC3: "0.700" };
+  [...(RATIO_KEYS[capsule.capsuleType] || []), "XEP", "XCP", "XBP", "MSIP", "ΔPC1", "ΔPC2", "ΔPC3", "ΔGEQ"].forEach((k) => { out[k] = n3(t[k]); });
+  out.IC = t.IC === undefined || t.IC === null || t.IC === "" ? "-" : String(Number(t.IC));
+  return out;
+}
+
+const effectivityThresholdValues = (th) => Object.fromEntries(PARAMS.map((i) => [`Parameter ${pNum(i)}`, n3(th?.[i])]));
+
+/** Capsule Report (Rick's "Capsule Report - Combined / Isolated (new)" templates). */
 export async function buildCapsuleReport(capsuleId) {
   const capsule = await getCapsuleAsUnit(capsuleId);
   const type = capsule.capsuleType;
   const th = thresholdsOf(capsule);
+  const store = await loadCapsuleStore(capsule.clientId);
   const candidates = await getCapsuleCandidates(capsule.id);
   const rosters = await getCapsuleRosterByCapsuleId(capsule.id);
-  const summary = candidates.length
-    ? await getCapsuleMultipleCandidateSummary({ capsuleId: capsule.id, candidate_id: candidates.map((c) => c.id).join(",") })
-    : { averages: [], cumulativeSums: [] };
-  const eff = candidates.length ? await getUnitEffectivity(capsule.id, candidates.map((c) => c.id)) : null;
+  const ids = candidates.map((c) => c.id);
+  const summary = ids.length
+    ? await getCapsuleMultipleCandidateSummary({ capsuleId: capsule.id, candidate_id: ids.join(",") })
+    : { averages: [], cumulativeSums: [], results: [] };
+  const eff = ids.length ? await getUnitEffectivity(capsule.id, ids).catch(() => null) : null;
   const avgs = summary.averages || [];
-  const passPct = (key, thrKey, lower = false) => {
-    const vals = avgs.map((a) => a[key]).filter((v) => v !== null && v !== undefined && Number.isFinite(Number(v)));
-    const t = Number(thrKey === null ? 0.7 : th[thrKey]);
-    return vals.length ? n3(vals.filter((v) => (lower ? Number(v) <= t : Number(v) >= t)).length / vals.length) : "-";
+  const mine = (list) => (list || []).filter((x) => String(x.unitId ?? x.capsuleId) === String(capsule.id));
+
+  // pass share over the candidates' average values
+  const passPct = (key, t, lower = false) => {
+    const vals = avgs.map((a) => a[key]).filter((v) => v !== null && v !== undefined && v !== "" && Number.isFinite(Number(v)));
+    const thr = Number(t);
+    if (!vals.length || !Number.isFinite(thr)) return "-";
+    return n3(vals.filter((v) => (lower ? Number(v) <= thr : Number(v) >= thr)).length / vals.length);
   };
-  const outcomes = {};
-  rosters.forEach((r) => { outcomes[r.capsuleOutcome || "-"] = (outcomes[r.capsuleOutcome || "-"] || 0) + 1; });
-  const { leaders, assessors } = staffNames(capsule.staffAssignments);
-  const ratios = RATIO_KEYS[type] || [];
-  const stable = (k) => {
-    const s = avgs.map((a) => a[k]).filter(Boolean);
+  const stablePct = (key) => {
+    const s = avgs.map((a) => a[key]).filter(Boolean);
     return s.length ? n3(s.filter((v) => v === "STABLE").length / s.length) : "-";
   };
+  const icPass = (() => {
+    const v = avgs.map((a) => icValue(a.IC)).filter((x) => x !== null);
+    return v.length ? n3(v.filter((x) => x >= Number(th.IC)).length / v.length) : "-";
+  })();
 
-  return finalize([
-    headerLines("Capsule"), "", introLines(), "",
-    sectionBanner(1), "",
-    subHeader("CAPSULE DETAILS :"),
-    kv("Capsule Name", text(capsule.capsuleName), W), kv("Capsule ID", text(capsule.capsuleId), W),
-    kv("Capsule Start Date", text(capsule.capsuleStartDate), W), kv("Capsule End Date", text(capsule.capsuleEndDate), W),
-    kv("Signature Profile", text(capsule.signatureProfile), W), kv("Capsule Type", text(type), W),
-    kv("Environment", text(capsule.environment), W), kv("Framework Age", text(capsule.frameworkAge), W),
-    kv("Capsule Roster Count", text(candidates.length), W), "",
-    ...leaders.map((n, i) => kv(`Assigned Leader #${i + 1}`, n, W)), "",
-    ...assessors.map((n, i) => kv(`Assigned Assessor #${i + 1}`, n, W)), "",
-    subHeader("CAPSULE ROSTER:"),
-    table(["LAST NAME", "FIRST NAME", "CANDIDATE ID", "CAPSULE OUTCOME", "AGE RANGE"],
-      candidates.map((c) => [c.lastName, c.firstName, c.candidateId, c.capsuleOutcome, c.ageRange])),
-    ...Object.entries(outcomes).map(([k, v]) => kv(`Capsule Outcome % - ${k}`, n3(v / (rosters.length || 1)))), "",
-    sectionBanner(2), "",
-    subHeader("GRADE SCALE DEFINITION & THRESHOLDS:"),
-    capsuleThresholdLines(capsule), "",
-    sectionBanner(3), "",
-    subHeader("PASS PERCENTAGES:"),
-    "     Pass percentages below are based on the average values of each corresponding metric:", "",
-    kv("Pass % - PC1", passPct("PC1", null)), kv("Pass % - PC2", passPct("PC2", null)), kv("Pass % - PC3", passPct("PC3", null)),
-    ...ratios.map((k) => kv(`Pass % - ${k}`, passPct(k, k))),
-    kv("Pass % - XEP", passPct("XEP", "XEP")), kv("Pass % - XCP", passPct("XCP", "XCP")), kv("Pass % - XBP", passPct("XBP", "XBP")),
-    kv("Pass % - MSIP", passPct("MSIP", "MSIP", true)), kv("Pass % - ∆GEQ", passPct("GEQ", "ΔGEQ")),
-    ...[1, 2, 3].map((i) => kv(`Pass % - Average ΔPC${i}`, passPct(`dPC${i}`, `ΔPC${i}`))), "",
-    kv("Stable % - STA/P", stable("STAP")), kv("Stable % - STA/G", stable("STAG")), "",
-    subHeader("CANDIDATE AVERAGES:"),
-    table(["CANDIDATE ID", "PC1", "PC2", "PC3", "XEP", "XCP", "XBP", "MSIP", "IC", "∆GEQ"],
-      candidates.map((c) => {
-        const a = avgs.find((x) => String(x.candidateId) === String(c.id)) || {};
-        return [c.candidateId, n3(a.PC1), n3(a.PC2), n3(a.PC3), n3(a.XEP), n3(a.XCP), n3(a.XBP), n3(a.MSIP), n2(icValue(a.IC)), n3(a.GEQ)];
-      })),
-    sectionBanner(4), "",
-    subHeader("BENCHMARKS:"),
-    table(["BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows(capsule.benchmarks)),
-    sectionBanner(5), "",
-    subHeader("EFFECTIVITY:"),
-    EFFECTIVITY_INTRO,
-    effectivityThresholdLines(eff?.thresholds), "",
-    ...PARAMS.map((i) => kv(`Pass % Effectivity Parameter ${pNum(i)}`, n3(eff?.passFractions?.[i]))), "",
-    effectivityTypeLines(eff?.typeBreakdown), "",
-    sectionBanner(6), "",
-    nomenclatureBlock(),
-    legalBlock(),
-  ]);
+  // attendance (roster), engagement (scores), needs assessment status (every PP ID of every candidate)
+  const att = ATTENDANCE.map(([, k]) => rosters.reduce((t, r) => t + (Number(r[k]) || 0), 0));
+  const attTotal = att.reduce((a, b) => a + b, 0);
+  const scores = (store.scores || []).filter((x) => String(x.capsuleId) === String(capsule.id));
+  const engage = ENGAGE.map(([, k]) => scores.filter((x) => (x.engageLevel || "N/A") === k).length);
+  const needs = mine(store.auxNeedAssessments);
+  const ppKeys = new Set((store.blocks || []).filter((b) => String(b.capsuleId) === String(capsule.id)).map((b) => `${b.candidate_id}|${b.ppId}`));
+  const status = { Open: 0, Closed: 0, Pending: 0 };
+  ppKeys.forEach((k) => {
+    const [cand, pp] = k.split("|");
+    const na = needs.find((n) => String(n.candidateId) === cand && String(n.ppId) === pp);
+    status[actionStatus(na)] += 1;
+  });
+
+  // effort per candidate (Auxiliary Resultants)
+  const effortRows = [];
+  for (const c of candidates) {
+    const e = await getEffortBu(capsule.id, c.id).catch(() => null);
+    effortRows.push([c.lastName, c.firstName, c.candidateId, n3(e?.data?.CSD), n3(e?.data?.USD)]);
+  }
+  const { leaders, assessors } = staffNames(capsule.staffAssignments);
+  const leaderMarks = mine(store.auxLeaderMarks)
+    .sort((a, b) => (a.entryNumber ?? a.id) - (b.entryNumber ?? b.id))
+    .map((m, i) => [m.entryNumber ?? i + 1, m.impactType, m.concernIdentified, isoDate(m.identityDate), m.concernResolved, isoDate(m.resolutionDate)]);
+  const improvements = mine(store.auxImprovements).map((u, i) => {
+    const bids = idsOf(u.bIds);
+    const linked = idsOf(u.benchmarkIds);
+    return [i + 1, bids.length ? bids.join(", ") : "-", u.lesson, linked.length ? linked.join(", ") : "-"];
+  });
+
+  const values = {
+    "Capsule Name": text(capsule.capsuleName),
+    "Capsule ID": text(capsule.capsuleId),
+    "Capsule Start Date": text(capsule.capsuleStartDate),
+    "Capsule End Date": text(capsule.capsuleEndDate),
+    "Signature Profile": text(capsule.signatureProfile),
+    "Capsule Type": text(type),
+    Environment: text(capsule.environment),
+    "Framework Age (Years)": text(capsule.frameworkAge),
+    "Capsule Roster Count": text(candidates.length),
+    ...Object.fromEntries(leaders.map((n, i) => [`Assigned Leader #${i + 1}`, n])),
+    ...Object.fromEntries(assessors.map((n, i) => [`Assigned Assessor #${i + 1}`, n])),
+    ...Object.fromEntries((RATIO_KEYS[type] || []).map((k) => [`Pass % Avg Unilateral - ${UNILATERAL_LABELS[k]}`, passPct(k, th[k])])),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`Pass % Avg Principal ${i} Ratio - PC${i}`, passPct(`PC${i}`, 0.7)])),
+    "Pass % Avg Equivalent Proficiency - XEP": passPct("XEP", th.XEP),
+    "Pass % Avg Composite Proficiency - XCP": passPct("XCP", th.XCP),
+    "Pass % Avg Band Proficiency - XBP": passPct("XBP", th.XBP),
+    "Pass % Stability in Proficiency": stablePct("STAP"),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`Pass % Average Growth - ΔPC${i}`, passPct(`dPC${i}`, th[`ΔPC${i}`])])),
+    "Pass % Avg Equivalent Growth - ∆GEQ": passPct("GEQ", th["ΔGEQ"]),
+    "Pass % Stability in Growth": stablePct("STAG"),
+    "Pass % Avg Butler Int Proficiency - MSIP": passPct("MSIP", th.MSIP, true),
+    "Pass % Avg Interaction Class - IC": icPass,
+    // same as the unit report: average productivity of the candidates
+    "Pass % Avg Productivity Rates - CSD": n3(mean(avgs.map((a) => a.Productivity_CSD))),
+    "Pass % Avg Productivity Rates - NSD": n3(mean(avgs.map((a) => a.Productivity_NSD))),
+    ...Object.fromEntries(ATTENDANCE.map(([l], i) => [`Attendance % - ${l}`, fraction(att[i], attTotal)])),
+    ...Object.fromEntries(ENGAGE.map(([l], i) => [`Engagement Level % - ${l}`, fraction(engage[i], scores.length)])),
+    ...Object.fromEntries(["Open", "Closed", "Pending"].map((k) => [`Action Status % - ${k}`, fraction(status[k], ppKeys.size)])),
+    ...Object.fromEntries(PARAMS.map((i) => [`Pass % Effectivity Parameter ${pNum(i)}`, n3(eff?.passFractions?.[i])])),
+    ...Object.fromEntries(EFFECTIVITY_TYPES.map((t) => [`Effectivity Type % - ${t}`, eff?.typeBreakdown ? n3(eff.typeBreakdown.percentages?.[t]) : "-"])),
+  };
+  const tables = {
+    "||| LAST NAME ||| ||| FIRST NAME ||| ||| CANDIDATE ID ||| ||| CANDIDATE START DATE ||| ||| NATIONALITY ||| ||| CAPSULE OUTCOME ||| ||| AGE RANGE |||":
+      candidates.map((c) => [c.lastName, c.firstName, c.candidateId, isoDate(c.startDate ?? c.candidateStartDate), c.nationality, c.capsuleOutcome, c.ageRange]),
+    "||| LAST NAME ||| ||| FIRST NAME ||| ||| CANDIDATE ID ||| ||| EFFORT - CSD ||| ||| EFFORT - NSD |||": effortRows,
+    "||| BIDs ||| ||| BENCHMARK TYPE ||| ||| BENCHMARK REF ||| ||| BENCHMARK DESCRIPTION |||": benchmarkRows(capsule.benchmarks),
+    "||| ENTRY ||| ||| IMPACT TYPE ||| ||| CONCERN IDENTIFIED ||| ||| IDENTITY DATE ||| ||| CONCERN RESOLVED ||| ||| RESOLUTION DATE |||": leaderMarks,
+    "||| ENTRY # ||| ||| BIDs ||| ||| LESSONS LEARNED ||| ||| LINKED BENCHMARKS |||": improvements,
+  };
+  const template = type === CAPSULE_COMBINED ? CAPSULE_COMBINED_TEMPLATE : CAPSULE_ISOLATED_TEMPLATE;
+  return fillTemplate(template, {
+    values, tables, thresholds: { ...capsuleThresholdValues(capsule), ...effectivityThresholdValues(eff?.thresholds) },
+  }).text;
 }
 
-/** Clinical Data Report (all capsules) – index table, rating and chart percentages. */
+/** Clinical Analytics Report (all capsules; Rick's "Clinical Analytics Report (new)" template). */
 export async function buildClinicalReport() {
   const data = await collectClinicalData();
   const index = buildIndexTable(data);
-  const capsules = await getAllCapsules();
-  const charts = CLINICAL_CHARTS.filter((c) => c.type === "pie");
-  return finalize([
-    headerLines("Clinical"), "", introLines(), "",
-    sectionBanner(1), "",
-    subHeader("CLINICAL DETAILS :"),
-    kv("Capsule Count", text(capsules.length), W),
-    kv("Capacity - Combined", text(data.capsuleTypes[CAPSULE_COMBINED]), W),
-    kv("Capacity - Isolated", text(capsules.length - data.capsuleTypes[CAPSULE_COMBINED]), W), "",
-    sectionBanner(2), "",
-    subHeader("SHARED CLINICAL ANALYTICS INDEX TABLE:"),
-    table(["METRIC DESCRIPTIONS", "METRIC VALUES"], index.rows.map((r) => [r.description, n3(r.value)])),
-    kv("Index Rating", index.rating), kv("Weight Index (WI)", index.weightedIndex.toFixed(3)), "",
-    sectionBanner(3), "",
-    subHeader("CLINICAL CHART PERCENTAGES:"),
-    ...charts.flatMap((c) => {
-      const slices = c.data(data);
-      return [`     ${c.name}`, ...(slices.length ? slices.map((s) => kv(s.name, `${n3(s.value)}   (Count: ${s.count})`, { indent: 8, width: 39 })) : [kv("No data", "-", { indent: 8, width: 39 })]), ""];
-    }),
-    sectionBanner(4), "",
-    nomenclatureBlock(),
-    legalBlock(),
-  ]);
+  const store = await loadCapsuleStore();
+  const client = store.client || {};
+  const eff = await getClientEffectivity().catch(() => null);
+  const row = (desc) => n3(index.rows.find((r) => r.description === desc)?.value);
+  const rate = (k) => {
+    const p = data.pass[k];
+    return p && p.totalInstances ? n3(p.successCount / p.totalInstances) : "-";
+  };
+  const share = (obj, k) => {
+    const t = Object.values(obj).reduce((a, b) => a + (Number(b) || 0), 0);
+    return t ? n3((Number(obj[k]) || 0) / t) : "-";
+  };
+  const values = {
+    "Executive ID": text(client.executiveId),
+    "Company Name": text(client.companyName),
+    "Company Contact Number": text(client.companyContactNumber),
+    "Institutional Type": text(client.institutionalType),
+    Country: text(client.country),
+    "Company Size": text(client.companySize?.candidate),
+    "Total Capsule Count": text(data.totalCapsules),
+    "Total Candidate Count": text(data.candidateIds.size),
+    "Global Percentage of Capacity - Combined": row("Global Percentage of Capacity - Combined"),
+    "Global Percentage of Capacity - Isolated": row("Global Percentage of Capacity - Isolated"),
+    "% Capsules Cand-to-Lead, CTL ≤ 10": row("Global Percentage of Capsules with Candidate-to-Leader Ratio, CTL ≤ 10"),
+    "% Capsules Cand-to-Lead, 10 < CTL ≤ 20": row("Global Percentage of Capsules with Candidate-to-Leader Ratio, 10 < CTL ≤ 20"),
+    "% Capsules Cand-to-Lead, CTL > 20": row("Global Percentage of Capsules with Candidate-to-Leader Ratio, CTL > 20"),
+    "% Benchmark Counts, BC ≤ 10": row("Global Percentage of Benchmark Counts, BC ≤ 10"),
+    "% Benchmark Counts, 10 < BC ≤ 25": row("Global Percentage of Benchmark Counts, 10 < BC ≤ 25"),
+    "% Benchmark Counts, BC > 25": row("Global Percentage of Benchmark Counts, BC > 25"),
+    "% Assessment Blocks, AB ≤ 8": row("Global Percentage of Assessment Blocks, AB ≤ 8"),
+    "% Assessment Blocks, 8 < AB ≤ 20": row("Global Percentage of Assessment Blocks, 8 < AB ≤ 20"),
+    "% Assessment Blocks, AB > 20": row("Global Percentage of Assessment Blocks, AB > 20"),
+    ...Object.fromEntries(ATTENDANCE.map(([l]) => [`% Attendance - ${l}`, row(`Global Percentage of Attendance - ${l}`)])),
+    "% Action Status - Closed": row("Global Percentage Closed Items for All Courses"),
+    "% Positive Candidate Marks": row("Global Percentage of Positive Candidate Marks"),
+    "% Positive Leader Marks": row("Global Percentage of Positive Leader Marks"),
+    "% Passing Candidates": share(data.outcomes, "Pass"),
+    "% Failed Candidates": share(data.outcomes, "Fail"),
+    "% Ongoing Candidates": share(data.outcomes, "Ongoing"),
+    "% Candidates under Observation": share(data.outcomes, "Under Observation"),
+    "% Candidates under Exploration": share(data.outcomes, "Under Exploration"),
+    "% Candidates in Trial": share(data.outcomes, "In Trial"),
+    ...Object.fromEntries(Object.keys(data.ageRanges).map((a) => [`% Age Range - ${a}`, share(data.ageRanges, a)])),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`% Passed Principal ${i} Ratio - PC${i}`, rate(`PC${i}`)])),
+    ...Object.fromEntries([...RATIO_KEYS[CAPSULE_COMBINED], ...RATIO_KEYS[CAPSULE_ISOLATED]].map((k) => [`% Passed Average Unilateral - ${k}`, rate(k)])),
+    "% Passed Average Equivalent Prof - XEP": rate("XEP"),
+    "% Passed Average Composite Prof - XCP": rate("XCP"),
+    "% Passed Average Band Prof - XBP": rate("XBP"),
+    "% Passed Stability Proficiency - STA/P": share(data.STAP, "STABLE"),
+    "% Passed Average Butler Int - MSIP": rate("MSIP"),
+    ...Object.fromEntries([0, 1, 2, 3, 4, 5].map((i) => [`% Capsules Interaction Class ${i}`, share(data.ic, i)])),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`% Passed Average Growth - ΔPC${i}`, rate(`avgDPC${i}`)])),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`% Passed Cumulative Growth - ΔPC${i}`, rate(`sumDPC${i}`)])),
+    "% Passed Avg Equivalent Growth - ∆GEQ": rate("GEQ"),
+    "% Passed Stability Proficiency - STA/G": share(data.STAG, "STABLE"), // template label (Stability in Growth)
+    ...Object.fromEntries(PARAMS.map((i) => [`% Passed Effectivity Parameter ${pNum(i)}`, n3(eff?.passFractions?.[i])])),
+    ...Object.fromEntries(EFFECTIVITY_TYPES.map((t) => [`% Effectivity Type - ${t}`, eff?.typeBreakdown?.total ? n3(eff.typeBreakdown.percentages?.[t]) : "-"])),
+    ...Object.fromEntries(Object.keys(data.frameworkAges).map((a) => [`% FRAMEWORK AGE: ${a}`, share(data.frameworkAges, a)])),
+    "Index Rating": text(index.rating),
+    "Weighted Index": n3(index.weightedIndex),
+  };
+  return fillTemplate(CLINICAL_TEMPLATE, { values }).text;
 }
 
 /** File name "<Level>_<Name>_<ID>.ez". */

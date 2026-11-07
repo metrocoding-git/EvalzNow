@@ -41,5 +41,12 @@ export async function getUnitRostersByUnitIdAndCandidateId(req, res) {
   const rows = await getCapsuleRosterByCapsuleId(unitId);
   return res.status(200).json(rows
     .filter((r) => String(r.candidateId) === String(candidateId))
-    .map((r) => ({ ...r, unitId: r.capsuleId, unitOutcome: r.capsuleOutcome })));
+    .map((r) => ({
+      ...r,
+      unitId: r.capsuleId,
+      unitOutcome: r.capsuleOutcome,
+      // unit roster virtual field (Attendance Tracking needs it)
+      totalTally: r.totalTally ?? ["presentCount", "excusedAbsences", "unexcusedAbsences", "excusedTardies", "unexcusedTardies"]
+        .reduce((t, k) => t + (Number(r[k]) || 0), 0),
+    })));
 }

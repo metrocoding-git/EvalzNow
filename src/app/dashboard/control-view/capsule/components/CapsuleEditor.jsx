@@ -115,6 +115,14 @@ const CapsuleEditor = ({ capsuleDbId, onClose, showCapsuleForm, showEditBlockMan
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!String(capsule.capsuleName || "").trim() || !String(capsule.capsuleId || "").trim()) {
+      alert("Capsule Name and Capsule ID are required");
+      return;
+    }
+    if (!capsule.startDate) {
+      alert("Capsule Start Date is required (the End Date can stay empty)");
+      return;
+    }
     if (!capsule.frameworkAge) {
       alert("Please select the Framework Age (Years)");
       return;
@@ -185,7 +193,7 @@ const CapsuleEditor = ({ capsuleDbId, onClose, showCapsuleForm, showEditBlockMan
               ].map(({ label, key, type }) => (
                 <React.Fragment key={key}>
                   <label className="col-span-2 text-gray-700 font-medium text-xs">{label}:</label>
-                  <input name={key} value={capsule[key] || ""} {...editing} onChange={(e) => handleChange(key, e.target.value)} type={type || "text"} className={inputCls} />
+                  <input name={key} value={capsule[key] || ""} {...editing} required={key !== "endDate"} onChange={(e) => handleChange(key, e.target.value)} type={type || "text"} className={inputCls} />
                 </React.Fragment>
               ))}
 
