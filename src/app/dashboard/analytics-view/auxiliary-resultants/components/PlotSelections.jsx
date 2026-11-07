@@ -1101,6 +1101,18 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   };
 
 // Updated handleBenchmarkSelection function:
+// Latest need assessment of a PP ID (the table state can be older than the last save)
+const freshNeed = async (ppId) => {
+  try {
+    const result = await getNeedAssessment(unitId, candidateId);
+    const list = result?.data || [];
+    setNeedAssessment(list);
+    return list.find((n) => String(n.ppId) === String(ppId));
+  } catch {
+    return needAssessment.find((n) => String(n.ppId) === String(ppId));
+  }
+};
+
 const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
   setShowBenchmarkTable(false);
   
@@ -1108,7 +1120,7 @@ const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
 
   try {
     // Check if a need assessment already exists for this PP ID
-    const existingNeed = needAssessment.find(n => n.ppId === selectedRow.ppId);
+    const existingNeed = await freshNeed(selectedRow.ppId);
     
     // Get existing benchmark IDs
     const existingBIds = toIdArray(existingNeed?.bIds);
@@ -1140,7 +1152,11 @@ const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
     if (finalBIds.length === 0 && existingNeed) {
       console.log("All benchmarks removed - deleting existing record");
       try {
-        await deleteNeedAssessment(existingNeed.id);
+        if (existingNeed.observation && String(existingNeed.observation).trim()) {
+          await updateNeedAssessment(existingNeed.id, { bIds: [], benchmarkIds: [] }); // keep the observation
+        } else {
+          await deleteNeedAssessment(existingNeed.id);
+        }
         setRefreshBenchmarks(prev => !prev);
         return;
       } catch (deleteErr) {
@@ -1157,13 +1173,14 @@ const handleBenchmarkSelection = async (selectedBenchmarkIds) => {
       ppId: selectedRow.ppId,
       bIds: finalBIds,
       benchmarkIds: finalBenchmarkIds,
-      observation: selectedRow.observation !== "-" ? selectedRow.observation : ""
+      observation: (editingObservations[selectedRow.ppId] ?? (selectedRow.observation !== "-" ? selectedRow.observation : "")) || ""
     };
 
     if (existingNeed) {
       // Update existing need assessment
       console.log("Updating existing need assessment:", existingNeed.id);
-      await updateNeedAssessment(existingNeed.id, payload);
+      // only the BIDs change here – the observation is saved by its own field
+      await updateNeedAssessment(existingNeed.id, { bIds: finalBIds, benchmarkIds: finalBenchmarkIds });
     } else {
       // Create new need assessment
       console.log("Creating new need assessment");
@@ -1547,16 +1564,15 @@ const handleDeleteChain = async (chainId) => {
                         onBlur={async (e) => {
                           const newObservation = e.target.value.trim();
                           try {
-                            const existingNeed = needAssessment.find(n => n.ppId === item.ppId);
+                            const existingNeed = await freshNeed(item.ppId);
                             if (!existingNeed && newObservation === "") return;
-                            const payload = {
-                              unitId, candidateId, ppId: item.ppId,
-                              bIds: toIdArray(existingNeed?.bIds),
-                              benchmarkIds: toIdArray(existingNeed?.benchmarkIds),
-                              observation: newObservation
-                            };
-                            if (existingNeed) await updateNeedAssessment(existingNeed.id, payload);
-                            else await createNeedAssessment(payload);
+                            if (existingNeed && String(existingNeed.observation || "").trim() === newObservation) return; // unchanged
+                            if (existingNeed) {
+                              // only the observation – never overwrite BIDs saved in the meantime
+                              await updateNeedAssessment(existingNeed.id, { observation: newObservation });
+                            } else {
+                              await createNeedAssessment({ unitId, candidateId, ppId: item.ppId, bIds: [], benchmarkIds: [], observation: newObservation });
+                            }
                             setRefreshBenchmarks(prev => !prev);
                           } catch (error) {
                             console.error("Observation save failed:", error);

@@ -1510,25 +1510,27 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     if (showGrowthTarget && growthTargetData.length > 0) {
       const gtPoints3D = [];
 
+      // a growth target that does not exist ("-" in the tabulation table) is not plotted
+      const gtExists = (...v) => v.some((x) => Number(x) > 0);
       growthTargetData.forEach(item => {
         // Add GT1 points
-        if (item.RRGT1 !== undefined && item.PRGT1 !== undefined && item.ARGT1 !== undefined) {
+        if (gtExists(item.RRGT1, item.PRGT1, item.ARGT1)) {
           gtPoints3D.push({ x: item.RRGT1, y: item.PRGT1, z: item.ARGT1, ppId: item.ppId, gt: "GT1" });
         }
         // Add GT2 points
-        if (item.RRGT2 !== undefined && item.PRGT2 !== undefined && item.ARGT2 !== undefined) {
+        if (gtExists(item.RRGT2, item.PRGT2, item.ARGT2)) {
           gtPoints3D.push({ x: item.RRGT2, y: item.PRGT2, z: item.ARGT2, ppId: item.ppId, gt: "GT2" });
         }
         // Add GT3 points
-        if (item.RRGT3 !== undefined && item.PRGT3 !== undefined && item.ARGT3 !== undefined) {
+        if (gtExists(item.RRGT3, item.PRGT3, item.ARGT3)) {
           gtPoints3D.push({ x: item.RRGT3, y: item.PRGT3, z: item.ARGT3, ppId: item.ppId, gt: "GT3" });
         }
         // Add GT4 points
-        if (item.RRGT4 !== undefined && item.PRGT4 !== undefined && item.ARGT4 !== undefined) {
+        if (gtExists(item.RRGT4, item.PRGT4, item.ARGT4)) {
           gtPoints3D.push({ x: item.RRGT4, y: item.PRGT4, z: item.ARGT4, ppId: item.ppId, gt: "GT4" });
         }
         // Add GT5 points
-        if (item.RRGT5 !== undefined && item.PRGT5 !== undefined && item.ARGT5 !== undefined) {
+        if (gtExists(item.RRGT5, item.PRGT5, item.ARGT5)) {
           gtPoints3D.push({ x: item.RRGT5, y: item.PRGT5, z: item.ARGT5, ppId: item.ppId, gt: "GT5" });
         }
       });
