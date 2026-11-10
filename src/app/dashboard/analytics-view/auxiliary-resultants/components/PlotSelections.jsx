@@ -814,17 +814,13 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
   }, [candidateId]);
   
   // Initialize observations from fetched needAssessment data
+  // (taken from the saved records themselves, so it does not depend on the table rows having loaded first)
   useEffect(() => {
-    if (needAssessment.length > 0) {
-      const initialObservations = {};
-      sortedFinalTableData.forEach(row => {
-        const existing = needAssessment.find(n => n.ppId === row.ppId);
-        initialObservations[row.ppId] = existing ? existing.observation : "";
-      });
-      setEditingObservations(initialObservations);
-    } else {
-      setEditingObservations({});
-    }
+    const initialObservations = {};
+    (needAssessment || []).forEach(n => {
+      initialObservations[n.ppId] = n.observation || "";
+    });
+    setEditingObservations(initialObservations);
   }, [needAssessment]);
   
 

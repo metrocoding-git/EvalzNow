@@ -1,58 +1,45 @@
 import { EFFECTIVITY_HEADERS, effectivityCells } from "./extractionEffectivity";
 
 
+/** CSV text (title lines + table) of the client-level extraction. */
+const buildCSV = (headers, rows) => {
+  const formattedDate = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+
+  const metaLines = [
+    "EvalzNow – A Novel Human Capital Assessment Method",
+    "Competency Accounting for Education and Industry",
+    "Hybrid Proficiency & Growth Monitoring",
+    `Data Extraction Date: ${formattedDate}`,
+    " ",
+    " ", // blank line before table
+  ];
+
+  const csvEscape = (value) => {
+    if (value === null || value === undefined) return "-";
+    const escaped = String(value).replace(/"/g, '""');
+    return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
+  };
+
+  return "\uFEFF" + // UTF-8 BOM (Excel safe)
+    metaLines.join("\n") + "\n" +
+    headers.map(csvEscape).join(",") + "\n" +
+    rows.map(r => r.map(csvEscape).join(",")).join("\n");
+};
+
 const downloadCSV = (headers, rows, filename) => {
   return new Promise((resolve) => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-  
-    const metaLines = [
-      "EvalzNow – A Novel Human Capital Assessment Method",
-      "Competency Accounting for Education and Industry",
-      "Hybrid Proficiency & Growth Monitoring",
-      `Data Extraction Date: ${formattedDate}`,
-      " ",
-      " ", // blank line before table
-    ];
-  
-    const csvEscape = (value) => {
-      if (value === null || value === undefined) return "-";
-    
-      const str = String(value);
-      const escaped = str.replace(/"/g, '""');
-    
-      if (/[",\n]/.test(escaped)) {
-        return `"${escaped}"`;
-      }
-    
-      return escaped;
-    };
-
-    const csv = metaLines.join("\n") + "\n" +
-      headers.map(csvEscape).join(",") +
-      "\n" +
-      rows.map(r => r.map(csvEscape).join(",")).join("\n");
-  
-    const blob = new Blob(
-      ["\uFEFF" + csv], // UTF-8 BOM (Excel safe)
-      { type: "text/csv;charset=utf-8;" }
-    );
-  
+    const blob = new Blob([buildCSV(headers, rows)], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
-
-    setTimeout(() => {
-      resolve();
-    }, 1500);
-
+    setTimeout(resolve, 1500);
   });
-  };  
+};
   
 
   const safe = (v) => {
@@ -149,9 +136,9 @@ const HEADERS = [
  * OPTION 3
  * Client-level extraction
  */
-export const extractClientCandidatesCSV = async ({ extractionData, clientId }) => {
+export const extractClientCandidatesCSV = async ({ extractionData, clientId, asText = false }) => {
     if (!extractionData?.units?.length) {
-      return Promise.resolve();
+      return asText ? null : undefined;
     }
     const rows = [];
   
@@ -295,6 +282,8 @@ export const extractClientCandidatesCSV = async ({ extractionData, clientId }) =
       });
     });
   
-    await downloadCSV( HEADERS, rows, `Data Extraction.csv`);
+    // asText: the CSV text is returned (full database pull puts it in a zip with the capsule CSV)
+    if (asText) return buildCSV(HEADERS, rows);
+    await downloadCSV( HEADERS, rows, `Unit Data Extraction - All.csv`);
   };
   

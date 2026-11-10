@@ -22,6 +22,7 @@ import DownloadLoader from "@/components/DownloadLoader";
 import { getActiveCapsuleId, getActiveEntityType } from "@/lib/activeEntity";
 import { getCapsuleById } from "@/services/capsuleService";
 import { getCapsuleCandidates } from "@/services/capsuleAnalyticsService";
+import { downloadEZFilesAsZip } from "../data-reports/helper/downloadEZFilesAsZip";
 import { allCapsulesCSV, downloadText, extractActiveCapsuleCSV, extractCandidateCapsulesCSV } from "@/lib/capsule/capsuleExtraction";
 
 export default function DataExtractions() {
@@ -264,15 +265,20 @@ export default function DataExtractions() {
         }
     
         if (selectedExtractOption === "all-candidates-database") {
-          // Full database pull: the unit CSV and the capsule CSV are exported separately
+          // Full database pull: the unit CSV and the capsule CSV come together in one zip file
+          const files = [];
           if (extractionData) {
-            await extractClientCandidatesCSV({
+            const unitText = await extractClientCandidatesCSV({
               extractionData,
               clientId: activeClientId,
+              asText: true,
             });
+            if (unitText) files.push({ filename: "Unit Data Extraction - All.csv", content: unitText });
           }
           const capsules = await allCapsulesCSV();
-          if (capsules.count) await downloadText(capsules.text, "Capsule Data Extraction - All.csv");
+          if (capsules.count) files.push({ filename: "Capsule Data Extraction - All.csv", content: capsules.text });
+          if (files.length > 1) await downloadEZFilesAsZip(files, "Data Extraction - All.zip");
+          else if (files.length === 1) await downloadText(files[0].content, files[0].filename);
         }
     
         if (selectedExtractOption === "all-units-candidates") {
