@@ -835,7 +835,8 @@ function CalcGT4(rr, pr, ar) {
 
       prGt4 = rrGt4;
 
-      arGt4 = ar;
+      // Option 2 (Rick, 13 Nov 2026): all three GT4 components are equal (same as the unit server CalcGT4)
+      arGt4 = rrGt4;
 
       gt4.push(rrGt4, prGt4, arGt4);
 
@@ -849,7 +850,7 @@ function CalcGT4(rr, pr, ar) {
 
         prGt4 = pr;
 
-        arGt4 = ar;
+        arGt4 = pr;
 
         gt4.push(rrGt4, prGt4, arGt4);
 
@@ -859,7 +860,7 @@ function CalcGT4(rr, pr, ar) {
 
         prGt4 = rr;
 
-        arGt4 = ar;
+        arGt4 = rr;
 
         gt4.push(rrGt4, prGt4, arGt4);
 
