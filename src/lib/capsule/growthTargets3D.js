@@ -967,7 +967,7 @@ function CalcGT5(rr, pr, ar) {
 
     prGt5 = 0.5 * (pr + 1);
 
-    arGt5 = 0.5 * (pr + 1);
+    arGt5 = 0.5 * (ar + 1);
 
     gt5.push(rrGt5, prGt5, arGt5);
 
