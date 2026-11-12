@@ -6,12 +6,12 @@ import { getCapsuleById } from "@/services/capsuleService";
 import { getUnitById } from "@/services/unitService";
 import { downloadEZFile } from "../data-reports/downloadEZ";
 import { downloadEZFilesAsZip } from "../data-reports/helper/downloadEZFilesAsZip";
-import { auditFileName, buildCapsuleAudit, buildUnitAudit, listCapsules, listUnits } from "@/lib/auditStatus";
+import { auditFileName, buildCapsuleAudit, buildUnitAudit, loadCapsuleAuditContext, loadUnitAuditContext } from "@/lib/auditStatus";
 
 /**
  * Analytics View → Audit Status (Capacity_Part18). Audit files for the active Unit / all Units and the
  * active Capsule / all Capsules. Multiple files are zipped ("Audit Status Units" / "Audit Status Capsules").
- * The audit templates come from Rick; the file content is provisional until then (see src/lib/auditStatus.js).
+ * Content: Rick's Audit Status templates (src/lib/auditStatus.js, src/lib/audit/).
  */
 export default function AuditStatus() {
   const [mode, setMode] = useState(null);
@@ -50,25 +50,28 @@ export default function AuditStatus() {
     setMessage("");
     try {
       if (option === "active-unit") {
-        await downloadEZFile(await buildUnitAudit(unit.id), auditFileName(unit.unitName, unit.unitId));
+        const ctx = await loadUnitAuditContext(clientId);
+        await downloadEZFile(await buildUnitAudit(unit.id, ctx), auditFileName(unit.unitName, unit.unitId));
       } else if (option === "all-units") {
-        const units = clientId ? await listUnits(clientId) : [];
+        // one data pull for all units (the Preliminary Alerts of every file list all units)
+        const ctx = await loadUnitAuditContext(clientId);
         const files = [];
-        for (const u of units || []) files.push({ filename: auditFileName(u.unitName, u.unitId), content: await buildUnitAudit(u.id) });
+        for (const u of ctx.units) files.push({ filename: auditFileName(u.unitName, u.unitId), content: await buildUnitAudit(u.id, ctx) });
         if (!files.length) setMessage("No units found.");
         else await downloadEZFilesAsZip(files, "Audit Status Units.zip");
       } else if (option === "active-capsule") {
-        await downloadEZFile(await buildCapsuleAudit(capsule.id), auditFileName(capsule.capsuleName, capsule.capsuleId));
+        const ctx = await loadCapsuleAuditContext();
+        await downloadEZFile(await buildCapsuleAudit(capsule.id, ctx), auditFileName(capsule.capsuleName, capsule.capsuleId));
       } else if (option === "all-capsules") {
-        const capsules = await listCapsules();
+        const ctx = await loadCapsuleAuditContext();
         const files = [];
-        for (const c of capsules) files.push({ filename: auditFileName(c.capsuleName, c.capsuleId), content: await buildCapsuleAudit(c.id) });
+        for (const c of ctx.store.capsules || []) files.push({ filename: auditFileName(c.capsuleName, c.capsuleId), content: await buildCapsuleAudit(c.id, ctx) });
         if (!files.length) setMessage("No capsules found.");
         else await downloadEZFilesAsZip(files, "Audit Status Capsules.zip");
       }
     } catch (err) {
       console.error("Audit status extraction failed:", err);
-      setMessage("Could not extract the audit status. Please try again.");
+      setMessage(String(err?.message || "").includes("audit template") ? err.message : "Could not extract the audit status. Please try again.");
     } finally {
       setBusy(false);
     }

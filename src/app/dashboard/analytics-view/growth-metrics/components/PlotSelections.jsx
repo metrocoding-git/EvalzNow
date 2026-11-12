@@ -214,8 +214,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     { id: "acl-4", name: "Acuity Growth Differentials (ΔAR)", key: "ΔAR", icon: "🔵", type: "line" },
 
     { id: "acl-5", name: "Performance Ratio (RR)", key: "RR", icon: "🔵", type: "line" },
-    { id: "acl-6", name: "Performance Ratios (PR)", key: "PR", icon: "🔵", type: "line" },
-    { id: "acl-7", name: "Performance Ratios (AR)", key: "AR", icon: "🔵", type: "line" },
+    { id: "acl-6", name: "Performance Ratio (PR)", key: "PR", icon: "🔵", type: "line" },
+    { id: "acl-7", name: "Performance Ratio (AR)", key: "AR", icon: "🔵", type: "line" },
 
     { id: "acl-8", name: "Stability in Growth (STA-G)", key: "STAG", type: "pie", icon: "🔵" },
     { id: "acl-9-1", name: "Growth Target 1 Trends - RR", key: "RRGT1", icon: "🔵", type: "line" },
@@ -253,8 +253,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, filt
     { id: "aul-3", name: "Productive Growth Differentials (ΔPR)", icon: "🔵", type: "scatter" },
     { id: "aul-4", name: "Acuity Growth Differentials (ΔAR)", icon: "🔵", type: "scatter" },
     { id: "aul-5", name: "Performance Ratio (RR)", icon: "🔵", type: "scatter" },
-    { id: "aul-6", name: "Performance Ratios (PR)", icon: "🔵", type: "scatter" },
-    { id: "aul-7", name: "Performance Ratios (AR)", icon: "🔵", type: "scatter" },
+    { id: "aul-6", name: "Performance Ratio (PR)", icon: "🔵", type: "scatter" },
+    { id: "aul-7", name: "Performance Ratio (AR)", icon: "🔵", type: "scatter" },
     { id: "aul-8", name: "Stability in Growth (STA-G)", icon: "🔵", type: "pie" },
   ];
 

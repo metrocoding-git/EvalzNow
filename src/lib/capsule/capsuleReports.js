@@ -1,8 +1,8 @@
 /**
  * Capsule .ez reports (Capacity_Part17) – Candidate (capsule), Capsule and Clinical levels.
  *
- * Capsule and Clinical reports follow Rick's templates (capsuleReportTemplates.js, Nov 2026).
- * The Candidate (capsule) report is still PROVISIONAL (unit candidate layout) until its template arrives.
+ * All three follow Rick's templates (capsuleReportTemplates.js): Candidate Report - Combined / Isolated (new),
+ * Capsule Report - Combined / Isolated (new) and Clinical Analytics Report (new).
  */
 import {
   finalize, headerLines, introLines, isoDate, kv, legalBlock, n2, n3, nomenclatureBlock, sectionBanner, subHeader, table, text,
@@ -11,8 +11,10 @@ import { EFFECTIVITY_INTRO, EFFECTIVITY_TYPES } from "@/app/dashboard/analytics-
 import { getAllCapsules, getCapsuleById, getCapsuleRosterByCapsuleId, getCapsuleScoresByCapsuleAndCandidate, loadCapsuleStore } from "@/services/capsuleService";
 import { getCapsuleAsUnit, getCapsuleCandidates, getCapsuleMultipleCandidateSummary } from "@/services/capsuleAnalyticsService";
 import { getCandidateEffectivity, getClientEffectivity, getUnitEffectivity } from "@/services/capsuleEffectivityService";
-import { getEffortBu } from "@/services/capsuleAuxiliaryService";
-import { CAPSULE_COMBINED_TEMPLATE, CAPSULE_ISOLATED_TEMPLATE, CLINICAL_TEMPLATE } from "./capsuleReportTemplates";
+import { getAssessmentChain, getEffortBu } from "@/services/capsuleAuxiliaryService";
+import {
+  CANDIDATE_COMBINED_TEMPLATE, CANDIDATE_ISOLATED_TEMPLATE, CAPSULE_COMBINED_TEMPLATE, CAPSULE_ISOLATED_TEMPLATE, CLINICAL_TEMPLATE,
+} from "./capsuleReportTemplates";
 import { fillTemplate } from "./capsuleReportFill";
 import { thresholdsOf } from "@/app/dashboard/control-view/capsule/capsuleConfig";
 import { CAPSULE_COMBINED, CAPSULE_ISOLATED, RATIO_KEYS, RATIO_NAMES } from "./capsuleMetrics";
@@ -95,128 +97,6 @@ function effectivityRows(eff, dayByPp) {
 const benchmarkRows = (list = []) => [...list].sort((a, b) => Number(a.benchmarkId) - Number(b.benchmarkId))
   .map((b) => [b.benchmarkId, b.benchmarkType, b.benchmarkRef, b.benchmarkDescription]);
 
-/** Candidate report of one candidate in one capsule. */
-export async function buildCapsuleCandidateReport(capsuleId, candidateId) {
-  const capsule = await getCapsuleAsUnit(capsuleId);
-  const type = capsule.capsuleType;
-  const store = await loadCapsuleStore(capsule.clientId);
-  const candidates = await getCapsuleCandidates(capsule.id);
-  const candidate = candidates.find((c) => String(c.id) === String(candidateId)) || {};
-  const roster = (await getCapsuleRosterByCapsuleId(capsule.id)).find((r) => String(r.candidateId) === String(candidateId)) || {};
-  const summary = await getCapsuleMultipleCandidateSummary({ capsuleId: capsule.id, candidate_id: String(candidateId) });
-  const results = (summary.results || []).slice().sort((a, b) => ppSort(a.ppId, b.ppId));
-  const avg = summary.averages?.[0] || {};
-  const cum = summary.cumulativeSums?.[0] || {};
-  const scores = (await getCapsuleScoresByCapsuleAndCandidate(capsule.id, candidateId)).slice().sort((a, b) => ppSort(Number(a.ppId), Number(b.ppId)));
-  const blocks = store.blocks.filter((b) => String(b.capsuleId) === String(capsule.id) && String(b.candidate_id) === String(candidateId))
-    .sort((a, b) => ppSort(Number(a.ppId), Number(b.ppId)));
-  const needs = (store.auxNeedAssessments || []).filter((n) => String(n.unitId) === String(capsule.id) && String(n.candidateId) === String(candidateId));
-  const marks = (store.auxCandidateMarks || []).filter((m) => String(m.unitId) === String(capsule.id) && String(m.candidateId) === String(candidateId));
-  const eff = await getCandidateEffectivity(capsule.id, candidateId).catch(() => null);
-  const dayByPp = new Map(results.map((r) => [r.ppId, r.cumulativeDuration]));
-  const ratios = RATIO_KEYS[type] || [];
-  const { leaders, assessors } = staffNames(capsule.staffAssignments);
-  const pos = positiveRows(results);
-  const profCols = proficiencyLoadColumns(type);
-  const profLoads = computeLoads(pos, profCols);
-  const growthLoads = computeLoads(pos, GROWTH_LOAD_COLUMNS);
-  const pairs = diversityPairs(type);
-  const diversity = computeDiversity(pos, pairs, thresholdsOf(capsule).NDIV);
-  const att = ["presentCount", "excusedAbsences", "unexcusedAbsences", "excusedTardies", "unexcusedTardies"].map((k) => Number(roster[k]) || 0);
-  const attTotal = att.reduce((a, b) => a + b, 0);
-  const engage = ["High", "Medium", "Low", "N/A"].map((l) => scores.filter((s) => (s.engageLevel || "N/A") === l).length);
-  const naByPp = new Map(needs.map((n) => [Number(n.ppId), n]));
-
-  return finalize([
-    headerLines("Candidate"), "", introLines(), "",
-    sectionBanner(1), "",
-    subHeader("CANDIDATE DETAILS :"),
-    kv("Last Name", text(candidate.lastName), W), kv("First Name", text(candidate.firstName), W),
-    kv("Candidate ID", text(candidate.candidateId), W), kv("Candidate Start Date", isoDate(candidate.startDate), W),
-    kv("Nationality", text(candidate.nationality), W), kv("Date of Birth", isoDate(candidate.dateOfBirth), W),
-    kv("Special ID No.", text(candidate.specialIdNo), W), kv("Age Range", text(roster.ageRange), W), "",
-    subHeader("CAPSULE DETAILS :"),
-    kv("Capsule Name", text(capsule.capsuleName), W), kv("Capsule ID", text(capsule.capsuleId), W),
-    kv("Capsule Start Date", text(capsule.capsuleStartDate), W), kv("Capsule End Date", text(capsule.capsuleEndDate), W),
-    kv("Signature Profile", text(capsule.signatureProfile), W), kv("Capsule Type", text(type), W),
-    kv("Environment", text(capsule.environment), W), kv("Capsule Roster Count", text(candidates.length), W), "",
-    ...leaders.map((n, i) => kv(`Assigned Leader #${i + 1}`, n, W)), "",
-    ...assessors.map((n, i) => kv(`Assigned Assessor #${i + 1}`, n, W)), "",
-    sectionBanner(2), "",
-    subHeader("ASSESSMENT BLOCKS:"),
-    table(["PP ID", "PERIOD TYPE", "DELIVERY", "SHORT DESCRIPTION"], blocks.map((b) => [b.ppId, b.periodType, b.delivery, b.shortDescription])),
-    sectionBanner(3), "",
-    subHeader("GRADE SCALE DEFINITION & THRESHOLDS:"),
-    capsuleThresholdLines(capsule),
-    kv("Capsule Outcome for Candidate", text(roster.capsuleOutcome), { width: TH_WIDTH }), "",
-    sectionBanner(4), "",
-    subHeader("TABULATIONS - PROFICIENCY:"),
-    table(["PP ID", "PC1", "PC2", "PC3", ...ratios, "XEP", "XCP", "XBP", "STA/P"],
-      results.map((r) => [r.ppId, n3(r.PC1), n3(r.PC2), n3(r.PC3), ...ratios.map((k) => n3(r[k])), n3(r.XEP), n3(r.XCP), n3(r.XBP), text(r.STAP)])),
-    kv("Average Principal Ratio - PC1", n3(avg.PC1)), kv("Average Principal Ratio - PC2", n3(avg.PC2)), kv("Average Principal Ratio - PC3", n3(avg.PC3)), "",
-    ...ratios.map((k) => kv(`Average ${RATIO_NAMES[k]} - ${k}`, n3(avg[k]))), "",
-    kv("Average Equivalent Proficiency - XEP", n3(avg.XEP)), kv("Average Composite Proficiency - XCP", n3(avg.XCP)), kv("Average Band Proficiency - XBP", n3(avg.XBP)), "",
-    subHeader("TABULATIONS - GROWTH:"),
-    table(["PP ID", "DAYCOUNT", "ΔPC1", "ΔPC2", "ΔPC3", "∆GEQ", "STA/G"],
-      results.map((r) => [r.ppId, n2(r.cumulativeDuration), n3(r.dPC1), n3(r.dPC2), n3(r.dPC3), n3(r.GEQ), text(r.STAG)])),
-    ...[1, 2, 3].flatMap((i) => [kv(`Cumulative Growth - ΔPC${i}`, n3(cum[`dPC${i}`])), kv(`Average Growth - ΔPC${i}`, n3(avg[`dPC${i}`])), ""]),
-    kv("Average Equivalent Growth - ∆GEQ", n3(avg.GEQ)), "",
-    subHeader("TABULATIONS - HYBRID:"),
-    table(["PP ID", "DAYCOUNT", "MSIP", "IC"], results.map((r) => [r.ppId, n2(r.cumulativeDuration), n3(r.MSIP), n2(icValue(r.IC))])),
-    kv("Butler Interaction Proficiency - MSIP", n3(avg.MSIP)), kv("Average Interaction Class - IC", n2(icValue(avg.IC))), "",
-    sectionBanner(5), "",
-    subHeader("BUTLER PRODUCTIVITY & UTILIZATION:"),
-    table(["PP ID", "CRITICAL REFERENCE DATE", "DAYCOUNT", "PRODUCTIVITY RATES - CSD", "PRODUCTIVITY RATES - NSD"],
-      results.map((r) => [r.ppId, isoDate(r.criticalRefDate), n2(r.cumulativeDuration), n3(r.Productivity_CSD), n3(r.Productivity_NSD)])),
-    subHeader("ATTENDANCE TRACKING:"),
-    ...["Present", "Excused Absences", "Unexcused Absences", "Excused Tardies", "Unexcused Tardies"]
-      .map((l, i) => kv(`Attendance % - ${l}`, attTotal ? n3(att[i] / attTotal) : "-")), "",
-    subHeader("ENGAGEMENT TRACKING:"),
-    ...["High", "Medium", "Low", "Not Applicable"].map((l, i) => kv(`Engagement Level % - ${l}`, scores.length ? n3(engage[i] / scores.length) : "-")), "",
-    sectionBanner(6), "",
-    subHeader("BENCHMARKS:"),
-    table(["BIDs", "BENCHMARK TYPE", "BENCHMARK REF", "BENCHMARK DESCRIPTION"], benchmarkRows(capsule.benchmarks)),
-    subHeader("CANDIDATE MARKS:"),
-    table(["ENTRY", "IMPACT TYPE", "CONCERN IDENTIFIED", "IDENTITY DATE", "CONCERN RESOLVED", "RESOLUTION DATE"],
-      marks.map((m, i) => [i + 1, m.impactType, m.concernIdentified, isoDate(m.identityDate), m.concernResolved, isoDate(m.resolutionDate)])),
-    subHeader("NEEDS ASSESSMENT:"),
-    table(["PP ID", "CRITICAL REFERENCE DATE", "ACTION STATUS", "BID", "OBSERVATIONS & GOALS"],
-      results.map((r) => {
-        const na = naByPp.get(Number(r.ppId));
-        const b = linkedBids(na);
-        return [r.ppId, isoDate(r.criticalRefDate), actionStatus(na).toUpperCase(), b.length ? b.join(", ") : "-", text(na?.observation?.trim())];
-      })),
-    sectionBanner(7), "",
-    subHeader("RECORD OF ASSIGNMENTS:"),
-    table(["PP ID", "DAYCOUNT", "TASK DECLARATION", "CAPACITY", "ATTAINED SCORE", "MAX SCORE"],
-      scores.map((s) => [s.ppId, n2(s.durationDays), s.taskDeclaration, s.capacity, s.attainedScore, s.maxScore])),
-    table(["PP ID", "WORKFLOW STAGE", "ASSESSMENT TYPE", "SCHEDULE IMPACT", "ENGAGEMENT LEVEL"],
-      scores.map((s) => [s.ppId, s.workflowStage, s.assessmentType, s.scheduleImpact, s.engageLevel])),
-    table(["PP ID", "CAUSE TYPE", "CONDITION TYPE", "SEVERITY LEVEL", "SCAN TYPE", "MONITOR TYPE", "THERAPY TYPE"],
-      scores.map((s) => [s.ppId, s.causeType, s.conditionType, s.severityLevel, s.scanType, s.monitorType, s.therapyType])),
-    sectionBanner(8), "",
-    subHeader("NEUROSCIENCE - LOADS (PROFICIENCY):"),
-    table(["PP ID", ...profCols.map((c) => c.column)], profLoads.map((r) => [r.ppId, ...profCols.map((c) => n3(r[c.key]))])),
-    subHeader("NEUROSCIENCE - LOADS (GROWTH):"),
-    table(["PP ID", ...GROWTH_LOAD_COLUMNS.map((c) => c.column)], growthLoads.map((r) => [r.ppId, ...GROWTH_LOAD_COLUMNS.map((c) => n3(r[c.key]))])),
-    subHeader("NEUROSCIENCE - NEURODIVERSITY:"),
-    ...pairs.map((p) => {
-      const s = diversity.map((r) => r[p.statusKey]).filter(Boolean);
-      return kv(`Divergent % - ${p.label}`, s.length ? n3(s.filter((x) => x === "Divergent").length / s.length) : "-");
-    }), "",
-    sectionBanner(9), "",
-    subHeader("EFFECTIVITY:"),
-    EFFECTIVITY_INTRO,
-    effectivityThresholdLines(eff?.thresholds), "",
-    effectivityRows(eff, dayByPp),
-    ...PARAMS.map((i) => kv(`Average Effectivity Parameter ${pNum(i)}`, n3(eff?.average?.parameters?.[i]))), "",
-    effectivityTypeLines(eff?.typeBreakdown), "",
-    sectionBanner(10), "",
-    nomenclatureBlock(),
-    legalBlock(),
-  ]);
-}
-
 /** Leader names "Last, First" (3 lines each). */
 const ENGAGE = [["High", "High"], ["Medium", "Medium"], ["Low", "Low"], ["Not Applicable", "N/A"]];
 const ATTENDANCE = [
@@ -245,6 +125,168 @@ function capsuleThresholdValues(capsule) {
 }
 
 const effectivityThresholdValues = (th) => Object.fromEntries(PARAMS.map((i) => [`Parameter ${pNum(i)}`, n3(th?.[i])]));
+
+/** Header columns of a "||| A |||     ||| B |||" template line. */
+const headerColumns = (line) => [...line.matchAll(/\|\|\| (.+?) \|\|\|/g)].map((m) => m[1]);
+
+/** Needs Assessment Chain block (chains side by side, Rick's capsule layout "IC #: <PC1,PC2,PC3> = <#,#,#>"). */
+function capsuleChainLines(chains) {
+  const COL = 52;
+  const blocks = (Array.isArray(chains) ? chains : []).map((chain, idx) => {
+    const sels = (chain?.selections || []).filter((s) => s && (s.RRN != null || s.PRN != null || s.ARN != null
+      || (Array.isArray(s.benchmarkIds) && s.benchmarkIds.length) || s.actionStatus));
+    const body = [];
+    sels.forEach((s, i) => {
+      if (i > 0) body.push("");
+      const bids = Array.isArray(s.benchmarkIds) && s.benchmarkIds.length ? s.benchmarkIds.join(", ") : "-";
+      body.push(
+        ` Performance Point ID ${text(s.ppId)}`,
+        ` IC #${icValue(s.IC) ?? "-"}: <PC1,PC2,PC3> = <${n3(s.RRN)},${n3(s.PRN)},${n3(s.ARN)}>`,
+        ` Benchmark IDs: ${bids}`,
+        ` Action Status: ${text(s.actionStatus)}`,
+        ` Critical Reference Date: ${isoDate(s.criticalRefDate)}`,
+      );
+    });
+    return body.length ? { header: `||| ASSESSMENT CHAIN ${idx + 1} |||`, body } : null;
+  }).filter(Boolean);
+  if (!blocks.length) return ["     ||| ASSESSMENT CHAIN 1 |||", "", "     -"];
+  const max = Math.max(...blocks.map((b) => b.body.length));
+  return [
+    `     ${blocks.map((b) => b.header.padEnd(COL)).join("").trimEnd()}`,
+    "",
+    ...Array.from({ length: max }, (_, i) => blocks.map((b) => (b.body[i] ?? "").padEnd(COL)).join("").trimEnd()),
+  ];
+}
+
+/** Candidate report of one candidate in one capsule (Rick's "Candidate Report - Combined / Isolated (new)"). */
+export async function buildCapsuleCandidateReport(capsuleId, candidateId) {
+  const capsule = await getCapsuleAsUnit(capsuleId);
+  const type = capsule.capsuleType;
+  const th = thresholdsOf(capsule);
+  const store = await loadCapsuleStore(capsule.clientId);
+  const candidates = await getCapsuleCandidates(capsule.id);
+  const candidate = candidates.find((c) => String(c.id) === String(candidateId)) || {};
+  const roster = (await getCapsuleRosterByCapsuleId(capsule.id)).find((r) => String(r.candidateId) === String(candidateId)) || {};
+  const summary = await getCapsuleMultipleCandidateSummary({ capsuleId: capsule.id, candidate_id: String(candidateId) });
+  const results = (summary.results || []).slice().sort((a, b) => ppSort(a.ppId, b.ppId));
+  const avg = summary.averages?.[0] || {};
+  const cum = summary.cumulativeSums?.[0] || {};
+  const scores = (await getCapsuleScoresByCapsuleAndCandidate(capsule.id, candidateId)).slice().sort((a, b) => ppSort(Number(a.ppId), Number(b.ppId)));
+  const blocks = store.blocks.filter((b) => String(b.capsuleId) === String(capsule.id) && String(b.candidate_id) === String(candidateId))
+    .sort((a, b) => ppSort(Number(a.ppId), Number(b.ppId)));
+  const needs = (store.auxNeedAssessments || []).filter((n) => String(n.unitId) === String(capsule.id) && String(n.candidateId) === String(candidateId));
+  const marks = (store.auxCandidateMarks || []).filter((m) => String(m.unitId) === String(capsule.id) && String(m.candidateId) === String(candidateId));
+  const eff = await getCandidateEffectivity(capsule.id, candidateId).catch(() => null);
+  const effort = await getEffortBu(capsule.id, candidateId).catch(() => null);
+  const chains = await getAssessmentChain(capsule.id, candidateId).then((r) => r?.results ?? r).catch(() => []);
+  const dayByPp = new Map(results.map((r) => [r.ppId, r.cumulativeDuration]));
+  const { leaders, assessors } = staffNames(capsule.staffAssignments);
+  const pos = positiveRows(results);
+  const loads = computeLoads(pos, [...proficiencyLoadColumns(type), ...GROWTH_LOAD_COLUMNS]);
+  const loadKey = Object.fromEntries([...proficiencyLoadColumns(type), ...GROWTH_LOAD_COLUMNS].map((c) => [c.column.replace(/Δ/g, "∆"), c.key]));
+  const pairs = diversityPairs(type);
+  const diversity = computeDiversity(pos, pairs, th.NDIV);
+  const pairKey = Object.fromEntries(pairs.map((p) => [p.label, p.key]));
+  const att = ATTENDANCE.map(([, k]) => Number(roster[k]) || 0);
+  const attTotal = att.reduce((a, b) => a + b, 0);
+  const engage = ENGAGE.map(([, k]) => scores.filter((s) => (s.engageLevel || "N/A") === k).length);
+  const naByPp = new Map(needs.map((n) => [Number(n.ppId), n]));
+  const irregularities = [...(candidate.irregularities || [])].sort((a, b) => (a.sequenceNumber ?? 0) - (b.sequenceNumber ?? 0));
+  const effRows = eff?.rows || [];
+
+  // one value per template column, by the row source of the table
+  const day = (pp, fallback) => n2(dayByPp.get(pp) ?? fallback);
+  const resultCell = (r, col) => {
+    const c = col.replace(/∆/g, "Δ");
+    if (c === "PP ID") return r.ppId;
+    if (c === "DAYCOUNT") return n2(r.cumulativeDuration);
+    if (c === "CRITICAL REFERENCE DATE") return isoDate(r.criticalRefDate);
+    if (c === "STA/P") return text(r.STAP);
+    if (c === "STA/G") return text(r.STAG);
+    if (c === "IC") return n2(icValue(r.IC));
+    if (c === "ΔGEQ") return n3(r.GEQ);
+    if (/^ΔPC\d$/.test(c)) return n3(r[`dPC${c.slice(3)}`]);
+    if (c === "PRODUCTIVITY RATES - CSD") return n3(r.Productivity_CSD);
+    if (c === "PRODUCTIVITY RATES - NSD") return n3(r.Productivity_NSD);
+    return n3(r[c]);
+  };
+  const scoreCell = (s, col) => ({
+    "PP ID": s.ppId, DAYCOUNT: n2(s.durationDays), "TASK DECLARATION": s.taskDeclaration, "ATTAINED SCORE": s.attainedScore,
+    "MAX SCORE": s.maxScore, "WORKFLOW STAGE": s.workflowStage, "ASSESSMENT TYPE": s.assessmentType, "SCHEDULE IMPACT": s.scheduleImpact,
+    "CAUSE TYPE": s.causeType, "CONDITION TYPE": s.conditionType, "SEVERITY LEVEL": s.severityLevel, "SCAN TYPE": s.scanType,
+    "MONITOR TYPE": s.monitorType, "THERAPY TYPE": s.therapyType,
+  }[col]);
+  const effCell = (r, col) => {
+    if (col === "PP ID") return r.ppId;
+    if (col === "DAYCOUNT") return day(r.ppId, r.totalDuration);
+    const pm = col.match(/^Parameter (\d+)$/);
+    if (pm) return r.parameters ? n3(r.parameters[Number(pm[1]) - 1]) : "-";
+    return text(r[`effectivity${col}`]);
+  };
+  function rowsFor(cols) {
+    if (cols.includes("PERIOD TYPE")) return blocks.map((b) => [b.ppId, b.periodType, b.delivery, b.shortDescription]);
+    if (cols.includes("IRREGULARITY TYPE")) return irregularities.map((x, i) => [x.sequenceNumber ?? i + 1, x.type, x.comments]);
+    if (cols.includes("BENCHMARK TYPE")) return benchmarkRows(capsule.benchmarks);
+    if (cols.includes("IMPACT TYPE")) {
+      return marks.map((m, i) => [m.entryNumber ?? i + 1, m.impactType, m.concernIdentified, isoDate(m.identityDate), m.concernResolved, isoDate(m.resolutionDate)]);
+    }
+    if (cols.includes("ACTION STATUS")) {
+      return results.map((r) => {
+        const na = naByPp.get(Number(r.ppId));
+        const b = linkedBids(na);
+        return [r.ppId, isoDate(r.criticalRefDate), actionStatus(na).toUpperCase(), b.length ? b.join(", ") : "-", text(na?.observation?.trim())];
+      });
+    }
+    if (cols.some((c) => ["TASK DECLARATION", "WORKFLOW STAGE", "SEVERITY LEVEL"].includes(c))) return scores.map((s) => cols.map((c) => scoreCell(s, c)));
+    if (cols.some((c) => c.startsWith("Load/"))) {
+      return loads.map((l) => cols.map((c) => (c === "PP ID" ? l.ppId : c === "DAYCOUNT" ? day(l.ppId) : n3(l[loadKey[c]]))));
+    }
+    if (cols.some((c) => pairKey[c])) {
+      return diversity.map((d) => cols.map((c) => (c === "PP ID" ? d.ppId : c === "DAYCOUNT" ? day(d.ppId) : n3(d[pairKey[c]]))));
+    }
+    if (cols.includes("Type") || cols.some((c) => /^Parameter \d+$/.test(c))) return effRows.map((r) => cols.map((c) => effCell(r, c)));
+    return results.map((r) => cols.map((c) => resultCell(r, c)));
+  }
+
+  // the chain block of the template is replaced as a whole
+  const base = type === CAPSULE_COMBINED ? CANDIDATE_COMBINED_TEMPLATE : CANDIDATE_ISOLATED_TEMPLATE;
+  const lines = base.split("\n");
+  const chainStart = lines.findIndex((l) => l.includes("||| ASSESSMENT CHAIN 1 |||"));
+  const chainEnd = lines.findIndex((l, i) => i > chainStart && /SECTION 07/.test(l));
+  const CHAIN_MARK = "@@ASSESSMENT_CHAIN@@";
+  const template = chainStart >= 0 && chainEnd > chainStart
+    ? [...lines.slice(0, chainStart), CHAIN_MARK, "", ...lines.slice(chainEnd)].join("\n")
+    : base;
+
+  const tables = {};
+  template.split("\n").filter((l) => /^\s*\|\|\| /.test(l)).forEach((l) => { tables[l.replace(/\s+/g, " ").trim()] = rowsFor(headerColumns(l)); });
+
+  const values = {
+    "Last Name": text(candidate.lastName), "First Name": text(candidate.firstName), "Candidate ID": text(candidate.candidateId),
+    "Candidate Start Date": isoDate(candidate.startDate ?? candidate.candidateStartDate), Nationality: text(candidate.nationality),
+    "Date of Birth": isoDate(candidate.dateOfBirth), "Special ID No.": text(candidate.specialIdNo),
+    "Capsule Name": text(capsule.capsuleName), "Capsule ID": text(capsule.capsuleId),
+    "Capsule Start Date": text(capsule.capsuleStartDate), "Capsule End Date": text(capsule.capsuleEndDate),
+    "Signature Profile": text(capsule.signatureProfile), "Capsule Type": text(type), "Capsule Roster Count": text(candidates.length),
+    ...Object.fromEntries(leaders.map((n, i) => [`Assigned Leader #${i + 1}`, n])),
+    ...Object.fromEntries(assessors.map((n, i) => [`Assigned Assessor #${i + 1}`, n])),
+    "Capsule Outcome for Candidate": text(roster.capsuleOutcome ?? candidate.capsuleOutcome),
+    ...Object.fromEntries([1, 2, 3].map((i) => [`Average Principal ${i} Ratio - PC${i}`, n3(avg[`PC${i}`])])),
+    "Average Equivalent Proficiency - XEP": n3(avg.XEP), "Average Composite Proficiency - XCP": n3(avg.XCP), "Average Band Proficiency - XBP": n3(avg.XBP),
+    ...Object.fromEntries([1, 2, 3].flatMap((i) => [[`Cumulative Growth - ΔPC${i}`, n3(cum[`dPC${i}`])], [`Average Growth - ΔPC${i}`, n3(avg[`dPC${i}`])]])),
+    "Average Equivalent Growth - ∆GEQ": n3(avg.GEQ),
+    "Butler Interaction Proficiency - MSIP": n3(avg.MSIP), "Average Interaction Class - IC": n2(icValue(avg.IC)),
+    "Effort - CSD Reference": n3(effort?.data?.CSD), "Effort - NSD Reference": n3(effort?.data?.USD),
+    ...Object.fromEntries(ATTENDANCE.map(([l], i) => [`Attendance % - ${l}`, fraction(att[i], attTotal)])),
+    ...Object.fromEntries(ENGAGE.map(([l], i) => [`Engagement Level % - ${l}`, fraction(engage[i], scores.length)])),
+    ...Object.fromEntries(EFFECTIVITY_TYPES.map((t) => [`Effectivity Type % - ${t}`, eff?.typeBreakdown ? n3(eff.typeBreakdown.percentages?.[t]) : "-"])),
+  };
+  const filled = fillTemplate(template, {
+    values, tables, thresholds: { ...capsuleThresholdValues(capsule), ...effectivityThresholdValues(eff?.thresholds) },
+  }).text;
+  return filled.replace(new RegExp(`^.*${CHAIN_MARK}.*$`, "m"), capsuleChainLines(chains).join("\n"));
+}
+
 
 /** Capsule Report (Rick's "Capsule Report - Combined / Isolated (new)" templates). */
 export async function buildCapsuleReport(capsuleId) {

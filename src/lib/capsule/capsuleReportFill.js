@@ -14,7 +14,7 @@ const keyOf = (s) => norm(s).replace(/∆/g, "Δ");
 const PLACEHOLDER = /^(XXX|X\.XXX|Last Name, First Name)$/;
 const show = (v) => (v === null || v === undefined || String(v).trim() === "" ? "-" : String(v));
 
-function tableRows(headerLine, rows) {
+export function tableRows(headerLine, rows) {
   const starts = [];
   const re = /\|\|\| (.+?) \|\|\|/g;
   let m;

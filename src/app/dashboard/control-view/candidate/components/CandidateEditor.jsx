@@ -99,7 +99,7 @@ const incomeOptions = [
   "> $100k",
 ];
 
-const irregularityOptions = ["Disability", "Special Needs", "Other"];
+const irregularityOptions = ["Antisocial Disorder", "Autism", "Deaf-Blindness", "Deafness", "Disability", "Emotional Disturbance", "Gross Deviancy", "Hearing Impairment", "Intellectual Disability", "Mental Defect", "Military - Motion or Nerve", "Military - Paralysis", "Military - PTSD", "Mute", "Orthopedic Impairment", "Other", "Other Health Impairment (OHI)", "Psychopathy", "RTI and MTSS", "Sociopathy", "Special Needs", "Specific Learning Disability", "Speech/Language Impairment", "Traumatic Brain Injury (TBI)", "Visual Impairment"];
 
 const initialFormState = {
   "Last Name": "",

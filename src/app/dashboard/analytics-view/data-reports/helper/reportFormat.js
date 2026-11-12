@@ -104,5 +104,6 @@ export function finalize(lines) {
     out.push(l);
   });
   while (out.length && out[out.length - 1] === "") out.pop();
-  return out.join("\n") + "\n";
+  // Rick's templates: the first row of every report is always blank
+  return "\n" + out.join("\n") + "\n";
 }

@@ -986,7 +986,14 @@ export function getGrowthTarget3D(n, pc1, pc2, pc3) {
     return special.slice((n - 1) * 3, n * 3).map(r3);
   }
   const fn = [CalcGT1, CalcGT2, CalcGT3, CalcGT4, CalcGT5][n - 1];
-  const gt = fn(pc1 ?? 0, pc2 ?? 0, pc3 ?? 0);
+  let point = [pc1 ?? 0, pc2 ?? 0, pc3 ?? 0];
+  if (n === 5) {
+    // GT5 is computed FROM GT4 (Rick, Calculation Issue 01; same as the unit tabulation on the server).
+    // Special cases above are still decided by the original performance point.
+    const gt4 = CalcGT4(pc1 ?? 0, pc2 ?? 0, pc3 ?? 0) || [];
+    point = point.map((v, i) => gt4[i] ?? v);
+  }
+  const gt = fn(...point);
   if (!gt || gt.length < 3) return [null, null, null];
   return gt.map(r3);
 }
