@@ -14,17 +14,43 @@ const keyOf = (s) => norm(s).replace(/∆/g, "Δ");
 const PLACEHOLDER = /^(XXX|X\.XXX|Last Name, First Name)$/;
 const show = (v) => (v === null || v === undefined || String(v).trim() === "" ? "-" : String(v));
 
-export function tableRows(headerLine, rows) {
-  const starts = [];
+/**
+ * Table under a "||| A |||     ||| B |||" header. Each value starts under its header text; when the values of a
+ * column are longer than the space before the next column, that next column (header and values) and all columns after it
+ * move right, so columns never run into each other (Rick, Issue 03: Scan / Monitor / Therapy Type).
+ * @returns { header, lines } – header: the header line with the final column positions
+ */
+export function layoutTable(headerLine, rows) {
+  const cols = [];
   const re = /\|\|\| (.+?) \|\|\|/g;
   let m;
-  while ((m = re.exec(headerLine))) starts.push(m.index + 4);
-  if (!rows || !rows.length) return [`${" ".repeat(starts[0] ?? 9)}-`];
-  return rows.map((row) => starts.reduce((line, start, i) => {
-    const v = show(row[i]);
-    const at = line.length + 2 > start ? line.length + 2 : start; // keep two spaces when a value is long
-    return line.padEnd(at) + v;
-  }, ""));
+  while ((m = re.exec(headerLine))) cols.push({ at: m.index, token: m[0] });
+  if (!cols.length) return { header: headerLine, lines: [] };
+  const list = (rows || []).map((row) => cols.map((_, i) => show(row?.[i])));
+  const GAP = 3; // at least 3 spaces after the longest value of a column
+  const starts = [];
+  let shift = 0;
+  cols.forEach((c, i) => {
+    let start = c.at + 4 + shift;
+    if (i > 0) {
+      const prevLongest = Math.max(0, ...list.map((r) => r[i - 1].length));
+      const need = starts[i - 1] + prevLongest + GAP; // header spacing of the template is kept (columns only move by "shift")
+      if (start < need) { shift += need - start; start = need; }
+    }
+    starts.push(start);
+  });
+  const header = shift === 0
+    ? headerLine
+    : cols.reduce((line, c, i) => line.padEnd(starts[i] - 4) + c.token, headerLine.slice(0, cols[0].at));
+  const lines = list.length
+    ? list.map((r) => r.reduce((line, v, i) => line.padEnd(i === 0 ? starts[0] : Math.max(starts[i], line.length + 2)) + v, ""))
+    : [`${" ".repeat(starts[0])}-`];
+  return { header, lines };
+}
+
+/** Rows only (header positions unchanged unless a column had to move). */
+export function tableRows(headerLine, rows) {
+  return layoutTable(headerLine, rows).lines;
 }
 
 /**
@@ -49,7 +75,8 @@ export function fillTemplate(template, { values = {}, tables = {}, thresholds = 
 
     // table header → header + rows
     if (/^\s*\|\|\| /.test(line)) {
-      out.push(line, "", ...tableRows(line, T[keyOf(line)]));
+      const t = layoutTable(line, T[keyOf(line)]);
+      out.push(t.header, "", ...t.lines);
       return;
     }
 

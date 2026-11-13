@@ -2,7 +2,8 @@
  * Audit Status – one .ez file per Unit / Capsule, built from Rick's Audit Status templates
  * (src/lib/audit/auditTemplates.js, filled by src/lib/audit/auditFill.js). File name: Audit_<Name>_<ID>.ez
  *
- *  PRELIMINARY ALERTS          all units (unit files) / all capsules (capsule files) of the client
+ *  PRELIMINARY ALERTS          all units (unit files) / all capsules (capsule files) of the client:
+ *                              Candidate-to-Leader Ratio > 20, Benchmarks Count ≤ 10, Assessment Blocks ≤ 8
  *  DETAILS - AUDITS AND ALERTS the unit / capsule of the file:
  *    data summary, candidates with Attendance - Present < 0.900, open Needs Assessment items (a PP ID with
  *    no BID and no observation), negative candidate marks, leaders with negative leader marks,
@@ -68,7 +69,8 @@ const positivePpCount = (ppIds) => new Set(ppIds.map(Number).filter((p) => p > 0
 function preliminary(entities) {
   const pick = (test) => entities.filter(test).map((e) => [e.name, e.code]);
   return {
-    CTL10: pick((e) => e.leaders > 0 && e.candidates / e.leaders <= 10),
+    // Candidate-to-Leader Ratio > 20 (Rick, Issue 01); no leader at all with candidates = no ratio limit → listed
+    CTL20: pick((e) => e.candidates > 0 && (e.leaders === 0 || e.candidates / e.leaders > 20)),
     BC10: pick((e) => e.benchmarks <= 10),
     AB8: pick((e) => e.blocks <= 8),
     total: entities.length,
@@ -82,7 +84,7 @@ function preliminary(entities) {
 function resolver({ prelim, people, leaders, threshold }) {
   const cmp = (op, v, t) => (op === ">" ? v > t : op === "≤" ? v <= t : v < t);
   return ({ key, op, fixed }) => {
-    if (key === "CTL10" || key === "BC10" || key === "AB8") return { threshold: null, rows: prelim[key] };
+    if (key === "CTL20" || key === "BC10" || key === "AB8") return { threshold: null, rows: prelim[key] };
     if (key === "ATTENDANCE") return { threshold: null, rows: people.filter((p) => p.attendance !== null && p.attendance < (fixed ?? 0.9)).map((p) => p.row) };
     if (key === "OPEN_NEEDS") return { threshold: null, rows: people.filter((p) => p.open).map((p) => p.row) };
     if (key === "NEG_CANDIDATE_MARKS") return { threshold: null, rows: people.filter((p) => p.negative).map((p) => p.row) };
