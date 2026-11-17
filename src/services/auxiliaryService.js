@@ -9,10 +9,12 @@ export const getAuxiliarydata = async (unitId, candidateId, filters = {}) => {
 
     if (safeFilters.ppIdFrom) params.append("ppIdFrom", safeFilters.ppIdFrom);
     if (safeFilters.ppIdTo) params.append("ppIdTo", safeFilters.ppIdTo);
-    if (safeFilters.criticalRefDateFrom)
-      params.append("criticalRefDateFrom", safeFilters.criticalRefDateFrom);
-    if (safeFilters.criticalRefDateTo)
-      params.append("criticalRefDateTo", safeFilters.criticalRefDateTo);
+    // Rick (Issue 05): the Secondary Input Area sends criticalDateFrom / criticalDateTo, so both
+    // spellings are accepted (before, the critical reference range was never sent to the server)
+    const dateFrom = safeFilters.criticalRefDateFrom || safeFilters.criticalDateFrom;
+    const dateTo = safeFilters.criticalRefDateTo || safeFilters.criticalDateTo;
+    if (dateFrom) params.append("criticalRefDateFrom", dateFrom);
+    if (dateTo) params.append("criticalRefDateTo", dateTo);
 
     const url = `${API_ROUTES.AUXILIARY}/unit/${unitId}/candidate/${candidateId}${
       params.toString() ? `?${params.toString()}` : ""

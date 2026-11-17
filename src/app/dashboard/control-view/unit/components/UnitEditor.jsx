@@ -737,6 +737,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                         <td className="border border-gray-300 px-2 py-1">
                           <input
                             type="text"
+                            maxLength={50}
                             value={bm.benchmarkRef}
                             onFocus={() => setFormStatus("Editing...")}
                             onBlur={() => setFormStatus("Ready...")}
@@ -747,6 +748,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                         <td className="border border-gray-300 px-2 py-1">
                           <input
                             type="text"
+                            maxLength={50}
                             value={bm.benchmarkDescription}
                             onFocus={() => setFormStatus("Editing...")}
                 onBlur={() => setFormStatus("Ready...")}
@@ -826,6 +828,7 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
                   type="text"
                   placeholder="Enter short description"
                   name="shortDescription"
+                  maxLength={50}
                   value={blockData?.shortDescription}
                   onFocus={() => setFormStatus("Editing...")}
                   onBlur={() => setFormStatus("Ready...")}

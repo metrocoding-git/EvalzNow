@@ -103,8 +103,10 @@ async function extractAllTables(capsule, candidates) {
   const ws = wb.addWorksheet("Neuro Tools Tables");
   const date = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   ["EvalzNow – A Novel Human Capital Assessment Method", "Capacity Accounting for Education and Industry",
-    "Hybrid Proficiency & Growth Monitoring", `Data Extraction Date: ${date}`,
-    `Capsule: ${capsule.capsuleName} (${capsule.capsuleId})`].forEach((t) => ws.addRow([t]));
+    "Hybrid Proficiency & Growth Monitoring",
+    // Rick (Issue 09b): capsule name and capsule ID on separate lines, above the date
+    `Capsule Name: ${capsule.capsuleName ?? "-"}`, `Capsule ID: ${capsule.capsuleId ?? "-"}`,
+    `Data Extraction Date: ${date}`].forEach((t) => ws.addRow([t]));
   TABLE_TABS.filter((t) => merged[t]).forEach((name) => {
     ws.addRow([]);
     ws.addRow([name]).font = { bold: true };
