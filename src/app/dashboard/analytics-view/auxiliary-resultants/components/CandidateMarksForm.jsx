@@ -153,7 +153,7 @@ export default function CandidateMarksForm({ onClose, onSuccess, entryNumber = 1
           </label>
           <input
             type="text"
-            maxLength={80}
+            maxLength={30}
             className="col-span-1 border border-gray-300 px-2 py-1 text-sm"
             value={form.concernIdentified}
             onChange={(e) => handleChange("concernIdentified", e.target.value)}

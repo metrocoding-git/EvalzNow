@@ -258,11 +258,11 @@ export default function CreateCapsuleForm({ onClose, onSubmit, capsuleData }) {
                   </div>
                   <div className="flex flex-col">
                     <label className="text-gray-700 font-medium text-xs">Reference:</label>
-                    <input type="text" maxLength={40} value={bm.ref || ""} onChange={(e) => updateBenchmark(idx, "ref", e.target.value)} className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                    <input type="text" maxLength={50} value={bm.ref || ""} onChange={(e) => updateBenchmark(idx, "ref", e.target.value)} className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
                   </div>
                   <div className="flex flex-col">
                     <label className="text-gray-700 font-medium text-xs">Description:</label>
-                    <input type="text" maxLength={40} value={bm.description || ""} onChange={(e) => updateBenchmark(idx, "description", e.target.value)} className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                    <input type="text" maxLength={50} value={bm.description || ""} onChange={(e) => updateBenchmark(idx, "description", e.target.value)} className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
                   </div>
                   <div className="flex items-end justify-center pb-1">
                     <button type="button" onClick={() => setForm((f) => ({ ...f, benchmarks: f.benchmarks.filter((_, i) => i !== idx) }))} className="text-gray-900 hover:text-gray-900">

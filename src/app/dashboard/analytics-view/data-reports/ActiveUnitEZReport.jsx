@@ -66,21 +66,11 @@ export async function buildUnitEZReport({ unit = {} }) {
     XRR, XLR, XSR, XWR, XPR, XTR, XRVSR, XPVSR, XAVSR, XEP, XCP, XBP, MSIP, IC,
     "ΔRRN": deltaRRN, "ΔPRN": deltaPRN, "ΔARN": deltaARN, "ΔGEQ": deltaGEQ,
     rosterStats = {}, staffAssignments = [], benchmarks = [], candidates = [], rosterCandidates = [],
-    engageLevelStats, rosterPercentages, tabulationAverages, assessmentSummary, competencyStability, effectivity,
+    engageLevelStats, rosterPercentages, assessmentSummary, competencyStability, effectivity,
   } = unit;
   const tprm = unitType === TPRM;
   const { leaders, assessors } = staffNames(staffAssignments);
   const isClassroom = String(environment ?? "").trim().toLowerCase() === "classroom";
-
-  const getAvg = (key) => {
-    if (Array.isArray(tabulationAverages)) {
-      const found = tabulationAverages.find((t) => t.metric === key);
-      if (found) return found.value;
-    } else if (tabulationAverages && typeof tabulationAverages === "object") {
-      return tabulationAverages[key];
-    }
-    return null;
-  };
 
   const passPct = (key, threshold, cmp = (v, t) => v >= t) => {
     if (threshold === null || threshold === undefined || threshold === "") return null;
@@ -106,12 +96,11 @@ export async function buildUnitEZReport({ unit = {} }) {
     c.unitOutcome ?? (Array.isArray(c.roster) ? c.roster[0]?.unitOutcome : null),
   ]);
 
-  // Effort per candidate
-  const effortRows = candidates.map((c) => [
-    c.lastName, c.firstName, c.candidateId ?? c.id,
-    n3(c.effortBu?.data?.CSD ?? c.effortBu?.CSD),
-    n3(c.effortBu?.data?.USD ?? c.effortBu?.USD),
-  ]);
+  // Average productivity rates per candidate (Tabulation Table "Average" row) – Rick, Issue 07
+  const productivityRows = candidates.map((c) => {
+    const avg = avgRowOf(c);
+    return [c.lastName, c.firstName, c.candidateId ?? c.id, n3(avg?.Productivity_CSD), n3(avg?.Productivity_USD)];
+  });
 
   // Needs assessment status split (Open / Closed / Pending)
   const statusPct = assessmentSummary?.statusPercentages ?? {};
@@ -203,10 +192,8 @@ export async function buildUnitEZReport({ unit = {} }) {
     "",
     subHeader("BUTLER PRODUCTIVITY & UTILIZATION:"),
     PASS_NOTE,
-    line("Pass % Avg Productivity Rates - CSD", getAvg("Productivity_CSD")),
-    line("Pass % Avg Productivity Rates - USD", getAvg("Productivity_USD")),
-    "",
-    table(["LAST NAME", "FIRST NAME", "CANDIDATE ID", "EFFORT - CSD", "EFFORT - USD"], effortRows),
+    // no pass % for the productivity rates (Rick, Issue 07): the candidates' average rates are listed instead
+    table(["LAST NAME", "FIRST NAME", "CANDIDATE ID", "PRODUCTIVITY RATES - CSD", "PRODUCTIVITY RATES - USD"], productivityRows),
     subHeader("ATTENDANCE TRACKING:"),
     line("Attendance % - Present", rosterPercentages?.present),
     line("Attendance % - Excused Absences", rosterPercentages?.excusedAbsences),

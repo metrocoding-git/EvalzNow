@@ -60,6 +60,9 @@ async function exportCapsuleScores(capsule) {
     "EvalzNow – A Novel Human Capital Assessment Method",
     "Capacity Accounting for Education and Industry",
     "Hybrid Proficiency & Growth Monitoring",
+    // Rick (Issue 08): the capsule of the data, on two lines above the date
+    escapeCSV(`Capsule Name: ${capsule?.capsuleName ?? "-"}`),
+    escapeCSV(`Capsule ID: ${capsule?.capsuleId ?? "-"}`),
     `Data Extraction Date: ${date}`,
     "",
     SCORE_COLUMNS.map((c) => escapeCSV(c.label)).join(","),

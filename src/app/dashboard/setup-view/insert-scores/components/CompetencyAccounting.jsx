@@ -689,6 +689,9 @@ insertScores.forEach((row) => {
       rows.push("EvalzNow – A Novel Human Capital Assessment Method");
       rows.push("Competency Accounting for Education and Industry");
       rows.push("Hybrid Proficiency & Growth Monitoring");
+      // Rick (Issue 08): the unit of the data, on two lines above the date
+      rows.push(escapeCSV(`Unit Name: ${unit?.unitName ?? "-"}`));
+      rows.push(escapeCSV(`Unit ID: ${unit?.unitId ?? "-"}`));
       rows.push(`Data Extraction Date: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ')}`);
       rows.push(""); // Empty line for spacing
       rows.push(headers.map(escapeCSV).join(","));

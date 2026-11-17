@@ -501,6 +501,15 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     });
   };
 
+  // Rick (Issue 04): when the level changes, a selected chart that does not exist at the new level
+  // (e.g. the candidate-only Butler Locus plots, IDs 6–13) is cleared, so the plot area goes blank.
+  useEffect(() => {
+    if (!selectedChart) return;
+    const list = selectedSort === "activateCandidateLevel" ? activateCandidateLevel
+      : selectedSort === "activateUnitLevel" ? activateUnitLevel : [];
+    if (!list.some((c) => c.name === selectedChart.name)) setSelectedChart(null);
+  }, [selectedSort]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleChartSelect = (chart) => {
     setSelectedChart(chart);
 

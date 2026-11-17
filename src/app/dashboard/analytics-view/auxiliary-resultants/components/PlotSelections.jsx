@@ -1555,6 +1555,7 @@ const handleDeleteChain = async (chainId) => {
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       <input
                         type="text"
+                        maxLength={50}
                         value={editingObservations[item.ppId] || ""}
                         onChange={(e) => setEditingObservations(prev => ({ ...prev, [item.ppId]: e.target.value }))}
                         onBlur={async (e) => {
