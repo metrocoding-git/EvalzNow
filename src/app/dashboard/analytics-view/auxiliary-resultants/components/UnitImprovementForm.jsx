@@ -115,7 +115,7 @@ export default function UnitImprovementForm({ onClose, onSuccess, entryNumber = 
           </label>
           <input
             type="text"
-            maxLength={80}
+            maxLength={50}
             className="col-span-1 border border-gray-300 px-2 py-1 text-sm"
             value={form.lesson}
             onChange={(e) => handleChange("lesson", e.target.value)}

@@ -149,6 +149,7 @@ export default function CreateBlockManagerForm({ onClose, activeTab, unitId, can
           <input
             type="text"
             placeholder="Enter short description"
+            maxLength={50}
             value={form.shortDescription}
             onChange={(e) => handleChange("shortDescription", e.target.value)}
             className="border px-2 py-1 w-full bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"

@@ -110,10 +110,6 @@ const UNILATERAL_LABELS = {
   XTLL: "Temporal (L)", XTLR: "Temporal (R)", XOLL: "Occipital (L)", XOLR: "Occipital (R)",
 };
 const fraction = (part, whole) => (whole ? n3(part / whole) : "-");
-const mean = (vals) => {
-  const v = vals.map(Number).filter(Number.isFinite);
-  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
-};
 
 /** Threshold values of the template "PASS →" lines. */
 function capsuleThresholdValues(capsule) {
@@ -334,12 +330,11 @@ export async function buildCapsuleReport(capsuleId) {
     status[actionStatus(na)] += 1;
   });
 
-  // effort per candidate (Auxiliary Resultants)
-  const effortRows = [];
-  for (const c of candidates) {
-    const e = await getEffortBu(capsule.id, c.id).catch(() => null);
-    effortRows.push([c.lastName, c.firstName, c.candidateId, n3(e?.data?.CSD), n3(e?.data?.USD)]);
-  }
+  // average productivity rates per candidate (Tabulation Table "Average" row) – Rick, Issue 07
+  const productivityRows = candidates.map((c) => {
+    const a = avgs.find((x) => String(x.candidateId) === String(c.id));
+    return [c.lastName, c.firstName, c.candidateId, n3(a?.Productivity_CSD), n3(a?.Productivity_NSD)];
+  });
   const { leaders, assessors } = staffNames(capsule.staffAssignments);
   const leaderMarks = mine(store.auxLeaderMarks)
     .sort((a, b) => (a.entryNumber ?? a.id) - (b.entryNumber ?? b.id))
@@ -373,9 +368,6 @@ export async function buildCapsuleReport(capsuleId) {
     "Pass % Stability in Growth": stablePct("STAG"),
     "Pass % Avg Butler Int Proficiency - MSIP": passPct("MSIP", th.MSIP, true),
     "Pass % Avg Interaction Class - IC": icPass,
-    // same as the unit report: average productivity of the candidates
-    "Pass % Avg Productivity Rates - CSD": n3(mean(avgs.map((a) => a.Productivity_CSD))),
-    "Pass % Avg Productivity Rates - NSD": n3(mean(avgs.map((a) => a.Productivity_NSD))),
     ...Object.fromEntries(ATTENDANCE.map(([l], i) => [`Attendance % - ${l}`, fraction(att[i], attTotal)])),
     ...Object.fromEntries(ENGAGE.map(([l], i) => [`Engagement Level % - ${l}`, fraction(engage[i], scores.length)])),
     ...Object.fromEntries(["Open", "Closed", "Pending"].map((k) => [`Action Status % - ${k}`, fraction(status[k], ppKeys.size)])),
@@ -385,7 +377,7 @@ export async function buildCapsuleReport(capsuleId) {
   const tables = {
     "||| LAST NAME ||| ||| FIRST NAME ||| ||| CANDIDATE ID ||| ||| CANDIDATE START DATE ||| ||| NATIONALITY ||| ||| CAPSULE OUTCOME ||| ||| AGE RANGE |||":
       candidates.map((c) => [c.lastName, c.firstName, c.candidateId, isoDate(c.startDate ?? c.candidateStartDate), c.nationality, c.capsuleOutcome, c.ageRange]),
-    "||| LAST NAME ||| ||| FIRST NAME ||| ||| CANDIDATE ID ||| ||| EFFORT - CSD ||| ||| EFFORT - NSD |||": effortRows,
+    "||| LAST NAME ||| ||| FIRST NAME ||| ||| CANDIDATE ID ||| ||| PRODUCTIVITY RATES - CSD ||| ||| PRODUCTIVITY RATES - NSD |||": productivityRows,
     "||| BIDs ||| ||| BENCHMARK TYPE ||| ||| BENCHMARK REF ||| ||| BENCHMARK DESCRIPTION |||": benchmarkRows(capsule.benchmarks),
     "||| ENTRY ||| ||| IMPACT TYPE ||| ||| CONCERN IDENTIFIED ||| ||| IDENTITY DATE ||| ||| CONCERN RESOLVED ||| ||| RESOLUTION DATE |||": leaderMarks,
     "||| ENTRY # ||| ||| BIDs ||| ||| LESSONS LEARNED ||| ||| LINKED BENCHMARKS |||": improvements,

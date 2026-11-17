@@ -25,10 +25,13 @@ const ppOrder = (a, b) => {
 
 const pickFields = (r) => Object.fromEntries(fx.EFFECTIVITY_FIELDS.map((f) => [f, r ? r[f] ?? null : null]));
 
-function rangeFilter({ ppIdFrom, ppIdTo } = {}) {
+function rangeFilter({ ppIdFrom, ppIdTo, criticalDateFrom, criticalDateTo, criticalRefDateFrom, criticalRefDateTo } = {}) {
   const from = toNum(ppIdFrom);
   const to = toNum(ppIdTo);
-  return (pp) => (from === null || pp >= from) && (to === null || pp <= to);
+  const inRange = (pp) => (from === null || pp >= from) && (to === null || pp <= to);
+  // With a critical reference date range only the PP IDs the tabulation returns for that range are kept.
+  inRange.dateFiltered = Boolean(criticalDateFrom || criticalDateTo || criticalRefDateFrom || criticalRefDateTo);
+  return inRange;
 }
 
 const responsesOf = async (capsuleId, candidateIds) => (candidateIds.length
@@ -59,7 +62,9 @@ function buildCandidateTable(candidateId, tab, responses, inRange = () => true) 
       PC1: toNum(r.PC1), PC2: toNum(r.PC2), PC3: toNum(r.PC3),
     });
   });
-  responses.forEach((r) => {
+  // Effectivity objects of a PP ID without scores are listed – but not when a critical reference date
+  // range is set: such a PP ID has no date, so it is outside the range (Rick, Issue 06).
+  if (!inRange.dateFiltered) responses.forEach((r) => {
     if (!byPp.has(r.ppId)) byPp.set(r.ppId, { ppId: r.ppId, totalDuration: null, criticalRefDate: null, PC1: null, PC2: null, PC3: null });
   });
   const respByPp = new Map(responses.map((r) => [r.ppId, r]));
