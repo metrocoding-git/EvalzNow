@@ -40,10 +40,27 @@ export function ensureExportLibs() {
   return loading;
 }
 
-/** Drop-in replacement for `html2canvas(...)` (it is always awaited by callers). */
-export async function html2canvas(...args) {
+/**
+ * Drop-in replacement for `html2canvas(...)` (it is always awaited by callers).
+ *
+ * html2canvas draws a copy of the page laid out in a "window" of windowWidth x windowHeight. Several
+ * exports passed the chart's own width there, so the copy of the page was laid out narrower than the
+ * screen: the chart got less room than its drawing needs and the right side, the x-axis labels and the
+ * legend were cut off in the JPG / PDF (Rick, Issue 09). The window is now never smaller than the real
+ * one, and the capture always covers the whole element.
+ */
+export async function html2canvas(element, options = {}, ...rest) {
   await ensureExportLibs();
-  return html2canvasImpl(...args);
+  const o = { ...(options || {}) };
+  if (element && element.isConnected && typeof window !== "undefined") {
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    if (o.windowWidth !== undefined && o.windowWidth < vw) o.windowWidth = vw;
+    if (o.windowHeight !== undefined && o.windowHeight < vh) o.windowHeight = vh;
+    if (o.width !== undefined) o.width = Math.max(o.width, element.scrollWidth);
+    if (o.height !== undefined) o.height = Math.max(o.height, element.scrollHeight);
+  }
+  return html2canvasImpl(element, o, ...rest);
 }
 
 // Warm the cache quietly a few seconds after the page has fully loaded, so the

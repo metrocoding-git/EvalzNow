@@ -288,10 +288,10 @@ const CapsuleEditor = ({ capsuleDbId, onClose, showCapsuleForm, showEditBlockMan
                           </select>
                         </td>
                         <td className="border border-gray-300 px-2 py-1">
-                          <input type="text" value={bm.benchmarkRef} {...editing} onChange={(e) => handleBenchmarkChange(index, "benchmarkRef", e.target.value)} className="w-full px-2 py-1 border" />
+                          <input type="text" maxLength={50} value={bm.benchmarkRef} {...editing} onChange={(e) => handleBenchmarkChange(index, "benchmarkRef", e.target.value)} className="w-full px-2 py-1 border" />
                         </td>
                         <td className="border border-gray-300 px-2 py-1">
-                          <input type="text" value={bm.benchmarkDescription} {...editing} onChange={(e) => handleBenchmarkChange(index, "benchmarkDescription", e.target.value)} className="w-full px-2 py-1 border" />
+                          <input type="text" maxLength={50} value={bm.benchmarkDescription} {...editing} onChange={(e) => handleBenchmarkChange(index, "benchmarkDescription", e.target.value)} className="w-full px-2 py-1 border" />
                         </td>
                         <td className="border border-gray-300 px-2 py-1 text-center">
                           <button type="button" onClick={(e) => { e.stopPropagation(); deleteBenchmark(index); }} className="px-1 py-1 text-gray-800 hover:text-gray-900">
@@ -330,6 +330,7 @@ const CapsuleEditor = ({ capsuleDbId, onClose, showCapsuleForm, showEditBlockMan
               <input
                 type="text"
                 placeholder="Enter short description"
+                maxLength={50}
                 value={blockData.shortDescription}
                 {...editing}
                 onChange={(e) => setBlockData((p) => ({ ...p, shortDescription: e.target.value }))}

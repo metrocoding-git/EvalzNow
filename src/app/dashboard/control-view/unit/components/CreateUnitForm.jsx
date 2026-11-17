@@ -557,7 +557,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                     <label className="text-gray-700 font-medium text-xs">Reference:</label>
                     <input
                       type="text"
-                      maxLength={40}
+                      maxLength={50}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                       value={bm.ref || ""}
                       onChange={(e) => {
@@ -573,7 +573,7 @@ export default function CreateUnitForm({ onClose, staffPool = [], onSubmit, unit
                     <label className="text-gray-700 font-medium text-xs">Description:</label>
                     <input
                       type="text"
-                      maxLength={40}
+                      maxLength={50}
                       className="w-full border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                       value={bm.description || ""}
                       onChange={(e) => {
