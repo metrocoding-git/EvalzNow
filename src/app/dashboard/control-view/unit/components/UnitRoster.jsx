@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown, Trash } from "lucide-react";
 import SearchLookup from "./LookUpTable";
 import CreateBlockManagerForm from "./CreateBlockManagerForm";
-import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId, updateAssessmentBlock } from "@/services/assessmentBlockManagerService";
+import { deleteAssessmentBlock, getAssessmentBlockByUnitAndCandidate, getAssessmentBlockByUnitId, updateAssessmentBlock, swapAssessmentBlocks as swapAssessmentBlocks_api } from "@/services/assessmentBlockManagerService";
 import { deleteUnitRoster, getUniRostertByUnitId, updateUnitRoster } from "@/services/unitRosterService";
 import toast, { Toaster } from "react-hot-toast";
 import { useFormStatus } from "@/context/FormStatusContext";
@@ -205,13 +205,16 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
 
         setAssessmentBlocks(blockArray);
 
-        // Automatically select the first block if available
-        if (blockArray.length > 0) {
-          setSelectedBlock(blockArray[0]);
+        // Automatically select the first block (first row of the active tab) if available
+        const firstOfTab = blockArray
+          .filter((b) => b.manageType === activeTab)
+          .sort((a, b) => (activeTab === "Indirect" ? b.ppId - a.ppId : a.ppId - b.ppId))[0];
+        if (firstOfTab) {
+          setSelectedBlock(firstOfTab);
           setSelectedRow(0);
           setShowEditBlockManager(true); // optionally open edit panel
           if (onBlockSelect) {
-            onBlockSelect(blockArray[0]);
+            onBlockSelect(firstOfTab);
           }
         } else {
           setSelectedBlock(null);
@@ -250,80 +253,33 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     setShowEditBlockManager(false);
   };
 
-  // Function to swap and update ppId values
+  // Move Up / Move Down: the server swaps the PP IDs of the two blocks in one transaction (scores follow the
+  // block, Critical Reference Dates stay with the PP ID), then the list is reloaded so PP IDs / order are exact.
+  const [movingBlock, setMovingBlock] = useState(false);
   const swapAssessmentBlocks = async (index1, index2) => {
-    if (
-      index1 < 0 ||
-      index2 < 0 ||
-      index1 >= filteredAssessmentBlocks.length ||
-      index2 >= filteredAssessmentBlocks.length
-    ) {
-      return;
-    }
+    if (movingBlock) return;
+    const block1 = filteredAssessmentBlocks[index1];
+    const block2 = filteredAssessmentBlocks[index2];
+    if (!block1 || !block2 || !selectedUnit?.id || !selectedCandidate?.id) return;
 
+    setMovingBlock(true);
     try {
-      const updatedBlocks = [...assessmentBlocks];
+      await swapAssessmentBlocks_api(block1.id, block2.id);
+      const blocks = await getAssessmentBlockByUnitAndCandidate(selectedUnit.id, selectedCandidate.id);
+      const blockArray = Array.isArray(blocks) ? blocks : blocks && typeof blocks === "object" ? [blocks] : [];
+      setAssessmentBlocks(blockArray);
 
-      const block1 = filteredAssessmentBlocks[index1];
-      const block2 = filteredAssessmentBlocks[index2];
-
-      const mainIndex1 = updatedBlocks.findIndex((b) => b.id === block1.id);
-      const mainIndex2 = updatedBlocks.findIndex((b) => b.id === block2.id);
-
-      if (mainIndex1 === -1 || mainIndex2 === -1) return;
-
-      // --- Adjust ppId values depending on tab & direction ---
-      let newBlock1 = { ...block1 };
-      let newBlock2 = { ...block2 };
-
-      if (activeTab === "Direct") {
-        // Direct performance
-        if (index2 < index1) {
-          // Move Up
-          newBlock1.ppId = block1.ppId - 1;
-          newBlock2.ppId = block2.ppId + 1;
-        } else {
-          // Move Down
-          newBlock1.ppId = block1.ppId + 1;
-          newBlock2.ppId = block2.ppId - 1;
-        }
-      } else if (activeTab === "Indirect") {
-        // Indirect performance (reverse logic)
-        if (index2 < index1) {
-          // Move Up
-          newBlock1.ppId = block1.ppId + 1;
-          newBlock2.ppId = block2.ppId - 1;
-        } else {
-          // Move Down
-          newBlock1.ppId = block1.ppId - 1;
-          newBlock2.ppId = block2.ppId + 1;
-        }
-      }
-
-      // Swap their order in UI
-      [updatedBlocks[mainIndex1], updatedBlocks[mainIndex2]] = [
-        newBlock2,
-        newBlock1,
-      ];
-
-      setAssessmentBlocks(updatedBlocks);
-
-      // Update selection
+      // Keep the moved block selected (also in the editor, so a later Save never sends an old PP ID)
+      const moved = blockArray.find((b) => b.id === block1.id) || null;
       setSelectedRow(index2);
-      setSelectedBlock(newBlock1);
-
-      // --- Persist to backend ---
-      await Promise.all([
-        updateAssessmentBlock(newBlock1.id, { ...newBlock1 }),
-        updateAssessmentBlock(newBlock2.id, { ...newBlock2 }),
-      ]);
-
-      // Notify parent if needed
-      if (onBlockUpdate) {
-        onBlockUpdate(updatedBlocks);
-      }
+      setSelectedBlock(moved);
+      if (moved && onBlockSelect) onBlockSelect(moved);
+      if (onBlockUpdate) onBlockUpdate(blockArray);
     } catch (err) {
-      console.error("Failed to swap/update blocks:", err);
+      console.error("Failed to move block:", err);
+      toast.error(err?.response?.data?.message || "Could not move the block. Please try again.");
+    } finally {
+      setMovingBlock(false);
     }
   };
 
@@ -348,7 +304,9 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
       if (!blockData || !selectedBlock) return;
 
       // Call API to update the block
-      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
+      // PP IDs only change with Move Up / Move Down (never resend a PP ID from an older selection)
+      const { ppId: _ppId, ...blockFields } = blockData;
+      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockFields);
 
       // Notify parent about the updated block
       if (onBlockUpdate) {
@@ -439,9 +397,10 @@ export default function UnitRoster({ activeTab, setActiveTab, setShowEditBlockMa
     .filter(rosterItem => rosterItem.candidate)
     .map(rosterItem => rosterItem.candidate);
 
-  const filteredAssessmentBlocks = assessmentBlocks.filter(block =>
-    block.manageType === activeTab
-  );
+  // Always in PP ID order of the tab (Direct 1, 2, 3… / Indirect -1, -2, -3…), whatever order the data came in
+  const filteredAssessmentBlocks = assessmentBlocks
+    .filter(block => block.manageType === activeTab)
+    .sort((a, b) => (activeTab === "Indirect" ? b.ppId - a.ppId : a.ppId - b.ppId));
 
   const handleDeleteBlock = async () => {
     if (selectedRow === null) return; // no row selected
