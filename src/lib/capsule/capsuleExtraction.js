@@ -83,8 +83,10 @@ export async function capsuleExtractionRows(capsuleId, onlyCandidateId = null) {
       const pp = Number(block.ppId);
       const r = byPp.get(pp) || {};
       const need = needs.find((n) => Number(n.ppId) === pp);
-      const bIds = need ? idsOf(need.bIds ?? need.benchmarkIds) : [];
-      const status = !need ? "Open" : bIds.length && String(need.observation || "").trim() ? "Closed" : "Pending";
+      const bIds = need ? [...new Set([...idsOf(need.bIds), ...idsOf(need.benchmarkIds)].map(Number).filter(Number.isFinite))].sort((a, b) => a - b) : [];
+      // Same rule as the Needs Assessment table and the reports: no BIDs and no observation → Open
+      const hasObs = Boolean(String(need?.observation || "").trim());
+      const status = bIds.length && hasObs ? "Closed" : bIds.length || hasObs ? "Pending" : "Open";
       const pl = profLoads.get(pp);
       const gl = growthLoads.get(pp);
       const e = effByPp.get(pp) || {};

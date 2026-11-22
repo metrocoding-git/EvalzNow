@@ -36,6 +36,18 @@ export const updateAssessmentBlock = async (id, blockData) => {
   }
 };
 
+// Move Up / Move Down: swap the PP IDs of two blocks of the same candidate (one transaction on the server;
+// scores follow the block, Critical Reference Dates stay with the PP ID).
+export const swapAssessmentBlocks = async (id, withBlockId) => {
+  try {
+    const response = await api.post(`${API_ROUTES.ASSESSMENTMANAGER}/${id}/swap`, { withBlockId });
+    return response.data;
+  } catch (error) {
+    console.error("Error moving assessment block:", error);
+    throw error;
+  }
+};
+
 // Delete assessment block
 export const deleteAssessmentBlock = async (id) => {
   try {
