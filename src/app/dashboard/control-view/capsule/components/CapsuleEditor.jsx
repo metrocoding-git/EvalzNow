@@ -161,7 +161,9 @@ const CapsuleEditor = ({ capsuleDbId, onClose, showCapsuleForm, showEditBlockMan
     if (!selectedBlock) return;
     setFormStatus("Processing");
     try {
-      await updateCapsuleBlock(selectedBlock.id, blockData);
+      // PP IDs only change with Move Up / Move Down (never resend a PP ID from an older selection)
+      const { ppId: _ppId, ...blockFields } = blockData;
+      await updateCapsuleBlock(selectedBlock.id, blockFields);
       setFormStatus("Assessment Block Manager Updated");
       onClose();
     } catch (err) {

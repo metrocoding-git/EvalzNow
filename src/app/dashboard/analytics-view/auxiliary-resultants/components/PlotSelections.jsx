@@ -675,7 +675,8 @@ export default function PlotSelections({ selectedSort, unitId, candidateId, unit
     return {
       ...row,
       benchmarkIds: toIdArray(matchedNeed?.benchmarkIds),
-      bIds: toIdArray(matchedNeed?.bIds),
+      // Linked BIDs = both stored lists (the app saves the same list in both), as in the extraction and the reports
+      bIds: [...new Set([...toIdArray(matchedNeed?.bIds), ...toIdArray(matchedNeed?.benchmarkIds)].map(Number).filter(Number.isFinite))].sort((a, b) => a - b),
       observation: matchedNeed ? matchedNeed.observation : ""
     };
   });

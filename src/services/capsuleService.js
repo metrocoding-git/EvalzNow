@@ -115,6 +115,9 @@ export const updateCapsuleBlock = async (id, payload) => write(api.put(`${BASE}/
 
 export const deleteCapsuleBlock = async (id) => write(api.delete(`${BASE}/blocks/${id}`));
 
+/** Move Up / Move Down: swap the PP IDs of two blocks of the same candidate (scores follow, dates stay with the PP ID). */
+export const swapCapsuleBlocks = async (id, withBlockId) => write(api.post(`${BASE}/blocks/${id}/swap`, { withBlockId }));
+
 // ---------------------------------------------------------------------------
 // Setup View – Insert Scores for Capacity Accounting
 // ---------------------------------------------------------------------------

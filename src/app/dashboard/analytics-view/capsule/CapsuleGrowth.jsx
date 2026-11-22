@@ -40,6 +40,9 @@ export function growthEntities(level) {
   ];
 }
 
+/** Growth Metrics IDs 1–7: charts start at (0, 0) at both levels. */
+const ORIGIN_KEYS = new Set(["GEQ", "dPC1", "dPC2", "dPC3", "PC1", "PC2", "PC3"]);
+
 /** Projection curves from the saved Projection Table session (same as unit Growth Metrics). */
 function projectionCurves(points) {
   const sel = ["First PP Selection", "Second PP Selection", "Third PP Selection"]
@@ -98,10 +101,16 @@ function GrowthBody({ ctx }) {
       );
     }
     const days = e.x !== "pp";
+    const series = splitPP(results, e.key, xKey(e));
+    // IDs 1–7 (ΔGEQ, ΔPC1–ΔPC3, PC1–PC3) always start at (0, 0) and then go to PP ID 1, 2, 3 …
+    // (same as the unit Growth Metrics). The point is only drawn on the chart, not added to the table.
+    const chartSeries = ORIGIN_KEYS.has(e.key) && days && series.pos.length
+      ? { ...series, pos: [{ ppId: 0, x: 0, value: 0, origin: true }, ...series.pos] }
+      : series;
     return (
       <SeriesChart
         entity={e}
-        series={splitPP(results, e.key, xKey(e))}
+        series={chartSeries}
         props={p}
         threshold={thresholdOf(e)}
         scatter={e.type === "scatter"}

@@ -448,7 +448,9 @@ const UnitEditor = ({ unitId, candidate, onClose, showUnitForm, showEditBlockMan
       if (!blockData || !selectedBlock) return;
   
       // Call API to update the block
-      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockData);
+      // PP IDs only change with Move Up / Move Down (never resend a PP ID from an older selection)
+      const { ppId: _ppId, ...blockFields } = blockData;
+      const savedBlock = await updateAssessmentBlock(selectedBlock.id, blockFields);
   
       // Notify parent about the updated block
       if (onBlockUpdate) {

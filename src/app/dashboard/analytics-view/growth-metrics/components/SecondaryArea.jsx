@@ -61,31 +61,36 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
     // You can add fetch or state update logic here
   };
 
+  // Cumulative / Average growth of the active candidate. Reloaded when the candidate, the submitted filters or
+  // the level changes (Unit Level → Candidate Level used to clear the values to 0 without loading them again).
+  // Uses the submitted filters (none after a reset); an older answer never overwrites a newer one.
   useEffect(() => {
+    let alive = true;
     const fetchCumalativeData = async () => {
       if (!unitId || !candidateId) return;
 
       setLoading(true);
       setError(null);
-  
+      const applied = secondaryValues || {};
+
       try {
         const data = await getUnitAndMultipleCandidateSummary({
           unitId,
           candidate_id: candidateId,
-          ppIdFrom,
-          ppIdTo,
-          criticalRefDateFrom: criticalDateFrom || undefined,
-          criticalRefDateTo: criticalDateTo || undefined,
+          ppIdFrom: applied.ppIdFrom === "" ? undefined : applied.ppIdFrom,
+          ppIdTo: applied.ppIdTo === "" ? undefined : applied.ppIdTo,
+          criticalRefDateFrom: applied.criticalDateFrom || undefined,
+          criticalRefDateTo: applied.criticalDateTo || undefined,
         });
-  
-  
-        const { cumulativeAverages, cumulativeSums } = data;
-        
-        
+        if (!alive) return;
+
+        const { cumulativeAverages, cumulativeSums } = data || {};
+
+
          // 🧠 Pick candidate-specific values (assuming one candidate at a time)
          const avg = cumulativeAverages?.find(a => a.candidateId == candidateId);
          const sum = cumulativeSums?.find(s => s.candidateId == candidateId);
- 
+
          // ✅ Map to your local state structure
          setGrowthMetrics({
            receptive: {
@@ -106,17 +111,17 @@ const SecondaryInputForm = ({ onClose, selectedSort, onSubmit, resetSignal, unit
         // console.log("✅ Stability Summary:", { stable: stableCount, unstable: unstableCount });
         
       } catch (err) {
+        if (!alive) return;
         console.error("Failed to fetch tabulation data:", err);
         setError("Failed to load table data.");
-
-        setTableData([]);
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     };
-  
+
     fetchCumalativeData();
-  }, [unitId, candidateId, secondaryValues]);
+    return () => { alive = false; };
+  }, [unitId, candidateId, secondaryValues, resetSignal, selectedSort]);
 
   return (
     <div className="flex flex-col h-full bg-white">
