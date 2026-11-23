@@ -7,7 +7,9 @@
  * Rows carry both the capsule keys (PC1, ΔPC → dPC1, XCFL …) and the Third Parameter aliases.
  */
 import { getCandidateById } from "./candidateService";
-import { getCapsuleById, getCapsuleRosterByCapsuleId, getCapsuleScoresByCapsuleAndCandidate } from "./capsuleService";
+import {
+  getCapsuleById, getCapsuleRosterByCapsuleId, getCapsuleScoresByCapsule, getCapsuleScoresByCapsuleAndCandidate,
+} from "./capsuleService";
 import { computeCandidateTabulation, withTprmAliases } from "@/lib/capsule/capsuleMetrics";
 import { capacitiesOf } from "@/app/dashboard/control-view/capsule/capsuleConfig";
 import { ensureStaffDirectory, enrichStaffAssignments } from "@/lib/capsule/staffDirectory";
@@ -52,9 +54,21 @@ export async function getCapsuleMultipleCandidateSummary(filters) {
   const candidates = await getCapsuleCandidates(capsuleId);
   const out = { results: [], averages: [], stdDevs: [], stdErrs: [], cumulativeSums: [], cumulativeAverages: [] };
 
+  // Several candidates: one request for the whole capsule instead of one request per candidate
+  // (same rows and order — the server sorts both lists the same way).
+  let byCandidate = null;
+  if (ids.length > 1) {
+    byCandidate = new Map();
+    for (const s of (await getCapsuleScoresByCapsule(capsuleId)) || []) {
+      const k = String(s.candidate_id);
+      if (!byCandidate.has(k)) byCandidate.set(k, []);
+      byCandidate.get(k).push(s);
+    }
+  }
+
   for (const id of ids) {
     const candidate = candidates.find((c) => String(c.id) === String(id)) || { id };
-    const scores = await getCapsuleScoresByCapsuleAndCandidate(capsuleId, id);
+    const scores = byCandidate ? (byCandidate.get(String(id)) || []) : await getCapsuleScoresByCapsuleAndCandidate(capsuleId, id);
     const t = computeCandidateTabulation(capsule, candidate, scores, capacities, {
       ppIdFrom: filters.ppIdFrom,
       ppIdTo: filters.ppIdTo,

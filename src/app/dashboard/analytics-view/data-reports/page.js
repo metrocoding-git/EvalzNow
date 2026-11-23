@@ -25,7 +25,7 @@ import { downloadEZFilesAsZip } from "./helper/downloadEZFilesAsZip";
 import DownloadLoader from "@/components/DownloadLoader";
 import { getICValue, getProductivityValue, getSTAPAndSTAGStableCount } from "@/services/globalAnalyticsService";
 import { getActiveCapsuleId, getActiveEntityType } from "@/lib/activeEntity";
-import { getAllCapsules, getCapsuleById } from "@/services/capsuleService";
+import { getAllCapsules, getCapsuleById, withCapsuleReadCache } from "@/services/capsuleService";
 import { getCapsuleCandidates } from "@/services/capsuleAnalyticsService";
 import { buildCapsuleCandidateReport, buildCapsuleReport, buildClinicalReport, reportFileName } from "@/lib/capsule/capsuleReports";
 
@@ -97,6 +97,8 @@ export default function DataReports() {
     if (!(capsuleOptions.includes(selectedReport) || (selectedReport === "candidate-report" && capsuleActive))) return false;
     setIsDownloading(true);
     try {
+      // one bulk job: each capsule / roster / score list is fetched once, not once per candidate
+      await withCapsuleReadCache(async () => {
       if (selectedReport === "candidate-report") {
         const c = data.find((x) => x.id === activeCandidateId) || data[0];
         if (c) await downloadEZFile(await buildCapsuleCandidateReport(capsuleData.id, c.id), reportFileName("Candidate", `${c.lastName}_${c.firstName}`, c.candidateId));
@@ -117,6 +119,7 @@ export default function DataReports() {
       } else if (selectedReport === "clinical-data") {
         await downloadEZFile(await buildClinicalReport(), "Clinical Data Report.ez");
       }
+      });
     } catch (err) {
       console.error("Capsule report failed:", err);
     } finally {
