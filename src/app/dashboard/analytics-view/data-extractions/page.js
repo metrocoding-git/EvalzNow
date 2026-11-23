@@ -20,7 +20,7 @@ import { extractClientCandidatesCSV } from "./components/CandidateExtractionByCl
 import { extractCandidateUnitsCSV } from "./components/CandidateExtractionByCandidateId";
 import DownloadLoader from "@/components/DownloadLoader";
 import { getActiveCapsuleId, getActiveEntityType } from "@/lib/activeEntity";
-import { getCapsuleById } from "@/services/capsuleService";
+import { getCapsuleById, withCapsuleReadCache } from "@/services/capsuleService";
 import { getCapsuleCandidates } from "@/services/capsuleAnalyticsService";
 import { downloadEZFilesAsZip } from "../data-reports/helper/downloadEZFilesAsZip";
 import { allCapsulesCSV, downloadText, extractActiveCapsuleCSV, extractCandidateCapsulesCSV } from "@/lib/capsule/capsuleExtraction";
@@ -240,8 +240,10 @@ export default function DataExtractions() {
         setIsDownloading(true);
         setExtractLoading(true);
         try {
-          if (selectedExtractOption === "active-capsule-candidates") await extractActiveCapsuleCSV(capsuleData.id);
-          else await extractCandidateCapsulesCSV(activeCandidateId);
+          await withCapsuleReadCache(async () => {
+            if (selectedExtractOption === "active-capsule-candidates") await extractActiveCapsuleCSV(capsuleData.id);
+            else await extractCandidateCapsulesCSV(activeCandidateId);
+          });
         } catch (err) {
           console.error("Capsule extraction failed:", err);
         } finally {
@@ -275,7 +277,7 @@ export default function DataExtractions() {
             });
             if (unitText) files.push({ filename: "Unit Data Extraction - All.csv", content: unitText });
           }
-          const capsules = await allCapsulesCSV();
+          const capsules = await withCapsuleReadCache(() => allCapsulesCSV());
           if (capsules.count) files.push({ filename: "Capsule Data Extraction - All.csv", content: capsules.text });
           if (files.length > 1) await downloadEZFilesAsZip(files, "Data Extraction - All.zip");
           else if (files.length === 1) await downloadText(files[0].content, files[0].filename);

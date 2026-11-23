@@ -37,11 +37,38 @@ export function invalidateCapsuleStore() {
   storeCache = null;
 }
 
+// ---------------------------------------------------------------------------
+// Read cache for one bulk job (a report or extraction over many candidates / capsules).
+// Inside withCapsuleReadCache(fn) the same GET is sent once and every caller gets its own copy;
+// outside it nothing is cached. Any write clears it.
+// ---------------------------------------------------------------------------
+let readCache = null;
+
+export async function withCapsuleReadCache(fn) {
+  if (readCache) return fn();
+  readCache = new Map();
+  try {
+    return await fn();
+  } finally {
+    readCache = null;
+  }
+}
+
+const copy = (v) => (v === null || v === undefined || typeof v !== "object" ? v : structuredClone(v));
+
+function get(url) {
+  if (!readCache) return call(api.get(url));
+  const cache = readCache;
+  if (!cache.has(url)) cache.set(url, call(api.get(url)).catch((e) => { cache.delete(url); throw e; }));
+  return cache.get(url).then(copy);
+}
+
 const write = async (promise) => {
   try {
     return await call(promise);
   } finally {
     invalidateCapsuleStore();
+    if (readCache) readCache.clear();
   }
 };
 
@@ -68,9 +95,9 @@ export async function loadCapsuleStore(clientId = activeClientId()) {
 // Capsules
 // ---------------------------------------------------------------------------
 export const getAllCapsules = async (clientId = activeClientId()) =>
-  (clientId ? call(api.get(`${BASE}/client/${clientId}`)) : []);
+  (clientId ? get(`${BASE}/client/${clientId}`) : []);
 
-export const getCapsuleById = async (id) => call(api.get(`${BASE}/id/${id}`));
+export const getCapsuleById = async (id) => get(`${BASE}/id/${id}`);
 
 export const createCapsule = async (payload) =>
   write(api.post(BASE, { ...payload, clientId: payload.clientId ?? activeClientId() }));
@@ -85,7 +112,7 @@ export const deleteCapsule = async (id) => write(api.delete(`${BASE}/${id}`));
 export const getAllCapsuleRoster = async (clientId = activeClientId()) =>
   (clientId ? call(api.get(`${BASE}/roster/client/${clientId}`)) : []);
 
-export const getCapsuleRosterByCapsuleId = async (capsuleDbId) => call(api.get(`${BASE}/roster/capsule/${capsuleDbId}`));
+export const getCapsuleRosterByCapsuleId = async (capsuleDbId) => get(`${BASE}/roster/capsule/${capsuleDbId}`);
 
 /** Connected capsules of a candidate (Candidate tab → Review). */
 export const getCapsulesByCandidateId = async (candidateDbId) => call(api.get(`${BASE}/roster/candidate/${candidateDbId}`));
@@ -121,10 +148,10 @@ export const swapCapsuleBlocks = async (id, withBlockId) => write(api.post(`${BA
 // ---------------------------------------------------------------------------
 // Setup View – Insert Scores for Capacity Accounting
 // ---------------------------------------------------------------------------
-export const getCapsuleScoresByCapsule = async (capsuleDbId) => call(api.get(`${BASE}/scores/${capsuleDbId}`));
+export const getCapsuleScoresByCapsule = async (capsuleDbId) => get(`${BASE}/scores/${capsuleDbId}`);
 
 export const getCapsuleScoresByCapsuleAndCandidate = async (capsuleDbId, candidateDbId) =>
-  call(api.get(`${BASE}/scores/${capsuleDbId}/${candidateDbId}`));
+  get(`${BASE}/scores/${capsuleDbId}/${candidateDbId}`);
 
 export const createCapsuleScore = async (payload) => {
   const { candidate, ...rest } = payload || {};
@@ -227,7 +254,7 @@ export const updateCapsuleProjection = async (sessionId, payload) =>
 // ---------------------------------------------------------------------------
 export const getCapsuleEffectivityResponses = async (capsuleDbId, candidateIds = []) => {
   const ids = (candidateIds || []).filter((x) => x !== null && x !== undefined && x !== "");
-  return call(api.get(`${BASE}/effectivity/${capsuleDbId}${ids.length ? `?candidateIds=${ids.join(",")}` : ""}`));
+  return get(`${BASE}/effectivity/${capsuleDbId}${ids.length ? `?candidateIds=${ids.join(",")}` : ""}`);
 };
 export const saveCapsuleEffectivityResponse = async (payload) => write(api.post(`${BASE}/effectivity`, payload));
 export const deleteCapsuleEffectivityResponse = async (id) => write(api.delete(`${BASE}/effectivity/${id}`));
