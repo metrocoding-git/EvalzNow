@@ -213,7 +213,7 @@ export default function DataExtractions() {
         setCandidateExtractionData(response);
       } catch (err) {
         console.error(err);
-        setClientExtractionData(null);
+        setCandidateExtractionData(null);
       }
     };
     fetchDataExtractionByActiveCandidateId();
@@ -269,10 +269,18 @@ export default function DataExtractions() {
         if (selectedExtractOption === "all-candidates-database") {
           // Full database pull: the unit CSV and the capsule CSV come together in one zip file
           const files = [];
-          if (extractionData) {
+          // The organisation's unit data loads in the background when the page opens (it can take a few
+          // seconds). If Extract is pressed before it has arrived, load it now so the zip always has both files.
+          const clientId = activeClientId || sessionStorage.getItem("activeClientId");
+          let orgData = clientExtractionData;
+          if (!orgData && clientId) {
+            orgData = await getDataExtractionByClientId(clientId);
+            setClientExtractionData(orgData);
+          }
+          if (orgData) {
             const unitText = await extractClientCandidatesCSV({
-              extractionData,
-              clientId: activeClientId,
+              extractionData: orgData,
+              clientId,
               asText: true,
             });
             if (unitText) files.push({ filename: "Unit Data Extraction - All.csv", content: unitText });
