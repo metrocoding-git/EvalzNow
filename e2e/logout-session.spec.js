@@ -70,7 +70,7 @@ test.describe('Logout & session security', () => {
     await tab2.waitForURL('**/login', { timeout: 10000 });
   });
 
-  test('SEC-UI-08 Idle for 30 minutes = automatic logout', async ({ page }) => {
+  test('SEC-UI-08 Idle for 10 minutes = automatic logout', async ({ page }) => {
     await page.clock.install();
     await login(page);
     await page.clock.fastForward('31:00');
