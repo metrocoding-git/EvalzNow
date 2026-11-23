@@ -2,7 +2,7 @@
  * Central session helpers (security).
  *
  * Logout policy:
- *  - "Log Out" button, 30-min idle timeout, an expired/revoked token, opening the
+ *  - "Log Out" button, 10-min idle timeout, an expired/revoked token, opening the
  *    public home page (/) or the login page while signed in  ->  session ends.
  *  - Ending a session: the token is revoked on the server (it cannot be reused even
  *    if copied), all local session data is wiped, every open tab is signed out, and

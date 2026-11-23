@@ -4,7 +4,7 @@ UI and calculations unchanged (screenshots of 12 screens compared old vs new: < 
 difference, only icon anti-aliasing).
 
 ## Logout behaviour (src/lib/auth.js)
-* **Log Out**, 30-minute idle timeout, expired/revoked token → session ends.
+* **Log Out**, 10-minute idle timeout, expired/revoked token → session ends.
 * **Back button** after logout never shows dashboard pages (history entry replaced, dashboard
   hidden until the session is verified, Back/Forward-cache restores re-checked, `no-store` headers).
 * Opening the **home page** or the **login page** while signed in ends the session.
